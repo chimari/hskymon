@@ -1,0 +1,133 @@
+#########################################################################
+#   Sky Monitor for Subaru Telescope  (hskymon)                          
+#                         Document file                                  
+#                                                                         
+#                                                                         
+#                                  ver 2.7.7   2016/02/23                  
+#                               Copyright (C) 2003-16 Akito Tajitsu       
+#                                           tajitsu@subaru.naoj.org       
+#########################################################################
+
+
+*** Introduction
+This program (hskymon) is a telescope monitoring software for
+SUBARU Telescope. It can be useful for actual observation and
+also for obs preparation as a telescope simulator.
+Basically, hskymon is optimized for SUBARU Telescope. However,
+it can be adoped to other telescopes, changing positional parameters.
+
+For target lists to display on the program, you can input OPE
+files for SOSs or CSV text lists.
+
+The latest version of hskymon is avairable on "HDS wiki"
+    http://hds.skr.jp/wiki/  .
+(But, you need to input password for this page.)  
+
+
+*** Environment
+hskymon requires UNIX operating system with X window system or
+MS Windows (Win2000 or later).
+
+To compile this program from its source code, you need to install
+Gtk+ development tools (for Windows, I used MinGW + Gtk-dev).
+Gtk+2.8 (or later) is required (my recommendation is ver2.10 or later).
+
+In order to get telescope status, hskymon requires xmlrpc-c library.
+But, Windows version does not support this function.
+You need to install some libraries and develope environment for them
+to make this program.
+(gtk+2-dev, xmlrpc-c3-dev, libcurl4-openssl-dev ... etc.)
+
+
+
+*** Build from the source code
+  - Enter the archive directory.
+
+  - % ./configure  (--with-xmlrpc : to get telescope status)
+
+  - % make
+
+Then, an excutable file "hskymon" will be created.
+
+  - # make install  
+   (or you can copy "hskymon" file to an appropriate directory.)
+ 
+
+
+
+*** Build from the source code (Windows ver.)
+Basicall, Windows version of hskymon is distributed as a binary
+package with Gtk+ libraries.
+
+If you use msys + min-gw + gtk-dev,
+
+  - % ./configure --with-win32
+ 
+  - % make
+  (or makewin32.sh)
+
+
+*** Command line option
+     -h, --help                    : Print help message
+     -i, --input [input-file]      : Set the inpout CSV list file
+     -a, --witht-allsky            : Switch on All Sky Camera
+     -nt, --without-telstat        : Switch off to read Telescope Status
+     -s, --server [server-address] : Override Telstat Server
+     -l, --log [log-file]          : Output log file
+
+
+*** Input files
+[1]OPE file
+OPE files for SOSs can be avairable for inputs.
+hskymon reads the parameter list section in OPE files likely,
+
+   <PARAMETER_LIST>
+
+   TGT_BD44493=OBJECT="BD+44 493" RA=022649.60 DEC=+445746.80 EQUINOX=2000.00
+   TGT_HD222304=OBJECT="HD222304" RA=033908.30 DEC=+502818.20 EQUINOX=2000.00
+   TGT_HD224544=OBJECT="HD224544" RA=235849.20 DEC=+322254.10 EQUINOX=2000.00
+   TGT_HD225132=OBJECT="HD225132" RA=000344.40 DEC=-172009.50 EQUINOX=2000.00
+           ....................................
+
+All characters in the objectname will be capitalized.
+
+.prm files in which standard stars are defined are also loaded
+automatically.
+You should write command to load *.prm files likely
+
+*LOAD "hogehoge.prm"
+
+in the <PARAMETER> field of OPE files.
+# double quatation is required for the file name.
+Current searching paths for *.prm files are
+  1.  same directory with the loaded *.ope
+  2.  subdirectory "COMMON/"
+  3.  same level directory "../COMMON/"
+  4.  "~/Procedure/"
+  5.  "~/Procedure/<INST>/"
+  6.  "~/Procedure/<INST>/COMMON/"
+  7.  "~/Procedure/COMMON/"
+
+
+As default, hskymon displays all objects defined in the loaded OPE file.
+If you want to hide unused objects (in "GetObject*", "GetStandard*" or 
+"SetupField*" commands in <COMMAND> field of the OPE file),
+you can hide them with "Hide Objects unused in OPE file" button
+(the 2nd button in ASC/Telstat menu). 
+
+For .prm files, the ojects are loaded only in the case that it is used
+in commands ("GetObject*", "GetStandard*" or "SetupField*") in the OPE
+file.
+
+
+[2]CSV Text file
+The following fromat text files are also avairable for data inputs.
+
+	HD94028     ,105128.1 ,+201639.0 ,2000,  <comments>
+	BD+36 2165  ,111248.0 ,+354343.9 ,2000,  Mv=8.4  Fe/H=-2
+	HD97916     ,111554.2 ,+020512.1 ,2000,  Mv=10.2 Fe/H=-2
+	BD+51 1696  ,114635.2 ,+505254.7 ,2000   
+	BD-13 3442  ,114650.7 ,-140643.5 ,2000,
+           ....................................
+
+
