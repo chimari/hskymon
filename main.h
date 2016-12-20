@@ -244,6 +244,7 @@ enum
   COLUMN_OBJ_LOCK,
 #endif
   COLUMN_OBJ_NUMBER,
+  COLUMN_OBJ_OPENUM,
   COLUMN_OBJ_DEF,
   COLUMN_OBJ_NAME,
   COLUMN_OBJ_AZ,
@@ -330,7 +331,7 @@ enum{
 #endif
 
 #define MAX_OBJECT 2000
-#define MAX_ROPE 8
+#define MAX_ROPE 32
 
 #ifdef USE_XMLRPC
 enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
@@ -896,6 +897,7 @@ struct _OBJpara{
   gchar *note;
 
   gint ope;
+  gint ope_i;
 
   gdouble x;
   gdouble y;

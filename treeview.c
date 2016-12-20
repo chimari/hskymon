@@ -327,21 +327,11 @@ void tree_update_azel_item(typHOE *hg,
 			   GtkTreeIter iter, 
 			   gint i_list)
 {
-  gchar tmp[128];
+  gchar tmp[12];
   gint i;
   gdouble s_rt=-1;
 
-  // Def
-  gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-		      COLUMN_OBJ_DISP, 
-		      hg->obj[i_list].check_disp,
-		      COLUMN_OBJ_NUMBER,
-		      i_list+1,
-		      COLUMN_OBJ_DEF,
-		      hg->obj[i_list].def,
-		      -1);
-
-  // Name
+  // Disp/Num/Name
   gtk_list_store_set (GTK_LIST_STORE(model), &iter,
 		      COLUMN_OBJ_DISP, 
 		      hg->obj[i_list].check_disp,
@@ -350,6 +340,27 @@ void tree_update_azel_item(typHOE *hg,
 		      COLUMN_OBJ_NAME,
 		      hg->obj[i_list].name,
 		      -1);
+
+  if(hg->obj[i_list].ope_i<0){
+    sprintf(tmp,"add");
+  }
+  else if(hg->obj[i_list].ope==MAX_ROPE-1){
+    sprintf(tmp," p-%3d",hg->obj[i_list].ope_i+1);
+  }
+  else{
+    sprintf(tmp,"%2d-%3d",hg->obj[i_list].ope+1,hg->obj[i_list].ope_i+1);
+  }
+  tmp[strlen(tmp)] = '\0';
+  gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+   		      COLUMN_OBJ_OPENUM, tmp, -1);
+
+  // Def
+  if(hg->show_def){
+    if(hg->obj[i_list].def){
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+			 COLUMN_OBJ_DEF, hg->obj[i_list].def, -1);
+    }
+  }
 
   // RA
   if(hg->show_ra){
@@ -666,6 +677,7 @@ create_items_model (typHOE *hg)
 			      GDK_TYPE_PIXBUF,	// Lock
 #endif
 			      G_TYPE_INT,     // number
+			      G_TYPE_STRING,  // OPENUM
 			      G_TYPE_STRING,  // Def
 			      G_TYPE_STRING,  // name
                               G_TYPE_DOUBLE,  // az
@@ -713,9 +725,9 @@ add_item (GtkWidget *button, gpointer data)
     GtkTreePath *path;
     
     path = gtk_tree_model_get_path (model, &iter);
-    //i = gtk_tree_path_get_indices (path)[0];
-    gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
-    i--;
+    //gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
+    //i--;
+    i=hg->i_max;
 
     tmp_obj.def=g_strdup("(NULL)");
 
@@ -740,7 +752,9 @@ add_item (GtkWidget *button, gpointer data)
     hg->obj[i].check_disp=TRUE;
     hg->obj[i].check_sm=TRUE;
 
-    hg->obj[i].ope=hg->ope_max-1;
+    hg->obj[i].ope=MAX_ROPE-1;
+    //hg->obj[i].ope=-1;
+    hg->obj[i].ope_i=-1;
     if(hg->obj[i].ope<0) hg->obj[i].ope=0;
     
     gtk_list_store_append (GTK_LIST_STORE (model), &iter);
@@ -1430,12 +1444,14 @@ add_columns (typHOE *hg,
 
   /* number column */
   renderer = gtk_cell_renderer_text_new ();
+  //g_object_set_data (G_OBJECT (renderer), "column", 
+  //		     GINT_TO_POINTER (COLUMN_OBJ_NUMBER));
   g_object_set_data (G_OBJECT (renderer), "column", 
-  		     GINT_TO_POINTER (COLUMN_OBJ_NUMBER));
+  		     GINT_TO_POINTER (COLUMN_OBJ_OPENUM));
   column=gtk_tree_view_column_new_with_attributes ("##",
 					    renderer,
 					    "text",
-					    COLUMN_OBJ_NUMBER,
+					    COLUMN_OBJ_OPENUM,
 					    NULL);
 #ifdef USE_XMLRPC
   gtk_tree_view_column_set_cell_data_func(column, renderer,
@@ -1443,8 +1459,12 @@ add_columns (typHOE *hg,
 					  (gpointer)hg,
 					  NULL);
 #endif
-  gtk_tree_view_column_set_sort_column_id(column,COLUMN_OBJ_NUMBER);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_OBJ_OPENUM);
   gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  name_cell_data_func,
+					  (gpointer)hg,
+					  NULL);
 
   /* Def column */
   if(hg->show_def){
@@ -1458,6 +1478,10 @@ add_columns (typHOE *hg,
 					    NULL);
     gtk_tree_view_column_set_sort_column_id(column,COLUMN_OBJ_DEF);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    name_cell_data_func,
+					    (gpointer)hg,
+					    NULL);
   }
 
   /* Name column */

@@ -6125,7 +6125,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     gchar *tmp_char;
 
     for(i=0;i<MAX_ROPE;i++){
-      tmp_char=g_strdup_printf("   Ope [%d]",i);
+      tmp_char=g_strdup_printf("   Ope [%d]",i+1);
 
       label = gtk_label_new (tmp_char);
       gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
@@ -6720,8 +6720,9 @@ void param_init(typHOE *hg){
 
     hg->obj[i].x=-1;
     hg->obj[i].y=-1;
+    hg->obj[i].ope=0;
+    hg->obj[i].ope_i=0;
   }
-
   hg->azel_mode=AZEL_NORMAL;
 
 #ifdef USE_SKYMON
@@ -7128,6 +7129,7 @@ void ReadList(typHOE *hg, gint ope_max){
       hg->obj[i_list].check_used=TRUE;
       hg->obj[i_list].check_std=FALSE;
       hg->obj[i_list].ope=hg->ope_max;
+      hg->obj[i_list].ope_i=i_list;
 
       i_list++;
     }
@@ -7356,6 +7358,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  hg->obj[i_list].check_used=FALSE;
 	  hg->obj[i_list].check_std=FALSE;
 	  hg->obj[i_list].ope=hg->ope_max;
+	  hg->obj[i_list].ope_i=i_list;
 	  
 	  if(ok_obj && ok_ra && ok_dec && ok_epoch){
 	    if(!ObjOverlap(hg,i_list)){
@@ -7611,6 +7614,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
   gint prm_place;
   gchar *tmp_name=NULL;
   gboolean new_fmt_flag=FALSE;
+  gint ope_zero=0;
 
   if((fp=fopen(hg->filename_ope,"r"))==NULL){
 #ifdef GTK_MSG
@@ -7625,10 +7629,11 @@ void MergeListOPE(typHOE *hg, gint ope_max){
     printf_log(hg,"[MergeOPE] File Read Error \"%s\".",hg->filename_ope);
     return;
   }
-  
+
   printf_log(hg,"[MergeOPE] Opening %s.",hg->filename_ope);
 
   i_list=hg->i_max;
+  ope_zero=hg->i_max-1;
   hg->ope_max=ope_max;
 
   while(!feof(fp)){
@@ -7807,6 +7812,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  hg->obj[i_list].check_used=FALSE;
 	  hg->obj[i_list].check_std=FALSE;
 	  hg->obj[i_list].ope=hg->ope_max;
+	  hg->obj[i_list].ope_i=i_list-ope_zero-1;
 	  
 	  if(ok_obj && ok_ra && ok_dec && ok_epoch){
 	    if(!ObjOverlap(hg,i_list)){
@@ -7833,6 +7839,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 
     if(escape) break;
   }
+  
 
   hg->i_max=i_list;
 
@@ -8047,7 +8054,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 }
 
 
-void MergeListPRM(typHOE *hg, gint ope_max){
+void MergeListPRM(typHOE *hg){
   FILE *fp;
   int i_list=0;
   gchar *tmp_char;
@@ -8076,7 +8083,7 @@ void MergeListPRM(typHOE *hg, gint ope_max){
   }
   
   printf_log(hg,"[MergePRM] Opening %s.",hg->filename_prm);
-  hg->ope_max=ope_max;
+  //hg->ope_max=ope_max;
 
   i0=hg->i_max;
 
@@ -8218,6 +8225,7 @@ void MergeListPRM(typHOE *hg, gint ope_max){
 	    hg->obj[hg->i_max].check_used=FALSE;
 	    hg->obj[hg->i_max].check_std=TRUE;
 	    hg->obj[hg->i_max].ope=MAX_ROPE-1;
+	    hg->obj[hg->i_max].ope_i=hg->i_max-i0;
 
 	    hg->i_max++;
 	    if(hg->i_max==MAX_OBJECT-1){
@@ -8425,6 +8433,7 @@ void MergeListPRM2(typHOE *hg){
 		  hg->obj[hg->i_max].check_std=FALSE;
 		}
 		hg->obj[hg->i_max].ope=MAX_ROPE-1;
+		hg->obj[hg->i_max].ope_i=hg->i_max-i0;
 
 		hg->i_max++;
 		if(hg->i_max==MAX_OBJECT-1){
@@ -8835,6 +8844,7 @@ void MergeList(typHOE *hg, gint ope_max){
 	tmp_obj.check_used=TRUE;
 	tmp_obj.check_std=FALSE;
 	tmp_obj.ope=hg->ope_max;
+	tmp_obj.ope_i=i_list-i_base;
 
   
 	hg->obj[hg->i_max]=tmp_obj;

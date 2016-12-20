@@ -3,9 +3,9 @@
 #                         Document file                                  
 #                                                                         
 #                                                                         
-#                                  ver 2.7.7    2016/02/23                 
+#                                  ver 2.7.8    2016/12/20                 
 #                               Copyright (C) 2003-16 Akito Tajitsu       
-#                                           tajitsu@subaru.naoj.org       
+#                                                  tajitsu@naoj.org       
 #########################################################################
 
 
@@ -20,7 +20,10 @@
 HDS Wiki (パスワードあり)
     http://hds.skr.jp/wiki/
 にて最新版をダウンロード可能です。
-  
+
+最新版sourceはGitHubからもダウンロードできます。ターミナルから  
+  git clone https://github.com/chimari/hskymon.git
+のコマンドで最新版のクローンをお使いの環境に作成します。
 
 
 ▼環境

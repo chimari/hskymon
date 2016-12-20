@@ -3,9 +3,9 @@
 #                         Document file                                  
 #                                                                         
 #                                                                         
-#                                  ver 2.7.7   2016/02/23                  
+#                                  ver 2.7.8   2016/12/20                  
 #                               Copyright (C) 2003-16 Akito Tajitsu       
-#                                           tajitsu@subaru.naoj.org       
+#                                                  tajitsu@naoj.org       
 #########################################################################
 
 
@@ -22,6 +22,10 @@ files for SOSs or CSV text lists.
 The latest version of hskymon is avairable on "HDS wiki"
     http://hds.skr.jp/wiki/  .
 (But, you need to input password for this page.)  
+
+The latest version can be also downloaded from GitHub, using
+  git clone https://github.com/chimari/hskymon.git
+in your terminal.
 
 
 *** Environment

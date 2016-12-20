@@ -1,3 +1,7 @@
+2016.12.20 ver2.7.8 - Object number display in Object List is changed into
+	                  "X-YY" X=OPE number,  YY=Obj. number in OPE
+	            - Bug fix on MergeListPRM.
+
 2016.02.23 ver2.7.7 - Added "Def in OPE" in the treeview of Obj. List.
 	              (Default is OFF; So, please turn ON in Profiles window.)
 

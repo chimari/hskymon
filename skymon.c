@@ -172,30 +172,6 @@ void create_skymon_dialog(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(hbox), hg->skymon_frame_mode, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_frame_mode), 3);
 
-
-  /*
-  check = gtk_radio_button_new_with_label(group,"Current");
-  group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(check));
-  gtk_box_pack_start(GTK_BOX(hbox1), check, FALSE, FALSE, 5);
-  my_signal_connect (check, "toggled", cc_skymon_mode_false, (gpointer)hg);
-  if(!hg->skymon_mode){
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),TRUE);
-  }
-  else{
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),FALSE);
-  }
-
-  check = gtk_radio_button_new_with_label(group,"Set");
-  group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(check));
-  gtk_box_pack_start(GTK_BOX(hbox1), check, FALSE, FALSE, 5);
-  my_signal_connect (check, "toggled", cc_skymon_mode_true, (gpointer)hg);
-  if(hg->skymon_mode){
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),TRUE);
-  }
-  else{
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),FALSE);
-  }
-  */
   {
     GtkWidget *combo;
     GtkListStore *store;
@@ -243,9 +219,6 @@ void create_skymon_dialog(typHOE *hg)
   gtk_container_add (GTK_CONTAINER (hg->skymon_frame_date), hbox1);
 
   skymon_set_time_current(hg);
-  //hg->skymon_year=hg->fr_year;
-  //hg->skymon_month=hg->fr_month;
-  //hg->skymon_day=hg->fr_day;
 
   hg->skymon_adj_year = (GtkAdjustment *)gtk_adjustment_new(hg->skymon_year,
 							    hg->skymon_year-10, 
@@ -1878,7 +1851,6 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
     }
     
     
-
     // Object
     cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_NORMAL);
@@ -1908,12 +1880,6 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 			   hg->obj[i_list].check_lock,
 			   hg->col[hg->obj[i_list].ope],
 			   &hg->obj[i_list].x,&hg->obj[i_list].y);
-	  /* my_cairo_object2(cr,width,height,
-			   hg->obj[i_list].s_az,hg->obj[i_list].s_el,
-			   hg->obj[i_list].name, hg->obj[i_list].check_sm,
-			   hg->obj[i_list].check_lock,
-			   hg->col[hg->obj[i_list].ope],
-			   &hg->obj[i_list].x,&hg->obj[i_list].y);*/
 	}
 	else{
 	  hg->obj[i_list].x=-1;
@@ -1984,7 +1950,6 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
       }
     }
   }
-
 
   cairo_destroy(cr);
 
