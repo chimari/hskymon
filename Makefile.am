@@ -1,7 +1,7 @@
 bin_PROGRAMS    = hskymon
 SUBDIRS = . libnova
 hskymon_SOURCES   =\
-	 main.c calcpa.c fc.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.c remoteObjects.h configfile.h hskymon_icon.h google_icon.h
+	 main.c calcpa.c fc.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.c votable.c votable.h remoteObjects.h configfile.h hskymon_icon.h google_icon.h
 
 
 CLEANFILES      = *~
@@ -36,8 +36,8 @@ EXTRA_DIST = autogen.sh\
              ar_d2.xpm\
              ar_d3.xpm
 
-INCLUDES        = @GTK_CFLAGS@ $(XMLRPC_CFLAGS) $(DISABLE_DEPRECATED)
-LDADD           = @GTK_LIBS@ $(WINMM_LIBS) $(WINSOCK_LIBS) $(XMLRPC_LIBS) $(HSKYMON_RES)
+INCLUDES        = @GTK_CFLAGS@ $(XMLRPC_CFLAGS) $(XML_CPPFLAGS) $(DISABLE_DEPRECATED)
+LDADD           = @GTK_LIBS@ $(WINMM_LIBS) $(WINSOCK_LIBS) $(XMLRPC_LIBS) $(XML_LIBS) $(HSKYMON_RES)
 
 
 GZIP_ENV =

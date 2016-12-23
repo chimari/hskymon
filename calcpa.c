@@ -3623,37 +3623,44 @@ void calcpa2_main(typHOE* hg){
       }
 
       hg->obj[i_list].check_lock=FALSE;
-
-      /*
-      if(hg->auto_check_lock){
-	if(hg->telstat_flag){
-	  if (fabs((hg->obj[i_list].c_az+hg->pa_a0) - hg->stat_az_check)<5.0 
-	      && fabs((hg->obj[i_list].c_el+hg->pa_a1) - hg->stat_el_cmd)<5.0 ) {
-	    double d_lambda, d_phi;
-	    double d_x, d_y, L;
-	    
-	    d_lambda = ((hg->obj[i_list].c_az + hg->pa_a0)
-			- hg->stat_az_check)*M_PI/180;
-	    d_phi    = ((hg->obj[i_list].c_el + hg->pa_a1)
-			- hg->stat_el_cmd)*M_PI/180;
-	    d_x = d_lambda * cos (hg->stat_el_cmd*M_PI/180);
-	    d_y    = d_phi;
-	    L = sqrt(d_x*d_x + d_y*d_y)/M_PI*180 ; //degree
-	    
-	    if(L<0.5){  //within 30arcmin
-	      hg->obj[i_list].check_lock=TRUE;
-	    }
-	    else{
-	      hg->obj[i_list].check_lock=FALSE;
-	    }
-	  }
-	  else{
-	    hg->obj[i_list].check_lock=FALSE;
-	  }
-	}
-      }
-	  */
 #endif      
+    }
+  }
+
+  for(i_list=0;i_list<hg->std_i_max;i_list++){
+    hobject.ra.hours = (int)(hg->std[i_list].ra/10000);
+    hobject.ra.minutes = (int)((hg->std[i_list].ra - (double)(hobject.ra.hours*10000))/100);
+    hobject.ra.seconds = hg->std[i_list].ra - (double)(hobject.ra.hours*10000) 
+      - (double)(hobject.ra.minutes*100);
+    if(hg->std[i_list].dec<0){
+      objd=-hg->std[i_list].dec;
+      hobject.dec.neg = 1;
+    }
+    else{
+      objd=hg->std[i_list].dec;
+      hobject.dec.neg = 0;
+    }
+    hobject.dec.degrees = (int)(objd/10000);
+    hobject.dec.minutes = (int)((objd - (double)(hobject.dec.degrees*10000))/100);
+    hobject.dec.seconds = objd - (double)(hobject.dec.degrees*10000) 
+      - (double)(hobject.dec.minutes*100);
+
+    ln_hequ_to_equ (&hobject, &object);
+    ln_get_equ_prec2 (&object, get_julian_day_of_epoch(hg->std[i_list].epoch),
+		      JD, &object_prec);
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    ln_get_hrz_from_equ (&object_prec, &observer, JD, &hrz);
+
+    hg->std[i_list].c_elmax=90.0-(object_prec.dec-hg->obs_latitude);
+    
+    if(hrz.alt<0.0){
+      hg->std[i_list].c_az=-1;
+      hg->std[i_list].c_el=-1;
+    }
+    else{
+      if(hrz.az>180) hrz.az-=360;
+      hg->std[i_list].c_az=hrz.az;
+      hg->std[i_list].c_el=hrz.alt;
     }
   }
 
@@ -4093,6 +4100,43 @@ void calcpa2_skymon(typHOE* hg){
       hg->obj[i_list].s_vhpa=hdspa_deg(phi*M_PI/180.,d0rad,ha1rad_1)
 	-hg->obj[i_list].s_hpa;
       hg->obj[i_list].s_vhpa=set_ul(-180.,hg->obj[i_list].s_vhpa,180.);
+    }
+  }
+
+  for(i_list=0;i_list<hg->std_i_max;i_list++){
+    hobject.ra.hours = (int)(hg->std[i_list].ra/10000);
+    hobject.ra.minutes = (int)((hg->std[i_list].ra - (double)(hobject.ra.hours*10000))/100);
+    hobject.ra.seconds = hg->std[i_list].ra - (double)(hobject.ra.hours*10000) 
+      - (double)(hobject.ra.minutes*100);
+    if(hg->std[i_list].dec<0){
+      objd=-hg->std[i_list].dec;
+      hobject.dec.neg = 1;
+    }
+    else{
+      objd=hg->std[i_list].dec;
+      hobject.dec.neg = 0;
+    }
+    hobject.dec.degrees = (int)(objd/10000);
+    hobject.dec.minutes = (int)((objd - (double)(hobject.dec.degrees*10000))/100);
+    hobject.dec.seconds = objd - (double)(hobject.dec.degrees*10000) 
+      - (double)(hobject.dec.minutes*100);
+
+    ln_hequ_to_equ (&hobject, &object);
+    ln_get_equ_prec2 (&object, get_julian_day_of_epoch(hg->std[i_list].epoch),
+		      JD, &object_prec);
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    ln_get_hrz_from_equ (&object_prec, &observer, JD, &hrz);
+
+    hg->std[i_list].s_elmax=90.0-(object_prec.dec-hg->obs_latitude);
+    
+    if(hrz.alt<0.0){
+      hg->std[i_list].s_az=-1;
+      hg->std[i_list].s_el=-1;
+    }
+    else{
+      if(hrz.az>180) hrz.az-=360;
+      hg->std[i_list].s_az=hrz.az;
+      hg->std[i_list].s_el=hrz.alt;
     }
   }
 

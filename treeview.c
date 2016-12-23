@@ -12,13 +12,28 @@
 #include "ar_d3.xpm"
 
 static GtkWidget *window = NULL;
+static GtkWidget *std_window = NULL;
 void tree_update_azel_item();
+void std_tree_update_azel_item();
 void make_tree();
+void std_make_tree();
 void tree_store_update(); 
 gint tree_update_azel ();
+gint std_tree_update_azel ();
 void close_tree2();
+void std_close_tree2();
 void close_tree();
+void std_close_tree();
 void remake_tree();
+void std_remake_tree();
+
+static void stddb_item ();
+void stddb_dl();
+#ifndef USE_WIN32
+void stddb_signal();
+static void cancel_stddb();
+#endif
+static gboolean progress_timeout();
 
 #ifdef USE_XMLRPC
 GdkColor col_lock={0,0xFFFF,0xC000,0xC000};
@@ -46,6 +61,7 @@ extern void cc_get_toggle();
 extern gboolean flagSkymon;
 #endif
 extern gboolean flagTree;
+extern gboolean flagStdTree;
 extern gboolean flagPlot;
 extern gboolean flagADC;
 
@@ -61,7 +77,15 @@ extern double get_julian_day_of_epoch();
 
 extern gboolean is_separator();
 
+extern int get_stddb();
+
+extern void stddb_vo_parse();
+extern void create_std_para_dialog();
+
+extern pid_t stddb_pid;
+
 gboolean Flag_tree_editing=FALSE;
+gboolean flagSTD=FALSE, flag_getSTD=FALSE;
 
 GdkPixbuf *pix_u0=NULL, 
   *pix_u1=NULL, 
@@ -314,6 +338,56 @@ void double_cell_data_func(GtkTreeViewColumn *col ,
 
   case COLUMN_OBJ_EPOCH:
     str=g_strdup_printf("%7.2lf",value);
+    break;
+  }
+
+  g_object_set(renderer, "text", str, NULL);
+  if(str)g_free(str);
+}
+
+
+void std_double_cell_data_func(GtkTreeViewColumn *col , 
+			       GtkCellRenderer *renderer,
+			       GtkTreeModel *model, 
+			       GtkTreeIter *iter,
+			       gpointer user_data)
+{
+  const guint index = GPOINTER_TO_UINT(user_data);
+  guint64 size;
+  gdouble value;
+  gchar *str;
+
+  gtk_tree_model_get (model, iter, 
+		      index, &value,
+		      -1);
+
+  switch (index) {
+  case COLUMN_STD_RA:
+    str=g_strdup_printf("%09.2lf",value);
+    break;
+
+  case COLUMN_STD_DEC:
+    str=g_strdup_printf("%+010.2lf",value);
+    break;
+
+  case COLUMN_STD_SEP:
+    str=g_strdup_printf("%.1lf",value);
+    break;
+
+  case COLUMN_STD_ROT:
+    if(value<0) str=g_strdup_printf("---");
+    else str=g_strdup_printf("%4.0lf",value);
+    break;
+  case COLUMN_STD_U:
+  case COLUMN_STD_B:
+  case COLUMN_STD_V:
+  case COLUMN_STD_R:
+  case COLUMN_STD_I:
+  case COLUMN_STD_J:
+  case COLUMN_STD_H:
+  case COLUMN_STD_K:
+    if(value>99) str=g_strdup_printf("---");
+    else str=g_strdup_printf("%5.2lf",value);
     break;
   }
 
@@ -638,6 +712,74 @@ void tree_update_azel_item(typHOE *hg,
  
 }
 
+
+void std_tree_update_azel_item(typHOE *hg, 
+			       GtkTreeModel *model, 
+			       GtkTreeIter iter, 
+			       gint i_list)
+{
+  gchar tmp[24];
+  gint i;
+  gdouble s_rt=-1;
+
+  // Num/Name
+  gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+		      COLUMN_STD_NUMBER,
+		      i_list+1,
+		      -1);
+  gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+		      COLUMN_STD_NAME,
+		      hg->std[i_list].name,
+		      -1);
+
+  // RA
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_STD_RA, hg->std[i_list].ra, -1);
+  
+  // DEC
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_STD_DEC, hg->std[i_list].dec, -1);
+
+  // SpType
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_STD_SP, hg->std[i_list].sp, -1);
+
+  // Rot
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_STD_SEP, hg->std[i_list].sep, -1);
+
+  // Rot
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_STD_ROT, hg->std[i_list].rot, -1);
+
+  // UBVRIJHK
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_STD_U, hg->std[i_list].u,
+		     COLUMN_STD_B, hg->std[i_list].b,
+		     COLUMN_STD_V, hg->std[i_list].v,
+		     COLUMN_STD_R, hg->std[i_list].r,
+		     COLUMN_STD_I, hg->std[i_list].i,
+		     COLUMN_STD_J, hg->std[i_list].j,
+		     COLUMN_STD_H, hg->std[i_list].h,
+		     COLUMN_STD_K, hg->std[i_list].k,
+		     -1);
+  // IRAS
+  sprintf(tmp, "%s%s", hg->std[i_list].f12,hg->std[i_list].q12);
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_STD_F12, tmp, -1);
+  sprintf(tmp, "%s%s", hg->std[i_list].f25,hg->std[i_list].q25);
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_STD_F25, tmp, -1);
+  sprintf(tmp, "%s%s", hg->std[i_list].f60,hg->std[i_list].q60);
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_STD_F60, tmp, -1);
+  sprintf(tmp, "%s%s", hg->std[i_list].f100,hg->std[i_list].q100);
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_STD_F100, tmp, -1);
+  
+}
+
+
 gint tree_update_azel (gpointer gdata)
 {
   int i_list;
@@ -702,6 +844,43 @@ create_items_model (typHOE *hg)
   for (i = 0; i < hg->i_max; i++){
     gtk_list_store_append (model, &iter);
     tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
+  }
+
+  return GTK_TREE_MODEL (model);
+}
+
+static GtkTreeModel *
+std_create_items_model (typHOE *hg)
+{
+  gint i = 0;
+  GtkListStore *model;
+  GtkTreeIter iter;
+
+  /* create list store */
+  model = gtk_list_store_new (COLUMN_STD_F100+1, 
+			      G_TYPE_INT,     // number
+			      G_TYPE_STRING,  // name
+                              G_TYPE_DOUBLE,  // ra
+			      G_TYPE_DOUBLE,  // dec
+			      G_TYPE_STRING,  // Sp_Type
+			      G_TYPE_DOUBLE,  // Sep
+			      G_TYPE_DOUBLE,  // V_sini
+			      G_TYPE_DOUBLE,  // U
+			      G_TYPE_DOUBLE,  // B
+			      G_TYPE_DOUBLE,  // V
+			      G_TYPE_DOUBLE,  // R
+			      G_TYPE_DOUBLE,  // I
+			      G_TYPE_DOUBLE,  // J
+			      G_TYPE_DOUBLE,  // H
+			      G_TYPE_DOUBLE,  // K
+			      G_TYPE_STRING,  // IRAS F12
+			      G_TYPE_STRING,  // IRAS F25
+			      G_TYPE_STRING,  // IRAS F60
+			      G_TYPE_STRING); // IRAS F100
+
+  for (i = 0; i < hg->std_i_max; i++){
+    gtk_list_store_append (model, &iter);
+    std_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
   }
 
   return GTK_TREE_MODEL (model);
@@ -1146,6 +1325,236 @@ wwwdb_item (GtkWidget *widget, gpointer data)
   }
 }
 
+static void
+std_simbad (GtkWidget *widget, gpointer data)
+{
+  gchar tmp[2048];
+#ifndef USE_WIN32
+  gchar *cmdline;
+#endif
+  typHOE *hg = (typHOE *)data;
+
+  sprintf(tmp,STD_SIMBAD_URL, 
+	  hg->std[hg->std_tree_focus].d_ra,hg->std[hg->std_tree_focus].d_dec);
+
+#ifdef USE_WIN32
+  ShellExecute(NULL, 
+	       "open", 
+	       tmp,
+	       NULL, 
+	       NULL, 
+	       SW_SHOWNORMAL);
+#elif defined(USE_OSX)
+  if(system(tmp)==0){
+    fprintf(stderr, "Error: Could not open the default www browser.");
+  }
+#else
+  cmdline=g_strconcat(hg->www_com," ",tmp,NULL);
+  
+  ext_play(cmdline);
+  g_free(cmdline);
+#endif
+}
+
+
+static void
+stddb_item (GtkWidget *widget, gpointer data)
+{
+  GtkTreeIter iter;
+  gdouble ra_0, dec_0;
+  gchar tmp[2048];
+#ifndef USE_WIN32
+  gchar *cmdline;
+#endif
+  typHOE *hg = (typHOE *)data;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->tree));
+
+  struct lnh_equ_posn hobject;
+  struct ln_equ_posn object;
+  struct lnh_equ_posn hobject_prec;
+  struct ln_equ_posn object_prec;
+
+
+  if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
+    gint i, i_list;
+    GtkTreePath *path;
+    
+    path = gtk_tree_model_get_path (model, &iter);
+    gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
+    i--;
+
+    hg->std_i=i;
+
+    ra_0=hg->obj[i].ra;
+    hobject.ra.hours=(gint)(ra_0/10000);
+    ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
+    hobject.ra.minutes=(gint)(ra_0/100);
+    hobject.ra.seconds=ra_0-(gdouble)(hobject.ra.minutes)*100;
+
+    if(hg->obj[i].dec<0){
+      hobject.dec.neg=1;
+      dec_0=-hg->obj[i].dec;
+    }
+    else{
+      hobject.dec.neg=0;
+      dec_0=hg->obj[i].dec;
+    }
+    hobject.dec.degrees=(gint)(dec_0/10000);
+    dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
+    hobject.dec.minutes=(gint)(dec_0/100);
+    hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
+
+    ln_hequ_to_equ (&hobject, &object);
+    ln_get_equ_prec2 (&object, 
+		      get_julian_day_of_epoch(hg->obj[i].epoch),
+		      JD2000, &object_prec);
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+
+    switch(hg->stddb_mode){
+    case STDDB_SSLOC:
+      if(hg->std_host) g_free(hg->std_host);
+      hg->std_host=g_strdup(STDDB_HOST_SIMBAD);
+      if(hg->std_file) g_free(hg->std_file);
+      hg->std_file=g_strconcat(hg->temp_dir,
+			       G_DIR_SEPARATOR_S,
+			       STDDB_FILE_XML,NULL);
+      if(hg->std_path) g_free(hg->std_path);
+      if((ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra)<0){
+	hg->std_path=g_strdup_printf
+	  (STDDB_PATH_SSLOC,
+	   hg->std_cat,
+	   ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra+360,
+	   "%7c",
+	   ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
+	   ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+	   ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+	   hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
+	   hg->std_sptype2);
+      }
+      else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
+	hg->std_path=g_strdup_printf
+	  (STDDB_PATH_SSLOC,
+	   hg->std_cat,
+	   ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
+	   "%7c",
+	   ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
+	   ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+	   ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+	   hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
+	   hg->std_sptype2);
+      }
+      else{
+	hg->std_path=g_strdup_printf
+	  (STDDB_PATH_SSLOC,
+	   hg->std_cat,
+	   ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
+	   "%26",
+	   ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
+	   ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+	   ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+	   hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
+	   hg->std_sptype2);
+      }
+      break;
+    case STDDB_RAPID:
+      if(hg->std_host) g_free(hg->std_host);
+      hg->std_host=g_strdup(STDDB_HOST_SIMBAD);
+      if(hg->std_file) g_free(hg->std_file);
+      hg->std_file=g_strconcat(hg->temp_dir,
+			       G_DIR_SEPARATOR_S,
+			       STDDB_FILE_XML,NULL);
+      if(hg->std_path) g_free(hg->std_path);
+      if((ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra)<0){
+	hg->std_path=g_strdup_printf
+	  (STDDB_PATH_RAPID,
+	   ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra+360,
+	   "%7c",
+	   ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
+	   ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+	   ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+	   hg->std_vsini,hg->std_vmag,hg->std_sptype);
+      }
+      else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
+	hg->std_path=g_strdup_printf
+	  (STDDB_PATH_RAPID,
+	   ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
+	   "%7c",
+	   ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
+	   ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+	   ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+	   hg->std_vsini,hg->std_vmag,hg->std_sptype);
+      }
+      else{
+	hg->std_path=g_strdup_printf
+	  (STDDB_PATH_RAPID,
+	   ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
+	   "%26",
+	   ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
+	   ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+	   ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+	   hg->std_vsini,hg->std_vmag,hg->std_sptype);
+      }
+      break;
+    case STDDB_MIRSTD:
+      if(hg->std_host) g_free(hg->std_host);
+      hg->std_host=g_strdup(STDDB_HOST_SIMBAD);
+      if(hg->std_file) g_free(hg->std_file);
+      hg->std_file=g_strconcat(hg->temp_dir,
+			       G_DIR_SEPARATOR_S,
+			       STDDB_FILE_XML,NULL);
+      if(hg->std_path) g_free(hg->std_path);
+     if((ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra)<0){
+       hg->std_path=g_strdup_printf
+	 (STDDB_PATH_MIRSTD,
+	  ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra+360,
+	  "%7c",
+	  ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
+	  ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+	  ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+	  hg->std_iras12,hg->std_iras25);
+      }
+      else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
+       hg->std_path=g_strdup_printf
+	 (STDDB_PATH_MIRSTD,
+	  ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
+	  "%7c",
+	  ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
+	  ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+	  ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+	  hg->std_iras12,hg->std_iras25);
+      }
+      else{
+       hg->std_path=g_strdup_printf
+	 (STDDB_PATH_MIRSTD,
+	  ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
+	  "%26",
+	  ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
+	  ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+	  ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+	  hg->std_iras12,hg->std_iras25);
+      }
+      break;
+    }
+
+    gtk_tree_path_free (path);
+
+    stddb_dl(hg);
+
+    stddb_vo_parse(hg);
+
+    calcpa2_main(hg);
+
+    if(!flagStdTree) std_make_tree(NULL, hg);
+    else std_remake_tree(hg);
+
+    if(flagSkymon){
+      draw_skymon(hg->skymon_dw,hg, FALSE);
+    }
+
+  }
+}
+
 
 
 static void
@@ -1270,6 +1679,35 @@ focus_item (GtkWidget *widget, gpointer data)
     draw_adc_cairo(hg->adc_dw,NULL,
 		   (gpointer)hg);
   }
+}
+
+
+static void
+std_focus_item (GtkWidget *widget, gpointer data)
+{
+  GtkTreeIter iter;
+  typHOE *hg = (typHOE *)data;
+  GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW(hg->std_tree));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->std_tree));
+
+  if (gtk_tree_selection_get_selected (selection, NULL, &iter))
+    {
+      gint i;
+      GtkTreePath *path;
+      
+      path = gtk_tree_model_get_path (model, &iter);
+      gtk_tree_model_get (model, &iter, COLUMN_STD_NUMBER, &i, -1);
+      i--;
+      hg->std_tree_focus=i;
+      
+      gtk_tree_path_free (path);
+      
+#ifdef USE_SKYMON
+      if(flagSkymon){
+	draw_skymon(hg->skymon_dw,hg, FALSE);
+      }
+#endif
+    }
 }
 
 
@@ -1791,6 +2229,281 @@ add_columns (typHOE *hg,
 
 }
 
+
+static void
+std_add_columns (typHOE *hg,
+		 GtkTreeView  *treeview, 
+		 GtkTreeModel *items_model)
+{
+  GtkCellRenderer *renderer;
+  GtkTreeViewColumn *column;  
+
+  /* Name column */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+  		     GINT_TO_POINTER (COLUMN_STD_NAME));
+  column=gtk_tree_view_column_new_with_attributes ("Name",
+						   renderer,
+						   "text", 
+						   COLUMN_STD_NAME,
+						   NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_NAME);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* RA column */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_RA));
+  column=gtk_tree_view_column_new_with_attributes ("RA",
+						   renderer,
+						   "text",
+						   COLUMN_STD_RA,
+						   NULL); 
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  std_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_STD_RA),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_RA);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* Dec column */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_DEC));
+  column=gtk_tree_view_column_new_with_attributes ("Dec",
+						   renderer,
+						   "text",
+						   COLUMN_STD_DEC,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  std_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_STD_DEC),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_DEC);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* Sp Type */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_SP));
+  column=gtk_tree_view_column_new_with_attributes ("Sp.",
+						   renderer,
+						   "text",
+						   COLUMN_STD_SP,
+						   NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_SP);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* Separation */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_SEP));
+  column=gtk_tree_view_column_new_with_attributes ("Dist.",
+						   renderer,
+						   "text",
+						   COLUMN_STD_SEP,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  std_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_STD_SEP),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_SEP);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* V sini */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_ROT));
+  column=gtk_tree_view_column_new_with_attributes ("V sin(i)",
+						   renderer,
+						   "text",
+						   COLUMN_STD_ROT,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  std_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_STD_ROT),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_ROT);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* U */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_U));
+  column=gtk_tree_view_column_new_with_attributes ("U",
+						   renderer,
+						   "text",
+						   COLUMN_STD_U,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  std_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_STD_U),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_U);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* B */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_B));
+  column=gtk_tree_view_column_new_with_attributes ("B",
+						   renderer,
+						   "text",
+						   COLUMN_STD_B,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  std_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_STD_B),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_B);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* V */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_V));
+  column=gtk_tree_view_column_new_with_attributes ("V",
+						   renderer,
+						   "text",
+						   COLUMN_STD_V,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  std_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_STD_V),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_V);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* R */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_R));
+  column=gtk_tree_view_column_new_with_attributes ("R",
+						   renderer,
+						   "text",
+						   COLUMN_STD_R,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  std_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_STD_R),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_R);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* I */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_I));
+  column=gtk_tree_view_column_new_with_attributes ("I",
+						   renderer,
+						   "text",
+						   COLUMN_STD_I,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  std_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_STD_I),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_I);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* J */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_J));
+  column=gtk_tree_view_column_new_with_attributes ("J",
+						   renderer,
+						   "text",
+						   COLUMN_STD_J,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  std_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_STD_J),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_J);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* H */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_H));
+  column=gtk_tree_view_column_new_with_attributes ("H",
+						   renderer,
+						   "text",
+						   COLUMN_STD_H,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  std_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_STD_H),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_H);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* K */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_K));
+  column=gtk_tree_view_column_new_with_attributes ("K",
+						   renderer,
+						   "text",
+						   COLUMN_STD_K,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  std_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_STD_K),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_K);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* F12 */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_F12));
+  column=gtk_tree_view_column_new_with_attributes ("F12",
+						   renderer,
+						   "text",
+						   COLUMN_STD_F12,
+						   NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_F12);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* F25 */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_F25));
+  column=gtk_tree_view_column_new_with_attributes ("F12",
+						   renderer,
+						   "text",
+						   COLUMN_STD_F25,
+						   NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_F25);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* F60 */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_F60));
+  column=gtk_tree_view_column_new_with_attributes ("F60",
+						   renderer,
+						   "text",
+						   COLUMN_STD_F60,
+						   NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_F60);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* F100 */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_STD_F100));
+  column=gtk_tree_view_column_new_with_attributes ("F100",
+						   renderer,
+						   "text",
+						   COLUMN_STD_F100,
+						   NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_STD_F100);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+}
+
 GtkWidget *
 do_editable_cells (typHOE *hg)
 {
@@ -1933,6 +2646,62 @@ do_editable_cells (typHOE *hg)
                         G_CALLBACK (down_item), (gpointer)hg);
       gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
+
+      label = gtk_label_new ("   AzEl");
+      gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
+
+      {
+	GtkListStore *store;
+	GtkTreeIter iter, iter_set;	  
+	GtkCellRenderer *renderer;
+	
+	store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+	
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, "Normal",
+			   1, AZEL_NORMAL, -1);
+	if(hg->azel_mode==AZEL_NORMAL) iter_set=iter;
+	
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, "+270",
+			   1, AZEL_POSI, -1);
+	if(hg->azel_mode==AZEL_POSI) iter_set=iter;
+	
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, "-270",
+			   1, AZEL_NEGA, -1);
+	if(hg->azel_mode==AZEL_NEGA) iter_set=iter;
+	
+	
+	combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+	gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
+	g_object_unref(store);
+	
+	renderer = gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+	
+	
+	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+	gtk_widget_show(combo);
+	my_signal_connect (combo,"changed",cc_get_combo_box,
+			   &hg->azel_mode);
+      }
+
+#ifdef __GTK_STOCK_H__
+      button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
+#else
+      button = gtk_button_new_with_label ("Refresh");
+#endif
+      g_signal_connect (button, "clicked",
+                        G_CALLBACK (refresh_item), (gpointer)hg);
+      gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+
+      
+      g_signal_connect (hg->tree, "cursor-changed",
+                        G_CALLBACK (focus_item), (gpointer)hg);
+      
+
       hbox = gtk_hbox_new (FALSE, 4);
       gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
@@ -2034,20 +2803,19 @@ do_editable_cells (typHOE *hg)
 	gtk_widget_show(combo);
 	my_signal_connect (combo,"changed",cc_get_combo_box,
 			   &hg->wwwdb_mode);
+
+#ifdef __GTK_STOCK_H__
+	button=gtkut_button_new_from_stock("Go",GTK_STOCK_FIND);
+#else
+	button = gtk_button_new_with_label ("Go");
+#endif
+	gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+	my_signal_connect (button, "clicked",
+			   G_CALLBACK (wwwdb_item), (gpointer)hg);
+      
       }
 
-      
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("Go",GTK_STOCK_FIND);
-#else
-      button = gtk_button_new_with_label ("Go");
-#endif
-      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
-      my_signal_connect (button, "clicked",
-			 G_CALLBACK (wwwdb_item), (gpointer)hg);
-      
-
-      label = gtk_label_new ("   AzEl");
+      label = gtk_label_new ("   Standard");
       gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
 
       {
@@ -2055,23 +2823,23 @@ do_editable_cells (typHOE *hg)
 	GtkTreeIter iter, iter_set;	  
 	GtkCellRenderer *renderer;
 	
-	store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+	store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, 
+				   G_TYPE_BOOLEAN);
 	
 	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "Normal",
-			   1, AZEL_NORMAL, -1);
-	if(hg->azel_mode==AZEL_NORMAL) iter_set=iter;
+	gtk_list_store_set(store, &iter, 0, "Standard Locator",
+			   1, STDDB_SSLOC, 2, TRUE, -1);
+	if(hg->stddb_mode==STDDB_SSLOC) iter_set=iter;
 	
 	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "+270",
-			   1, AZEL_POSI, -1);
-	if(hg->azel_mode==AZEL_POSI) iter_set=iter;
+	gtk_list_store_set(store, &iter, 0, "Rapid Rotator",
+			   1, STDDB_RAPID, 2, TRUE, -1);
+	if(hg->stddb_mode==STDDB_RAPID) iter_set=iter;
 	
 	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "-270",
-			   1, AZEL_NEGA, -1);
-	if(hg->azel_mode==AZEL_NEGA) iter_set=iter;
-	
+	gtk_list_store_set(store, &iter, 0, "Mid-IR Standard",
+			   1, STDDB_MIRSTD, 2, TRUE, -1);
+	if(hg->stddb_mode==STDDB_MIRSTD) iter_set=iter;
 	
 	combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 	gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
@@ -2081,26 +2849,24 @@ do_editable_cells (typHOE *hg)
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
 	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
 	
+	gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (combo), 
+					      is_separator, NULL, NULL);	
 	
 	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
 	gtk_widget_show(combo);
 	my_signal_connect (combo,"changed",cc_get_combo_box,
-			   &hg->azel_mode);
+			   &hg->stddb_mode);
       }
-
-
+      
+      
 #ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
+      button=gtkut_button_new_from_stock("Search",GTK_STOCK_FIND);
 #else
-      button = gtk_button_new_with_label ("Refresh");
+      button = gtk_button_new_with_label ("Search");
 #endif
-      g_signal_connect (button, "clicked",
-                        G_CALLBACK (refresh_item), (gpointer)hg);
-      gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
-
-
-      g_signal_connect (hg->tree, "cursor-changed",
-                        G_CALLBACK (focus_item), (gpointer)hg);
+      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+      my_signal_connect (button, "clicked",
+			 G_CALLBACK (stddb_item), (gpointer)hg);
       
     }
   
@@ -2182,6 +2948,62 @@ void close_tree2(GtkWidget *w, gpointer gdata){
   // calling next close_tree
 }
 
+void std_close_tree2(GtkWidget *w, gpointer gdata){
+  typHOE *hg;
+
+  hg=(typHOE *)gdata;
+
+  if(std_window){
+    gtk_window_get_size(GTK_WINDOW(std_window), 
+			&hg->std_tree_width, &hg->std_tree_height);
+    gtk_window_get_position(GTK_WINDOW(std_window), &hg->std_tree_x, 
+			    &hg->std_tree_y);
+  }
+
+  gtk_widget_destroy(GTK_WIDGET(std_window));
+
+  // calling next close_tree
+}
+
+gchar *make_tgt(gchar * obj_name){
+  gchar tgt_name[BUFFSIZE], *ret_name;
+  gint  i_obj,i_tgt;
+
+  strcpy(tgt_name,"TGT_");
+  i_tgt=strlen(tgt_name);
+
+  for(i_obj=0;i_obj<strlen(obj_name);i_obj++){
+    if(isalnum(obj_name[i_obj])){
+      tgt_name[i_tgt]=obj_name[i_obj];
+      i_tgt++;
+    }
+  }
+
+  //tgt_name[i_tgt]=(char)NULL;
+  tgt_name[i_tgt]='\0';
+  ret_name=g_strdup(tgt_name);
+
+  return(ret_name);
+}
+
+void make_std_tgt(GtkWidget *w, gpointer gdata){
+  typHOE *hg;
+  gchar tmp[1024], *tgt;
+
+  hg=(typHOE *)gdata;
+
+
+  if((hg->std_tree_focus>=0)&&(hg->std_tree_focus<hg->std_i_max)){
+    tgt=make_tgt(hg->std[hg->std_tree_focus].name);
+    sprintf(tmp,"%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+	    tgt,hg->std[hg->std_tree_focus].name,
+	    hg->std[hg->std_tree_focus].ra,hg->std[hg->std_tree_focus].dec,
+	    hg->std[hg->std_tree_focus].epoch);
+    g_free(tgt);
+    gtk_entry_set_text(GTK_ENTRY(hg->std_tgt),tmp);
+  }
+}
+
 void close_tree(GtkWidget *w, gpointer gdata)
 {
   typHOE *hg;
@@ -2198,6 +3020,19 @@ void close_tree(GtkWidget *w, gpointer gdata)
   }
 }
 
+void std_close_tree(GtkWidget *w, gpointer gdata)
+{
+  typHOE *hg;
+
+  hg=(typHOE *)gdata;
+
+  std_window = NULL;
+  flagStdTree=FALSE;
+  if(flagSkymon){
+    draw_skymon(hg->skymon_dw,hg, FALSE);
+  }
+}
+
 void remake_tree(typHOE *hg)
 {
   gint i;
@@ -2210,6 +3045,15 @@ void remake_tree(typHOE *hg)
   }
   //do_editable_cells (hg);
   make_tree(NULL,hg);
+}
+
+void std_remake_tree(typHOE *hg)
+{
+  gint i;
+  std_close_tree2(NULL,hg);
+  while (my_main_iteration(FALSE));
+
+  std_make_tree(NULL,hg);
 }
 
 
@@ -2236,5 +3080,396 @@ cell_toggled_check (GtkCellRendererText *cell,
   gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_OBJ_DISP, hg->obj[i].check_disp, -1);
   
   gtk_tree_path_free (path);
+}
+
+
+void stddb_dl(typHOE *hg)
+{
+  GtkTreeIter iter;
+  gchar tmp[2048];
+  GtkWidget *dialog, *vbox, *label, *button;
+#ifndef USE_WIN32
+  static struct sigaction act;
+#endif
+  guint timer;
+  
+
+  if(flag_getSTD) return;
+  flag_getSTD=TRUE;
+  
+  if(flagTree){
+    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+    GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->tree));
+
+    if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
+      gint i, i_list;
+      GtkTreePath *path;
+    
+      path = gtk_tree_model_get_path (model, &iter);
+      gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
+      i--;
+      
+      hg->dss_i=i;
+
+      gtk_tree_path_free (path);
+    }
+    else{
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT,
+		    "Error: Please select a target in the Object List.",
+		    NULL);
+#else
+      fprintf(stderr," Error: Please select a target in the Object List.\n");
+#endif
+      flag_getSTD=FALSE;
+      return;
+    }
+  }
+
+  dialog = gtk_dialog_new();
+  
+  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
+  gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
+  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+  
+#ifdef USE_GTK2  
+  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
+#endif
+  
+  label=gtk_label_new("Searching standards in SIMBAD ...");
+
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
+  gtk_widget_show(label);
+  
+  hg->pbar=gtk_progress_bar_new();
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar,TRUE,TRUE,0);
+  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
+  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
+				    GTK_PROGRESS_RIGHT_TO_LEFT);
+  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
+  gtk_widget_show(hg->pbar);
+  
+  unlink(hg->std_file);
+  
+  timer=g_timeout_add(100, 
+		      (GSourceFunc)progress_timeout,
+		      (gpointer)hg);
+  
+  hg->plabel=gtk_label_new("Searching standards in SIMBAD ...");
+  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     hg->plabel,FALSE,FALSE,0);
+  
+#ifndef USE_WIN32
+#ifdef __GTK_STOCK_H__
+  button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#else
+  button=gtk_button_new_with_label("Cancel");
+#endif
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed",
+		    cancel_stddb, 
+		    (gpointer)hg);
+#endif
+  
+  gtk_widget_show_all(dialog);
+  
+#ifndef USE_WIN32
+  act.sa_handler=stddb_signal;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags=0;
+  if(sigaction(SIGUSR1, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGUSR1).\n");
+#endif
+  
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
+  
+  get_stddb(hg);
+  //#ifndef USE_WIN32  
+  gtk_main();
+  //#endif
+  gtk_timeout_remove(timer);
+  gtk_widget_destroy(dialog);
+
+  /*
+  hg->dss_arcmin_ip=hg->dss_arcmin;
+  hg->fc_mode_get=hg->fc_mode;
+#ifndef USE_WIN32
+  if(fc_pid){
+#endif
+    if(pixbuf_fc)  g_object_unref(G_OBJECT(pixbuf_fc));
+    pixbuf_fc = gdk_pixbuf_new_from_file(hg->dss_file, NULL);
+    
+    do_fc(hg);
+#ifndef USE_WIN32
+  }
+#endif
+  */
+  
+  flag_getSTD=FALSE;
+}
+
+#ifndef USE_WIN32
+static void cancel_stddb(GtkWidget *w, gpointer gdata)
+{
+  typHOE *hg;
+  pid_t child_pid=0;
+
+  hg=(typHOE *)gdata;
+
+  if(stddb_pid){
+    kill(stddb_pid, SIGKILL);
+    gtk_main_quit();
+
+    do{
+      int child_ret;
+      child_pid=waitpid(stddb_pid, &child_ret,WNOHANG);
+    } while((child_pid>0)||(child_pid!=-1));
+ 
+    stddb_pid=0;
+  }
+}
+#endif
+
+#ifndef USE_WIN32
+void stddb_signal(int sig){
+  pid_t child_pid=0;
+
+  gtk_main_quit();
+
+  do{
+    int child_ret;
+    child_pid=waitpid(stddb_pid, &child_ret,WNOHANG);
+  } while((child_pid>0)||(child_pid!=-1));
+}
+#endif
+
+static gboolean progress_timeout( gpointer data ){
+  typHOE *hg=(typHOE *)data;
+  glong sz;
+  gchar *tmp;
+
+  if(GTK_WIDGET_REALIZED(hg->pbar)){
+    gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
+    
+    sz=get_file_size(hg->dss_file);
+    if(sz>1024){
+      sz=sz/1024;
+      if(sz>1024){
+	tmp=g_strdup_printf("Downloaded %.2f MB",(gfloat)sz/1024.);
+      }
+      else{
+	tmp=g_strdup_printf("Downloaded %ld kB",sz);
+      }
+    }
+    else if (sz>0){
+      tmp=g_strdup_printf("Downloaded %ld bytes",sz);
+    }
+    else{
+      tmp=g_strdup_printf("Waiting for WWW responce ...");
+    }
+    gtk_label_set_text(GTK_LABEL(hg->plabel), tmp);
+    g_free(tmp);
+    
+    return TRUE;
+  }
+  else{
+    return FALSE;
+  }
+}
+
+
+GtkWidget *
+std_do_editable_cells (typHOE *hg)
+{
+  if (!std_window)
+    {
+      GtkWidget *vbox;
+      GtkWidget *hbox;
+      GtkWidget *ebox;
+      GtkWidget *sw;
+      GtkWidget *button;
+      GtkTreeModel *items_model;
+      GtkWidget *label;
+      GtkWidget *combo;
+      GtkWidget *check;
+      GtkWidget *entry;
+      gchar tmp[1024];
+
+
+      /* create window, etc */
+      std_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+      gtk_window_set_screen (GTK_WINDOW (std_window),
+                             gtk_widget_get_screen (hg->skymon_main));
+      gtk_window_set_title (GTK_WINDOW (std_window), 
+			    "Sky Monitor : Standard List");
+      gtk_window_set_default_size (GTK_WINDOW (std_window), hg->std_tree_width, hg->std_tree_height);
+      gtk_container_set_border_width (GTK_CONTAINER (std_window), 5);
+      g_signal_connect (std_window, "destroy",
+                        G_CALLBACK (std_close_tree), (gpointer)hg);
+
+      vbox = gtk_vbox_new (FALSE, 5);
+      gtk_container_add (GTK_CONTAINER (std_window), vbox);
+
+      hbox = gtk_hbox_new (FALSE, 0);
+      gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
+
+      switch(hg->stddb_mode){
+      case STDDB_SSLOC:
+	if(strcmp(hg->std_cat,"FS")==0){
+	  sprintf(tmp,"UKIRT Faint Standard for [%d-%d] %s (%d objects found)",
+		  hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+		  hg->obj[hg->std_i].name,hg->std_i_max);
+	}
+	else if(strcmp(hg->std_cat,"HIP")==0){
+	  sprintf(tmp,"Standard (HIPPARCOS Catalog) for [%d-%d] %s (%d objects found)",
+		  hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+		  hg->obj[hg->std_i].name,hg->std_i_max);
+	}
+	else if(strcmp(hg->std_cat,"SAO")==0){
+	  sprintf(tmp,"Standard (SAO Catalog) for [%d-%d] %s (%d objects found)",
+		  hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+		  hg->obj[hg->std_i].name,hg->std_i_max);
+	}
+	break;
+      case STDDB_RAPID:
+	sprintf(tmp,"Rapid rotator for [%d-%d] %s (%d objects found)",
+		hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+		hg->obj[hg->std_i].name,hg->std_i_max);
+	break;
+      case STDDB_MIRSTD:
+	sprintf(tmp,"Mid-IR standard for [%d-%d] %s (%d objects found)",
+		hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+		hg->obj[hg->std_i].name,hg->std_i_max);
+	break;
+      }
+
+#ifdef __GTK_STOCK_H__
+      button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
+#else
+      button = gtk_button_new_with_label ("Refresh");
+#endif
+      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+      my_signal_connect (button, "clicked",
+			 G_CALLBACK (stddb_item), (gpointer)hg);
+
+      label= gtk_label_new (tmp);
+      gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
+      
+#ifdef __GTK_STOCK_H__
+      button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
+#else
+      button = gtk_button_new_with_label ("Quit");
+#endif
+      g_signal_connect (button, "clicked",
+			G_CALLBACK (std_close_tree2), (gpointer)hg);
+      gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+#ifdef __GTK_TOOLTIP_H__
+      gtk_widget_set_tooltip_text(button,
+				  "Close");
+#endif
+
+      sw = gtk_scrolled_window_new (NULL, NULL);
+      gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),
+                                           GTK_SHADOW_ETCHED_IN);
+      gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
+                                      GTK_POLICY_AUTOMATIC,
+                                      GTK_POLICY_AUTOMATIC);
+      gtk_box_pack_start (GTK_BOX (vbox), sw, TRUE, TRUE, 0);
+
+      /* create models */
+      items_model = std_create_items_model (hg);
+
+
+      /* create tree view */
+      hg->std_tree = gtk_tree_view_new_with_model (items_model);
+      gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (hg->std_tree), TRUE);
+      gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (hg->std_tree)),
+                                   GTK_SELECTION_SINGLE);
+      std_add_columns (hg, GTK_TREE_VIEW (hg->std_tree), items_model);
+
+      g_object_unref (items_model);
+
+      gtk_container_add (GTK_CONTAINER (sw), hg->std_tree);
+
+      g_signal_connect (hg->std_tree, "cursor-changed",
+                        G_CALLBACK (std_focus_item), (gpointer)hg);
+
+      /* some buttons */
+      hbox = gtk_hbox_new (FALSE, 4);
+      gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+
+#ifdef __GTK_STOCK_H__
+      button=gtkut_button_new_from_stock("SIMBAD",GTK_STOCK_FIND);
+#else
+      button = gtk_button_new_with_label ("SIMBAD");
+#endif
+      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+      my_signal_connect (button, "clicked",
+			 G_CALLBACK (std_simbad), (gpointer)hg);
+
+#ifdef __GTK_STOCK_H__
+      button=gtkut_button_new_from_stock("Search Param.",GTK_STOCK_PROPERTIES);
+#else
+      button = gtk_button_new_with_label ("Search Param.");
+#endif
+      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+      my_signal_connect (button, "clicked",
+			 create_std_para_dialog, (gpointer)hg);
+
+      label= gtk_label_new ("    ");
+      gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+
+#ifdef __GTK_STOCK_H__
+      button=gtkut_button_new_from_stock("OPE Def.",GTK_STOCK_EDIT);
+#else
+      button = gtk_button_new_with_label ("OPE Def.");
+#endif
+      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+      my_signal_connect (button, "clicked",
+			 make_std_tgt, (gpointer)hg);
+
+      hg->std_tgt = gtk_entry_new ();
+      gtk_box_pack_start(GTK_BOX(hbox),hg->std_tgt,TRUE, TRUE, 0);
+      gtk_entry_set_editable(GTK_ENTRY(hg->std_tgt),FALSE);
+      my_entry_set_width_chars(GTK_ENTRY(hg->std_tgt),50);
+    }
+
+  
+  if((hg->std_tree_x!=-1)||(hg->std_tree_y!=-1))
+    gtk_window_move(GTK_WINDOW(std_window),hg->std_tree_x, hg->std_tree_y);
+
+  if (!GTK_WIDGET_VISIBLE (std_window))
+    gtk_widget_show_all (std_window);
+  else
+    {
+      gtk_widget_destroy (std_window);
+      std_window = NULL;
+      flagStdTree=FALSE;
+    }
+
+  return std_window;
+}
+
+
+void std_make_tree(GtkWidget *widget, gpointer gdata){
+  typHOE *hg;
+
+  if(!flagStdTree){
+    hg=(typHOE *)gdata;
+
+    flagStdTree=TRUE;
+
+    std_do_editable_cells (hg);
+    
+  }
+  else{
+    gdk_window_deiconify(std_window->window);
+    gdk_window_raise(std_window->window);
+  }
 }
 

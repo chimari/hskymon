@@ -67,6 +67,8 @@ void my_cairo_arc_center_path();
 void my_cairo_object();
 void my_cairo_object2();
 void my_cairo_object3();
+void my_cairo_std();
+void my_cairo_std2();
 void my_cairo_moon();
 void my_cairo_sun();
 void my_cairo_planet();
@@ -103,6 +105,7 @@ void draw_stderr_graph();
 gboolean flagDrawing=FALSE;
 gboolean supports_alpha = FALSE;
 extern gboolean flagSkymon;
+extern gboolean flagStdTree;
 extern gboolean flagTree;
 extern gboolean flag_getting_allsky;
 gint old_width=0, old_height=0, old_w=0, old_h=0;
@@ -1392,26 +1395,6 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
     cairo_move_to(cr,10,height-e_h*2-5);
     cairo_show_text(cr, tmp);
 
-    /*
-    if(hg->skymon_mode==SKYMON_SET){
-      sprintf(tmp,"Phase=%5.1fdeg",hg->moon.s_phase);
-    }
-    else{
-      sprintf(tmp,"Phase=%5.1fdeg",hg->moon.c_phase);
-    }
-    cairo_move_to(cr,10,height-extents.height*3-10);
-    cairo_show_text(cr, tmp);
-
-    if(hg->skymon_mode==SKYMON_SET){
-      sprintf(tmp,"Limb=%5.1fdeg",hg->moon.s_limb);
-    }
-    else{
-      sprintf(tmp,"Limb=%5.1fdeg",hg->moon.c_limb);
-    }
-    cairo_move_to(cr,10,height-extents.height*4-15);
-    cairo_show_text(cr, tmp);
-    */
-
     if(hg->skymon_mode==SKYMON_SET){
       sprintf(tmp,"Set=%02d:%02d",
 	      hg->moon.s_set.hours,hg->moon.s_set.minutes);
@@ -1901,6 +1884,34 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	  hg->obj[i_list].y=-1;
 	}
       }
+      if((flagStdTree)&&(hg->std_i==hg->tree_focus)){
+	for(i_list=0;i_list<hg->std_i_max;i_list++){
+	  if(hg->std[i_list].s_el>0){
+	    if(hg->std_tree_focus!=i_list){
+	      my_cairo_std(cr,width,height,
+			   hg->std[i_list].s_az,hg->std[i_list].s_el,
+			   &hg->std[i_list].x,&hg->std[i_list].y);
+	    }
+	  }
+	  else{
+	    hg->std[i_list].x=-1;
+	    hg->std[i_list].y=-1;
+	  }
+	}
+	for(i_list=0;i_list<hg->std_i_max;i_list++){
+	  if(hg->std[i_list].s_el>0){
+	    if(hg->std_tree_focus==i_list){
+	      my_cairo_std2(cr,width,height,
+			    hg->std[i_list].s_az,hg->std[i_list].s_el,
+			    &hg->std[i_list].x,&hg->std[i_list].y);
+	    }
+	  }
+	  else{
+	    hg->std[i_list].x=-1;
+	    hg->std[i_list].y=-1;
+	  }
+	}
+      }
     }
     else  if(hg->skymon_mode==SKYMON_CUR){
       for(i_list=0;i_list<hg->i_max;i_list++){
@@ -1946,6 +1957,34 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	else{
 	  hg->obj[i_list].x=-1;
 	  hg->obj[i_list].y=-1;
+	}
+      }
+      if((flagStdTree)&&(hg->std_i==hg->tree_focus)){
+	for(i_list=0;i_list<hg->std_i_max;i_list++){
+	  if(hg->std[i_list].c_el>0){
+	    if(hg->std_tree_focus!=i_list){
+	      my_cairo_std(cr,width,height,
+			   hg->std[i_list].c_az,hg->std[i_list].c_el,
+			   &hg->std[i_list].x,&hg->std[i_list].y);
+	    }
+	  }
+	  else{
+	    hg->std[i_list].x=-1;
+	    hg->std[i_list].y=-1;
+	  }
+	}
+	for(i_list=0;i_list<hg->std_i_max;i_list++){
+	  if(hg->std[i_list].c_el>0){
+	    if(hg->std_tree_focus==i_list){
+	      my_cairo_std2(cr,width,height,
+			    hg->std[i_list].c_az,hg->std[i_list].c_el,
+			    &hg->std[i_list].x,&hg->std[i_list].y);
+	    }
+	  }
+	  else{
+	    hg->std[i_list].x=-1;
+	    hg->std[i_list].y=-1;
+	  }
 	}
       }
     }
@@ -2340,8 +2379,100 @@ void my_cairo_object3(cairo_t *cr, char *fontname, gint w, gint h, gdouble az, g
       cairo_set_source_rgba(cr, 1.0, 0.4, 0.2, 1.0);
     cairo_show_text(cr, name);
   }
-
 }
+
+
+void my_cairo_std(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, gdouble *objx, gdouble *objy){
+  gdouble r, el_r;
+  gdouble x, y;
+  cairo_text_extents_t extents;
+
+  r= w<h ? w/2*0.9 : h/2*0.9;
+
+  el_r = r * (90 - el)/90;
+
+  x = w/2 + el_r*cos(M_PI/180.*(90-az));
+  y = h/2 + el_r*sin(M_PI/180.*(90-az));
+
+  *objx=x;
+  *objy=y;
+
+  cairo_new_path(cr);
+
+  cairo_set_source_rgba(cr, 1, 1, 1, 0.75);
+  cairo_arc(cr, x, y, 5, 0, 2*M_PI);
+  cairo_fill(cr);
+  cairo_set_source_rgba(cr, 1, 1, 1, 1.0);
+  cairo_arc(cr, x, y, 3, 0, 2*M_PI);
+  cairo_fill(cr);
+  cairo_set_source_rgba(cr, 0.9, 0.25, 0.9, 1.0);
+  cairo_arc(cr, x, y, 3, 0, 2*M_PI);
+  cairo_set_line_width (cr, 1.5);
+  cairo_stroke(cr);
+
+  cairo_new_path(cr);
+}
+
+
+void my_cairo_std2(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, gdouble *objx, gdouble *objy){
+  gdouble r, el_r;
+  gdouble x, y;
+  cairo_text_extents_t extents;
+
+  r= w<h ? w/2*0.9 : h/2*0.9;
+
+  el_r = r * (90 - el)/90;
+
+  x = w/2 + el_r*cos(M_PI/180.*(90-az));
+  y = h/2 + el_r*sin(M_PI/180.*(90-az));
+
+  *objx=x;
+  *objy=y;
+
+  cairo_new_path(cr);
+
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.75);
+  cairo_arc(cr, x, y, 11, 0, 2*M_PI);
+  cairo_fill(cr);
+  
+  cairo_move_to (cr, x-10, y-10);
+  cairo_line_to (cr, x-4.5, y-4.5);
+  cairo_move_to (cr, x+10, y-10);
+  cairo_line_to (cr, x+4.5, y-4.5);
+  cairo_move_to (cr, x+10, y+10);
+  cairo_line_to (cr, x+4.5, y+4.5);
+  cairo_move_to (cr, x-10, y+10);
+  cairo_line_to (cr, x-4.5, y+4.5);
+  cairo_set_line_width (cr, 4);
+  cairo_stroke (cr);
+
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
+  cairo_arc(cr, x, y, 8, 0, 2*M_PI);
+  cairo_fill(cr);
+
+  cairo_set_source_rgba(cr, 1.0, 0.1, 0.1, 1.0);
+  cairo_arc(cr, x, y, 3.6, 0, 2*M_PI);
+  cairo_fill(cr);
+  
+  cairo_set_source_rgba(cr, 1.0, 0.25, 0.25, 1.0);
+  cairo_arc(cr, x, y, 8, 0, 2*M_PI);
+  cairo_set_line_width (cr, 1.8);
+  cairo_stroke (cr);
+  
+  cairo_move_to (cr, x-8, y-8);
+  cairo_line_to (cr, x-4.5, y-4.5);
+  cairo_move_to (cr, x+8, y-8);
+  cairo_line_to (cr, x+4.5, y-4.5);
+  cairo_move_to (cr, x+8, y+8);
+  cairo_line_to (cr, x+4.5, y+4.5);
+  cairo_move_to (cr, x-8, y+8);
+  cairo_line_to (cr, x-4.5, y+4.5);
+  cairo_set_line_width (cr, 1.8);
+  cairo_stroke (cr);
+
+  cairo_new_path(cr);
+}
+
 
 void my_cairo_moon(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, gdouble s_disk){
   gdouble r, el_r;

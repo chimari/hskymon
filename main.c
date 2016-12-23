@@ -199,6 +199,7 @@ gboolean flag_make_obj_list=TRUE;
 gboolean flagSkymon=TRUE;
 #endif
 gboolean flagTree=FALSE;
+gboolean flagStdTree=FALSE;
 gboolean flagPlot=FALSE;
 
 GtkWidget *obj_table;
@@ -6822,6 +6823,9 @@ void param_init(typHOE *hg){
 #else
   hg->fc_inst=FC_INST_NONE;
 #endif
+  hg->std_file=g_strconcat(hg->temp_dir,
+			   G_DIR_SEPARATOR_S,
+			   STDDB_FILE_XML,NULL);
 
   hg->adc_inst=ADC_INST_IMR;
   hg->adc_flip=FALSE;
@@ -6847,6 +6851,10 @@ void param_init(typHOE *hg){
   hg->tree_y=-1;
   hg->tree_width=DEF_TREE_WIDTH;
   hg->tree_height=DEF_TREE_HEIGHT;
+  hg->std_tree_x=-1;
+  hg->std_tree_y=-1;
+  hg->std_tree_width=DEF_STD_TREE_WIDTH;
+  hg->std_tree_height=DEF_STD_TREE_HEIGHT;
 
   hg->std_dra   =STD_DRA;
   hg->std_ddec  =STD_DDEC;

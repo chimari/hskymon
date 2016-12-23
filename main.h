@@ -7,6 +7,7 @@
 #undef ALLSKY_DEBUG
 #undef SKYMON_DEBUG
 
+#include <glib.h>
 #include<gtk/gtk.h>
 
 #include<stdio.h>
@@ -50,6 +51,7 @@
 #endif
 
 #define WWW_BROWSER "firefox"
+
 #ifdef USE_WIN32
 #define DSS_URL "http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey"
 #define SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none&CooEpoch=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2"
@@ -63,6 +65,7 @@
 #define RAPID_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptypes<%s&submit=submit%%20query&maxObject=100&OutputMode=LIST"
 #define MIRSTD_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&maxObject=100&OutputMode=LIST"
 #define SSLOC_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&maxObject=100&OutputMode=LIST"
+#define STD_SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=1&Radius.unit=arcmin&submit=submit+query&CoordList="
 #elif defined(USE_OSX)
 #define DSS_URL "open http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick\\&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf\\&SURVEY=Digitized+Sky+Survey"
 #define SIMBAD_URL "open http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none\\&CooEpoch=2000\\&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf\\&submit=submit%%20query\\&Radius.unit=arcmin\\&CooEqui=2000\\&CooFrame=FK5\\&Radius=2"
@@ -76,6 +79,7 @@
 #define RAPID_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s\\&submit=submit%%20query\\&maxObject=100\\&OutputMode=LIST"
 #define MIRSTD_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d\\&submit=submit%%20query\\&maxObject=100\\&OutputMode=LIST"
 #define SSLOC_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s\\&submit=submit%%20query\\&maxObject=100\\&OutputMode=LIST"
+#define STD_SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf\\&CooFrame=FK5\\&CooEpoch=2000\\&CooEqui=2000\\&CooDefinedFrames=none\\&Radius=1\\&Radius.unit=arcmin\\&submit=submit+query\\&CoordList="
 #else
 #define DSS_URL "\"http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey\""
 #define SIMBAD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none&CooEpoch=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2\""
@@ -89,6 +93,7 @@
 #define RAPID_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s&submit=submit%%20query&maxObject=100&OutputMode=LIST\""
 #define MIRSTD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&maxObject=100&OutputMode=LIST\""
 #define SSLOC_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&maxObject=100&OutputMode=LIST\""
+#define STD_SIMBAD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=1&Radius.unit=arcmin&submit=submit+query&CoordList=\""
 #endif
 
 #ifdef USE_WIN32
@@ -103,6 +108,12 @@
 #define DSS_ARCMIN 3
 #define DSS_ARCMIN_MAX 120
 #define DSS_PIX 1000
+
+#define STDDB_HOST_SIMBAD "simbad.u-strasbg.fr"
+#define STDDB_PATH_SSLOC "/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&maxObject=100&OutputMode=LIST&output.format=VOTABLE"
+#define STDDB_PATH_RAPID "/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s&submit=submit%%20query&maxObject=100&OutputMode=LIST&output.format=VOTABLE"
+#define STDDB_PATH_MIRSTD "/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&maxObject=100&OutputMode=LIST&output.format=VOTABLE"
+#define STDDB_FILE_XML "simbad.xml"
 
 #define FC_HOST_STSCI "archive.stsci.edu"
 #define FC_PATH_STSCI "/cgi-bin/dss_search?v=%s&r=%d+%d+%lf&d=%s%d+%d+%lf&e=J2000&h=%d.0&w=%d.0&f=gif&c=none&fov=NONE&v3="
@@ -267,9 +278,36 @@ enum
   NUM_OBJ_COLUMNS
 };
 
+// StdTreeview
+enum
+{
+  COLUMN_STD_NUMBER,
+  COLUMN_STD_NAME,
+  COLUMN_STD_RA,
+  COLUMN_STD_DEC,
+  COLUMN_STD_SP,
+  COLUMN_STD_SEP,
+  COLUMN_STD_ROT,
+  COLUMN_STD_U,
+  COLUMN_STD_B,
+  COLUMN_STD_V,
+  COLUMN_STD_R,
+  COLUMN_STD_I,
+  COLUMN_STD_J,
+  COLUMN_STD_H,
+  COLUMN_STD_K,
+  COLUMN_STD_F12,
+  COLUMN_STD_F25,
+  COLUMN_STD_F60,
+  COLUMN_STD_F100
+};
+
+
 #define DEF_TREE_WIDTH 320
 #define DEF_TREE_HEIGHT 600
 
+#define DEF_STD_TREE_WIDTH 750
+#define DEF_STD_TREE_HEIGHT 300
 
 enum
 {
@@ -332,6 +370,7 @@ enum{
 
 #define MAX_OBJECT 2000
 #define MAX_ROPE 32
+#define MAX_STD 101
 
 #ifdef USE_XMLRPC
 enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
@@ -357,6 +396,8 @@ enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
 enum{ AZEL_NORMAL, AZEL_POSI, AZEL_NEGA} AZElMode;
 
 enum{ WWWDB_SIMBAD, WWWDB_NED, WWWDB_DR8, WWWDB_DR12, WWWDB_MAST, WWWDB_IRSA, WWWDB_SPITZER, WWWDB_CASIS, WWWDB_SEP1, WWWDB_SSLOC, WWWDB_RAPID, WWWDB_MIRSTD} WWWDBMode;
+
+enum{ STDDB_SSLOC, STDDB_RAPID, STDDB_MIRSTD} STDDBMode;
 
 #define STD_DRA 20
 #define STD_DDEC 10
@@ -903,6 +944,43 @@ struct _OBJpara{
   gdouble y;
 };
 
+typedef struct _STDpara STDpara;
+struct _STDpara{
+  gchar *name;
+  double ra;
+  double dec;
+  double d_ra;
+  double d_dec;
+  double epoch;
+  gchar *sp;
+  gdouble sep;
+  gdouble rot;
+  gdouble u;
+  gdouble b;
+  gdouble v;
+  gdouble r;
+  gdouble i;
+  gdouble j;
+  gdouble h;
+  gdouble k;
+  gchar *f12;
+  gchar *f25;
+  gchar *f60;
+  gchar *f100;
+  gchar *q12;
+  gchar *q25;
+  gchar *q60;
+  gchar *q100;
+  gdouble c_az;
+  gdouble c_el;
+  gdouble c_elmax;
+  gdouble s_az;
+  gdouble s_el;
+  gdouble s_elmax;
+
+  gdouble x;
+  gdouble y;
+};
 
 
 typedef struct _HMSpara my_hms;
@@ -1025,6 +1103,7 @@ struct _typHOE{
   gint i_max;
   
   OBJpara obj[MAX_OBJECT];
+  STDpara std[MAX_STD];
 
   gchar *prop_id;
   gchar *prop_pass;
@@ -1086,6 +1165,7 @@ struct _typHOE{
   gint azel_mode;
 
   gint wwwdb_mode;
+  gint stddb_mode;
 
 #ifdef USE_SKYMON
   GtkWidget *skymon_main;
@@ -1187,6 +1267,19 @@ struct _typHOE{
   gint fc_pty1;
   gint fc_ptx2;
   gint fc_pty2;
+
+  gchar *std_file;
+  gchar *std_host;
+  gchar *std_path;
+  gint  std_i;
+  gint  std_i_max;
+  GtkWidget *std_tree;
+  GtkWidget *std_tgt;
+  gint std_tree_focus;
+  guint std_tree_width;
+  guint std_tree_height;
+  gint std_tree_x;
+  gint std_tree_y;
 
   GtkWidget *adc_main;
   GtkWidget *adc_dw;

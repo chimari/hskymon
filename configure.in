@@ -4,10 +4,10 @@ PACKAGE=hskymon
 
 dnl version number
 MAJOR_VERSION=2
-MINOR_VERSION=7
-MICRO_VERSION=8
+MINOR_VERSION=8
+MICRO_VERSION=0
 BUILD_REVISION=0
-EXTRA_VERSION=-20161220
+EXTRA_VERSION=-20161222
 VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION$EXTRA_VERSION
 
 dnl set $target
@@ -69,59 +69,6 @@ AM_PATH_GLIB_2_0(2.8.0,, AC_MSG_ERROR([glib-2.x is required]), gthread gobject)
 AM_PATH_GTK_2_0(2.8.0,, AC_MSG_ERROR([gtk+-2.x is required]), gthread gobject)
 AC_DEFINE([USE_GTK2],[],[Use Gtk+2.x instead of Gtk+1.2])
 
-
-dnl AC_DEFUN([HSKYMON_WITH_XMLRPC_C], [
-dnl  AC_MSG_CHECKING(for XMLRPC-C)
-dnl
-dnl  AC_ARG_WITH(xmlrpc-c,
-dnl  [  --with-xmlrpc-c=PATH     Enable XMLRPC-C support.],
-dnl  [
-dnl    if test "$withval" = "no"; then
-dnl      AC_MSG_RESULT(no)
-dnl      XMLRPC_CFLAGS=""
-dnl      XMLRPC_LIBS=""
-dnl
-dnl    else
-dnl      if eval xmlrpc-c-config --version 2>/dev/null >/dev/null; then
-dnl        XMLRPC_CFLAGS="`pkg-config xmlrpc --cflags`"
-dnl        XMLRPC_CFLAGS="$XMLRPC_CFLAGS `pkg-config xmlrpc_server --cflags`"
-dnl        XMLRPC_CFLAGS="$XMLRPC_CFLAGS `pkg-config xmlrpc_util --cflags`"
-dnl
-dnl        XMLRPC_LIBS="`pkg-config xmlrpc --libs`"
-dnl        XMLRPC_LIBS="$XMLRPC_LIBS `pkg-config xmlrpc_server --libs`"
-dnl        XMLRPC_LIBS="$XMLRPC_LIBS `pkg-config xmlrpc_util --libs`"
-dnl
-dnl        AC_TRY_LINK(
-dnl        [ #include <xmlrpc-server.h>
-dnl        ],[ xmlrpc_registry_new (NULL); ],
-dnl        [
-dnl          AC_MSG_RESULT(ok)
-dnl        ], [
-dnl          AC_MSG_RESULT(failed)
-dnl          AC_MSG_ERROR(Could not compile XMLRPC-C test.)
-dnl        ])
-dnl
-dnl        AC_DEFINE(HAVE_XMLRPC_C, 1, Support for XMLRPC-C.)
-dnl        AC_DEFINE([USE_XMLRPC],[],[With xmlrpc for Gen2])
-dnl        $with_xmlrpc = "yes"
-dnl
-dnl      else
-dnl        AC_MSG_RESULT(failed)
-dnl        AC_MSG_ERROR(Could not compile XMLRPC-C test.)
-dnl        XMLRPC_CFLAGS=""
-dnl        XMLRPC_LIBS=""
-dnl      fi
-dnl    fi
-dnl
-dnl  ],[
-dnl    AC_MSG_RESULT(ignored)
-dnl  ])
-dnl ])
-dnl
-dnl HSKYMON_WITH_XMLRPC_C
-dnl AC_SUBST(XMLRPC_CFLAGS)
-dnl AC_SUBST(XMLRPC_LIBS)
-
 dnl  XMLRPC
  AC_ARG_WITH(xmlrpc,
  		 AC_HELP_STRING([--with-xmlrpc],
@@ -134,6 +81,7 @@ dnl  XMLRPC
  XMLRPC_LIBS=""
  else
  AC_DEFINE([USE_XMLRPC],[],[With xmlrpc for Gen2])
+
 dnl for Ubuntu
 dnl   --- from here ---
     XMLRPC_CFLAGS="`xmlrpc-c-config client --cflags`"
@@ -163,7 +111,8 @@ dnl   -----------------
  AC_SUBST(XMLRPC_LIBS)
  AC_SUBST(XMLRPC_CFLAGS)
 
-
+dnl XML2
+AM_PATH_XML2(2.2.6,, AC_MSG_ERROR([xml-2.2.6 or later is required]))
 
 
 dnl Maintainer Mode

@@ -31,8 +31,6 @@
 #ifndef XMMS_CONFIGFILE_H
 #define XMMS_CONFIGFILE_H
 
-#include <glib.h>
-
 typedef struct
 {
 	gchar *key;

@@ -109,13 +109,14 @@ am_hskymon_OBJECTS = main.$(OBJEXT) calcpa.$(OBJEXT) fc.$(OBJEXT) \
 	nutation.$(OBJEXT) dynamical_time.$(OBJEXT) \
 	http-client.$(OBJEXT) configfile.$(OBJEXT) skymon.$(OBJEXT) \
 	treeview.$(OBJEXT) telstat.$(OBJEXT) remoteObjects.$(OBJEXT) \
-	hsc.$(OBJEXT)
+	hsc.$(OBJEXT) votable.$(OBJEXT)
 hskymon_OBJECTS = $(am_hskymon_OBJECTS)
 hskymon_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
 @HAVE_WINDRES_TRUE@am__DEPENDENCIES_2 = hskymon.res
 hskymon_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_2)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_2)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -322,8 +323,11 @@ VERSION = @VERSION@
 WINDRES = @WINDRES@
 WINMM_LIBS = @WINMM_LIBS@
 WINSOCK_LIBS = @WINSOCK_LIBS@
+XML2_CONFIG = @XML2_CONFIG@
 XMLRPC_CFLAGS = @XMLRPC_CFLAGS@
 XMLRPC_LIBS = @XMLRPC_LIBS@
+XML_CPPFLAGS = @XML_CPPFLAGS@
+XML_LIBS = @XML_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -382,7 +386,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = . libnova
 hskymon_SOURCES = \
-	 main.c calcpa.c fc.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.c remoteObjects.h configfile.h hskymon_icon.h google_icon.h
+	 main.c calcpa.c fc.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.c votable.c votable.h remoteObjects.h configfile.h hskymon_icon.h google_icon.h
 
 CLEANFILES = *~
 DISTCLEANFILES = .deps/*.P
@@ -409,8 +413,8 @@ EXTRA_DIST = autogen.sh\
              ar_d2.xpm\
              ar_d3.xpm
 
-INCLUDES = @GTK_CFLAGS@ $(XMLRPC_CFLAGS) $(DISABLE_DEPRECATED)
-LDADD = @GTK_LIBS@ $(WINMM_LIBS) $(WINSOCK_LIBS) $(XMLRPC_LIBS) $(HSKYMON_RES)
+INCLUDES = @GTK_CFLAGS@ $(XMLRPC_CFLAGS) $(XML_CPPFLAGS) $(DISABLE_DEPRECATED)
+LDADD = @GTK_LIBS@ $(WINMM_LIBS) $(WINSOCK_LIBS) $(XMLRPC_LIBS) $(XML_LIBS) $(HSKYMON_RES)
 GZIP_ENV = 
 BZIP2_ENV = 
 TAR = tar
@@ -563,6 +567,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uranus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utility.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/venus.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/votable.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vsop87.Po@am__quote@
 
 .c.o:

@@ -1,3 +1,6 @@
+2016.12.22 ver2.8.0 - Added Standard search mode (SIMBAD via VOTABLE).
+	              Imported votable.c/.h from libVOTable-0.1e
+
 2016.12.20 ver2.7.8 - Object number display in Object List is changed into
 	                  "X-YY" X=OPE number,  YY=Obj. number in OPE
 	            - Bug fix on MergeListPRM.
