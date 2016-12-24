@@ -11,13 +11,15 @@
 #include "ar_d2.xpm"
 #include "ar_d3.xpm"
 
+#include "esostd.h"
+
 static GtkWidget *window = NULL;
 static GtkWidget *std_window = NULL;
 void tree_update_azel_item();
 void std_tree_update_azel_item();
 void make_tree();
 void std_make_tree();
-void tree_store_update(); 
+void tree_store_update();
 gint tree_update_azel ();
 gint std_tree_update_azel ();
 void close_tree2();
@@ -27,6 +29,7 @@ void std_close_tree();
 void remake_tree();
 void std_remake_tree();
 
+void copy_stacstd();
 static void stddb_item ();
 void stddb_dl();
 #ifndef USE_WIN32
@@ -81,6 +84,8 @@ extern int get_stddb();
 
 extern void stddb_vo_parse();
 extern void create_std_para_dialog();
+
+extern gdouble deg_sep();
 
 extern pid_t stddb_pid;
 
@@ -1356,12 +1361,85 @@ std_simbad (GtkWidget *widget, gpointer data)
 #endif
 }
 
+void copy_stacstd(typHOE *hg, const stacSTDpara *stacstd, 
+		  gdouble d_ra0, gdouble d_dec0)
+{
+  gint i_list;
+  struct ln_hms hms;
+  struct ln_dms dms;
+
+  for(i_list=0;i_list<MAX_STD;i_list++){
+    if(hg->std[i_list].name) g_free(hg->std[i_list].name);
+    hg->std[i_list].name=g_strdup(stacstd[i_list].name);
+    if(!hg->std[i_list].name){
+      hg->std_i_max=i_list;
+      break;
+    }
+    
+    hg->std[i_list].d_ra=stacstd[i_list].ra;
+    ln_deg_to_hms(hg->std[i_list].d_ra, &hms);
+    hg->std[i_list].ra=(gdouble)hms.hours*10000.
+      + (gdouble)hms.minutes*100. + hms.seconds;
+    
+    hg->std[i_list].d_dec=stacstd[i_list].dec;
+    ln_deg_to_dms(hg->std[i_list].d_dec, &dms);
+    if(dms.neg==1){ 
+      hg->std[i_list].dec=-(gdouble)dms.degrees*10000.
+	- (gdouble)dms.minutes*100. - dms.seconds;
+    }
+    else{
+      hg->std[i_list].dec=(gdouble)dms.degrees*10000.
+	+ (gdouble)dms.minutes*100. + dms.seconds;
+    }
+    
+    if(hg->std[i_list].sp) g_free(hg->std[i_list].sp);
+    hg->std[i_list].sp=g_strdup(stacstd[i_list].sp);
+    
+    hg->std[i_list].rot=stacstd[i_list].rot;
+    hg->std[i_list].u=stacstd[i_list].u;
+    hg->std[i_list].b=stacstd[i_list].b;
+    hg->std[i_list].v=stacstd[i_list].v;
+    hg->std[i_list].r=stacstd[i_list].r;
+    hg->std[i_list].i=stacstd[i_list].i;
+    hg->std[i_list].j=stacstd[i_list].j;
+    hg->std[i_list].h=stacstd[i_list].h;
+    hg->std[i_list].k=stacstd[i_list].k;
+    
+    if(hg->std[i_list].f12) g_free(hg->std[i_list].f12);
+    hg->std[i_list].f12=g_strdup(stacstd[i_list].f12);
+    
+    if(hg->std[i_list].q12) g_free(hg->std[i_list].q12);
+    hg->std[i_list].q12=g_strdup(stacstd[i_list].q12);
+    
+    if(hg->std[i_list].f25) g_free(hg->std[i_list].f25);
+    hg->std[i_list].f25=g_strdup(stacstd[i_list].f25);
+    
+    if(hg->std[i_list].q25) g_free(hg->std[i_list].q25);
+    hg->std[i_list].q25=g_strdup(stacstd[i_list].q25);
+
+    if(hg->std[i_list].f60) g_free(hg->std[i_list].f60);
+    hg->std[i_list].f60=g_strdup(stacstd[i_list].f60);
+    
+    if(hg->std[i_list].q60) g_free(hg->std[i_list].q60);
+    hg->std[i_list].q60=g_strdup(stacstd[i_list].q60);
+    
+    if(hg->std[i_list].f100) g_free(hg->std[i_list].f100);
+    hg->std[i_list].f100=g_strdup(stacstd[i_list].f100);
+    
+    if(hg->std[i_list].q100) g_free(hg->std[i_list].q100);
+    hg->std[i_list].q100=g_strdup(stacstd[i_list].q100);
+    
+    hg->std[i_list].epoch=2000.00;
+    hg->std[i_list].sep=deg_sep(d_ra0,d_dec0,
+				hg->std[i_list].d_ra,hg->std[i_list].d_dec);
+  }
+}
 
 static void
 stddb_item (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
-  gdouble ra_0, dec_0;
+  gdouble ra_0, dec_0, d_ra0, d_dec0;
   gchar tmp[2048];
 #ifndef USE_WIN32
   gchar *cmdline;
@@ -1375,7 +1453,6 @@ stddb_item (GtkWidget *widget, gpointer data)
   struct lnh_equ_posn hobject_prec;
   struct ln_equ_posn object_prec;
 
-
   if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
     gint i, i_list;
     GtkTreePath *path;
@@ -1383,6 +1460,8 @@ stddb_item (GtkWidget *widget, gpointer data)
     path = gtk_tree_model_get_path (model, &iter);
     gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
     i--;
+
+    gtk_tree_path_free (path);
 
     hg->std_i=i;
 
@@ -1404,6 +1483,8 @@ stddb_item (GtkWidget *widget, gpointer data)
     dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
     hobject.dec.minutes=(gint)(dec_0/100);
     hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
+    d_ra0=ln_hms_to_deg(&hobject.ra);
+    d_dec0=ln_dms_to_deg(&hobject.dec);
 
     ln_hequ_to_equ (&hobject, &object);
     ln_get_equ_prec2 (&object, 
@@ -1537,11 +1618,23 @@ stddb_item (GtkWidget *widget, gpointer data)
       break;
     }
 
-    gtk_tree_path_free (path);
-
-    stddb_dl(hg);
-
-    stddb_vo_parse(hg);
+    switch(hg->stddb_mode){
+    case STDDB_SSLOC:
+    case STDDB_RAPID:
+    case STDDB_MIRSTD:
+      stddb_dl(hg);
+      stddb_vo_parse(hg);
+      break;
+    case STDDB_ESOSTD:
+      copy_stacstd(hg,esostd,d_ra0,d_dec0);
+      break;
+    case STDDB_IRAFSTD:
+      copy_stacstd(hg,irafstd,d_ra0,d_dec0);
+      break;
+    case STDDB_CALSPEC:
+      copy_stacstd(hg,calspec,d_ra0,d_dec0);
+      break;
+    }
 
     calcpa2_main(hg);
 
@@ -2841,6 +2934,21 @@ do_editable_cells (typHOE *hg)
 			   1, STDDB_MIRSTD, 2, TRUE, -1);
 	if(hg->stddb_mode==STDDB_MIRSTD) iter_set=iter;
 	
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, "ESO Opt/UV Standard",
+			   1, STDDB_ESOSTD, 2, TRUE, -1);
+	if(hg->stddb_mode==STDDB_ESOSTD) iter_set=iter;
+	
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, "IRAF 1D-std (spec16/50)",
+			   1, STDDB_IRAFSTD, 2, TRUE, -1);
+	if(hg->stddb_mode==STDDB_IRAFSTD) iter_set=iter;
+	
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, "HST CALSPEC",
+			   1, STDDB_CALSPEC, 2, TRUE, -1);
+	if(hg->stddb_mode==STDDB_CALSPEC) iter_set=iter;
+	
 	combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 	gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
 	g_object_unref(store);
@@ -3343,6 +3451,21 @@ std_do_editable_cells (typHOE *hg)
 	break;
       case STDDB_MIRSTD:
 	sprintf(tmp,"Mid-IR standard for [%d-%d] %s (%d objects found)",
+		hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+		hg->obj[hg->std_i].name,hg->std_i_max);
+	break;
+      case STDDB_ESOSTD:
+	sprintf(tmp,"ESO Optical and UV Spectrophotometric Standard for [%d-%d] %s (all %d objects)",
+		hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+		hg->obj[hg->std_i].name,hg->std_i_max);
+	break;
+      case STDDB_IRAFSTD:
+	sprintf(tmp,"IRAF Standard in spec16/50 for [%d-%d] %s (all %d objects)",
+		hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+		hg->obj[hg->std_i].name,hg->std_i_max);
+	break;
+      case STDDB_CALSPEC:
+	sprintf(tmp,"HST CALSPEC Standard for [%d-%d] %s (all %d objects)",
 		hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
 		hg->obj[hg->std_i].name,hg->std_i_max);
 	break;

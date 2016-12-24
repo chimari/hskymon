@@ -54,7 +54,7 @@
 
 #ifdef USE_WIN32
 #define DSS_URL "http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey"
-#define SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none&CooEpoch=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2"
+#define SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none&CooEpoch=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML"
 #define DR8_URL "http://skyserver.sdss3.org/dr8/en/tools/quicklook/quickobj.asp?ra=%d:%d:%.2lf&dec=%s%d:%d:%.2lf"
 #define DR12_URL "http://skyserver.sdss3.org/dr12/en/tools/quicklook/quickobj.aspx?ra=%lf&dec=%s%lf"
 #define NED_URL "http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=2.0&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES"
@@ -65,10 +65,10 @@
 #define RAPID_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptypes<%s&submit=submit%%20query&maxObject=100&OutputMode=LIST"
 #define MIRSTD_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&maxObject=100&OutputMode=LIST"
 #define SSLOC_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&maxObject=100&OutputMode=LIST"
-#define STD_SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=1&Radius.unit=arcmin&submit=submit+query&CoordList="
+#define STD_SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=1&Radius.unit=arcmin&submit=submit+query&CoordList=&output.format=HTML"
 #elif defined(USE_OSX)
 #define DSS_URL "open http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick\\&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf\\&SURVEY=Digitized+Sky+Survey"
-#define SIMBAD_URL "open http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none\\&CooEpoch=2000\\&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf\\&submit=submit%%20query\\&Radius.unit=arcmin\\&CooEqui=2000\\&CooFrame=FK5\\&Radius=2"
+#define SIMBAD_URL "open http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none\\&CooEpoch=2000\\&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf\\&submit=submit%%20query\\&Radius.unit=arcmin\\&CooEqui=2000\\&CooFrame=FK5\\&Radius=2\\&output.format=HTML"
 #define DR8_URL "open http://skyserver.sdss3.org/dr8/en/tools/quicklook/quickobj.asp?ra=%d:%d:%.2lf\\&dec=%s%d:%d:%.2lf"
 #define DR12_URL "open http://skyserver.sdss3.org/dr12/en/tools/quicklook/quickobj.aspx?ra=%lf\\&dec=%s%lf"
 #define NED_URL "open http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search\\&in_csys=Equatorial\\&in_equinox=J2000.0\\&lon=%d%%3A%d%%3A%.2lf\\&lat=%s%d%%3A%d%%3A%.2lf\\&radius=2.0\\&hconst=73\\&omegam=0.27\\&omegav=0.73\\&corr_z=1\\&z_constraint=Unconstrained\\&z_value1=\\&z_value2=\\&z_unit=z\\&ot_include=ANY\\&nmp_op=ANY\\&out_csys=Equatorial\\&out_equinox=J2000.0\\&obj_sort=Distance+to+search+center\\&of=pre_text\\&zv_breaker=30000.0\\&list_limit=5\\&img_stamp=YES"
@@ -79,10 +79,10 @@
 #define RAPID_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s\\&submit=submit%%20query\\&maxObject=100\\&OutputMode=LIST"
 #define MIRSTD_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d\\&submit=submit%%20query\\&maxObject=100\\&OutputMode=LIST"
 #define SSLOC_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s\\&submit=submit%%20query\\&maxObject=100\\&OutputMode=LIST"
-#define STD_SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf\\&CooFrame=FK5\\&CooEpoch=2000\\&CooEqui=2000\\&CooDefinedFrames=none\\&Radius=1\\&Radius.unit=arcmin\\&submit=submit+query\\&CoordList="
+#define STD_SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf\\&CooFrame=FK5\\&CooEpoch=2000\\&CooEqui=2000\\&CooDefinedFrames=none\\&Radius=1\\&Radius.unit=arcmin\\&submit=submit+query\\&CoordList=\\&output.format=HTML"
 #else
 #define DSS_URL "\"http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey\""
-#define SIMBAD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none&CooEpoch=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2\""
+#define SIMBAD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none&CooEpoch=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML\""
 #define DR8_URL "\"http://skyserver.sdss3.org/dr8/en/tools/quicklook/quickobj.asp?ra=%d:%d:%.2lf&dec=%s%d:%d:%.2lf\""
 #define DR12_URL "\"http://skyserver.sdss3.org/dr12/en/tools/quicklook/quickobj.aspx?ra=%lf&dec=%s%lf\""
 #define NED_URL "\"http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=2.0&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES\""
@@ -93,7 +93,7 @@
 #define RAPID_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s&submit=submit%%20query&maxObject=100&OutputMode=LIST\""
 #define MIRSTD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&maxObject=100&OutputMode=LIST\""
 #define SSLOC_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&maxObject=100&OutputMode=LIST\""
-#define STD_SIMBAD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=1&Radius.unit=arcmin&submit=submit+query&CoordList=\""
+#define STD_SIMBAD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=1&Radius.unit=arcmin&submit=submit+query&CoordList=&output.format=HTML\""
 #endif
 
 #ifdef USE_WIN32
@@ -397,7 +397,7 @@ enum{ AZEL_NORMAL, AZEL_POSI, AZEL_NEGA} AZElMode;
 
 enum{ WWWDB_SIMBAD, WWWDB_NED, WWWDB_DR8, WWWDB_DR12, WWWDB_MAST, WWWDB_IRSA, WWWDB_SPITZER, WWWDB_CASIS, WWWDB_SEP1, WWWDB_SSLOC, WWWDB_RAPID, WWWDB_MIRSTD} WWWDBMode;
 
-enum{ STDDB_SSLOC, STDDB_RAPID, STDDB_MIRSTD} STDDBMode;
+enum{ STDDB_SSLOC, STDDB_RAPID, STDDB_MIRSTD, STDDB_ESOSTD, STDDB_IRAFSTD, STDDB_CALSPEC} STDDBMode;
 
 #define STD_DRA 20
 #define STD_DDEC 10
@@ -947,11 +947,11 @@ struct _OBJpara{
 typedef struct _STDpara STDpara;
 struct _STDpara{
   gchar *name;
-  double ra;
-  double dec;
-  double d_ra;
-  double d_dec;
-  double epoch;
+  gdouble ra;
+  gdouble dec;
+  gdouble d_ra;
+  gdouble d_dec;
+  gdouble epoch;
   gchar *sp;
   gdouble sep;
   gdouble rot;

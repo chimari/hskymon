@@ -1,0 +1,25 @@
+#####################################################
+ How to make standard lists (stocked in ../esostd.h)
+ 
+                               2016.12.23
+                                 Akito Tajitsu
+#####################################################
+
+- This program is using libVOTable-01.e .
+      http://terapix.iap.fr/rubrique.php?id_rubrique=179
+  Please install this library before using this program.
+
+- make
+   sh% ./mkexample
+
+- make standard list (ex. esostd.lst)
+
+- retrieive VOTABLE (xml) output from SIMBAD
+     Change output.format to VOTABLE (in Output options)
+     Query using standatd list file
+     Save output XML (ex. esostd.xml)
+
+- sh% ./example esostd.xml
+     Save output and use for structure definition in esostd.h
+
+   

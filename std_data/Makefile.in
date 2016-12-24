@@ -78,9 +78,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-subdir = libnova
+subdir = std_data
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/mkinstalldirs
+	$(top_srcdir)/mkinstalldirs README
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -255,40 +255,15 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 EXTRA_DIST = \
-	julian_day.h \
-	dynamical_time.h \
-	sidereal_time.h \
-	transform.h \
-	nutation.h \
-	libnova.h \
-	aberration.h   \
-	apparent_position.h \
-	solar.h \
-	precession.h  \
-	proper_motion.h \
-	mercury.h \
-	venus.h  \
-	earth.h  \
-	mars.h   \
-	jupiter.h \
-	saturn.h  \
-	uranus.h  \
-	neptune.h  \
-	pluto.h \
-	vsop87.h \
-	lunar.h  \
-	elliptic_motion.h \
-	asteroid.h \
-	comet.h \
-	parabolic_motion.h \
-	refraction.h \
-	rise_set.h \
-	angular_separation.h \
-	ln_types.h \
-	utility.h \
-	hyperbolic_motion.h \
-	parallax.h \
-	airmass.h
+	example.c\
+	esostd.lst\
+	esostd.xml\
+	calspec.lst\
+	calspec.xml\
+	irafstd.lst\
+	irafstd.xml\
+	README\
+	mkexample.sh
 
 all: all-am
 
@@ -302,9 +277,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu libnova/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu std_data/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu libnova/Makefile
+	  $(AUTOMAKE) --gnu std_data/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

@@ -1,3 +1,10 @@
+2016.12.22 ver2.8.1 - For Standard search mode added
+	                 - ESO Opt/UV standard
+	                 - IRAF onedstds (spec16/50cal)
+	                 - HST CALSPEC
+	            - These standard list are stocked in esostd.h
+	              See std_data/README how to make the lists.
+
 2016.12.22 ver2.8.0 - Added Standard search mode (SIMBAD via VOTABLE).
 	              Imported votable.c/.h from libVOTable-0.1e
 

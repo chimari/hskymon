@@ -5,9 +5,9 @@ PACKAGE=hskymon
 dnl version number
 MAJOR_VERSION=2
 MINOR_VERSION=8
-MICRO_VERSION=0
+MICRO_VERSION=1
 BUILD_REVISION=0
-EXTRA_VERSION=-20161222
+EXTRA_VERSION=-20161223
 VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION$EXTRA_VERSION
 
 dnl set $target
@@ -34,6 +34,7 @@ AC_PROG_MAKE_SET
 AC_CHECK_PROG(WINDRES, windres, windres)
 AM_CONDITIONAL(HAVE_WINDRES, test x"$WINDRES" != x)
 
+AC_PATH_PROGS(OBJCOPY, gobjcopy objcopy)
 
 # Checks for header files.
 AC_FUNC_ALLOCA
@@ -136,6 +137,7 @@ Makefile
 version.h
 hskymon_res.rc
 libnova/Makefile
+std_data/Makefile
 ])
 
 
