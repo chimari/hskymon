@@ -7,7 +7,7 @@ OBJCOPY = $(host_alias)-objcopy
 junk = mdebug.abi32 gnu.attributes ctors eh_frame eh_frame_hdr MIPS.abiflags reginfo comment pdr note.gnu.build-id
 objcopyflags = -S $(addprefix --remove-section=.,$(junk))
 
-CLEANFILES      = *~ 
+CLEANFILES      = *~ libnova/*~ std_data/*~
 DISTCLEANFILES  = .deps/*.P
 AM_CPPFLAGS = -DLOCALEDIR=\""$(localedir)"\"
 
