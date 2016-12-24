@@ -4,6 +4,7 @@
 	                 - HST CALSPEC
 	            - These standard list are stocked in esostd.h
 	              See std_data/README how to make the lists.
+	            - HSC dead chips are added in the FC drawing.
 
 2016.12.22 ver2.8.0 - Added Standard search mode (SIMBAD via VOTABLE).
 	              Imported votable.c/.h from libVOTable-0.1e

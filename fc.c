@@ -14,6 +14,7 @@
 #endif
 #include <signal.h>
 
+#include"hsc.h"
 
 void fc_item();
 void fc_dl_draw ();
@@ -60,7 +61,7 @@ extern gboolean is_separator();
 extern pid_t fc_pid;
 extern gboolean flagTree;
 
-extern HSCParam hsc_param[];
+
 
 gboolean flagFC=FALSE, flag_getDSS=FALSE;
 GdkPixbuf *pixbuf_fc=NULL, *pixbuf2_fc=NULL;
@@ -1895,6 +1896,32 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 				CAIRO_FONT_WEIGHT_BOLD);
 
+	// Dead chips
+	{
+	  gint i_dead;
+	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.3);
+	  else cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
+
+	  for(i_dead=0;i_dead<HSC_DEAD_ALL;i_dead++){
+	  
+	    y_0=(-(gdouble)hsc_dead[i_dead].crpix1*(gdouble)hsc_dead[i_dead].cd1_1/0.015-(gdouble)hsc_dead[i_dead].crpix2*(gdouble)hsc_dead[i_dead].cd1_2/0.015)*pscale;
+	    x_0=(-(gdouble)hsc_dead[i_dead].crpix1*(gdouble)hsc_dead[i_dead].cd2_1/0.015-(gdouble)hsc_dead[i_dead].crpix2*(gdouble)hsc_dead[i_dead].cd2_2/0.015)*pscale;
+	    if((hsc_dead[i_dead].cd1_2<0)&&(hsc_dead[i_dead].cd2_1<0)){
+	      cairo_rectangle(cr, x_0-2048*pscale/4*(hsc_dead[i_dead].ch),
+			      y_0-4224*pscale, 2048*pscale/4, 4224*pscale );
+	    }
+	    else if((hsc_dead[i_dead].cd1_2>0)&&(hsc_dead[i_dead].cd2_1>0)){
+	      cairo_rectangle(cr,x_0+2048*pscale/4*(hsc_dead[i_dead].ch-1), y_0, 2048*pscale/4, 4224*pscale);
+	    }
+	    else if((hsc_dead[i_dead].cd1_1>0)&&(hsc_dead[i_dead].cd2_2<0)){
+	      cairo_rectangle(cr,x_0-4224*pscale, y_0+2048*pscale/4*(hsc_dead[i_dead].ch-1),  4224*pscale, 2048*pscale/4);
+	    }
+	    else{
+	      cairo_rectangle(cr,x_0, y_0-2048*pscale/4*(hsc_dead[i_dead].ch), 4224*pscale, 2048*pscale/4);
+	    }
+	    cairo_fill(cr);
+	  }
+	}
 
 	for(i_chip=0;i_chip<HSC_CHIP_ALL;i_chip++){
 

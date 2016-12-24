@@ -1453,26 +1453,6 @@ typedef struct{
 }confProp;
 
 
-typedef struct _HSCParam HSCParam;
-struct _HSCParam{
-  gint hsca;
-  gint bees;
-  
-  gint ccdsn;
-  
-  gfloat crpix1;
-  gfloat crpix2;
-
-  gfloat cd1_1;
-  gfloat cd1_2;
-  gfloat cd2_1;
-  gfloat cd2_2;
-
-  gint det_id;
-};
-
-#define HSC_CHIP_ALL 116
-
 #define is_num_char(c) ((c>='0' && c<='9')||(c==' ')||(c=='\t')||(c=='.')||(c=='+')||(c=='-')||(c=='\n'))
 
 

@@ -109,7 +109,7 @@ am_hskymon_OBJECTS = main.$(OBJEXT) calcpa.$(OBJEXT) fc.$(OBJEXT) \
 	nutation.$(OBJEXT) dynamical_time.$(OBJEXT) \
 	http-client.$(OBJEXT) configfile.$(OBJEXT) skymon.$(OBJEXT) \
 	treeview.$(OBJEXT) telstat.$(OBJEXT) remoteObjects.$(OBJEXT) \
-	hsc.$(OBJEXT) votable.$(OBJEXT)
+	votable.$(OBJEXT)
 hskymon_OBJECTS = $(am_hskymon_OBJECTS)
 hskymon_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
@@ -387,7 +387,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = . libnova std_data
 hskymon_SOURCES = \
-	 main.c calcpa.c fc.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.c votable.c votable.h remoteObjects.h configfile.h hskymon_icon.h google_icon.h esostd.h
+	 main.c calcpa.c fc.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c votable.h remoteObjects.h configfile.h hskymon_icon.h google_icon.h esostd.h
 
 junk = mdebug.abi32 gnu.attributes ctors eh_frame eh_frame_hdr MIPS.abiflags reginfo comment pdr note.gnu.build-id
 objcopyflags = -S $(addprefix --remove-section=.,$(junk))
@@ -546,7 +546,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dynamical_time.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earth.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fc.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hsc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http-client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/julian_day.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jupiter.Po@am__quote@
