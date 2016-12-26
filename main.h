@@ -62,10 +62,10 @@
 #define IRSA_URL "http://irsa.ipac.caltech.edu/cgi-bin/Radar/nph-estimation?mission=All&objstr=%d%%3A%d%%3A%.2lf+%s%d%%3A%d%%3A%.2lf&mode=cone&radius=2&radunits=arcmin&range=6.25+Deg.&data=Data+Set+Type&radnum=2222&irsa=IRSA+Only&submit=Get+Inventory&output=%%2Firsa%%2Fcm%%2Fops_2.0%%2Firsa%%2Fshare%%2Fwsvc%%2FRadar%%2Fcatlist.tbl_type&url=%%2Fworkspace%%2FTMP_3hX3SO_29666&dir=%%2Fwork%%2FTMP_3hX3SO_29666&snull=matches+only&datav=Data+Set+Type"
 #define SPITZER_URL "http://sha.ipac.caltech.edu/applications/Spitzer/SHA/#id=SearchByPosition&DoSearch=true&SearchByPosition.field.radius=0.033333333&UserTargetWorldPt=%.5lf;%.10lf;EQ_J2000&SimpleTargetPanel.field.resolvedBy=nedthensimbad&MoreOptions.field.prodtype=aor,pbcd&startIdx=0&pageSize=0&shortDesc=Position&isBookmarkAble=true&isDrillDownRoot=true&isSearchResult=true"
 #define CASIS_URL "http://cassis.astro.cornell.edu/atlas/cgi/radec6.py?ra=%.5lf&dec=%.6lf&radius=20"
-#define RAPID_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptypes<%s&submit=submit%%20query&maxObject=100&OutputMode=LIST"
-#define MIRSTD_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&maxObject=100&OutputMode=LIST"
-#define SSLOC_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&maxObject=100&OutputMode=LIST"
-#define STD_SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=1&Radius.unit=arcmin&submit=submit+query&CoordList=&output.format=HTML"
+#define RAPID_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptypes<%s&submit=submit%%20query&output.max=%d&OutputMode=LIST"
+#define MIRSTD_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&output.max=%d&OutputMode=LIST"
+#define SSLOC_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&output.max=%d&OutputMode=LIST"
+#define STD_SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=10&Radius.unit=arcsec&submit=submit+query&CoordList=&output.format=HTML"
 #elif defined(USE_OSX)
 #define DSS_URL "open http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick\\&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf\\&SURVEY=Digitized+Sky+Survey"
 #define SIMBAD_URL "open http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none\\&CooEpoch=2000\\&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf\\&submit=submit%%20query\\&Radius.unit=arcmin\\&CooEqui=2000\\&CooFrame=FK5\\&Radius=2\\&output.format=HTML"
@@ -76,10 +76,10 @@
 #define IRSA_URL "open http://irsa.ipac.caltech.edu/cgi-bin/Radar/nph-estimation?mission=All\\&objstr=%d%%3A%d%%3A%.2lf+%s%d%%3A%d%%3A%.2lf\\&mode=cone\\&radius=2\\&radunits=arcmin\\&range=6.25+Deg.\\&data=Data+Set+Type\\&radnum=2222\\&irsa=IRSA+Only\\&submit=Get+Inventory\\&output=%%2Firsa%%2Fcm%%2Fops_2.0%%2Firsa%%2Fshare%%2Fwsvc%%2FRadar%%2Fcatlist.tbl_type\\&url=%%2Fworkspace%%2FTMP_3hX3SO_29666\\&dir=%%2Fwork%%2FTMP_3hX3SO_29666\\&snull=matches+only\\&datav=Data+Set+Type"
 #define SPITZER_URL "open http://sha.ipac.caltech.edu/applications/Spitzer/SHA/#id=SearchByPosition\\&DoSearch=true\\&SearchByPosition.field.radius=0.033333333\\&UserTargetWorldPt=%.5lf;%.10lf;EQ_J2000\\&SimpleTargetPanel.field.resolvedBy=nedthensimbad\\&MoreOptions.field.prodtype=aor,pbcd\\&startIdx=0\\&pageSize=0\\&shortDesc=Position\\&isBookmarkAble=true\\&isDrillDownRoot=true\\&isSearchResult=true"
 #define CASIS_URL "open http://cassis.astro.cornell.edu/atlas/cgi/radec6.py?ra=%.5lf\\&dec=%.6lf&radius=20"
-#define RAPID_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s\\&submit=submit%%20query\\&maxObject=100\\&OutputMode=LIST"
-#define MIRSTD_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d\\&submit=submit%%20query\\&maxObject=100\\&OutputMode=LIST"
-#define SSLOC_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s\\&submit=submit%%20query\\&maxObject=100\\&OutputMode=LIST"
-#define STD_SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf\\&CooFrame=FK5\\&CooEpoch=2000\\&CooEqui=2000\\&CooDefinedFrames=none\\&Radius=1\\&Radius.unit=arcmin\\&submit=submit+query\\&CoordList=\\&output.format=HTML"
+#define RAPID_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s\\&submit=submit%%20query\\&output.max=%d\\&OutputMode=LIST"
+#define MIRSTD_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d\\&submit=submit%%20query\\&output.max=%d\\&OutputMode=LIST"
+#define SSLOC_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s\\&submit=submit%%20query\\&output.max=%d\\&OutputMode=LIST"
+#define STD_SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf\\&CooFrame=FK5\\&CooEpoch=2000\\&CooEqui=2000\\&CooDefinedFrames=none\\&Radius=10\\&Radius.unit=arcsec\\&submit=submit+query\\&CoordList=\\&output.format=HTML"
 #else
 #define DSS_URL "\"http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey\""
 #define SIMBAD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none&CooEpoch=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML\""
@@ -90,10 +90,10 @@
 #define IRSA_URL "\"http://irsa.ipac.caltech.edu/cgi-bin/Radar/nph-estimation?mission=All&objstr=%d%%3A%d%%3A%.2lf+%s%d%%3A%d%%3A%.2lf&mode=cone&radius=2&radunits=arcmin&range=6.25+Deg.&data=Data+Set+Type&radnum=2222&irsa=IRSA+Only&submit=Get+Inventory&output=%%2Firsa%%2Fcm%%2Fops_2.0%%2Firsa%%2Fshare%%2Fwsvc%%2FRadar%%2Fcatlist.tbl_type&url=%%2Fworkspace%%2FTMP_3hX3SO_29666&dir=%%2Fwork%%2FTMP_3hX3SO_29666&snull=matches+only&datav=Data+Set+Type\""
 #define SPITZER_URL "\"http://sha.ipac.caltech.edu/applications/Spitzer/SHA/#id=SearchByPosition&DoSearch=true&SearchByPosition.field.radius=0.033333333&UserTargetWorldPt=%.5lf;%.10lf;EQ_J2000&SimpleTargetPanel.field.resolvedBy=nedthensimbad&MoreOptions.field.prodtype=aor,pbcd&startIdx=0&pageSize=0&shortDesc=Position&isBookmarkAble=true&isDrillDownRoot=true&isSearchResult=true\""
 #define CASIS_URL "\"http://cassis.astro.cornell.edu/atlas/cgi/radec6.py?ra=%.5lf&dec=%.6lf&radius=20\""
-#define RAPID_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s&submit=submit%%20query&maxObject=100&OutputMode=LIST\""
-#define MIRSTD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&maxObject=100&OutputMode=LIST\""
-#define SSLOC_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&maxObject=100&OutputMode=LIST\""
-#define STD_SIMBAD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=1&Radius.unit=arcmin&submit=submit+query&CoordList=&output.format=HTML\""
+#define RAPID_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s&submit=submit%%20query&output.max=%d&OutputMode=LIST\""
+#define MIRSTD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&output.max=%d&OutputMode=LIST\""
+#define SSLOC_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&output.max=%d&OutputMode=LIST\""
+#define STD_SIMBAD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=10&Radius.unit=arcsec&submit=submit+query&CoordList=&output.format=HTML\""
 #endif
 
 #ifdef USE_WIN32
@@ -110,10 +110,14 @@
 #define DSS_PIX 1000
 
 #define STDDB_HOST_SIMBAD "simbad.u-strasbg.fr"
-#define STDDB_PATH_SSLOC "/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&maxObject=100&OutputMode=LIST&output.format=VOTABLE"
-#define STDDB_PATH_RAPID "/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s&submit=submit%%20query&maxObject=100&OutputMode=LIST&output.format=VOTABLE"
-#define STDDB_PATH_MIRSTD "/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&maxObject=100&OutputMode=LIST&output.format=VOTABLE"
+#define STDDB_PATH_SSLOC "/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&output.max=%d&OutputMode=LIST&output.format=VOTABLE"
+#define STDDB_PATH_RAPID "/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s&submit=submit%%20query&output.max=%d&OutputMode=LIST&output.format=VOTABLE"
+#define STDDB_PATH_MIRSTD "/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&output.max=%d&OutputMode=LIST&output.format=VOTABLE"
 #define STDDB_FILE_XML "simbad.xml"
+
+#define FCDB_HOST_SIMBAD "simbad.u-strasbg.fr"
+#define FCDB_PATH "/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=%lf&CooEqui=2000&CooDefinedFrames=none&Radius=%lf&Radius.unit=arcmin&output.max=%d&submit=submit%%20query&CoordList=&OutputMode=LIST&output.format=VOTABLE"
+#define FCDB_FILE_XML "simbad_fc.xml"
 
 #define FC_HOST_STSCI "archive.stsci.edu"
 #define FC_PATH_STSCI "/cgi-bin/dss_search?v=%s&r=%d+%d+%lf&d=%s%d+%d+%lf&e=J2000&h=%d.0&w=%d.0&f=gif&c=none&fov=NONE&v3="
@@ -299,15 +303,34 @@ enum
   COLUMN_STD_F12,
   COLUMN_STD_F25,
   COLUMN_STD_F60,
-  COLUMN_STD_F100
+  COLUMN_STD_F100,
+  NUM_COLUMN_STD
+};
+
+// FCDBTreeview
+enum
+{
+  COLUMN_FCDB_NUMBER,
+  COLUMN_FCDB_NAME,
+  COLUMN_FCDB_RA,
+  COLUMN_FCDB_DEC,
+  COLUMN_FCDB_SEP,
+  COLUMN_FCDB_OTYPE,
+  COLUMN_FCDB_SP,
+  COLUMN_FCDB_U,
+  COLUMN_FCDB_B,
+  COLUMN_FCDB_V,
+  COLUMN_FCDB_R,
+  COLUMN_FCDB_I,
+  COLUMN_FCDB_J,
+  COLUMN_FCDB_H,
+  COLUMN_FCDB_K,
+  NUM_COLUMN_FCDB
 };
 
 
 #define DEF_TREE_WIDTH 320
 #define DEF_TREE_HEIGHT 600
-
-#define DEF_STD_TREE_WIDTH 750
-#define DEF_STD_TREE_HEIGHT 300
 
 enum
 {
@@ -370,7 +393,8 @@ enum{
 
 #define MAX_OBJECT 2000
 #define MAX_ROPE 32
-#define MAX_STD 101
+#define MAX_STD 100
+#define MAX_FCDB 200
 
 #ifdef USE_XMLRPC
 enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
@@ -983,6 +1007,37 @@ struct _STDpara{
 };
 
 
+typedef struct _FCDBpara FCDBpara;
+struct _FCDBpara{
+  gchar *name;
+  gdouble ra;
+  gdouble dec;
+  gdouble d_ra;
+  gdouble d_dec;
+  gdouble epoch;
+  gchar *otype;
+  gchar *sp;
+  gdouble sep;
+  gdouble u;
+  gdouble b;
+  gdouble v;
+  gdouble r;
+  gdouble i;
+  gdouble j;
+  gdouble h;
+  gdouble k;
+  gchar *f12;
+  gchar *f25;
+  gchar *f60;
+  gchar *f100;
+  gchar *q12;
+  gchar *q25;
+  gchar *q60;
+  gchar *q100;
+
+};
+
+
 typedef struct _HMSpara my_hms;
 struct _HMSpara{
   gint hours;
@@ -1104,6 +1159,7 @@ struct _typHOE{
   
   OBJpara obj[MAX_OBJECT];
   STDpara std[MAX_STD];
+  FCDBpara fcdb[MAX_FCDB];
 
   gchar *prop_id;
   gchar *prop_pass;
@@ -1218,6 +1274,7 @@ struct _typHOE{
   typPlanet neptune;
   typPlanet pluto;
 
+  GtkWidget *obj_note;
   GtkWidget *tree;
   GtkWidget *tree_label;
   gchar *tree_label_text;
@@ -1273,13 +1330,28 @@ struct _typHOE{
   gchar *std_path;
   gint  std_i;
   gint  std_i_max;
-  GtkWidget *std_tree;
+  GtkWidget *stddb_tree;
   GtkWidget *std_tgt;
-  gint std_tree_focus;
-  guint std_tree_width;
-  guint std_tree_height;
-  gint std_tree_x;
-  gint std_tree_y;
+  gint stddb_tree_focus;
+  GtkWidget *stddb_label;
+  GtkWidget *stddb_button;
+  gchar *stddb_label_text;
+  gboolean stddb_flag;
+
+  gchar *fcdb_file;
+  gchar *fcdb_host;
+  gchar *fcdb_path;
+  gint fcdb_i;
+  gint fcdb_tree_focus;
+  gdouble fcdb_d_ra0;
+  gdouble fcdb_d_dec0;
+  gint  fcdb_i_max;
+  GtkWidget *fcdb_tree;
+  GtkWidget *fcdb_label;
+  GtkWidget *fcdb_button;
+  gchar *fcdb_label_text;
+  gboolean fcdb_flag;
+
 
   GtkWidget *adc_main;
   GtkWidget *adc_dw;

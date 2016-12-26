@@ -46,6 +46,7 @@ int http_c_fc();
 #endif
 int get_dss();
 int get_stddb();
+int get_fcdb();
 
 void allsky_debug_print (const gchar *format, ...) G_GNUC_PRINTF(1, 2);
 gboolean check_allsky();
@@ -61,7 +62,7 @@ extern double get_julian_day_of_epoch();
 extern gboolean draw_skymon_cairo();
 
 gboolean  flag_getting_allsky=FALSE, flag_allsky_finish=FALSE;
-pid_t allsky_pid=0, fc_pid=0, stddb_pid=0;
+pid_t allsky_pid=0, fc_pid=0, stddb_pid=0, fcdb_pid=0;
 #ifndef USE_WIN32
 gint allsky_repeat=0;
 #endif
@@ -1748,7 +1749,7 @@ int http_c_std(typHOE *hg){
   
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
-    fprintf(stderr, "Failed to connect to %s .\n", hg->dss_host);
+    fprintf(stderr, "Failed to connect to %s .\n", hg->std_host);
 #ifdef USE_WIN32
     gtk_main_quit();
     _endthreadex(0);
@@ -1797,6 +1798,116 @@ int http_c_std(typHOE *hg){
 #ifndef USE_WIN32
     if((chmod(hg->std_file,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
     g_print("Cannot Chmod Temporary File %s!  Please check!!!\n",hg->std_file);
+  }
+#endif
+  
+#ifdef USE_WIN32
+  closesocket(command_socket);
+  gtk_main_quit();
+  _endthreadex(0);
+#else
+  close(command_socket);
+
+  return 0;
+#endif
+}
+
+
+#ifdef USE_WIN32
+unsigned __stdcall http_c_fcdb(LPVOID lpvPipe)
+{
+  typHOE *hg=(typHOE *) lpvPipe;
+#else
+int http_c_fcdb(typHOE *hg){
+#endif
+  int command_socket;           /* コマンド用ソケット */
+  int size;
+
+  char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
+  char buf[BUF_LEN+1];
+  
+  FILE *fp_write;
+  FILE *fp_read;
+
+  struct addrinfo hints, *res;
+  struct in_addr addr;
+  int err;
+   
+  /* ホストの情報 (IP アドレスなど) を取得 */
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_family = AF_INET;
+
+  if ((err = getaddrinfo(hg->fcdb_host, "http", &hints, &res)) !=0){
+    fprintf(stderr, "Bad hostname [%s]\n", hg->fcdb_host);
+#ifdef USE_WIN32
+    gtk_main_quit();
+    _endthreadex(0);
+#endif
+    return(HSKYMON_HTTP_ERROR_GETHOST);
+  }
+
+  /* ソケット生成 */
+  if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
+    fprintf(stderr, "Failed to create a new socket.\n");
+#ifdef USE_WIN32
+    gtk_main_quit();
+    _endthreadex(0);
+#endif
+    return(HSKYMON_HTTP_ERROR_SOCKET);
+  }
+  
+  /* サーバに接続 */
+  if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
+    fprintf(stderr, "Failed to connect to %s .\n", hg->fcdb_host);
+#ifdef USE_WIN32
+    gtk_main_quit();
+    _endthreadex(0);
+#endif
+    return(HSKYMON_HTTP_ERROR_CONNECT);
+  }
+  
+  // AddrInfoの解放
+  freeaddrinfo(res);
+
+  // HTTP/1.1 ではchunked対策が必要
+  sprintf(send_mesg, "GET %s HTTP/1.0\r\n", hg->fcdb_path);
+  write_to_server(command_socket, send_mesg);
+
+  sprintf(send_mesg, "Accept: application/xml\r\n");
+  write_to_server(command_socket, send_mesg);
+
+  sprintf(send_mesg, "User-Agent: Mozilla/5.0\r\n");
+  write_to_server(command_socket, send_mesg);
+
+  sprintf(send_mesg, "Host: %s\r\n", hg->fcdb_host);
+  write_to_server(command_socket, send_mesg);
+
+  sprintf(send_mesg, "Connection: close\r\n");
+  write_to_server(command_socket, send_mesg);
+
+  sprintf(send_mesg, "\r\n");
+  write_to_server(command_socket, send_mesg);
+  
+  if((fp_write=fopen(hg->fcdb_file,"w"))==NULL){
+    fprintf(stderr," File Write Error  \"%s\" \n", hg->fcdb_file);
+    return(HSKYMON_HTTP_ERROR_TEMPFILE);
+  }
+
+  while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
+    // header lines
+  }
+  while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
+    {
+      fwrite( &buf , size , 1 , fp_write ); 
+    }
+  //fwrite( &buf , size , 1 , fp_write ); 
+      
+  fclose(fp_write);
+
+#ifndef USE_WIN32
+    if((chmod(hg->fcdb_file,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
+    g_print("Cannot Chmod Temporary File %s!  Please check!!!\n",hg->fcdb_file);
   }
 #endif
   
@@ -1870,6 +1981,40 @@ int get_stddb(typHOE *hg){
   }
   else if(stddb_pid ==0) {
     http_c_std(hg);
+    kill(getppid(), SIGUSR1);  //calling dss_signal
+    _exit(1);
+  }
+#endif
+
+  return 0;
+}
+
+
+int get_fcdb(typHOE *hg){
+#ifdef USE_WIN32
+  DWORD dwErrorNumber;
+  unsigned int dwThreadID;
+  HANDLE hThread;
+  
+  hThread = (HANDLE)_beginthreadex(NULL,0,
+				   http_c_fcdb,
+				   (LPVOID)hg, 0, &dwThreadID);
+  if (hThread == NULL) {
+    dwErrorNumber = GetLastError();
+    fprintf(stderr,"_beginthreadex() error(%ld).\n", dwErrorNumber);
+  }
+  else{
+    CloseHandle(hThread);
+  }
+
+#else
+  waitpid(fcdb_pid,0,WNOHANG);
+
+  if( (fcdb_pid = fork()) <0){
+    fprintf(stderr,"fork error\n");
+  }
+  else if(fcdb_pid ==0) {
+    http_c_fcdb(hg);
     kill(getppid(), SIGUSR1);  //calling dss_signal
     _exit(1);
   }

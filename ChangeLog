@@ -1,4 +1,9 @@
-2016.12.22 ver2.8.1 - For Standard search mode added
+2016.12.26 ver2.8.2 - Added object search in finding chart (cia SIMBAD).
+	            - Standard and Object in FC tree windows are unified
+	              into the main object treeview (using tab).
+	            - Refined remake_tree in object treeview.
+
+2016.12.23 ver2.8.1 - For Standard search mode added
 	                 - ESO Opt/UV standard
 	                 - IRAF onedstds (spec16/50cal)
 	                 - HST CALSPEC

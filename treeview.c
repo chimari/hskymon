@@ -16,21 +16,20 @@
 static GtkWidget *window = NULL;
 static GtkWidget *std_window = NULL;
 void tree_update_azel_item();
-void std_tree_update_azel_item();
+void stddb_tree_update_azel_item();
 void make_tree();
 void std_make_tree();
 void tree_store_update();
 gint tree_update_azel ();
-gint std_tree_update_azel ();
+gint stddb_tree_update_azel ();
 void close_tree2();
-void std_close_tree2();
 void close_tree();
-void std_close_tree();
 void remake_tree();
-void std_remake_tree();
-
+void stddb_set_label();
+void make_std_tgt();
 void copy_stacstd();
 static void stddb_item ();
+static void fcdb_item ();
 void stddb_dl();
 #ifndef USE_WIN32
 void stddb_signal();
@@ -64,14 +63,15 @@ extern void cc_get_toggle();
 extern gboolean flagSkymon;
 #endif
 extern gboolean flagTree;
-extern gboolean flagStdTree;
 extern gboolean flagPlot;
 extern gboolean flagADC;
+extern gboolean flagFC;
 
 extern void do_plot();
 extern void do_adc();
 
 extern void fc_item ();
+extern void fcdb_item2();
 extern void adc_item ();
 
 extern gfloat get_meridian_hour();
@@ -86,6 +86,8 @@ extern void stddb_vo_parse();
 extern void create_std_para_dialog();
 
 extern gdouble deg_sep();
+
+extern GtkWidget* gtkut_toggle_button_new_from_stock();
 
 extern pid_t stddb_pid;
 
@@ -391,6 +393,65 @@ void std_double_cell_data_func(GtkTreeViewColumn *col ,
   case COLUMN_STD_J:
   case COLUMN_STD_H:
   case COLUMN_STD_K:
+    if(value>99) str=g_strdup_printf("---");
+    else str=g_strdup_printf("%5.2lf",value);
+    break;
+  }
+
+  g_object_set(renderer, "text", str, NULL);
+  if(str)g_free(str);
+}
+
+
+void fcdb_double_cell_data_func(GtkTreeViewColumn *col , 
+				GtkCellRenderer *renderer,
+				GtkTreeModel *model, 
+				GtkTreeIter *iter,
+				gpointer user_data)
+{
+  const guint index = GPOINTER_TO_UINT(user_data);
+  guint64 size;
+  gdouble value;
+  gchar *str;
+
+  gtk_tree_model_get (model, iter, 
+		      index, &value,
+		      -1);
+
+  switch (index) {
+  case COLUMN_FCDB_RA:
+    str=g_strdup_printf("%09.2lf",value);
+    break;
+
+  case COLUMN_FCDB_DEC:
+    str=g_strdup_printf("%+010.2lf",value);
+    break;
+
+  case COLUMN_FCDB_SEP:
+    {
+      gdouble sec;
+
+      sec=value*3600.;
+	
+      if(sec<60){
+	str=g_strdup_printf("%.0lf\"",sec);
+      }
+      else{
+	str=g_strdup_printf("%d\'%02d\"",
+			    (gint)(sec/60),
+			    ((gint)sec%60));
+      }
+    }
+    break;
+
+  case COLUMN_FCDB_U:
+  case COLUMN_FCDB_B:
+  case COLUMN_FCDB_V:
+  case COLUMN_FCDB_R:
+  case COLUMN_FCDB_I:
+  case COLUMN_FCDB_J:
+  case COLUMN_FCDB_H:
+  case COLUMN_FCDB_K:
     if(value>99) str=g_strdup_printf("---");
     else str=g_strdup_printf("%5.2lf",value);
     break;
@@ -718,7 +779,7 @@ void tree_update_azel_item(typHOE *hg,
 }
 
 
-void std_tree_update_azel_item(typHOE *hg, 
+void stddb_tree_update_azel_item(typHOE *hg, 
 			       GtkTreeModel *model, 
 			       GtkTreeIter iter, 
 			       gint i_list)
@@ -749,7 +810,7 @@ void std_tree_update_azel_item(typHOE *hg,
   gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 		     COLUMN_STD_SP, hg->std[i_list].sp, -1);
 
-  // Rot
+  // SEP
   gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 		     COLUMN_STD_SEP, hg->std[i_list].sep, -1);
 
@@ -862,7 +923,7 @@ std_create_items_model (typHOE *hg)
   GtkTreeIter iter;
 
   /* create list store */
-  model = gtk_list_store_new (COLUMN_STD_F100+1, 
+  model = gtk_list_store_new (NUM_COLUMN_STD, 
 			      G_TYPE_INT,     // number
 			      G_TYPE_STRING,  // name
                               G_TYPE_DOUBLE,  // ra
@@ -885,7 +946,41 @@ std_create_items_model (typHOE *hg)
 
   for (i = 0; i < hg->std_i_max; i++){
     gtk_list_store_append (model, &iter);
-    std_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
+    stddb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
+  }
+
+  return GTK_TREE_MODEL (model);
+}
+
+
+static GtkTreeModel *
+fcdb_create_items_model (typHOE *hg)
+{
+  gint i = 0;
+  GtkListStore *model;
+  GtkTreeIter iter;
+
+  /* create list store */
+  model = gtk_list_store_new (NUM_COLUMN_FCDB, 
+			      G_TYPE_INT,     // number
+			      G_TYPE_STRING,  // name
+                              G_TYPE_DOUBLE,  // ra
+			      G_TYPE_DOUBLE,  // dec
+			      G_TYPE_DOUBLE,  // Sep
+			      G_TYPE_STRING,  // O_Type
+			      G_TYPE_STRING,  // Sp_Type
+			      G_TYPE_DOUBLE,  // U
+			      G_TYPE_DOUBLE,  // B
+			      G_TYPE_DOUBLE,  // V
+			      G_TYPE_DOUBLE,  // R
+			      G_TYPE_DOUBLE,  // I
+			      G_TYPE_DOUBLE,  // J
+			      G_TYPE_DOUBLE,  // H
+			      G_TYPE_DOUBLE); // K
+
+  for (i = 0; i < hg->fcdb_i_max; i++){
+    gtk_list_store_append (model, &iter);
+    fcdb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
   }
 
   return GTK_TREE_MODEL (model);
@@ -945,9 +1040,6 @@ add_item (GtkWidget *button, gpointer data)
     tree_update_azel_item(hg, model, iter, i);
 
     remake_tree(hg);
-    //make_obj_list(hg,FALSE);
-    //calcpa2_main(hg);
-    //tree_update_azel((gpointer)hg);
 
     gtk_tree_path_free (path);
   }
@@ -979,9 +1071,6 @@ remove_item (GtkWidget *widget, gpointer data)
     hg->i_max--;
     
     remake_tree(hg);
-    //make_obj_list(hg,FALSE);
-
-    //tree_update_azel((gpointer)hg);
 
     gtk_tree_path_free (path);
   }
@@ -1223,7 +1312,7 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
 		hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
-		hg->std_sptype2);
+		hg->std_sptype2,MAX_STD);
       }
       else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
 	sprintf(tmp,SSLOC_URL,
@@ -1234,7 +1323,7 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
 		hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
-		hg->std_sptype2);
+		hg->std_sptype2,MAX_STD);
       }
       else{
 	sprintf(tmp,SSLOC_URL,
@@ -1245,7 +1334,7 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
 		hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
-		hg->std_sptype2);
+		hg->std_sptype2,MAX_STD);
       }
       break;
     case WWWDB_RAPID:
@@ -1256,7 +1345,7 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
 		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_vsini,hg->std_vmag,hg->std_sptype);
+		hg->std_vsini,hg->std_vmag,hg->std_sptype,MAX_STD);
       }
       else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
 	sprintf(tmp,RAPID_URL,
@@ -1265,7 +1354,7 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
 		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_vsini,hg->std_vmag,hg->std_sptype);
+		hg->std_vsini,hg->std_vmag,hg->std_sptype,MAX_STD);
       }
       else{
 	sprintf(tmp,RAPID_URL,
@@ -1274,7 +1363,7 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
 		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_vsini,hg->std_vmag,hg->std_sptype);
+		hg->std_vsini,hg->std_vmag,hg->std_sptype,MAX_STD);
       }
       break;
     case WWWDB_MIRSTD:
@@ -1285,7 +1374,7 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
 		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_iras12,hg->std_iras25);
+		hg->std_iras12,hg->std_iras25,MAX_STD);
       }
       else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
 	sprintf(tmp,MIRSTD_URL,
@@ -1294,7 +1383,7 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
 		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_iras12,hg->std_iras25);
+		hg->std_iras12,hg->std_iras25,MAX_STD);
       }
       else{
 	sprintf(tmp,MIRSTD_URL,
@@ -1303,7 +1392,7 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
 		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_iras12,hg->std_iras25);
+		hg->std_iras12,hg->std_iras25,MAX_STD);
       }
       break;
     }
@@ -1340,7 +1429,38 @@ std_simbad (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
 
   sprintf(tmp,STD_SIMBAD_URL, 
-	  hg->std[hg->std_tree_focus].d_ra,hg->std[hg->std_tree_focus].d_dec);
+	  hg->std[hg->stddb_tree_focus].d_ra,hg->std[hg->stddb_tree_focus].d_dec);
+
+#ifdef USE_WIN32
+  ShellExecute(NULL, 
+	       "open", 
+	       tmp,
+	       NULL, 
+	       NULL, 
+	       SW_SHOWNORMAL);
+#elif defined(USE_OSX)
+  if(system(tmp)==0){
+    fprintf(stderr, "Error: Could not open the default www browser.");
+  }
+#else
+  cmdline=g_strconcat(hg->www_com," ",tmp,NULL);
+  
+  ext_play(cmdline);
+  g_free(cmdline);
+#endif
+}
+
+static void
+fcdb_simbad (GtkWidget *widget, gpointer data)
+{
+  gchar tmp[2048];
+#ifndef USE_WIN32
+  gchar *cmdline;
+#endif
+  typHOE *hg = (typHOE *)data;
+
+  sprintf(tmp,STD_SIMBAD_URL, 
+	  hg->fcdb[hg->fcdb_tree_focus].d_ra,hg->fcdb[hg->fcdb_tree_focus].d_dec);
 
 #ifdef USE_WIN32
   ShellExecute(NULL, 
@@ -1436,6 +1556,26 @@ void copy_stacstd(typHOE *hg, const stacSTDpara *stacstd,
 }
 
 static void
+stddb_toggle (GtkWidget *widget, gpointer data)
+{
+  typHOE *hg = (typHOE *)data;
+
+  hg->stddb_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
+  if(flagSkymon) draw_skymon(hg->skymon_dw,hg, FALSE);
+}
+
+static void
+fcdb_toggle (GtkWidget *widget, gpointer data)
+{
+  typHOE *hg = (typHOE *)data;
+
+  hg->fcdb_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
+  if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL, (gpointer)hg);
+}
+
+static void
 stddb_item (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
@@ -1511,7 +1651,7 @@ stddb_item (GtkWidget *widget, gpointer data)
 	   ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 	   ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
 	   hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
-	   hg->std_sptype2);
+	   hg->std_sptype2,MAX_STD);
       }
       else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
 	hg->std_path=g_strdup_printf
@@ -1523,7 +1663,7 @@ stddb_item (GtkWidget *widget, gpointer data)
 	   ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 	   ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
 	   hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
-	   hg->std_sptype2);
+	   hg->std_sptype2,MAX_STD);
       }
       else{
 	hg->std_path=g_strdup_printf
@@ -1535,7 +1675,7 @@ stddb_item (GtkWidget *widget, gpointer data)
 	   ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 	   ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
 	   hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
-	   hg->std_sptype2);
+	   hg->std_sptype2,MAX_STD);
       }
       break;
     case STDDB_RAPID:
@@ -1554,7 +1694,7 @@ stddb_item (GtkWidget *widget, gpointer data)
 	   ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
 	   ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 	   ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-	   hg->std_vsini,hg->std_vmag,hg->std_sptype);
+	   hg->std_vsini,hg->std_vmag,hg->std_sptype,MAX_STD);
       }
       else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
 	hg->std_path=g_strdup_printf
@@ -1564,7 +1704,7 @@ stddb_item (GtkWidget *widget, gpointer data)
 	   ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
 	   ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 	   ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-	   hg->std_vsini,hg->std_vmag,hg->std_sptype);
+	   hg->std_vsini,hg->std_vmag,hg->std_sptype,MAX_STD);
       }
       else{
 	hg->std_path=g_strdup_printf
@@ -1574,7 +1714,7 @@ stddb_item (GtkWidget *widget, gpointer data)
 	   ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
 	   ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 	   ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-	   hg->std_vsini,hg->std_vmag,hg->std_sptype);
+	   hg->std_vsini,hg->std_vmag,hg->std_sptype,MAX_STD);
       }
       break;
     case STDDB_MIRSTD:
@@ -1593,7 +1733,7 @@ stddb_item (GtkWidget *widget, gpointer data)
 	  ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
 	  ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 	  ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-	  hg->std_iras12,hg->std_iras25);
+	  hg->std_iras12,hg->std_iras25,MAX_STD);
       }
       else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
        hg->std_path=g_strdup_printf
@@ -1603,7 +1743,7 @@ stddb_item (GtkWidget *widget, gpointer data)
 	  ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
 	  ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 	  ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-	  hg->std_iras12,hg->std_iras25);
+	  hg->std_iras12,hg->std_iras25,MAX_STD);
       }
       else{
        hg->std_path=g_strdup_printf
@@ -1613,7 +1753,7 @@ stddb_item (GtkWidget *widget, gpointer data)
 	  ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
 	  ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
 	  ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-	  hg->std_iras12,hg->std_iras25);
+	  hg->std_iras12,hg->std_iras25,MAX_STD);
       }
       break;
     }
@@ -1638,8 +1778,11 @@ stddb_item (GtkWidget *widget, gpointer data)
 
     calcpa2_main(hg);
 
-    if(!flagStdTree) std_make_tree(NULL, hg);
-    else std_remake_tree(hg);
+    if(flagTree) std_make_tree(NULL, hg);
+
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->stddb_button),
+				 TRUE);
+    hg->stddb_flag=TRUE;
 
     if(flagSkymon){
       draw_skymon(hg->skymon_dw,hg, FALSE);
@@ -1648,7 +1791,12 @@ stddb_item (GtkWidget *widget, gpointer data)
   }
 }
 
+static void fcdb_item (GtkWidget *widget, gpointer data)
+{
+  typHOE *hg = (typHOE *)data;
 
+  fcdb_item2(hg);
+}
 
 static void
 up_item (GtkWidget *widget, gpointer data)
@@ -1780,8 +1928,8 @@ std_focus_item (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
   typHOE *hg = (typHOE *)data;
-  GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW(hg->std_tree));
-  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->std_tree));
+  GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW(hg->stddb_tree));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->stddb_tree));
 
   if (gtk_tree_selection_get_selected (selection, NULL, &iter))
     {
@@ -1791,7 +1939,7 @@ std_focus_item (GtkWidget *widget, gpointer data)
       path = gtk_tree_model_get_path (model, &iter);
       gtk_tree_model_get (model, &iter, COLUMN_STD_NUMBER, &i, -1);
       i--;
-      hg->std_tree_focus=i;
+      hg->stddb_tree_focus=i;
       
       gtk_tree_path_free (path);
       
@@ -1800,6 +1948,29 @@ std_focus_item (GtkWidget *widget, gpointer data)
 	draw_skymon(hg->skymon_dw,hg, FALSE);
       }
 #endif
+    }
+}
+
+static void fcdb_focus_item (GtkWidget *widget, gpointer data)
+{
+  GtkTreeIter iter;
+  typHOE *hg = (typHOE *)data;
+  GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW(hg->fcdb_tree));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->fcdb_tree));
+
+  if (gtk_tree_selection_get_selected (selection, NULL, &iter))
+    {
+      gint i;
+      GtkTreePath *path;
+      
+      path = gtk_tree_model_get_path (model, &iter);
+      gtk_tree_model_get (model, &iter, COLUMN_STD_NUMBER, &i, -1);
+      i--;
+      hg->fcdb_tree_focus=i;
+      
+      gtk_tree_path_free (path);
+      
+      if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL, (gpointer)hg);
     }
 }
 
@@ -2597,386 +2768,851 @@ std_add_columns (typHOE *hg,
 
 }
 
+static void
+fcdb_add_columns (typHOE *hg,
+		 GtkTreeView  *treeview, 
+		 GtkTreeModel *items_model)
+{
+  GtkCellRenderer *renderer;
+  GtkTreeViewColumn *column;  
+
+  /* Name column */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+  		     GINT_TO_POINTER (COLUMN_FCDB_NAME));
+  column=gtk_tree_view_column_new_with_attributes ("Name",
+						   renderer,
+						   "text", 
+						   COLUMN_FCDB_NAME,
+						   NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_NAME);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* RA column */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_RA));
+  column=gtk_tree_view_column_new_with_attributes ("RA",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_RA,
+						   NULL); 
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  fcdb_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_FCDB_RA),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_RA);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* Dec column */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_DEC));
+  column=gtk_tree_view_column_new_with_attributes ("Dec",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_DEC,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  fcdb_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_FCDB_DEC),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_DEC);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* Separation */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_SEP));
+  column=gtk_tree_view_column_new_with_attributes ("Dist.",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_SEP,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  fcdb_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_FCDB_SEP),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_SEP);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* O-Type */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_OTYPE));
+  column=gtk_tree_view_column_new_with_attributes ("type",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_OTYPE,
+						   NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_OTYPE);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* Sp Type */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_SP));
+  column=gtk_tree_view_column_new_with_attributes ("Sp.",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_SP,
+						   NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_SP);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* U */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_U));
+  column=gtk_tree_view_column_new_with_attributes ("U",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_U,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  fcdb_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_FCDB_U),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_U);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* B */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_B));
+  column=gtk_tree_view_column_new_with_attributes ("B",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_B,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  fcdb_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_FCDB_B),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_B);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* V */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_V));
+  column=gtk_tree_view_column_new_with_attributes ("V",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_V,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  fcdb_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_FCDB_V),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_V);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* R */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_R));
+  column=gtk_tree_view_column_new_with_attributes ("R",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_R,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  fcdb_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_FCDB_R),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_R);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* I */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_I));
+  column=gtk_tree_view_column_new_with_attributes ("I",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_I,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  fcdb_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_FCDB_I),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_I);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* J */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_J));
+  column=gtk_tree_view_column_new_with_attributes ("J",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_J,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  fcdb_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_FCDB_J),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_J);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* H */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_H));
+  column=gtk_tree_view_column_new_with_attributes ("H",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_H,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  fcdb_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_FCDB_H),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_H);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+  /* K */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_FCDB_K));
+  column=gtk_tree_view_column_new_with_attributes ("K",
+						   renderer,
+						   "text",
+						   COLUMN_FCDB_K,
+						   NULL);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  fcdb_double_cell_data_func,
+					  GUINT_TO_POINTER(COLUMN_FCDB_K),
+					  NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_K);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+}
+
+
 GtkWidget *
 do_editable_cells (typHOE *hg)
 {
-  if (!window)
-    {
-      GtkWidget *vbox;
-      GtkWidget *hbox;
-      GtkWidget *ebox;
-      GtkWidget *sw;
-      //GtkWidget *treeview;
-      GtkWidget *button;
-      GtkTreeModel *items_model;
-      GtkWidget *label;
-      GtkWidget *combo;
-      GtkWidget *check;
-      GtkWidget *entry;
-      gchar tmp[12];
+  GtkWidget *vbox;
+  GtkWidget *hbox;
+  GtkWidget *ebox;
+  GtkWidget *sw;
+  //GtkWidget *treeview;
+  GtkWidget *button;
+  GtkTreeModel *items_model;
+  GtkWidget *label;
+  GtkWidget *combo;
+  GtkWidget *check;
+  GtkWidget *entry;
+  gchar tmp[12];
+  GtkWidget *all_note, *note_vbox;
+  if (!window) {
 
-      /* create window, etc */
-      window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-      gtk_window_set_screen (GTK_WINDOW (window),
-                             gtk_widget_get_screen (hg->skymon_main));
-      gtk_window_set_title (GTK_WINDOW (window), "Sky Monitor : Object List");
-      gtk_window_set_default_size (GTK_WINDOW (window), hg->tree_width, hg->tree_height);
-      gtk_container_set_border_width (GTK_CONTAINER (window), 5);
-      g_signal_connect (window, "destroy",
-                        G_CALLBACK (close_tree), (gpointer)hg);
-
-      vbox = gtk_vbox_new (FALSE, 5);
-      gtk_container_add (GTK_CONTAINER (window), vbox);
-
-      hbox = gtk_hbox_new (FALSE, 0);
-      gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
-      
-      hg->tree_label= gtk_label_new (hg->tree_label_text);
-      gtk_box_pack_start(GTK_BOX(hbox), hg->tree_label, TRUE, TRUE, 0);
+    /* create window, etc */
+    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_screen (GTK_WINDOW (window),
+			   gtk_widget_get_screen (hg->skymon_main));
+    gtk_window_set_title (GTK_WINDOW (window), "Sky Monitor : Object List");
+    gtk_window_set_default_size (GTK_WINDOW (window), hg->tree_width, hg->tree_height);
+    gtk_container_set_border_width (GTK_CONTAINER (window), 5);
+    g_signal_connect (window, "destroy",
+		      G_CALLBACK (close_tree), (gpointer)hg);
+    
+    hg->obj_note = gtk_notebook_new ();
+    gtk_notebook_set_tab_pos (GTK_NOTEBOOK (hg->obj_note), GTK_POS_TOP);
+    gtk_notebook_set_scrollable (GTK_NOTEBOOK (hg->obj_note), TRUE);
+    gtk_container_add (GTK_CONTAINER (window), hg->obj_note);
+    
+    vbox = gtk_vbox_new (FALSE, 5);
+    label = gtk_label_new ("Main Target");
+    gtk_notebook_append_page (GTK_NOTEBOOK (hg->obj_note), vbox, label);
+    //gtk_container_add (GTK_CONTAINER (window), vbox);
+    
+    hbox = gtk_hbox_new (FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
+    
+    hg->tree_label= gtk_label_new (hg->tree_label_text);
+    gtk_box_pack_start(GTK_BOX(hbox), hg->tree_label, TRUE, TRUE, 0);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
+#else
+    button = gtk_button_new_with_label ("Quit");
+#endif
+    g_signal_connect (button, "clicked",
+		      G_CALLBACK (close_tree2), (gpointer)hg);
+    gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,
+				"Close");
+#endif
+    
+    sw = gtk_scrolled_window_new (NULL, NULL);
+    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),
+					 GTK_SHADOW_ETCHED_IN);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
+				    GTK_POLICY_AUTOMATIC,
+				    GTK_POLICY_AUTOMATIC);
+    gtk_box_pack_start (GTK_BOX (vbox), sw, TRUE, TRUE, 0);
+    
+    /* create models */
+    items_model = create_items_model (hg);
+    
+    /* create tree view */
+    hg->tree = gtk_tree_view_new_with_model (items_model);
+    gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (hg->tree), TRUE);
+    gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (hg->tree)),
+				 GTK_SELECTION_SINGLE);
+    add_columns (hg, GTK_TREE_VIEW (hg->tree), items_model);
+    
+    g_object_unref (items_model);
+    
+    gtk_container_add (GTK_CONTAINER (sw), hg->tree);
+    
+    /* some buttons */
+    hbox = gtk_hbox_new (FALSE, 4);
+    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock("Plot",GTK_STOCK_PRINT_PREVIEW);
+#else
+    button = gtk_button_new_with_label ("Plot");
+#endif
+    g_signal_connect (button, "clicked",
+		      G_CALLBACK (plot2_item), (gpointer)hg);
+    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock("AD",GTK_STOCK_PRINT_PREVIEW);
+#else
+    button = gtk_button_new_with_label ("AD");
+#endif
+    g_signal_connect (button, "clicked",
+		      G_CALLBACK (adc_item), (gpointer)hg);
+    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock("Finding Chart",GTK_STOCK_ABOUT);
+#else
+    button = gtk_button_new_with_label ("Finding Chart");
+#endif
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (fc_item), (gpointer)hg);
+    
+    label = gtk_label_new ("   ");
+    gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_ADD);
+#else
+    button = gtk_button_new_with_label ("Add");
+#endif
+    g_signal_connect (button, "clicked",
+		      G_CALLBACK (add_item), (gpointer)hg);
+    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REMOVE);
+#else
+    button = gtk_button_new_with_label ("Del");
+#endif
+    g_signal_connect (button, "clicked",
+		      G_CALLBACK (remove_item), (gpointer)hg);
+    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
 #ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_GO_UP);
 #else
-      button = gtk_button_new_with_label ("Quit");
+    button = gtk_button_new_with_label ("Up");
 #endif
-      g_signal_connect (button, "clicked",
-			G_CALLBACK (close_tree2), (gpointer)hg);
-      gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+    g_signal_connect (button, "clicked",
+		      G_CALLBACK (up_item), (gpointer)hg);
+    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_GO_DOWN);
+#else
+    button = gtk_button_new_with_label ("Down");
+#endif
+    g_signal_connect (button, "clicked",
+		      G_CALLBACK (down_item), (gpointer)hg);
+    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+
+
+    label = gtk_label_new ("   AzEl");
+    gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
+
+    {
+      GtkListStore *store;
+      GtkTreeIter iter, iter_set;	  
+      GtkCellRenderer *renderer;
+      
+      store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "Normal",
+			 1, AZEL_NORMAL, -1);
+      if(hg->azel_mode==AZEL_NORMAL) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "+270",
+			 1, AZEL_POSI, -1);
+      if(hg->azel_mode==AZEL_POSI) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "-270",
+			 1, AZEL_NEGA, -1);
+      if(hg->azel_mode==AZEL_NEGA) iter_set=iter;
+      
+      
+      combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+      gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
+      g_object_unref(store);
+	
+      renderer = gtk_cell_renderer_text_new();
+      gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+      gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+	
+	
+      gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+      gtk_widget_show(combo);
+      my_signal_connect (combo,"changed",cc_get_combo_box,
+			   &hg->azel_mode);
+    }
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
+#else
+    button = gtk_button_new_with_label ("Refresh");
+#endif
+    g_signal_connect (button, "clicked",
+		      G_CALLBACK (refresh_item), (gpointer)hg);
+    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+    
+    
+    g_signal_connect (hg->tree, "cursor-changed",
+		      G_CALLBACK (focus_item), (gpointer)hg);
+      
+    
+    hbox = gtk_hbox_new (FALSE, 4);
+    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+    
+    label = gtk_label_new ("Web");
+    gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
+    
+    {
+      GtkListStore *store;
+      GtkTreeIter iter, iter_set;	  
+      GtkCellRenderer *renderer;
+      
+      store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, 
+				 G_TYPE_BOOLEAN);
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "SIMBAD",
+			 1, WWWDB_SIMBAD, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_SIMBAD) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "NED",
+			 1, WWWDB_NED, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_NED) iter_set=iter;
+      
+      //gtk_list_store_append(store, &iter);
+      //gtk_list_store_set(store, &iter, 0, "SDSS(DR8)",
+      //			   1, WWWDB_DR8, 2, TRUE, -1);
+      //if(hg->wwwdb_mode==WWWDB_DR8) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "SDSS(DR12)",
+			 1, WWWDB_DR12, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_DR12) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "MAST",
+			 1, WWWDB_MAST, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_MAST) iter_set=iter;
+	
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "IRSA",
+			 1, WWWDB_IRSA, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_IRSA) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "Spitzer",
+			 1, WWWDB_SPITZER, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_SPITZER) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "CASIS",
+			 1, WWWDB_CASIS, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_CASIS) iter_set=iter;
+      
+      gtk_list_store_append (store, &iter);
+      gtk_list_store_set (store, &iter,
+			  0, NULL,
+			  1, WWWDB_SEP1,2, FALSE, 
+			  -1);
+	
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "Standard Locator",
+			 1, WWWDB_SSLOC, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_SSLOC) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "Rapid Rotator",
+			 1, WWWDB_RAPID, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_RAPID) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "Mid-IR Standard",
+			 1, WWWDB_MIRSTD, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_MIRSTD) iter_set=iter;
+      
+      combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+      gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
+      g_object_unref(store);
+      
+      renderer = gtk_cell_renderer_text_new();
+      gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+      gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+      
+      gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (combo), 
+					    is_separator, NULL, NULL);	
+      
+      gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+      gtk_widget_show(combo);
+      my_signal_connect (combo,"changed",cc_get_combo_box,
+			 &hg->wwwdb_mode);
+
+#ifdef __GTK_STOCK_H__
+      button=gtkut_button_new_from_stock("Go",GTK_STOCK_FIND);
+#else
+      button = gtk_button_new_with_label ("Go");
+#endif
+      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+      my_signal_connect (button, "clicked",
+			   G_CALLBACK (wwwdb_item), (gpointer)hg);
+      
+    }
+
+    label = gtk_label_new ("   Standard");
+    gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
+    
+    {
+      GtkListStore *store;
+      GtkTreeIter iter, iter_set;	  
+      GtkCellRenderer *renderer;
+      
+      store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, 
+				 G_TYPE_BOOLEAN);
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "Standard Locator",
+			 1, STDDB_SSLOC, 2, TRUE, -1);
+      if(hg->stddb_mode==STDDB_SSLOC) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "Rapid Rotator",
+			 1, STDDB_RAPID, 2, TRUE, -1);
+      if(hg->stddb_mode==STDDB_RAPID) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "Mid-IR Standard",
+			 1, STDDB_MIRSTD, 2, TRUE, -1);
+      if(hg->stddb_mode==STDDB_MIRSTD) iter_set=iter;
+      
+      gtk_list_store_append (store, &iter);
+      gtk_list_store_set (store, &iter,
+			  0, NULL,
+			  1, WWWDB_SEP1,2, FALSE, 
+			  -1);
+
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "ESO Opt/UV Standard",
+			 1, STDDB_ESOSTD, 2, TRUE, -1);
+      if(hg->stddb_mode==STDDB_ESOSTD) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "IRAF 1D-std (spec16/50)",
+			 1, STDDB_IRAFSTD, 2, TRUE, -1);
+      if(hg->stddb_mode==STDDB_IRAFSTD) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "HST CALSPEC",
+			 1, STDDB_CALSPEC, 2, TRUE, -1);
+      if(hg->stddb_mode==STDDB_CALSPEC) iter_set=iter;
+      
+      combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+      gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
+      g_object_unref(store);
+      
+      renderer = gtk_cell_renderer_text_new();
+      gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+      gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+      
+      gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (combo), 
+					    is_separator, NULL, NULL);	
+      
+      gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+      gtk_widget_show(combo);
+      my_signal_connect (combo,"changed",cc_get_combo_box,
+			 &hg->stddb_mode);
+    }
+    
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock("Search",GTK_STOCK_FIND);
+#else
+    button = gtk_button_new_with_label ("Search");
+#endif
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (stddb_item), (gpointer)hg);
+    
+  }
+  
+  // STDDB
+  {
+    vbox = gtk_vbox_new (FALSE, 5);
+    label = gtk_label_new ("Standard");
+    gtk_notebook_append_page (GTK_NOTEBOOK (hg->obj_note), vbox, label);
+
+    hbox = gtk_hbox_new (FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
+#else
+    button = gtk_button_new_with_label ("Refresh");
+#endif
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (stddb_item), (gpointer)hg);
+    
+
+
+#ifdef __GTK_STOCK_H__
+    hg->stddb_button=gtkut_toggle_button_new_from_stock(NULL,GTK_STOCK_APPLY);
+#else
+    hg->stddb_button=gtk_toggle_button_new_with_label("Display Standards");
+#endif
+    gtk_container_set_border_width (GTK_CONTAINER (hg->stddb_button), 0);
+    gtk_box_pack_start(GTK_BOX(hbox),hg->stddb_button,FALSE,FALSE,0);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->stddb_button),
+				 hg->stddb_flag);
+    my_signal_connect(hg->stddb_button,"toggled",
+		      G_CALLBACK(stddb_toggle), 
+		      (gpointer)hg);
 #ifdef __GTK_TOOLTIP_H__
-      gtk_widget_set_tooltip_text(button,
-				  "Close");
+    gtk_widget_set_tooltip_text(hg->stddb_button,
+				"Display Standards in SkyMon");
 #endif
 
-      sw = gtk_scrolled_window_new (NULL, NULL);
-      gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),
-                                           GTK_SHADOW_ETCHED_IN);
-      gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
-                                      GTK_POLICY_AUTOMATIC,
-                                      GTK_POLICY_AUTOMATIC);
-      gtk_box_pack_start (GTK_BOX (vbox), sw, TRUE, TRUE, 0);
+    hg->stddb_label= gtk_label_new (hg->stddb_label_text);
+    gtk_box_pack_start(GTK_BOX(hbox), hg->stddb_label, TRUE, TRUE, 0);
+    
+    stddb_set_label(hg);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
+#else
+    button = gtk_button_new_with_label ("Quit");
+#endif
+    g_signal_connect (button, "clicked",
+		      G_CALLBACK (close_tree2), (gpointer)hg);
+    gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,
+				"Close");
+#endif
+    
+    sw = gtk_scrolled_window_new (NULL, NULL);
+    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),
+					 GTK_SHADOW_ETCHED_IN);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
+				    GTK_POLICY_AUTOMATIC,
+				    GTK_POLICY_AUTOMATIC);
+    gtk_box_pack_start (GTK_BOX (vbox), sw, TRUE, TRUE, 0);
+    
+    /* create models */
+    items_model = std_create_items_model (hg);
+    
+    
+    /* create tree view */
+    hg->stddb_tree = gtk_tree_view_new_with_model (items_model);
+    gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (hg->stddb_tree), TRUE);
+    gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (hg->stddb_tree)),
+				 GTK_SELECTION_SINGLE);
+    std_add_columns (hg, GTK_TREE_VIEW (hg->stddb_tree), items_model);
+    
+    g_object_unref (items_model);
+    
+    gtk_container_add (GTK_CONTAINER (sw), hg->stddb_tree);
+    
+    g_signal_connect (hg->stddb_tree, "cursor-changed",
+		      G_CALLBACK (std_focus_item), (gpointer)hg);
+    
+    /* some buttons */
+    hbox = gtk_hbox_new (FALSE, 4);
+    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock("SIMBAD",GTK_STOCK_FIND);
+#else
+    button = gtk_button_new_with_label ("SIMBAD");
+#endif
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (std_simbad), (gpointer)hg);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock("Search Param.",GTK_STOCK_PROPERTIES);
+#else
+    button = gtk_button_new_with_label ("Search Param.");
+#endif
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       create_std_para_dialog, (gpointer)hg);
+    
+    label= gtk_label_new ("    ");
+    gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock("OPE Def.",GTK_STOCK_EDIT);
+#else
+    button = gtk_button_new_with_label ("OPE Def.");
+#endif
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       make_std_tgt, (gpointer)hg);
+    
+    hg->std_tgt = gtk_entry_new ();
+    gtk_box_pack_start(GTK_BOX(hbox),hg->std_tgt,TRUE, TRUE, 0);
+    gtk_entry_set_editable(GTK_ENTRY(hg->std_tgt),FALSE);
+    my_entry_set_width_chars(GTK_ENTRY(hg->std_tgt),50);
+  }
 
-      /* create models */
-      items_model = create_items_model (hg);
+  // FCDB
+  {
+    vbox = gtk_vbox_new (FALSE, 5);
+    label = gtk_label_new ("Finding Chart");
+    gtk_notebook_append_page (GTK_NOTEBOOK (hg->obj_note), vbox, label);
+    
+    hbox = gtk_hbox_new (FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
+#else
+    button = gtk_button_new_with_label ("Refresh");
+#endif
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (fcdb_item), (gpointer)hg);
+    
+#ifdef __GTK_STOCK_H__
+    hg->fcdb_button=gtkut_toggle_button_new_from_stock(NULL,GTK_STOCK_APPLY);
+#else
+    hg->fcdb_button=gtk_toggle_button_new_with_label("Display Objects in FC");
+#endif
+    gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_button), 0);
+    gtk_box_pack_start(GTK_BOX(hbox),hg->fcdb_button,FALSE,FALSE,0);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_button),
+				 hg->fcdb_flag);
+    my_signal_connect(hg->fcdb_button,"toggled",
+		      G_CALLBACK(fcdb_toggle), 
+		      (gpointer)hg);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(hg->fcdb_button,
+				"Display Objects in FC");
+#endif
 
-      /* create tree view */
-      hg->tree = gtk_tree_view_new_with_model (items_model);
-      gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (hg->tree), TRUE);
-      gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (hg->tree)),
-                                   GTK_SELECTION_SINGLE);
-      add_columns (hg, GTK_TREE_VIEW (hg->tree), items_model);
+    hg->fcdb_label= gtk_label_new (hg->fcdb_label_text);
+    gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_label, TRUE, TRUE, 0);
+      
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
+#else
+    button = gtk_button_new_with_label ("Quit");
+#endif
+    g_signal_connect (button, "clicked",
+		      G_CALLBACK (close_tree2), (gpointer)hg);
+    gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,
+				"Close");
+#endif
+    
+    sw = gtk_scrolled_window_new (NULL, NULL);
+    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),
+					 GTK_SHADOW_ETCHED_IN);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
+				    GTK_POLICY_AUTOMATIC,
+				    GTK_POLICY_AUTOMATIC);
+    gtk_box_pack_start (GTK_BOX (vbox), sw, TRUE, TRUE, 0);
 
-      g_object_unref (items_model);
+    /* create models */
+    items_model = fcdb_create_items_model (hg);
 
-      gtk_container_add (GTK_CONTAINER (sw), hg->tree);
+    /* create tree view */
+    hg->fcdb_tree = gtk_tree_view_new_with_model (items_model);
+    gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (hg->fcdb_tree), TRUE);
+    gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (hg->fcdb_tree)),
+				 GTK_SELECTION_SINGLE);
+    fcdb_add_columns (hg, GTK_TREE_VIEW (hg->fcdb_tree), items_model);
+    
+    g_object_unref (items_model);
+    
+    gtk_container_add (GTK_CONTAINER (sw), hg->fcdb_tree);
+    
+    g_signal_connect (hg->fcdb_tree, "cursor-changed",
+		      G_CALLBACK (fcdb_focus_item), (gpointer)hg);
 
       /* some buttons */
       hbox = gtk_hbox_new (FALSE, 4);
       gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
 #ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("Plot",GTK_STOCK_PRINT_PREVIEW);
+      button=gtkut_button_new_from_stock("SIMBAD",GTK_STOCK_FIND);
 #else
-      button = gtk_button_new_with_label ("Plot");
-#endif
-      g_signal_connect (button, "clicked",
-                        G_CALLBACK (plot2_item), (gpointer)hg);
-      gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("AD",GTK_STOCK_PRINT_PREVIEW);
-#else
-      button = gtk_button_new_with_label ("AD");
-#endif
-      g_signal_connect (button, "clicked",
-                        G_CALLBACK (adc_item), (gpointer)hg);
-      gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("Finding Chart",GTK_STOCK_ABOUT);
-#else
-      button = gtk_button_new_with_label ("Finding Chart");
+      button = gtk_button_new_with_label ("SIMBAD");
 #endif
       gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
       my_signal_connect (button, "clicked",
-			 G_CALLBACK (fc_item), (gpointer)hg);
-
-      label = gtk_label_new ("   ");
-      gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock(NULL,GTK_STOCK_ADD);
-#else
-      button = gtk_button_new_with_label ("Add");
-#endif
-      g_signal_connect (button, "clicked",
-                        G_CALLBACK (add_item), (gpointer)hg);
-      gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REMOVE);
-#else
-      button = gtk_button_new_with_label ("Del");
-#endif
-      g_signal_connect (button, "clicked",
-                        G_CALLBACK (remove_item), (gpointer)hg);
-      gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock(NULL,GTK_STOCK_GO_UP);
-#else
-      button = gtk_button_new_with_label ("Up");
-#endif
-      g_signal_connect (button, "clicked",
-                        G_CALLBACK (up_item), (gpointer)hg);
-      gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock(NULL,GTK_STOCK_GO_DOWN);
-#else
-      button = gtk_button_new_with_label ("Down");
-#endif
-      g_signal_connect (button, "clicked",
-                        G_CALLBACK (down_item), (gpointer)hg);
-      gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
-
-
-      label = gtk_label_new ("   AzEl");
-      gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
-
-      {
-	GtkListStore *store;
-	GtkTreeIter iter, iter_set;	  
-	GtkCellRenderer *renderer;
-	
-	store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "Normal",
-			   1, AZEL_NORMAL, -1);
-	if(hg->azel_mode==AZEL_NORMAL) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "+270",
-			   1, AZEL_POSI, -1);
-	if(hg->azel_mode==AZEL_POSI) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "-270",
-			   1, AZEL_NEGA, -1);
-	if(hg->azel_mode==AZEL_NEGA) iter_set=iter;
-	
-	
-	combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
-	gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
-	g_object_unref(store);
-	
-	renderer = gtk_cell_renderer_text_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
-	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
-	
-	
-	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
-	gtk_widget_show(combo);
-	my_signal_connect (combo,"changed",cc_get_combo_box,
-			   &hg->azel_mode);
-      }
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
-#else
-      button = gtk_button_new_with_label ("Refresh");
-#endif
-      g_signal_connect (button, "clicked",
-                        G_CALLBACK (refresh_item), (gpointer)hg);
-      gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
-
-      
-      g_signal_connect (hg->tree, "cursor-changed",
-                        G_CALLBACK (focus_item), (gpointer)hg);
-      
-
-      hbox = gtk_hbox_new (FALSE, 4);
-      gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-
+			 G_CALLBACK (fcdb_simbad), (gpointer)hg);
       /*
+
 #ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("DSS",GTK_STOCK_ABOUT);
+      button=gtkut_button_new_from_stock("Search Param.",GTK_STOCK_PROPERTIES);
 #else
-      button = gtk_button_new_with_label ("DSS");
+      button = gtk_button_new_with_label ("Search Param.");
 #endif
       gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
       my_signal_connect (button, "clicked",
-			 G_CALLBACK (dss_item), (gpointer)hg);
+			 create_fcdb_para_dialog, (gpointer)hg);
+
+      label= gtk_label_new ("    ");
+      gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+
+#ifdef __GTK_STOCK_H__
+      button=gtkut_button_new_from_stock("OPE Def.",GTK_STOCK_EDIT);
+#else
+      button = gtk_button_new_with_label ("OPE Def.");
+#endif
+      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+      my_signal_connect (button, "clicked",
+			 make_fcdb_tgt, (gpointer)hg);
+
+      hg->fcdb_tgt = gtk_entry_new ();
+      gtk_box_pack_start(GTK_BOX(hbox),hg->fcdb_tgt,TRUE, TRUE, 0);
+      gtk_entry_set_editable(GTK_ENTRY(hg->fcdb_tgt),FALSE);
+      my_entry_set_width_chars(GTK_ENTRY(hg->fcdb_tgt),50);
       */
+  }
 
-      label = gtk_label_new ("Web");
-      gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
-
-      {
-	GtkListStore *store;
-	GtkTreeIter iter, iter_set;	  
-	GtkCellRenderer *renderer;
-	
-	store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, 
-				   G_TYPE_BOOLEAN);
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "SIMBAD",
-			   1, WWWDB_SIMBAD, 2, TRUE, -1);
-	if(hg->wwwdb_mode==WWWDB_SIMBAD) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "NED",
-			   1, WWWDB_NED, 2, TRUE, -1);
-	if(hg->wwwdb_mode==WWWDB_NED) iter_set=iter;
-	
-	//gtk_list_store_append(store, &iter);
-	//gtk_list_store_set(store, &iter, 0, "SDSS(DR8)",
-	//			   1, WWWDB_DR8, 2, TRUE, -1);
-	//if(hg->wwwdb_mode==WWWDB_DR8) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "SDSS(DR12)",
-			   1, WWWDB_DR12, 2, TRUE, -1);
-	if(hg->wwwdb_mode==WWWDB_DR12) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "MAST",
-			   1, WWWDB_MAST, 2, TRUE, -1);
-	if(hg->wwwdb_mode==WWWDB_MAST) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "IRSA",
-			   1, WWWDB_IRSA, 2, TRUE, -1);
-	if(hg->wwwdb_mode==WWWDB_IRSA) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "Spitzer",
-			   1, WWWDB_SPITZER, 2, TRUE, -1);
-	if(hg->wwwdb_mode==WWWDB_SPITZER) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "CASIS",
-			   1, WWWDB_CASIS, 2, TRUE, -1);
-	if(hg->wwwdb_mode==WWWDB_CASIS) iter_set=iter;
-
-	gtk_list_store_append (store, &iter);
-	gtk_list_store_set (store, &iter,
-			    0, NULL,
-			    1, WWWDB_SEP1,2, FALSE, 
-			    -1);
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "Standard Locator",
-			   1, WWWDB_SSLOC, 2, TRUE, -1);
-	if(hg->wwwdb_mode==WWWDB_SSLOC) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "Rapid Rotator",
-			   1, WWWDB_RAPID, 2, TRUE, -1);
-	if(hg->wwwdb_mode==WWWDB_RAPID) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "Mid-IR Standard",
-			   1, WWWDB_MIRSTD, 2, TRUE, -1);
-	if(hg->wwwdb_mode==WWWDB_MIRSTD) iter_set=iter;
-	
-	combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
-	gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
-	g_object_unref(store);
-	
-	renderer = gtk_cell_renderer_text_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
-	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
-	
-	gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (combo), 
-					      is_separator, NULL, NULL);	
-	
-	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
-	gtk_widget_show(combo);
-	my_signal_connect (combo,"changed",cc_get_combo_box,
-			   &hg->wwwdb_mode);
-
-#ifdef __GTK_STOCK_H__
-	button=gtkut_button_new_from_stock("Go",GTK_STOCK_FIND);
-#else
-	button = gtk_button_new_with_label ("Go");
-#endif
-	gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
-	my_signal_connect (button, "clicked",
-			   G_CALLBACK (wwwdb_item), (gpointer)hg);
-      
-      }
-
-      label = gtk_label_new ("   Standard");
-      gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
-
-      {
-	GtkListStore *store;
-	GtkTreeIter iter, iter_set;	  
-	GtkCellRenderer *renderer;
-	
-	store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, 
-				   G_TYPE_BOOLEAN);
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "Standard Locator",
-			   1, STDDB_SSLOC, 2, TRUE, -1);
-	if(hg->stddb_mode==STDDB_SSLOC) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "Rapid Rotator",
-			   1, STDDB_RAPID, 2, TRUE, -1);
-	if(hg->stddb_mode==STDDB_RAPID) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "Mid-IR Standard",
-			   1, STDDB_MIRSTD, 2, TRUE, -1);
-	if(hg->stddb_mode==STDDB_MIRSTD) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "ESO Opt/UV Standard",
-			   1, STDDB_ESOSTD, 2, TRUE, -1);
-	if(hg->stddb_mode==STDDB_ESOSTD) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "IRAF 1D-std (spec16/50)",
-			   1, STDDB_IRAFSTD, 2, TRUE, -1);
-	if(hg->stddb_mode==STDDB_IRAFSTD) iter_set=iter;
-	
-	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "HST CALSPEC",
-			   1, STDDB_CALSPEC, 2, TRUE, -1);
-	if(hg->stddb_mode==STDDB_CALSPEC) iter_set=iter;
-	
-	combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
-	gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
-	g_object_unref(store);
-	
-	renderer = gtk_cell_renderer_text_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
-	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
-	
-	gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (combo), 
-					      is_separator, NULL, NULL);	
-	
-	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
-	gtk_widget_show(combo);
-	my_signal_connect (combo,"changed",cc_get_combo_box,
-			   &hg->stddb_mode);
-      }
-      
-      
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("Search",GTK_STOCK_FIND);
-#else
-      button = gtk_button_new_with_label ("Search");
-#endif
-      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
-      my_signal_connect (button, "clicked",
-			 G_CALLBACK (stddb_item), (gpointer)hg);
-      
-    }
   
   if((hg->tree_x!=-1)||(hg->tree_y!=-1))
     gtk_window_move(GTK_WINDOW(window),hg->tree_x, hg->tree_y);
@@ -3056,23 +3692,6 @@ void close_tree2(GtkWidget *w, gpointer gdata){
   // calling next close_tree
 }
 
-void std_close_tree2(GtkWidget *w, gpointer gdata){
-  typHOE *hg;
-
-  hg=(typHOE *)gdata;
-
-  if(std_window){
-    gtk_window_get_size(GTK_WINDOW(std_window), 
-			&hg->std_tree_width, &hg->std_tree_height);
-    gtk_window_get_position(GTK_WINDOW(std_window), &hg->std_tree_x, 
-			    &hg->std_tree_y);
-  }
-
-  gtk_widget_destroy(GTK_WIDGET(std_window));
-
-  // calling next close_tree
-}
-
 gchar *make_tgt(gchar * obj_name){
   gchar tgt_name[BUFFSIZE], *ret_name;
   gint  i_obj,i_tgt;
@@ -3101,12 +3720,12 @@ void make_std_tgt(GtkWidget *w, gpointer gdata){
   hg=(typHOE *)gdata;
 
 
-  if((hg->std_tree_focus>=0)&&(hg->std_tree_focus<hg->std_i_max)){
-    tgt=make_tgt(hg->std[hg->std_tree_focus].name);
+  if((hg->stddb_tree_focus>=0)&&(hg->stddb_tree_focus<hg->std_i_max)){
+    tgt=make_tgt(hg->std[hg->stddb_tree_focus].name);
     sprintf(tmp,"%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
-	    tgt,hg->std[hg->std_tree_focus].name,
-	    hg->std[hg->std_tree_focus].ra,hg->std[hg->std_tree_focus].dec,
-	    hg->std[hg->std_tree_focus].epoch);
+	    tgt,hg->std[hg->stddb_tree_focus].name,
+	    hg->std[hg->stddb_tree_focus].ra,hg->std[hg->stddb_tree_focus].dec,
+	    hg->std[hg->stddb_tree_focus].epoch);
     g_free(tgt);
     gtk_entry_set_text(GTK_ENTRY(hg->std_tgt),tmp);
   }
@@ -3128,40 +3747,92 @@ void close_tree(GtkWidget *w, gpointer gdata)
   }
 }
 
-void std_close_tree(GtkWidget *w, gpointer gdata)
-{
-  typHOE *hg;
-
-  hg=(typHOE *)gdata;
-
-  std_window = NULL;
-  flagStdTree=FALSE;
-  if(flagSkymon){
-    draw_skymon(hg->skymon_dw,hg, FALSE);
-  }
-}
-
 void remake_tree(typHOE *hg)
 {
   gint i;
-  //gtk_widget_destroy(hg->tree);
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+
+  model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+  
+  gtk_list_store_clear (GTK_LIST_STORE(model));
+  
+  while (my_main_iteration(FALSE));
+  
+  for (i = 0; i < hg->i_max; i++){
+    gtk_list_store_append (GTK_LIST_STORE(model), &iter);
+      tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
+  }
+  
+  gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
+
+  /*
   close_tree2(NULL,hg);
   while (my_main_iteration(FALSE));
 
   for(i=0;i<MAX_OBJECT;i++){
     hg->obj[i].check_sm=FALSE;
   }
-  //do_editable_cells (hg);
   make_tree(NULL,hg);
+  */
 }
 
-void std_remake_tree(typHOE *hg)
+void stddb_set_label(typHOE *hg)
 {
-  gint i;
-  std_close_tree2(NULL,hg);
-  while (my_main_iteration(FALSE));
-
-  std_make_tree(NULL,hg);
+  if(hg->stddb_label_text) g_free(hg->stddb_label_text);
+  switch(hg->stddb_mode){
+  case STDDB_SSLOC:
+    if(strcmp(hg->std_cat,"FS")==0){
+      hg->stddb_label_text
+	=g_strdup_printf("UKIRT Faint Standard for [%d-%d] %s (%d objects found)",
+			 hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+			 hg->obj[hg->std_i].name,hg->std_i_max);
+    }
+    else if(strcmp(hg->std_cat,"HIP")==0){
+      hg->stddb_label_text
+	=g_strdup_printf("Standard (HIPPARCOS Catalog) for [%d-%d] %s (%d objects found)",
+			 hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+			 hg->obj[hg->std_i].name,hg->std_i_max);
+    }
+    else if(strcmp(hg->std_cat,"SAO")==0){
+      hg->stddb_label_text
+	=g_strdup_printf("Standard (SAO Catalog) for [%d-%d] %s (%d objects found)",
+			 hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+			 hg->obj[hg->std_i].name,hg->std_i_max);
+    }
+    break;
+  case STDDB_RAPID:
+    hg->stddb_label_text
+	=g_strdup_printf("Rapid rotator for [%d-%d] %s (%d objects found)",
+			 hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+			 hg->obj[hg->std_i].name,hg->std_i_max);
+    break;
+  case STDDB_MIRSTD:
+    hg->stddb_label_text
+	=g_strdup_printf("Mid-IR standard for [%d-%d] %s (%d objects found)",
+			 hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+			 hg->obj[hg->std_i].name,hg->std_i_max);
+    break;
+  case STDDB_ESOSTD:
+    hg->stddb_label_text
+	=g_strdup_printf("ESO Optical and UV Spectrophotometric Standard for [%d-%d] %s (all %d objects)",
+			 hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+			 hg->obj[hg->std_i].name,hg->std_i_max);
+    break;
+  case STDDB_IRAFSTD:
+    hg->stddb_label_text
+	=g_strdup_printf("IRAF Standard in spec16/50 for [%d-%d] %s (all %d objects)",
+			 hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+			 hg->obj[hg->std_i].name,hg->std_i_max);
+    break;
+  case STDDB_CALSPEC:
+    hg->stddb_label_text
+	=g_strdup_printf("HST CALSPEC Standard for [%d-%d] %s (all %d objects)",
+			 hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+			 hg->obj[hg->std_i].name,hg->std_i_max);
+    break;
+  }
+  gtk_label_set_text(GTK_LABEL(hg->stddb_label), hg->stddb_label_text);
 }
 
 
@@ -3303,21 +3974,6 @@ void stddb_dl(typHOE *hg)
   gtk_timeout_remove(timer);
   gtk_widget_destroy(dialog);
 
-  /*
-  hg->dss_arcmin_ip=hg->dss_arcmin;
-  hg->fc_mode_get=hg->fc_mode;
-#ifndef USE_WIN32
-  if(fc_pid){
-#endif
-    if(pixbuf_fc)  g_object_unref(G_OBJECT(pixbuf_fc));
-    pixbuf_fc = gdk_pixbuf_new_from_file(hg->dss_file, NULL);
-    
-    do_fc(hg);
-#ifndef USE_WIN32
-  }
-#endif
-  */
-  
   flag_getSTD=FALSE;
 }
 
@@ -3391,208 +4047,28 @@ static gboolean progress_timeout( gpointer data ){
 }
 
 
-GtkWidget *
-std_do_editable_cells (typHOE *hg)
-{
-  if (!std_window)
-    {
-      GtkWidget *vbox;
-      GtkWidget *hbox;
-      GtkWidget *ebox;
-      GtkWidget *sw;
-      GtkWidget *button;
-      GtkTreeModel *items_model;
-      GtkWidget *label;
-      GtkWidget *combo;
-      GtkWidget *check;
-      GtkWidget *entry;
-      gchar tmp[1024];
-
-
-      /* create window, etc */
-      std_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-      gtk_window_set_screen (GTK_WINDOW (std_window),
-                             gtk_widget_get_screen (hg->skymon_main));
-      gtk_window_set_title (GTK_WINDOW (std_window), 
-			    "Sky Monitor : Standard List");
-      gtk_window_set_default_size (GTK_WINDOW (std_window), hg->std_tree_width, hg->std_tree_height);
-      gtk_container_set_border_width (GTK_CONTAINER (std_window), 5);
-      g_signal_connect (std_window, "destroy",
-                        G_CALLBACK (std_close_tree), (gpointer)hg);
-
-      vbox = gtk_vbox_new (FALSE, 5);
-      gtk_container_add (GTK_CONTAINER (std_window), vbox);
-
-      hbox = gtk_hbox_new (FALSE, 0);
-      gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
-
-      switch(hg->stddb_mode){
-      case STDDB_SSLOC:
-	if(strcmp(hg->std_cat,"FS")==0){
-	  sprintf(tmp,"UKIRT Faint Standard for [%d-%d] %s (%d objects found)",
-		  hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
-		  hg->obj[hg->std_i].name,hg->std_i_max);
-	}
-	else if(strcmp(hg->std_cat,"HIP")==0){
-	  sprintf(tmp,"Standard (HIPPARCOS Catalog) for [%d-%d] %s (%d objects found)",
-		  hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
-		  hg->obj[hg->std_i].name,hg->std_i_max);
-	}
-	else if(strcmp(hg->std_cat,"SAO")==0){
-	  sprintf(tmp,"Standard (SAO Catalog) for [%d-%d] %s (%d objects found)",
-		  hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
-		  hg->obj[hg->std_i].name,hg->std_i_max);
-	}
-	break;
-      case STDDB_RAPID:
-	sprintf(tmp,"Rapid rotator for [%d-%d] %s (%d objects found)",
-		hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
-		hg->obj[hg->std_i].name,hg->std_i_max);
-	break;
-      case STDDB_MIRSTD:
-	sprintf(tmp,"Mid-IR standard for [%d-%d] %s (%d objects found)",
-		hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
-		hg->obj[hg->std_i].name,hg->std_i_max);
-	break;
-      case STDDB_ESOSTD:
-	sprintf(tmp,"ESO Optical and UV Spectrophotometric Standard for [%d-%d] %s (all %d objects)",
-		hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
-		hg->obj[hg->std_i].name,hg->std_i_max);
-	break;
-      case STDDB_IRAFSTD:
-	sprintf(tmp,"IRAF Standard in spec16/50 for [%d-%d] %s (all %d objects)",
-		hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
-		hg->obj[hg->std_i].name,hg->std_i_max);
-	break;
-      case STDDB_CALSPEC:
-	sprintf(tmp,"HST CALSPEC Standard for [%d-%d] %s (all %d objects)",
-		hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
-		hg->obj[hg->std_i].name,hg->std_i_max);
-	break;
-      }
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
-#else
-      button = gtk_button_new_with_label ("Refresh");
-#endif
-      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
-      my_signal_connect (button, "clicked",
-			 G_CALLBACK (stddb_item), (gpointer)hg);
-
-      label= gtk_label_new (tmp);
-      gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
-      
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
-#else
-      button = gtk_button_new_with_label ("Quit");
-#endif
-      g_signal_connect (button, "clicked",
-			G_CALLBACK (std_close_tree2), (gpointer)hg);
-      gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-#ifdef __GTK_TOOLTIP_H__
-      gtk_widget_set_tooltip_text(button,
-				  "Close");
-#endif
-
-      sw = gtk_scrolled_window_new (NULL, NULL);
-      gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),
-                                           GTK_SHADOW_ETCHED_IN);
-      gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
-                                      GTK_POLICY_AUTOMATIC,
-                                      GTK_POLICY_AUTOMATIC);
-      gtk_box_pack_start (GTK_BOX (vbox), sw, TRUE, TRUE, 0);
-
-      /* create models */
-      items_model = std_create_items_model (hg);
-
-
-      /* create tree view */
-      hg->std_tree = gtk_tree_view_new_with_model (items_model);
-      gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (hg->std_tree), TRUE);
-      gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (hg->std_tree)),
-                                   GTK_SELECTION_SINGLE);
-      std_add_columns (hg, GTK_TREE_VIEW (hg->std_tree), items_model);
-
-      g_object_unref (items_model);
-
-      gtk_container_add (GTK_CONTAINER (sw), hg->std_tree);
-
-      g_signal_connect (hg->std_tree, "cursor-changed",
-                        G_CALLBACK (std_focus_item), (gpointer)hg);
-
-      /* some buttons */
-      hbox = gtk_hbox_new (FALSE, 4);
-      gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("SIMBAD",GTK_STOCK_FIND);
-#else
-      button = gtk_button_new_with_label ("SIMBAD");
-#endif
-      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
-      my_signal_connect (button, "clicked",
-			 G_CALLBACK (std_simbad), (gpointer)hg);
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("Search Param.",GTK_STOCK_PROPERTIES);
-#else
-      button = gtk_button_new_with_label ("Search Param.");
-#endif
-      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
-      my_signal_connect (button, "clicked",
-			 create_std_para_dialog, (gpointer)hg);
-
-      label= gtk_label_new ("    ");
-      gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("OPE Def.",GTK_STOCK_EDIT);
-#else
-      button = gtk_button_new_with_label ("OPE Def.");
-#endif
-      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
-      my_signal_connect (button, "clicked",
-			 make_std_tgt, (gpointer)hg);
-
-      hg->std_tgt = gtk_entry_new ();
-      gtk_box_pack_start(GTK_BOX(hbox),hg->std_tgt,TRUE, TRUE, 0);
-      gtk_entry_set_editable(GTK_ENTRY(hg->std_tgt),FALSE);
-      my_entry_set_width_chars(GTK_ENTRY(hg->std_tgt),50);
-    }
-
-  
-  if((hg->std_tree_x!=-1)||(hg->std_tree_y!=-1))
-    gtk_window_move(GTK_WINDOW(std_window),hg->std_tree_x, hg->std_tree_y);
-
-  if (!GTK_WIDGET_VISIBLE (std_window))
-    gtk_widget_show_all (std_window);
-  else
-    {
-      gtk_widget_destroy (std_window);
-      std_window = NULL;
-      flagStdTree=FALSE;
-    }
-
-  return std_window;
-}
-
-
 void std_make_tree(GtkWidget *widget, gpointer gdata){
   typHOE *hg;
+  gint i;
+  GtkTreeModel *model;
+  GtkTreeIter iter;
 
-  if(!flagStdTree){
-    hg=(typHOE *)gdata;
-
-    flagStdTree=TRUE;
-
-    std_do_editable_cells (hg);
+  hg=(typHOE *)gdata;
+  
+  model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->stddb_tree));
+  
+  gtk_list_store_clear (GTK_LIST_STORE(model));
+  
+  while (my_main_iteration(FALSE));
+  
+  for (i = 0; i < hg->std_i_max; i++){
+    gtk_list_store_append (GTK_LIST_STORE(model), &iter);
+      stddb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
+  }
+  
+  stddb_set_label(hg);
+  
+  gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),1);
     
-  }
-  else{
-    gdk_window_deiconify(std_window->window);
-    gdk_window_raise(std_window->window);
-  }
 }
 

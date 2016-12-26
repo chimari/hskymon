@@ -105,7 +105,6 @@ void draw_stderr_graph();
 gboolean flagDrawing=FALSE;
 gboolean supports_alpha = FALSE;
 extern gboolean flagSkymon;
-extern gboolean flagStdTree;
 extern gboolean flagTree;
 extern gboolean flag_getting_allsky;
 gint old_width=0, old_height=0, old_w=0, old_h=0;
@@ -1884,10 +1883,10 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	  hg->obj[i_list].y=-1;
 	}
       }
-      if((flagStdTree)&&(hg->std_i==hg->tree_focus)){
+      if((hg->stddb_flag)&&(hg->std_i==hg->tree_focus)){
 	for(i_list=0;i_list<hg->std_i_max;i_list++){
 	  if(hg->std[i_list].s_el>0){
-	    if(hg->std_tree_focus!=i_list){
+	    if(hg->stddb_tree_focus!=i_list){
 	      my_cairo_std(cr,width,height,
 			   hg->std[i_list].s_az,hg->std[i_list].s_el,
 			   &hg->std[i_list].x,&hg->std[i_list].y);
@@ -1900,7 +1899,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	}
 	for(i_list=0;i_list<hg->std_i_max;i_list++){
 	  if(hg->std[i_list].s_el>0){
-	    if(hg->std_tree_focus==i_list){
+	    if(hg->stddb_tree_focus==i_list){
 	      my_cairo_std2(cr,width,height,
 			    hg->std[i_list].s_az,hg->std[i_list].s_el,
 			    &hg->std[i_list].x,&hg->std[i_list].y);
@@ -1959,10 +1958,10 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	  hg->obj[i_list].y=-1;
 	}
       }
-      if((flagStdTree)&&(hg->std_i==hg->tree_focus)){
+      if((hg->stddb_flag)&&(hg->std_i==hg->tree_focus)){
 	for(i_list=0;i_list<hg->std_i_max;i_list++){
 	  if(hg->std[i_list].c_el>0){
-	    if(hg->std_tree_focus!=i_list){
+	    if(hg->stddb_tree_focus!=i_list){
 	      my_cairo_std(cr,width,height,
 			   hg->std[i_list].c_az,hg->std[i_list].c_el,
 			   &hg->std[i_list].x,&hg->std[i_list].y);
@@ -1975,7 +1974,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	}
 	for(i_list=0;i_list<hg->std_i_max;i_list++){
 	  if(hg->std[i_list].c_el>0){
-	    if(hg->std_tree_focus==i_list){
+	    if(hg->stddb_tree_focus==i_list){
 	      my_cairo_std2(cr,width,height,
 			    hg->std[i_list].c_az,hg->std[i_list].c_el,
 			    &hg->std[i_list].x,&hg->std[i_list].y);
@@ -2435,6 +2434,9 @@ void my_cairo_std2(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, gdouble 
   cairo_arc(cr, x, y, 11, 0, 2*M_PI);
   cairo_fill(cr);
   
+  cairo_rectangle (cr, x-10, y-10, 20, 20);
+  cairo_fill(cr);
+  /*
   cairo_move_to (cr, x-10, y-10);
   cairo_line_to (cr, x-4.5, y-4.5);
   cairo_move_to (cr, x+10, y-10);
@@ -2445,20 +2447,47 @@ void my_cairo_std2(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, gdouble 
   cairo_line_to (cr, x-4.5, y+4.5);
   cairo_set_line_width (cr, 4);
   cairo_stroke (cr);
+  */
 
+  /*
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
   cairo_arc(cr, x, y, 8, 0, 2*M_PI);
   cairo_fill(cr);
+  */
+  cairo_set_source_rgba(cr, 1.0, 0.25, 0.25, 1.0);
+  cairo_move_to (cr, x-8, y-8);
+  cairo_line_to (cr, x-4, y-8);
+  cairo_move_to (cr, x-8, y-8);
+  cairo_line_to (cr, x-8, y-4);
+
+  cairo_move_to (cr, x+8, y-8);
+  cairo_line_to (cr, x+4, y-8);
+  cairo_move_to (cr, x+8, y-8);
+  cairo_line_to (cr, x+8, y-4);
+
+  cairo_move_to (cr, x+8, y+8);
+  cairo_line_to (cr, x+4, y+8);
+  cairo_move_to (cr, x+8, y+8);
+  cairo_line_to (cr, x+8, y+4);
+
+  cairo_move_to (cr, x-8, y+8);
+  cairo_line_to (cr, x-4, y+8);
+  cairo_move_to (cr, x-8, y+8);
+  cairo_line_to (cr, x-8, y+4);
+  cairo_set_line_width (cr, 2.5);
+  cairo_stroke (cr);
+
 
   cairo_set_source_rgba(cr, 1.0, 0.1, 0.1, 1.0);
-  cairo_arc(cr, x, y, 3.6, 0, 2*M_PI);
+  cairo_arc(cr, x, y, 4.5, 0, 2*M_PI);
   cairo_fill(cr);
   
+  /*
   cairo_set_source_rgba(cr, 1.0, 0.25, 0.25, 1.0);
   cairo_arc(cr, x, y, 8, 0, 2*M_PI);
   cairo_set_line_width (cr, 1.8);
   cairo_stroke (cr);
-  
+
   cairo_move_to (cr, x-8, y-8);
   cairo_line_to (cr, x-4.5, y-4.5);
   cairo_move_to (cr, x+8, y-8);
@@ -2469,7 +2498,7 @@ void my_cairo_std2(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, gdouble 
   cairo_line_to (cr, x-4.5, y+4.5);
   cairo_set_line_width (cr, 1.8);
   cairo_stroke (cr);
-
+  */
   cairo_new_path(cr);
 }
 

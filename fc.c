@@ -47,7 +47,19 @@ void set_fc_frame_col();
 void show_fc_help();
 static void close_fc_help();
 
+void fcdb_item2();
+static void fcdb_item();
+void fcdb_dl();
+#ifndef USE_WIN32
+void fcdb_signal();
+static void cancel_fcdb();
+#endif
+void fcdb_tree_update_azel_item();
+void fcdb_make_tree();
+void fcdb_remake_tree();
+
 extern int  get_dss();
+extern int get_fcdb();
 extern gboolean my_main_iteration();
 extern void cc_get_toggle();
 extern void cc_get_adj();
@@ -58,13 +70,16 @@ extern void do_save_fc_pdf();
 
 extern gboolean is_separator();
 
+extern void fcdb_vo_parse();
+
 extern pid_t fc_pid;
 extern gboolean flagTree;
+extern pid_t fcdb_pid;
 
-
-
-gboolean flagFC=FALSE, flag_getDSS=FALSE;
+gboolean flagFC=FALSE, flag_getDSS=FALSE, flag_getFCDB=FALSE;
 GdkPixbuf *pixbuf_fc=NULL, *pixbuf2_fc=NULL;
+
+static GtkWidget *fcdb_window = NULL;
 
 
 void fc_item (GtkWidget *widget, gpointer data)
@@ -728,33 +743,6 @@ void create_fc_dialog(typHOE *hg)
 		    G_CALLBACK (cc_get_toggle), 
 		    &hg->dss_invert);
 
-  /*
-  frame = gtk_frame_new ("SDSS mark");
-  gtk_table_attach (GTK_TABLE(table), frame, 4, 5, 0, 2,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
-  //gtk_box_pack_start(GTK_BOX(hbox1), frame, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
-
-  hbox2 = gtk_hbox_new(FALSE,0);
-  gtk_container_add (GTK_CONTAINER (frame), hbox2);
-
-  button=gtk_check_button_new_with_label("Ph.");
-  gtk_container_set_border_width (GTK_CONTAINER (button), 0);
-  gtk_box_pack_start(GTK_BOX(hbox2),button,FALSE,FALSE,0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->sdss_photo);
-  my_signal_connect(button,"toggled",
-		    G_CALLBACK (cc_get_toggle), 
-		    &hg->sdss_photo);
-
-  button=gtk_check_button_new_with_label("Sp.");
-  gtk_container_set_border_width (GTK_CONTAINER (button), 0);
-  gtk_box_pack_start(GTK_BOX(hbox2),button,FALSE,FALSE,0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->sdss_spec);
-  my_signal_connect(button,"toggled",
-		    G_CALLBACK (cc_get_toggle), 
-		    &hg->sdss_spec);
-  */
-
   frame = gtk_frame_new ("Instrument");
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
@@ -917,9 +905,21 @@ void create_fc_dialog(typHOE *hg)
 
 
 #ifdef __GTK_STOCK_H__
+  button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
+#else
+  button = gtk_button_new_with_label ("Find objects");
+#endif
+  g_signal_connect (button, "clicked",
+		    G_CALLBACK (fcdb_item), (gpointer)hg);
+  gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+#ifdef __GTK_TOOLTIP_H__
+  gtk_widget_set_tooltip_text(button,
+			      "Find objects in SIMBAD");
+#endif
+
+#ifdef __GTK_STOCK_H__
   icon = gdk_pixbuf_new_from_inline(sizeof(icon_pdf), icon_pdf, 
 				    FALSE, NULL);
-
   button=gtkut_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
 #else
@@ -1144,6 +1144,19 @@ void close_fc(GtkWidget *w, gpointer gdata)
 
 
 #ifndef USE_WIN32
+void fcdb_signal(int sig){
+  pid_t child_pid=0;
+
+  gtk_main_quit();
+
+  do{
+    int child_ret;
+    child_pid=waitpid(fcdb_pid, &child_ret,WNOHANG);
+  } while((child_pid>0)||(child_pid!=-1));
+}
+#endif
+
+#ifndef USE_WIN32
 static void cancel_fc(GtkWidget *w, gpointer gdata)
 {
   typHOE *hg;
@@ -1164,6 +1177,87 @@ static void cancel_fc(GtkWidget *w, gpointer gdata)
   }
 }
 #endif
+
+
+void translate_to_center(cairo_t *cr, int width, int height, int width_file, int height_file, gfloat r, typHOE *hg)
+{
+    cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
+		     (height-(gint)((gdouble)height_file*r))/2);
+
+    cairo_translate (cr, (gdouble)width_file*r/2,
+		     (gdouble)height_file*r/2);
+
+    switch(hg->fc_inst){
+    case FC_INST_NONE:
+    case FC_INST_HDS:
+    case FC_INST_IRCS:
+    case FC_INST_COMICS:
+    case FC_INST_FOCAS:
+    case FC_INST_MOIRCS:
+    case FC_INST_FMOS:
+      if(hg->dss_flip){
+	cairo_rotate (cr,-M_PI*(gdouble)hg->dss_pa/180.);
+      }
+      else{
+	cairo_rotate (cr,M_PI*(gdouble)hg->dss_pa/180.);
+      }
+
+      break;
+
+    case FC_INST_HDSAUTO:
+      if(hg->skymon_mode==SKYMON_SET){
+	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
+				 (gdouble)((int)hg->obj[hg->dss_i].s_hpa));
+      }
+      else{
+	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
+				 (gdouble)((int)hg->obj[hg->dss_i].c_hpa));
+      }
+      if(hg->dss_flip){
+	cairo_rotate (cr,-M_PI*(gdouble)hg->dss_pa/180.);
+      }
+      else{
+	cairo_rotate (cr,M_PI*(gdouble)hg->dss_pa/180.);
+      }
+      break;
+
+    case FC_INST_HDSZENITH:
+      if(hg->skymon_mode==SKYMON_SET){
+	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
+				 (gdouble)((int)hg->obj[hg->dss_i].s_pa));
+      }
+      else{
+	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
+				 (gdouble)((int)hg->obj[hg->dss_i].c_pa));
+      }
+      if(hg->dss_flip){
+	cairo_rotate (cr,-M_PI*(gdouble)hg->dss_pa/180.);
+      }
+      else{
+	cairo_rotate (cr,M_PI*(gdouble)hg->dss_pa/180.);
+      }
+      break;
+
+    case FC_INST_SPCAM:
+      if(hg->dss_flip){
+	cairo_rotate (cr,-M_PI*(gdouble)(90-hg->dss_pa)/180.);
+      }
+      else{
+	cairo_rotate (cr,M_PI*(gdouble)(90-hg->dss_pa)/180.);
+      }
+      break;
+
+    case FC_INST_HSCDET:
+    case FC_INST_HSCA:
+      if(hg->dss_flip){
+	cairo_rotate (cr,-M_PI*(gdouble)(270-hg->dss_pa)/180.);
+      }
+      else{
+	cairo_rotate (cr,M_PI*(gdouble)(270-hg->dss_pa)/180.);
+      }
+      break;
+    }
+}
 
 
 gboolean draw_fc_cairo(GtkWidget *widget, 
@@ -1338,82 +1432,9 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 
       
     cairo_save (cr);
-    cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
-		     (height-(gint)((gdouble)height_file*r))/2);
 
-    cairo_translate (cr, (gdouble)width_file*r/2,
-		     (gdouble)height_file*r/2);
+    translate_to_center(cr,width,height,width_file,height_file,r,hg);
 
-    switch(hg->fc_inst){
-    case FC_INST_NONE:
-    case FC_INST_HDS:
-    case FC_INST_IRCS:
-    case FC_INST_COMICS:
-    case FC_INST_FOCAS:
-    case FC_INST_MOIRCS:
-    case FC_INST_FMOS:
-      if(hg->dss_flip){
-	cairo_rotate (cr,-M_PI*(gdouble)hg->dss_pa/180.);
-      }
-      else{
-	cairo_rotate (cr,M_PI*(gdouble)hg->dss_pa/180.);
-      }
-
-      break;
-
-    case FC_INST_HDSAUTO:
-      if(hg->skymon_mode==SKYMON_SET){
-	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
-				 (gdouble)((int)hg->obj[hg->dss_i].s_hpa));
-      }
-      else{
-	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
-				 (gdouble)((int)hg->obj[hg->dss_i].c_hpa));
-      }
-      if(hg->dss_flip){
-	cairo_rotate (cr,-M_PI*(gdouble)hg->dss_pa/180.);
-      }
-      else{
-	cairo_rotate (cr,M_PI*(gdouble)hg->dss_pa/180.);
-      }
-      break;
-
-    case FC_INST_HDSZENITH:
-      if(hg->skymon_mode==SKYMON_SET){
-	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
-				 (gdouble)((int)hg->obj[hg->dss_i].s_pa));
-      }
-      else{
-	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
-				 (gdouble)((int)hg->obj[hg->dss_i].c_pa));
-      }
-      if(hg->dss_flip){
-	cairo_rotate (cr,-M_PI*(gdouble)hg->dss_pa/180.);
-      }
-      else{
-	cairo_rotate (cr,M_PI*(gdouble)hg->dss_pa/180.);
-      }
-      break;
-
-    case FC_INST_SPCAM:
-      if(hg->dss_flip){
-	cairo_rotate (cr,-M_PI*(gdouble)(90-hg->dss_pa)/180.);
-      }
-      else{
-	cairo_rotate (cr,M_PI*(gdouble)(90-hg->dss_pa)/180.);
-      }
-      break;
-
-    case FC_INST_HSCDET:
-    case FC_INST_HSCA:
-      if(hg->dss_flip){
-	cairo_rotate (cr,-M_PI*(gdouble)(270-hg->dss_pa)/180.);
-      }
-      else{
-	cairo_rotate (cr,M_PI*(gdouble)(270-hg->dss_pa)/180.);
-      }
-      break;
-    }
     cairo_translate (cr, -(gdouble)width_file*r/2,
 		     -(gdouble)height_file*r/2);
     gdk_cairo_set_source_pixbuf(cr, pixbuf2_fc, 0, 0);
@@ -2313,6 +2334,39 @@ gboolean draw_fc_cairo(GtkWidget *widget,
     } // Position Angle
   }
 
+  {
+    gdouble fcx, fcy;
+    if((hg->fcdb_flag)&&(hg->fcdb_i==hg->dss_i)){
+      cairo_save(cr);
+
+      translate_to_center(cr,width,height,width_file,height_file,r,hg);
+
+      for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+	fcx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0)*60.
+	  *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
+	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	fcy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
+	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	if(hg->fcdb_tree_focus==i_list){
+	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+	  else cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
+	  cairo_set_line_width (cr, 4*scale);
+	  cairo_rectangle(cr,fcx-10,fcy-10,16,16);
+	  cairo_stroke(cr);
+	}
+	else{
+	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+	  else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
+	  cairo_set_line_width (cr, 2*scale);
+	  cairo_rectangle(cr,fcx-6,fcy-6,12,12);
+	  cairo_stroke(cr);
+	}
+
+      }
+      cairo_restore(cr);
+    }
+  }
+
   {  // Points and Distance
     gdouble distance;
     gdouble arad;
@@ -2991,3 +3045,291 @@ static void close_fc_help(GtkWidget *w, GtkWidget *dialog)
   gtk_main_quit();
   gtk_widget_destroy(dialog);
 }
+
+#ifndef USE_WIN32
+static void cancel_fcdb(GtkWidget *w, gpointer gdata)
+{
+  typHOE *hg;
+  pid_t child_pid=0;
+
+  hg=(typHOE *)gdata;
+
+  if(fcdb_pid){
+    kill(fcdb_pid, SIGKILL);
+    gtk_main_quit();
+
+    do{
+      int child_ret;
+      child_pid=waitpid(fcdb_pid, &child_ret,WNOHANG);
+    } while((child_pid>0)||(child_pid!=-1));
+ 
+    fcdb_pid=0;
+  }
+}
+#endif
+
+void fcdb_dl(typHOE *hg)
+{
+  GtkTreeIter iter;
+  gchar tmp[2048];
+  GtkWidget *dialog, *vbox, *label, *button;
+#ifndef USE_WIN32
+  static struct sigaction act;
+#endif
+  guint timer;
+  
+
+  if(flag_getFCDB) return;
+  flag_getFCDB=TRUE;
+
+  dialog = gtk_dialog_new();
+  
+  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
+  gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
+  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+  
+#ifdef USE_GTK2  
+  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
+#endif
+  
+  label=gtk_label_new("Searching objects in SIMBAD ...");
+
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
+  gtk_widget_show(label);
+  
+  hg->pbar=gtk_progress_bar_new();
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar,TRUE,TRUE,0);
+  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
+  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
+				    GTK_PROGRESS_RIGHT_TO_LEFT);
+  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
+  gtk_widget_show(hg->pbar);
+  
+  unlink(hg->std_file);
+  
+  timer=g_timeout_add(100, 
+		      (GSourceFunc)progress_timeout,
+		      (gpointer)hg);
+  
+  hg->plabel=gtk_label_new("Searching objects in SIMBAD ...");
+  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     hg->plabel,FALSE,FALSE,0);
+  
+#ifndef USE_WIN32
+#ifdef __GTK_STOCK_H__
+  button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#else
+  button=gtk_button_new_with_label("Cancel");
+#endif
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed",
+		    cancel_fcdb, 
+		    (gpointer)hg);
+#endif
+  
+  gtk_widget_show_all(dialog);
+  
+#ifndef USE_WIN32
+  act.sa_handler=fcdb_signal;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags=0;
+  if(sigaction(SIGUSR1, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGUSR1).\n");
+#endif
+  
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
+  
+  get_fcdb(hg);
+  gtk_main();
+
+  gtk_timeout_remove(timer);
+  gtk_widget_destroy(dialog);
+
+  flag_getFCDB=FALSE;
+}
+
+
+
+void fcdb_item2 (typHOE *hg)
+{
+  gdouble ra_0, dec_0, d_ra0, d_dec0;
+  gchar tmp[2048];
+  struct lnh_equ_posn hobject;
+
+  hg->fcdb_i=hg->dss_i;
+
+  ra_0=hg->obj[hg->fcdb_i].ra;
+  hobject.ra.hours=(gint)(ra_0/10000);
+  ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
+  hobject.ra.minutes=(gint)(ra_0/100);
+  hobject.ra.seconds=ra_0-(gdouble)(hobject.ra.minutes)*100;
+  
+  if(hg->obj[hg->fcdb_i].dec<0){
+    hobject.dec.neg=1;
+    dec_0=-hg->obj[hg->fcdb_i].dec;
+  }
+  else{
+    hobject.dec.neg=0;
+    dec_0=hg->obj[hg->fcdb_i].dec;
+  }
+  hobject.dec.degrees=(gint)(dec_0/10000);
+  dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
+  hobject.dec.minutes=(gint)(dec_0/100);
+  hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
+  
+  hg->fcdb_d_ra0=ln_hms_to_deg(&hobject.ra);
+  hg->fcdb_d_dec0=ln_dms_to_deg(&hobject.dec);
+  
+  
+  if(hg->fcdb_host) g_free(hg->fcdb_host);
+  hg->fcdb_host=g_strdup(STDDB_HOST_SIMBAD);
+  if(hg->fcdb_path) g_free(hg->fcdb_path);
+  hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,hg->fcdb_d_dec0,
+				hg->obj[hg->fcdb_i].epoch,
+				(gdouble)hg->dss_arcmin/2.*1.2,MAX_FCDB);
+  if(hg->fcdb_file) g_free(hg->fcdb_file);
+  hg->fcdb_file=g_strconcat(hg->temp_dir,
+			    G_DIR_SEPARATOR_S,
+			    FCDB_FILE_XML,NULL);
+
+  fcdb_dl(hg);
+
+  fcdb_vo_parse(hg);
+
+  if(flagTree) fcdb_make_tree(NULL, hg);
+  //else fcdb_remake_tree(hg);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_button),
+			       TRUE);
+  hg->fcdb_flag=TRUE;
+
+  if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL, (gpointer)hg);
+}
+
+static void fcdb_item (GtkWidget *widget, gpointer data)
+{
+  typHOE *hg = (typHOE *)data;
+  
+  fcdb_item2(hg);
+}
+
+
+void fcdb_tree_update_azel_item(typHOE *hg, 
+				GtkTreeModel *model, 
+				GtkTreeIter iter, 
+				gint i_list)
+{
+  gchar tmp[24];
+  gint i;
+  gdouble s_rt=-1;
+
+  // Num/Name
+  gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+		      COLUMN_FCDB_NUMBER,
+		      i_list+1,
+		      -1);
+  gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+		      COLUMN_FCDB_NAME,
+		      hg->fcdb[i_list].name,
+		      -1);
+
+  // RA
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_FCDB_RA, hg->fcdb[i_list].ra, -1);
+  
+  // DEC
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_FCDB_DEC, hg->fcdb[i_list].dec, -1);
+
+  // SEP
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_FCDB_SEP, hg->fcdb[i_list].sep, -1);
+
+  // O-Type
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_FCDB_OTYPE, hg->fcdb[i_list].otype, -1);
+
+  // SpType
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_FCDB_SP, hg->fcdb[i_list].sp, -1);
+
+  // UBVRIJHK
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_FCDB_U, hg->fcdb[i_list].u,
+		     COLUMN_FCDB_B, hg->fcdb[i_list].b,
+		     COLUMN_FCDB_V, hg->fcdb[i_list].v,
+		     COLUMN_FCDB_R, hg->fcdb[i_list].r,
+		     COLUMN_FCDB_I, hg->fcdb[i_list].i,
+		     COLUMN_FCDB_J, hg->fcdb[i_list].j,
+		     COLUMN_FCDB_H, hg->fcdb[i_list].h,
+		     COLUMN_FCDB_K, hg->fcdb[i_list].k,
+		     -1);
+}
+
+
+void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
+  gint i;
+  typHOE *hg;
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+
+  hg=(typHOE *)gdata;
+
+  model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
+
+  gtk_list_store_clear (GTK_LIST_STORE(model));
+  
+  while (my_main_iteration(FALSE));
+
+  for (i = 0; i < hg->fcdb_i_max; i++){
+    gtk_list_store_append (GTK_LIST_STORE(model), &iter);
+    fcdb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
+  }
+
+  if(hg->fcdb_label_text) g_free(hg->fcdb_label_text);
+  hg->fcdb_label_text
+    =g_strdup_printf("Objects around [%d-%d] %s (%d objects found)",
+		     hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
+		     hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+  gtk_label_set_text(GTK_LABEL(hg->fcdb_label), hg->fcdb_label_text);
+
+  gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),2);
+}
+
+void fcdb_remake_tree(typHOE *hg)
+{
+  gint i;
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+
+  model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
+  
+  gtk_list_store_clear (GTK_LIST_STORE(model));
+  
+  while (my_main_iteration(FALSE));
+
+  for (i=0; i<hg->fcdb_i_max; i++){
+    gtk_list_store_append (GTK_LIST_STORE(model), &iter);
+    fcdb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
+  }
+
+  if(hg->fcdb_label_text) g_free(hg->fcdb_label_text);
+  hg->fcdb_label_text
+    =g_strdup_printf("Objects around [%d-%d] %s (%d objects found)",
+		     hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
+		     hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+  gtk_label_set_text(GTK_LABEL(hg->fcdb_label), hg->fcdb_label_text);
+  
+  /*
+  fcdb_close_tree2(NULL,hg);
+  while (my_main_iteration(FALSE));
+
+  fcdb_make_tree(NULL,hg);
+  */
+}
+
