@@ -1289,6 +1289,7 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 
   hg=(typHOE *)userdata;
   
+  while (my_main_iteration(FALSE));
   //printf("Drawing!\n");
 
   if(hg->fc_output==FC_OUTPUT_PDF){
@@ -2341,27 +2342,34 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 
       translate_to_center(cr,width,height,width_file,height_file,r,hg);
 
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+      else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
+      cairo_set_line_width (cr, 2*scale);
       for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
-	fcx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0)*60.
-	  *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
-	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	fcy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
-	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	if(hg->fcdb_tree_focus==i_list){
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-	  else cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
-	  cairo_set_line_width (cr, 4*scale);
-	  cairo_rectangle(cr,fcx-10,fcy-10,16,16);
-	  cairo_stroke(cr);
-	}
-	else{
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-	  else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
-	  cairo_set_line_width (cr, 2*scale);
+	if(hg->fcdb_tree_focus!=i_list){
+	  fcx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0)*60.
+	    *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
+	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	  fcy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
+	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
 	  cairo_rectangle(cr,fcx-6,fcy-6,12,12);
 	  cairo_stroke(cr);
 	}
+      }
 
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.7, 0.0, 0.0, 1.0);
+      else cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
+      cairo_set_line_width (cr, 4*scale);
+      for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+	if(hg->fcdb_tree_focus==i_list){
+	  fcx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0)*60.
+	    *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
+	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	  fcy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
+	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	  cairo_rectangle(cr,fcx-10,fcy-10,16,16);
+	  cairo_stroke(cr);
+	}
       }
       cairo_restore(cr);
     }

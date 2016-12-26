@@ -3141,7 +3141,7 @@ do_editable_cells (typHOE *hg)
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
 
-    label = gtk_label_new ("   AzEl");
+    label = gtk_label_new ("        AzEl");
     gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
 
     {
@@ -3298,7 +3298,7 @@ do_editable_cells (typHOE *hg)
       
     }
 
-    label = gtk_label_new ("   Standard");
+    label = gtk_label_new ("      Standard");
     gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
     
     {
@@ -4063,9 +4063,9 @@ void std_make_tree(GtkWidget *widget, gpointer gdata){
   
   for (i = 0; i < hg->std_i_max; i++){
     gtk_list_store_append (GTK_LIST_STORE(model), &iter);
-      stddb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
+    stddb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
   }
-  
+			   
   stddb_set_label(hg);
   
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),1);
