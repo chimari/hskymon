@@ -394,7 +394,7 @@ enum{
 #define MAX_OBJECT 2000
 #define MAX_ROPE 32
 #define MAX_STD 100
-#define MAX_FCDB 200
+#define MAX_FCDB 500
 
 #ifdef USE_XMLRPC
 enum{ ROPE_DIR, ROPE_ALL} ROPEMode;

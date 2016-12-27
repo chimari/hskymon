@@ -56,7 +56,6 @@ static void cancel_fcdb();
 #endif
 void fcdb_tree_update_azel_item();
 void fcdb_make_tree();
-void fcdb_remake_tree();
 
 extern int  get_dss();
 extern int get_fcdb();
@@ -79,8 +78,6 @@ extern pid_t fcdb_pid;
 
 gboolean flagFC=FALSE, flag_getDSS=FALSE, flag_getFCDB=FALSE;
 GdkPixbuf *pixbuf_fc=NULL, *pixbuf2_fc=NULL;
-
-static GtkWidget *fcdb_window = NULL;
 
 
 void fc_item (GtkWidget *widget, gpointer data)
@@ -3200,8 +3197,6 @@ void fcdb_item2 (typHOE *hg)
   
   hg->fcdb_d_ra0=object_prec.ra;
   hg->fcdb_d_dec0=object_prec.dec;
-  
-  
   if(hg->fcdb_host) g_free(hg->fcdb_host);
   hg->fcdb_host=g_strdup(STDDB_HOST_SIMBAD);
   if(hg->fcdb_path) g_free(hg->fcdb_path);
@@ -3217,7 +3212,6 @@ void fcdb_item2 (typHOE *hg)
   fcdb_vo_parse(hg);
 
   if(flagTree) fcdb_make_tree(NULL, hg);
-  //else fcdb_remake_tree(hg);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_button),
 			       TRUE);
@@ -3314,37 +3308,5 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
   gtk_label_set_text(GTK_LABEL(hg->fcdb_label), hg->fcdb_label_text);
 
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),2);
-}
-
-void fcdb_remake_tree(typHOE *hg)
-{
-  gint i;
-  GtkTreeModel *model;
-  GtkTreeIter iter;
-
-  model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
-  
-  gtk_list_store_clear (GTK_LIST_STORE(model));
-  
-  while (my_main_iteration(FALSE));
-
-  for (i=0; i<hg->fcdb_i_max; i++){
-    gtk_list_store_append (GTK_LIST_STORE(model), &iter);
-    fcdb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
-  }
-
-  if(hg->fcdb_label_text) g_free(hg->fcdb_label_text);
-  hg->fcdb_label_text
-    =g_strdup_printf("Objects around [%d-%d] %s (%d objects found)",
-		     hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
-		     hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
-  gtk_label_set_text(GTK_LABEL(hg->fcdb_label), hg->fcdb_label_text);
-  
-  /*
-  fcdb_close_tree2(NULL,hg);
-  while (my_main_iteration(FALSE));
-
-  fcdb_make_tree(NULL,hg);
-  */
 }
 

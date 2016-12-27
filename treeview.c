@@ -14,7 +14,6 @@
 #include "esostd.h"
 
 static GtkWidget *window = NULL;
-static GtkWidget *std_window = NULL;
 void tree_update_azel_item();
 void stddb_tree_update_azel_item();
 void make_tree();
@@ -3007,6 +3006,7 @@ do_editable_cells (typHOE *hg)
   GtkWidget *entry;
   gchar tmp[12];
   GtkWidget *all_note, *note_vbox;
+
   if (!window) {
 
     /* create window, etc */
@@ -3583,34 +3583,6 @@ do_editable_cells (typHOE *hg)
       gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
       my_signal_connect (button, "clicked",
 			 G_CALLBACK (fcdb_simbad), (gpointer)hg);
-      /*
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("Search Param.",GTK_STOCK_PROPERTIES);
-#else
-      button = gtk_button_new_with_label ("Search Param.");
-#endif
-      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
-      my_signal_connect (button, "clicked",
-			 create_fcdb_para_dialog, (gpointer)hg);
-
-      label= gtk_label_new ("    ");
-      gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
-
-#ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("OPE Def.",GTK_STOCK_EDIT);
-#else
-      button = gtk_button_new_with_label ("OPE Def.");
-#endif
-      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
-      my_signal_connect (button, "clicked",
-			 make_fcdb_tgt, (gpointer)hg);
-
-      hg->fcdb_tgt = gtk_entry_new ();
-      gtk_box_pack_start(GTK_BOX(hbox),hg->fcdb_tgt,TRUE, TRUE, 0);
-      gtk_entry_set_editable(GTK_ENTRY(hg->fcdb_tgt),FALSE);
-      my_entry_set_width_chars(GTK_ENTRY(hg->fcdb_tgt),50);
-      */
   }
 
   
