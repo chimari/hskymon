@@ -6802,6 +6802,9 @@ void param_init(typHOE *hg){
   hg->telstat_error=FALSE;
 #endif
 
+  hg->fc_mode_def         =FC_SKYVIEW_DSS2R;
+  hg->fc_mode             =hg->fc_mode_def;
+  set_fc_mode(hg);
   hg->dss_arcmin        =DSS_ARCMIN;
   hg->dss_pix             =DSS_PIX;
 
