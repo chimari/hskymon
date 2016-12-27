@@ -6,6 +6,7 @@
 
 #include"main.h"    // 設定ヘッダ
 #include"version.h"
+#include "hsc.h"
 #include <cairo.h>
 #include <cairo-pdf.h>
 
@@ -14,7 +15,6 @@
 #endif
 #include <signal.h>
 
-#include"hsc.h"
 
 void fc_item();
 void fc_dl_draw ();
