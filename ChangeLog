@@ -2,7 +2,7 @@
 
 2016.12.26 ver2.8.3 - Added iteration at the beginning of draw_fc_cairo();
 
-2016.12.26 ver2.8.2 - Added object search in finding chart (cia SIMBAD).
+2016.12.26 ver2.8.2 - Added SIMBAD catalog matching in finding chart .
 	            - Standard and Object in FC tree windows are unified
 	              into the main object treeview (using tab).
 	            - Refined remake_tree in object treeview.

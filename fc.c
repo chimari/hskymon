@@ -905,14 +905,14 @@ void create_fc_dialog(typHOE *hg)
 #ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
 #else
-  button = gtk_button_new_with_label ("Find objects");
+  button = gtk_button_new_with_label ("Catalog matching");
 #endif
   g_signal_connect (button, "clicked",
 		    G_CALLBACK (fcdb_item), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
-			      "Find objects in SIMBAD");
+			      "Catalog Matching in SIMBAD");
 #endif
 
 #ifdef __GTK_STOCK_H__
