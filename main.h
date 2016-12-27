@@ -116,7 +116,7 @@
 #define STDDB_FILE_XML "simbad.xml"
 
 #define FCDB_HOST_SIMBAD "simbad.u-strasbg.fr"
-#define FCDB_PATH "/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=%lf&CooEqui=2000&CooDefinedFrames=none&Radius=%lf&Radius.unit=arcmin&output.max=%d&submit=submit%%20query&CoordList=&OutputMode=LIST&output.format=VOTABLE"
+#define FCDB_PATH "/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=%lf&Radius.unit=arcmin&output.max=%d&submit=submit%%20query&CoordList=&OutputMode=LIST&output.format=VOTABLE"
 #define FCDB_FILE_XML "simbad_fc.xml"
 
 #define FC_HOST_STSCI "archive.stsci.edu"

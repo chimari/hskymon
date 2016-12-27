@@ -71,6 +71,7 @@ extern void do_save_fc_pdf();
 extern gboolean is_separator();
 
 extern void fcdb_vo_parse();
+extern double get_julian_day_of_epoch();
 
 extern pid_t fc_pid;
 extern gboolean flagTree;
@@ -3168,6 +3169,8 @@ void fcdb_item2 (typHOE *hg)
   gdouble ra_0, dec_0, d_ra0, d_dec0;
   gchar tmp[2048];
   struct lnh_equ_posn hobject;
+  struct ln_equ_posn object;
+  struct ln_equ_posn object_prec;
 
   hg->fcdb_i=hg->dss_i;
 
@@ -3189,16 +3192,20 @@ void fcdb_item2 (typHOE *hg)
   dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
   hobject.dec.minutes=(gint)(dec_0/100);
   hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
+
+  ln_hequ_to_equ (&hobject, &object);
+  ln_get_equ_prec2 (&object, 
+		    get_julian_day_of_epoch(hg->obj[hg->fcdb_i].epoch),
+		    JD2000, &object_prec);
   
-  hg->fcdb_d_ra0=ln_hms_to_deg(&hobject.ra);
-  hg->fcdb_d_dec0=ln_dms_to_deg(&hobject.dec);
+  hg->fcdb_d_ra0=object_prec.ra;
+  hg->fcdb_d_dec0=object_prec.dec;
   
   
   if(hg->fcdb_host) g_free(hg->fcdb_host);
   hg->fcdb_host=g_strdup(STDDB_HOST_SIMBAD);
   if(hg->fcdb_path) g_free(hg->fcdb_path);
   hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,hg->fcdb_d_dec0,
-				hg->obj[hg->fcdb_i].epoch,
 				(gdouble)hg->dss_arcmin/2.*1.2,MAX_FCDB);
   if(hg->fcdb_file) g_free(hg->fcdb_file);
   hg->fcdb_file=g_strconcat(hg->temp_dir,
