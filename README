@@ -5,7 +5,7 @@
 #                                                                         
 #                                  ver 2.8.5   2016/12/27                  
 #                               Copyright (C) 2003-16 Akito Tajitsu       
-#                                                  tajitsu@naoj.org       
+#                                               tajitsu_at_naoj.org       
 #########################################################################
 
 
@@ -48,6 +48,8 @@ to make this program.
   - Enter the archive directory.
 
   - % ./configure  (--with-xmlrpc : to get telescope status)
+         (If you failed due to aclocal error,
+          Please try  ./autogen.sh  )
 
   - % make
 
