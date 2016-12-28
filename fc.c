@@ -56,6 +56,7 @@ static void cancel_fcdb();
 #endif
 void fcdb_tree_update_azel_item();
 void fcdb_make_tree();
+void fcdb_clear_tree();
 
 gdouble current_yrs();
 
@@ -144,8 +145,6 @@ void fc_dl_draw (typHOE *hg)
 #endif
   guint timer;
   
-  while (my_main_iteration(FALSE));
-
   if(flag_getDSS) return;
   flag_getDSS=TRUE;
   
@@ -189,6 +188,9 @@ void fc_dl_draw (typHOE *hg)
     flag_getDSS=FALSE;
     return;
   }
+
+  while (my_main_iteration(FALSE));
+  gdk_flush();
 
   dialog = gtk_dialog_new();
   
@@ -370,7 +372,9 @@ void fc_dl_draw (typHOE *hg)
 #ifndef USE_WIN32
   }
 #endif
-  
+
+  fcdb_clear_tree(hg);
+
   flag_getDSS=FALSE;
 }
 
@@ -435,6 +439,7 @@ void create_fc_dialog(typHOE *hg)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   hg->fc_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(hg->fc_main), "Sky Monitor : Finding Chart");
@@ -1291,6 +1296,7 @@ gboolean draw_fc_cairo(GtkWidget *widget,
   hg=(typHOE *)userdata;
   
   while (my_main_iteration(FALSE));
+  gdk_flush();
   //printf("Drawing!\n");
 
   if(hg->fc_output==FC_OUTPUT_PDF){
@@ -2959,6 +2965,7 @@ void show_fc_help (GtkWidget *widget, gpointer gdata)
 #endif  
 
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -3117,10 +3124,11 @@ void fcdb_dl(typHOE *hg)
 #endif
   guint timer;
   
-  while (my_main_iteration(FALSE));
-
   if(flag_getFCDB) return;
   flag_getFCDB=TRUE;
+
+  while (my_main_iteration(FALSE));
+  gdk_flush();
 
   dialog = gtk_dialog_new();
   
@@ -3328,6 +3336,7 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
   gtk_list_store_clear (GTK_LIST_STORE(model));
   
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   for (i = 0; i < hg->fcdb_i_max; i++){
     gtk_list_store_append (GTK_LIST_STORE(model), &iter);
@@ -3343,6 +3352,19 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
 
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),2);
 }
+
+void fcdb_clear_tree(typHOE *hg){
+  GtkTreeModel *model;
+
+  if(hg->dss_i!=hg->fcdb_i){
+    model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
+
+    gtk_list_store_clear (GTK_LIST_STORE(model));
+    hg->fcdb_i_max=0;
+  }
+
+}
+
 
 gdouble current_yrs(typHOE *hg){
   double JD;

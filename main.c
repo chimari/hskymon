@@ -2209,6 +2209,7 @@ void do_open (GtkWidget *widget, gpointer gdata)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Input List File",
 					NULL,
@@ -2300,6 +2301,7 @@ void do_open (GtkWidget *widget, gpointer gdata)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   fdialog = gtk_file_selection_new("Sky Monitor : Select Input List File");
   
@@ -2422,6 +2424,7 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select OPE File",
 					NULL,
@@ -2521,6 +2524,7 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   fdialog = gtk_file_selection_new("Sky Monitor : Select OPE File");
   
@@ -2592,6 +2596,7 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select OPE File",
 					NULL,
@@ -2679,6 +2684,7 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   fdialog = gtk_file_selection_new("Sky Monitor : Select OPE File");
   
@@ -2749,6 +2755,7 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select PRM File",
 					NULL,
@@ -2836,6 +2843,7 @@ void do_merge (GtkWidget *widget, gpointer gdata)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Input List File",
 					NULL,
@@ -2927,6 +2935,7 @@ void do_merge (GtkWidget *widget, gpointer gdata)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   fdialog = gtk_file_selection_new("Sky Monitor : Select Input List File to Merge");
   
@@ -3009,6 +3018,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gchar buf[1024];
 
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   flagChildDialog=TRUE;
 
@@ -3134,6 +3144,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
   
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   cdata=g_malloc0(sizeof(confProp));
   cdata->mode=0;
@@ -3454,6 +3465,7 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
   
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   cdata=g_malloc0(sizeof(confProp));
   cdata->mode=0;
@@ -3615,6 +3627,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
   
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   cdata=g_malloc0(sizeof(confProp));
   cdata->mode=0;
@@ -4170,6 +4183,7 @@ void do_save_pdf (GtkWidget *widget, gpointer gdata)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   fdialog = gtk_file_chooser_dialog_new("HOE : Input PDF File to be Saved",
 					NULL,
@@ -4254,6 +4268,7 @@ void do_save_fc_pdf (GtkWidget *widget, gpointer gdata)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Input PDF File to be Saved",
 					NULL,
@@ -4479,6 +4494,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   flagChildDialog=TRUE;
 
   while (my_main_iteration(FALSE));
+  gdk_flush();
+
   dialog = gtk_dialog_new();
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -9638,6 +9655,8 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
     flagChildDialog=TRUE;
 
     while (my_main_iteration(FALSE));
+    gdk_flush();
+
     dialog = gtk_dialog_new_with_buttons("Sky Monitor : Sync OPE files with IntegGUI",
 					 NULL,
 					 GTK_DIALOG_MODAL,
@@ -9757,6 +9776,8 @@ void popup_message(gint delay, ...){
   va_start(args, delay);
 
   while (my_main_iteration(FALSE));
+  gdk_flush();
+
   dialog = gtk_dialog_new();
 
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_MOUSE);

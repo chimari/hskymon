@@ -3021,6 +3021,7 @@ do_editable_cells (typHOE *hg)
   GtkWidget *all_note, *note_vbox;
 
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   if (!window) {
 
@@ -3863,6 +3864,7 @@ void remake_tree(typHOE *hg)
   gtk_list_store_clear (GTK_LIST_STORE(model));
   
   while (my_main_iteration(FALSE));
+  gdk_flush();
   
   for (i = 0; i < hg->i_max; i++){
     gtk_list_store_append (GTK_LIST_STORE(model), &iter);
@@ -3870,16 +3872,6 @@ void remake_tree(typHOE *hg)
   }
   
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
-
-  /*
-  close_tree2(NULL,hg);
-  while (my_main_iteration(FALSE));
-
-  for(i=0;i<MAX_OBJECT;i++){
-    hg->obj[i].check_sm=FALSE;
-  }
-  make_tree(NULL,hg);
-  */
 }
 
 void stddb_set_label(typHOE *hg)
@@ -3978,6 +3970,7 @@ void stddb_dl(typHOE *hg)
   guint timer;
   
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   if(flag_getSTD) return;
   flag_getSTD=TRUE;
@@ -4166,6 +4159,7 @@ void std_make_tree(GtkWidget *widget, gpointer gdata){
   gtk_list_store_clear (GTK_LIST_STORE(model));
   
   while (my_main_iteration(FALSE));
+  gdk_flush();
   
   for (i = 0; i < hg->std_i_max; i++){
     gtk_list_store_append (GTK_LIST_STORE(model), &iter);

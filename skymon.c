@@ -138,6 +138,7 @@ void create_skymon_dialog(typHOE *hg)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   hg->skymon_mode=SKYMON_CUR;
 
