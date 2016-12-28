@@ -3020,6 +3020,8 @@ do_editable_cells (typHOE *hg)
   gchar tmp[12];
   GtkWidget *all_note, *note_vbox;
 
+  while (my_main_iteration(FALSE));
+
   if (!window) {
 
     /* create window, etc */

@@ -4478,6 +4478,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
   flagChildDialog=TRUE;
 
+  while (my_main_iteration(FALSE));
   dialog = gtk_dialog_new();
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -9636,6 +9637,7 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
 
     flagChildDialog=TRUE;
 
+    while (my_main_iteration(FALSE));
     dialog = gtk_dialog_new_with_buttons("Sky Monitor : Sync OPE files with IntegGUI",
 					 NULL,
 					 GTK_DIALOG_MODAL,
@@ -9754,6 +9756,7 @@ void popup_message(gint delay, ...){
 
   va_start(args, delay);
 
+  while (my_main_iteration(FALSE));
   dialog = gtk_dialog_new();
 
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_MOUSE);
