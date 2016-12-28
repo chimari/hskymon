@@ -36,6 +36,7 @@ void stddb_signal();
 static void cancel_stddb();
 #endif
 static gboolean progress_timeout();
+void clip_copy();
 
 #ifdef USE_XMLRPC
 GdkColor col_lock={0,0xFFFF,0xC000,0xC000};
@@ -3505,6 +3506,19 @@ do_editable_cells (typHOE *hg)
     gtk_box_pack_start(GTK_BOX(hbox),hg->std_tgt,TRUE, TRUE, 0);
     gtk_entry_set_editable(GTK_ENTRY(hg->std_tgt),FALSE);
     my_entry_set_width_chars(GTK_ENTRY(hg->std_tgt),50);
+
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_COPY);
+#else
+    button = gtk_button_new_with_label ("Copy to clipboard");
+#endif
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (clip_copy), (gpointer)hg->std_tgt);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,
+				"Copy to clipboard");
+#endif
   }
 
   // FCDB
@@ -3607,11 +3621,24 @@ do_editable_cells (typHOE *hg)
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       make_fcdb_tgt, (gpointer)hg);
- 
+    
     hg->fcdb_tgt = gtk_entry_new ();
     gtk_box_pack_start(GTK_BOX(hbox),hg->fcdb_tgt,TRUE, TRUE, 0);
     gtk_entry_set_editable(GTK_ENTRY(hg->fcdb_tgt),FALSE);
     my_entry_set_width_chars(GTK_ENTRY(hg->fcdb_tgt),50);
+
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_COPY);
+#else
+    button = gtk_button_new_with_label ("Copy to clipboard");
+#endif
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (clip_copy), (gpointer)hg->fcdb_tgt);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,
+				"Copy to clipboard");
+#endif
   }
 
   
@@ -4149,3 +4176,13 @@ void std_make_tree(GtkWidget *widget, gpointer gdata){
 }
 
 
+void clip_copy(GtkWidget *widget, gpointer gdata){
+  GtkWidget *entry;
+  GtkClipboard* clipboard=gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+  const gchar *c;
+
+  entry=(GtkWidget *)gdata;
+
+  c = gtk_entry_get_text(GTK_ENTRY(entry));
+  gtk_clipboard_set_text (clipboard, c, strlen(c));
+}

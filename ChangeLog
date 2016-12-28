@@ -1,5 +1,10 @@
 2016.12.27 ver2.8.5 - Added proper motion info for standard and finding chart
 	              objects.
+	            - Added OPE Def. button in finding chart object list.
+	            - Added "copy to clipboard for OPE Def. button in standard
+	              and finding chart object lists.
+	            - These OPE Def. coordinates automatically calculate proper
+	              motion of targets (for targets w/PM_RA or Dec > 50mas/yr).
 
 2016.12.26 ver2.8.4 - small bug fix.
 
