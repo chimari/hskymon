@@ -3608,6 +3608,10 @@ do_editable_cells (typHOE *hg)
     my_signal_connect (button, "clicked",
 		       make_fcdb_tgt, (gpointer)hg);
  
+    hg->fcdb_tgt = gtk_entry_new ();
+    gtk_box_pack_start(GTK_BOX(hbox),hg->fcdb_tgt,TRUE, TRUE, 0);
+    gtk_entry_set_editable(GTK_ENTRY(hg->fcdb_tgt),FALSE);
+    my_entry_set_width_chars(GTK_ENTRY(hg->fcdb_tgt),50);
   }
 
   
