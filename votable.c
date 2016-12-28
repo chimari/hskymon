@@ -534,6 +534,10 @@ void stddb_vo_parse(typHOE *hg) {
       columns[19] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,"IRAS:Q100") == 0) 
       columns[20] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"PMRA") == 0) 
+      columns[21] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"PMDEC") == 0) 
+      columns[22] = vfield_move->position;
 
  }
 
@@ -671,6 +675,22 @@ void stddb_vo_parse(typHOE *hg) {
      if(hg->std[i_list].q100) g_free(hg->std[i_list].q100);
      hg->std[i_list].q100=g_strdup(vtabledata_move->value);
    }
+   else if (vtabledata_move->colomn == columns[21]){
+     if(vtabledata_move->value){
+       hg->std[i_list].pmra=atof(vtabledata_move->value);
+     }
+     else{
+       hg->std[i_list].pmra=0;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[22]){
+     if(vtabledata_move->value){
+       hg->std[i_list].pmdec=atof(vtabledata_move->value);
+     }
+     else{
+       hg->std[i_list].pmdec=0;
+     }
+   }
  }
  hg->std_i_max=i_list;
 
@@ -687,6 +707,12 @@ void stddb_vo_parse(typHOE *hg) {
     if(!hg->std[i_list].q25) hg->std[i_list].q25=g_strdup(" ");
     if(!hg->std[i_list].q60) hg->std[i_list].q60=g_strdup(" ");
     if(!hg->std[i_list].q100) hg->std[i_list].q100=g_strdup(" ");
+    if((fabs(hg->std[i_list].pmra)>50)||(fabs(hg->std[i_list].pmdec)>50)){
+      hg->std[i_list].pm=TRUE;
+    }
+    else{
+      hg->std[i_list].pm=FALSE;
+    }
     hg->std[i_list].epoch=2000.00;
     hg->std[i_list].sep=deg_sep(d_ra0,d_dec0,
 				hg->std[i_list].d_ra,hg->std[i_list].d_dec);
@@ -752,7 +778,10 @@ void fcdb_vo_parse(typHOE *hg) {
       columns[19] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,"IRAS:Q100") == 0) 
       columns[20] = vfield_move->position;
-
+    else if(xmlStrcmp(vfield_move->name,"PMRA") == 0) 
+      columns[21] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"PMDEC") == 0) 
+      columns[22] = vfield_move->position;
  }
 
 
@@ -885,6 +914,22 @@ void fcdb_vo_parse(typHOE *hg) {
      if(hg->fcdb[i_list].q100) g_free(hg->fcdb[i_list].q100);
      hg->fcdb[i_list].q100=g_strdup(vtabledata_move->value);
    }
+   else if (vtabledata_move->colomn == columns[21]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].pmra=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].pmra=0;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[22]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].pmdec=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].pmdec=0;
+     }
+   }
  }
  hg->fcdb_i_max=i_list;
 
@@ -902,6 +947,12 @@ void fcdb_vo_parse(typHOE *hg) {
     if(!hg->fcdb[i_list].q25) hg->fcdb[i_list].q25=g_strdup(" ");
     if(!hg->fcdb[i_list].q60) hg->fcdb[i_list].q60=g_strdup(" ");
     if(!hg->fcdb[i_list].q100) hg->fcdb[i_list].q100=g_strdup(" ");
+    if((fabs(hg->fcdb[i_list].pmra)>50)||(fabs(hg->fcdb[i_list].pmdec)>50)){
+      hg->fcdb[i_list].pm=TRUE;
+    }
+    else{
+      hg->fcdb[i_list].pm=FALSE;
+    }
     hg->fcdb[i_list].epoch=2000.00;
     hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
 				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);

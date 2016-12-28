@@ -1,3 +1,6 @@
+2016.12.27 ver2.8.5 - Added proper motion info for standard and finding chart
+	              objects.
+
 2016.12.26 ver2.8.4 - small bug fix.
 
 2016.12.26 ver2.8.3 - Added iteration at the beginning of draw_fc_cairo();

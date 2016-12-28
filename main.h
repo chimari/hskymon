@@ -975,6 +975,9 @@ struct _STDpara{
   gdouble dec;
   gdouble d_ra;
   gdouble d_dec;
+  gdouble pmra;
+  gdouble pmdec;
+  gboolean pm;
   gdouble epoch;
   gchar *sp;
   gdouble sep;
@@ -1014,6 +1017,9 @@ struct _FCDBpara{
   gdouble dec;
   gdouble d_ra;
   gdouble d_dec;
+  gdouble pmra;
+  gdouble pmdec;
+  gboolean pm;
   gdouble epoch;
   gchar *otype;
   gchar *sp;
@@ -1349,6 +1355,7 @@ struct _typHOE{
   GtkWidget *fcdb_tree;
   GtkWidget *fcdb_label;
   GtkWidget *fcdb_button;
+  GtkWidget *fcdb_tgt;
   gchar *fcdb_label_text;
   gboolean fcdb_flag;
 

@@ -26,6 +26,7 @@ void close_tree();
 void remake_tree();
 void stddb_set_label();
 void make_std_tgt();
+void make_fcdb_tgt();
 void copy_stacstd();
 static void stddb_item ();
 static void fcdb_item ();
@@ -87,6 +88,8 @@ extern void create_std_para_dialog();
 extern gdouble deg_sep();
 
 extern GtkWidget* gtkut_toggle_button_new_from_stock();
+
+extern gdouble current_yrs();
 
 extern pid_t stddb_pid;
 
@@ -1511,6 +1514,15 @@ void copy_stacstd(typHOE *hg, const stacSTDpara *stacstd,
 	+ (gdouble)dms.minutes*100. + dms.seconds;
     }
     
+    hg->std[i_list].pmra=stacstd[i_list].pmra;
+    hg->std[i_list].pmdec=stacstd[i_list].pmdec;
+    if((fabs(hg->std[i_list].pmra)>50)||(fabs(hg->std[i_list].pmdec)>50)){
+      hg->std[i_list].pm=TRUE;
+    }
+    else{
+      hg->std[i_list].pm=FALSE;
+    }
+
     if(hg->std[i_list].sp) g_free(hg->std[i_list].sp);
     hg->std[i_list].sp=g_strdup(stacstd[i_list].sp);
     
@@ -3571,18 +3583,31 @@ do_editable_cells (typHOE *hg)
     g_signal_connect (hg->fcdb_tree, "cursor-changed",
 		      G_CALLBACK (fcdb_focus_item), (gpointer)hg);
 
-      /* some buttons */
-      hbox = gtk_hbox_new (FALSE, 4);
-      gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-
+    /* some buttons */
+    hbox = gtk_hbox_new (FALSE, 4);
+    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+    
 #ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("SIMBAD",GTK_STOCK_FIND);
+    button=gtkut_button_new_from_stock("SIMBAD",GTK_STOCK_FIND);
 #else
-      button = gtk_button_new_with_label ("SIMBAD");
+    button = gtk_button_new_with_label ("SIMBAD");
 #endif
-      gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
-      my_signal_connect (button, "clicked",
-			 G_CALLBACK (fcdb_simbad), (gpointer)hg);
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (fcdb_simbad), (gpointer)hg);
+    
+    label= gtk_label_new ("    ");
+    gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock("OPE Def.",GTK_STOCK_EDIT);
+#else
+    button = gtk_button_new_with_label ("OPE Def.");
+#endif
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       make_fcdb_tgt, (gpointer)hg);
+ 
   }
 
   
@@ -3688,18 +3713,93 @@ gchar *make_tgt(gchar * obj_name){
 void make_std_tgt(GtkWidget *w, gpointer gdata){
   typHOE *hg;
   gchar tmp[1024], *tgt;
+  gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
+  struct ln_hms hms;
+  struct ln_dms dms;
 
   hg=(typHOE *)gdata;
 
 
   if((hg->stddb_tree_focus>=0)&&(hg->stddb_tree_focus<hg->std_i_max)){
     tgt=make_tgt(hg->std[hg->stddb_tree_focus].name);
-    sprintf(tmp,"%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
-	    tgt,hg->std[hg->stddb_tree_focus].name,
-	    hg->std[hg->stddb_tree_focus].ra,hg->std[hg->stddb_tree_focus].dec,
-	    hg->std[hg->stddb_tree_focus].epoch);
+    if(hg->std[hg->stddb_tree_focus].pm){
+      yrs=current_yrs(hg);
+      new_d_ra=hg->std[hg->stddb_tree_focus].d_ra+
+	hg->std[hg->stddb_tree_focus].pmra/1000/60/60*yrs;
+      new_d_dec=hg->std[hg->stddb_tree_focus].d_dec+
+	hg->std[hg->stddb_tree_focus].pmdec/1000/60/60*yrs;
+
+      ln_deg_to_hms(new_d_ra, &hms);
+      new_ra=(gdouble)hms.hours*10000.
+	+ (gdouble)hms.minutes*100. + hms.seconds;
+      ln_deg_to_dms(new_d_dec, &dms);
+      if(dms.neg==1){ 
+	new_dec=-(gdouble)dms.degrees*10000.
+	  - (gdouble)dms.minutes*100. - dms.seconds;
+      }
+      else{
+	new_dec=(gdouble)dms.degrees*10000.
+	  + (gdouble)dms.minutes*100. + dms.seconds;
+      }
+      sprintf(tmp,"PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+	      tgt,hg->std[hg->stddb_tree_focus].name,
+	      new_ra,new_dec,2000.00);
+    }
+    else{
+      sprintf(tmp,"%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+	      tgt,hg->std[hg->stddb_tree_focus].name,
+	      hg->std[hg->stddb_tree_focus].ra,hg->std[hg->stddb_tree_focus].dec,
+	      hg->std[hg->stddb_tree_focus].epoch);
+    }
     g_free(tgt);
     gtk_entry_set_text(GTK_ENTRY(hg->std_tgt),tmp);
+  }
+}
+
+void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
+  typHOE *hg;
+  gchar tmp[1024], *tgt;
+  gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
+  struct ln_hms hms;
+  struct ln_dms dms;
+
+  hg=(typHOE *)gdata;
+
+
+  if((hg->fcdb_tree_focus>=0)&&(hg->fcdb_tree_focus<hg->fcdb_i_max)){
+    tgt=make_tgt(hg->fcdb[hg->fcdb_tree_focus].name);
+    if(hg->fcdb[hg->fcdb_tree_focus].pm){
+      yrs=current_yrs(hg);
+      new_d_ra=hg->fcdb[hg->fcdb_tree_focus].d_ra+
+	hg->fcdb[hg->fcdb_tree_focus].pmra/1000/60/60*yrs;
+      new_d_dec=hg->fcdb[hg->fcdb_tree_focus].d_dec+
+	hg->fcdb[hg->fcdb_tree_focus].pmdec/1000/60/60*yrs;
+
+      ln_deg_to_hms(new_d_ra, &hms);
+      new_ra=(gdouble)hms.hours*10000.
+	+ (gdouble)hms.minutes*100. + hms.seconds;
+      ln_deg_to_dms(new_d_dec, &dms);
+      if(dms.neg==1){ 
+	new_dec=-(gdouble)dms.degrees*10000.
+	  - (gdouble)dms.minutes*100. - dms.seconds;
+      }
+      else{
+	new_dec=(gdouble)dms.degrees*10000.
+	  + (gdouble)dms.minutes*100. + dms.seconds;
+      }
+      sprintf(tmp,"PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+	      tgt,hg->fcdb[hg->fcdb_tree_focus].name,
+	      new_ra,new_dec,2000.00);
+    }
+    else{
+      sprintf(tmp,"%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+	      tgt,hg->fcdb[hg->fcdb_tree_focus].name,
+	      hg->fcdb[hg->fcdb_tree_focus].ra,
+	      hg->fcdb[hg->fcdb_tree_focus].dec,
+	      hg->fcdb[hg->fcdb_tree_focus].epoch);
+    }
+    g_free(tgt);
+    gtk_entry_set_text(GTK_ENTRY(hg->fcdb_tgt),tmp);
   }
 }
 
@@ -4043,4 +4143,5 @@ void std_make_tree(GtkWidget *widget, gpointer gdata){
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),1);
     
 }
+
 

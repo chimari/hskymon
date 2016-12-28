@@ -57,6 +57,8 @@ static void cancel_fcdb();
 void fcdb_tree_update_azel_item();
 void fcdb_make_tree();
 
+gdouble current_yrs();
+
 extern int  get_dss();
 extern int get_fcdb();
 extern gboolean my_main_iteration();
@@ -2335,10 +2337,14 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 
   {
     gdouble fcx, fcy;
+    gdouble pmx, pmy;
+    gdouble yrs;
+
     if((hg->fcdb_flag)&&(hg->fcdb_i==hg->dss_i)){
       cairo_save(cr);
 
       translate_to_center(cr,width,height,width_file,height_file,r,hg);
+      yrs=current_yrs(hg);
 
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
@@ -2367,6 +2373,32 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
 	  cairo_rectangle(cr,fcx-10,fcy-10,16,16);
 	  cairo_stroke(cr);
+	}
+      }
+
+      // Proper Motion
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.5, 0.0, 1.0);
+      else cairo_set_source_rgba(cr, 0.2, 1.0, 0.2, 1.0);
+      cairo_set_line_width (cr, 1.5*scale);
+      for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+	if(hg->fcdb[i_list].pm){
+	  fcx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0)*60.
+	    *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
+	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	  fcy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
+	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	  pmx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0
+		+hg->fcdb[i_list].pmra/1000/60/60*yrs)*60.
+	    *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
+	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	  pmy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0
+		+hg->fcdb[i_list].pmdec/1000/60/60*yrs)*60.
+	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	  cairo_move_to(cr,fcx,fcy);
+	  cairo_line_to(cr,pmx,pmy);
+	  cairo_stroke(cr);
+	  cairo_arc(cr,pmx,pmy,5,0,2*M_PI);
+	  cairo_fill(cr);
 	}
       }
       cairo_restore(cr);
@@ -3310,3 +3342,18 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),2);
 }
 
+gdouble current_yrs(typHOE *hg){
+  double JD;
+  struct ln_zonedate zonedate;
+
+  zonedate.years=hg->skymon_year;
+  zonedate.months=hg->skymon_month;
+  zonedate.days=hg->skymon_day;
+  zonedate.hours=hg->skymon_hour;
+  zonedate.minutes=hg->skymon_min;
+  zonedate.seconds=0;
+  zonedate.gmtoff=(long)hg->obs_timezone*3600;
+  JD = ln_get_julian_local_date(&zonedate);
+  return((JD-JD2000)/365.25);
+}
+      

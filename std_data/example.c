@@ -10,6 +10,8 @@ struct _STDpara{
   gchar *name;
   gdouble ra;
   gdouble dec;
+  gdouble pmra;
+  gdouble pmdec;
   gdouble epoch;
   gchar *sp;
   gdouble rot;
@@ -99,6 +101,10 @@ int main(int argc, char* argv[]) {
       columns[19] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,"IRAS:Q100") == 0) 
       columns[20] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"PMRA") == 0) 
+      columns[21] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"PMDEC") == 0) 
+      columns[22] = vfield_move->position;
 
  }
 
@@ -203,6 +209,22 @@ int main(int argc, char* argv[]) {
      std[i_list].q60=g_strdup(vtabledata_move->value);
    else if (vtabledata_move->colomn == columns[20])
      std[i_list].q100=g_strdup(vtabledata_move->value);
+   else if (vtabledata_move->colomn == columns[21]){
+     if(vtabledata_move->value){
+       std[i_list].pmra=atof(vtabledata_move->value);
+     }
+     else{
+       std[i_list].pmra=0;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[22]){
+     if(vtabledata_move->value){
+       std[i_list].pmdec=atof(vtabledata_move->value);
+     }
+     else{
+       std[i_list].pmdec=0;
+     }
+   }
  }
  i_list_max=i_list;
  
@@ -224,8 +246,9 @@ int main(int argc, char* argv[]) {
     if(!std[i_list].q100) std[i_list].q100=g_strdup(" ");
     std[i_list].epoch=2000.00;
 
-    printf("{\"%s\", %lf, %lf, \"%s\", %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\"},\n",
+    printf("{\"%s\", %lf, %lf, %lf, %lf, \"%s\", %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\"},\n",
 	   std[i_list].name,std[i_list].ra,std[i_list].dec,
+	   std[i_list].pmra,std[i_list].pmdec,
 	   std[i_list].sp,std[i_list].rot,
 	   std[i_list].u,std[i_list].b,std[i_list].v,std[i_list].r,
 	   std[i_list].i,std[i_list].j,std[i_list].h,std[i_list].k,
