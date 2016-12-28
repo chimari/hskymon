@@ -144,6 +144,7 @@ void fc_dl_draw (typHOE *hg)
 #endif
   guint timer;
   
+  while (my_main_iteration(FALSE));
 
   if(flag_getDSS) return;
   flag_getDSS=TRUE;
@@ -3116,6 +3117,7 @@ void fcdb_dl(typHOE *hg)
 #endif
   guint timer;
   
+  while (my_main_iteration(FALSE));
 
   if(flag_getFCDB) return;
   flag_getFCDB=TRUE;

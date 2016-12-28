@@ -5,6 +5,8 @@
 	              and finding chart object lists.
 	            - These OPE Def. coordinates automatically calculate proper
 	              motion of targets (for targets w/PM_RA or Dec > 50mas/yr).
+	            - Added iteration at the beginning of fc_dl_draw(),
+	              fcdb_dl(), and stdb_dl().
 
 2016.12.26 ver2.8.4 - small bug fix.
 

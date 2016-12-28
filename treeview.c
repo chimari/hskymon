@@ -3975,6 +3975,7 @@ void stddb_dl(typHOE *hg)
 #endif
   guint timer;
   
+  while (my_main_iteration(FALSE));
 
   if(flag_getSTD) return;
   flag_getSTD=TRUE;
