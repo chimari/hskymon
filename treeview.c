@@ -85,12 +85,14 @@ extern int get_stddb();
 
 extern void stddb_vo_parse();
 extern void create_std_para_dialog();
+extern void create_fcdb_para_dialog();
 
 extern gdouble deg_sep();
 
 extern GtkWidget* gtkut_toggle_button_new_from_stock();
 
 extern gdouble current_yrs();
+
 
 extern pid_t stddb_pid;
 
@@ -3400,13 +3402,16 @@ do_editable_cells (typHOE *hg)
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
 #ifdef __GTK_STOCK_H__
-    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
 #else
-    button = gtk_button_new_with_label ("Refresh");
+    button = gtk_button_new_with_label ("Find Standards");
 #endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (stddb_item), (gpointer)hg);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,"Find Standards");
+#endif
     
 
 
@@ -3534,13 +3539,16 @@ do_editable_cells (typHOE *hg)
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
 #ifdef __GTK_STOCK_H__
-    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
 #else
-    button = gtk_button_new_with_label ("Refresh");
+    button = gtk_button_new_with_label ("Catalog Matching in SIMBAD");
 #endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (fcdb_item), (gpointer)hg);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,"Catalog Matching in SIMBAD");
+#endif
     
 #ifdef __GTK_STOCK_H__
     hg->fcdb_button=gtkut_toggle_button_new_from_stock(NULL,GTK_STOCK_APPLY);
@@ -3612,6 +3620,15 @@ do_editable_cells (typHOE *hg)
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (fcdb_simbad), (gpointer)hg);
+    
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock("Search Param.",GTK_STOCK_PROPERTIES);
+#else
+    button = gtk_button_new_with_label ("Search Param.");
+#endif
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       create_fcdb_para_dialog, (gpointer)hg);
     
     label= gtk_label_new ("    ");
     gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
@@ -4183,3 +4200,5 @@ void clip_copy(GtkWidget *widget, gpointer gdata){
   c = gtk_entry_get_text(GTK_ENTRY(entry));
   gtk_clipboard_set_text (clipboard, c, strlen(c));
 }
+
+

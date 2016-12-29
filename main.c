@@ -123,6 +123,7 @@ void close_disp_para();
 void create_diff_para_dialog();
 void create_disp_para_dialog();
 void create_std_para_dialog();
+void create_fcdb_para_dialog();
 
 
 void InitDefCol();
@@ -593,17 +594,17 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",create_disp_para_dialog, (gpointer)hg);
 
-  //// Standard
+  ////Search Param.
 #ifdef __GTK_STOCK_H__
 #ifdef GTK_STOCK_ABOUT
   image=gtk_image_new_from_stock (GTK_STOCK_ABOUT, GTK_ICON_SIZE_MENU);
 #else
   image=gtk_image_new_from_stock (GTK_STOCK_HELP, GTK_ICON_SIZE_MENU);
 #endif
-  menu_item =gtk_image_menu_item_new_with_label ("Standard");
+  menu_item =gtk_image_menu_item_new_with_label ("Search Param");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
 #else
-  menu_item =gtk_menu_item_new_with_label ("Standard");
+  menu_item =gtk_menu_item_new_with_label ("Search Param");
 #endif
   gtk_widget_show (menu_item);
 #ifdef USE_GTK2
@@ -616,18 +617,30 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_widget_show (menu);
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
   
-  //Info/About
+  // Standard
 #ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
-  popup_button =gtk_image_menu_item_new_with_label ("Search Parameters");
+  popup_button =gtk_image_menu_item_new_with_label ("Standard");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
 #else
-  popup_button =gtk_menu_item_new_with_label ("Search Parameters");
+  popup_button =gtk_menu_item_new_with_label ("Standard");
 #endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",
 		     create_std_para_dialog, (gpointer)hg);
+
+#ifdef __GTK_STOCK_H__
+  image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
+  popup_button =gtk_image_menu_item_new_with_label ("SIMBAD Catalog Match");
+  gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#else
+  popup_button =gtk_menu_item_new_with_label ("SIMBAD Catalog Match");
+#endif
+  gtk_widget_show (popup_button);
+  gtk_container_add (GTK_CONTAINER (menu), popup_button);
+  my_signal_connect (popup_button, "activate",
+		     create_fcdb_para_dialog, (gpointer)hg);
 
 
   //// Info
@@ -4174,6 +4187,260 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 }
 
 
+void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
+{
+  GtkWidget *dialog, *label, *button, *frame, *hbox,
+    *spinner, *combo;
+  GtkAdjustment *adj;
+  gint tmp_band, tmp_mag, tmp_otype;
+  confProp *cdata;
+  typHOE *hg;
+ 
+
+  if(flagChildDialog){
+    return;
+  }
+  else{
+    flagChildDialog=TRUE;
+  }
+
+  hg=(typHOE *)gdata;
+  
+  cdata=g_malloc0(sizeof(confProp));
+  cdata->mode=0;
+
+  tmp_band=hg->fcdb_band;
+  tmp_mag=hg->fcdb_mag;
+  tmp_otype=hg->fcdb_otype;
+
+  while (my_main_iteration(FALSE));
+  gdk_flush();
+
+  dialog = gtk_dialog_new();
+  cdata->dialog=dialog;
+  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for SIMBAD Catalog Matching");
+
+  frame = gtk_frame_new ("Magnitude");
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+
+  hbox = gtk_hbox_new(FALSE,2);
+  gtk_container_add (GTK_CONTAINER (frame), hbox);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+
+  {
+    GtkListStore *store;
+    GtkTreeIter iter, iter_set;	  
+    GtkCellRenderer *renderer;
+      
+    store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "(Nop.)",
+		       1, FCDB_BAND_NOP, -1);
+    if(hg->fcdb_band==FCDB_BAND_NOP) iter_set=iter;
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "  U  ",
+		       1, FCDB_BAND_U, -1);
+    if(hg->fcdb_band==FCDB_BAND_U) iter_set=iter;
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "  B  ",
+		       1, FCDB_BAND_B, -1);
+    if(hg->fcdb_band==FCDB_BAND_B) iter_set=iter;
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "  V  ",
+		       1, FCDB_BAND_V, -1);
+    if(hg->fcdb_band==FCDB_BAND_V) iter_set=iter;
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "  R  ",
+		       1, FCDB_BAND_R, -1);
+    if(hg->fcdb_band==FCDB_BAND_R) iter_set=iter;
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "  I  ",
+		       1, FCDB_BAND_I, -1);
+    if(hg->fcdb_band==FCDB_BAND_I) iter_set=iter;
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "  J  ",
+		       1, FCDB_BAND_J, -1);
+    if(hg->fcdb_band==FCDB_BAND_J) iter_set=iter;
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "  H  ",
+		       1, FCDB_BAND_H, -1);
+    if(hg->fcdb_band==FCDB_BAND_H) iter_set=iter;
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "  K  ",
+		       1, FCDB_BAND_K, -1);
+    if(hg->fcdb_band==FCDB_BAND_K) iter_set=iter;
+    
+    combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
+    g_object_unref(store);
+    
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+    	
+    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+    gtk_widget_show(combo);
+    my_signal_connect (combo,"changed",cc_get_combo_box,
+		       &tmp_band);
+  }
+
+  
+  label = gtk_label_new (" < ");
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_mag,
+					    8, 25, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 TRUE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_mag);
+
+
+
+  frame = gtk_frame_new ("Object Type");
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+
+  hbox = gtk_hbox_new(FALSE,2);
+  gtk_container_add (GTK_CONTAINER (frame), hbox);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+
+  {
+    GtkListStore *store;
+    GtkTreeIter iter, iter_set;	  
+    GtkCellRenderer *renderer;
+      
+    store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "All Types",
+		       1, FCDB_OTYPE_ALL, -1);
+    if(hg->fcdb_otype==FCDB_OTYPE_ALL) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "Star",
+		       1, FCDB_OTYPE_STAR, -1);
+    if(hg->fcdb_otype==FCDB_OTYPE_STAR) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "ISM",
+		       1, FCDB_OTYPE_ISM, -1);
+    if(hg->fcdb_otype==FCDB_OTYPE_ISM) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "Galaxy",
+		       1, FCDB_OTYPE_GALAXY, -1);
+    if(hg->fcdb_otype==FCDB_OTYPE_GALAXY) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "QSO",
+		       1, FCDB_OTYPE_QSO, -1);
+    if(hg->fcdb_otype==FCDB_OTYPE_QSO) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "gamma-ray source",
+		       1, FCDB_OTYPE_GAMMA, -1);
+    if(hg->fcdb_otype==FCDB_OTYPE_GAMMA) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "X-ray source",
+		       1, FCDB_OTYPE_X, -1);
+    if(hg->fcdb_otype==FCDB_OTYPE_X) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "IR source",
+		       1, FCDB_OTYPE_IR, -1);
+    if(hg->fcdb_otype==FCDB_OTYPE_IR) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "Radio source",
+		       1, FCDB_OTYPE_RADIO, -1);
+    if(hg->fcdb_otype==FCDB_OTYPE_RADIO) iter_set=iter;
+
+    combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
+    g_object_unref(store);
+    
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+    	
+    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+    gtk_widget_show(combo);
+    my_signal_connect (combo,"changed",cc_get_combo_box,
+		       &tmp_otype);
+  }
+
+#ifdef __GTK_STOCK_H__
+  button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
+#else
+  button=gtk_button_new_with_label("Load Default");
+#endif
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed",
+		    default_disp_para, 
+		    (gpointer)cdata);
+
+#ifdef __GTK_STOCK_H__
+  button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#else
+  button=gtk_button_new_with_label("Cancel");
+#endif
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed",
+		    close_disp_para, 
+		    GTK_WIDGET(dialog));
+
+#ifdef __GTK_STOCK_H__
+  button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
+#else
+  button=gtk_button_new_with_label("Set Params");
+#endif
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed",
+		    change_disp_para, 
+		    (gpointer)cdata);
+
+  gtk_widget_show_all(dialog);
+  gtk_main();
+
+  if(cdata->mode!=0){
+    if(cdata->mode==1){
+      hg->fcdb_band  = tmp_band;
+      hg->fcdb_mag   = tmp_mag;
+      hg->fcdb_otype = tmp_otype;
+    }
+    else{
+      hg->fcdb_band  = FCDB_BAND_NOP;
+      hg->fcdb_mag   = 15;
+      hg->fcdb_otype = FCDB_OTYPE_ALL;
+    }
+  }
+
+  flagChildDialog=FALSE;
+  g_free(cdata);
+}
+
+
 void do_save_pdf (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *fdialog;
@@ -6853,6 +7120,9 @@ void param_init(typHOE *hg){
 			    G_DIR_SEPARATOR_S,
 			    FCDB_FILE_XML,NULL);
   hg->fcdb_label_text=g_strdup("Object in Finding Chart");
+  hg->fcdb_band=FCDB_BAND_NOP;
+  hg->fcdb_mag=15;
+  hg->fcdb_otype=FCDB_OTYPE_ALL;
 
   hg->adc_inst=ADC_INST_IMR;
   hg->adc_flip=FALSE;

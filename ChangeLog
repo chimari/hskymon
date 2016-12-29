@@ -1,3 +1,7 @@
+2016.12.29 ver2.8.6 - Changed catalog matching criteria SIMBAD into
+	              "region(box,..." style.
+	            - Parameter setups for SIMBAD catalog matching.
+
 2016.12.27 ver2.8.5 - Added proper motion info for standard and finding chart
 	              objects.
 	            - Added OPE Def. button in finding chart object list.

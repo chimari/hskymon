@@ -3206,7 +3206,7 @@ void fcdb_dl(typHOE *hg)
 void fcdb_item2 (typHOE *hg)
 {
   gdouble ra_0, dec_0, d_ra0, d_dec0;
-  gchar tmp[2048];
+  gchar tmp[2048], *mag_str, *otype_str;
   struct lnh_equ_posn hobject;
   struct ln_equ_posn object;
   struct ln_equ_posn object_prec;
@@ -3236,14 +3236,93 @@ void fcdb_item2 (typHOE *hg)
   ln_get_equ_prec2 (&object, 
 		    get_julian_day_of_epoch(hg->obj[hg->fcdb_i].epoch),
 		    JD2000, &object_prec);
+
+  switch(hg->fcdb_band){
+  case FCDB_BAND_NOP:
+    mag_str=g_strdup("%0D%0A");
+    break;
+  case FCDB_BAND_U:
+    mag_str=g_strdup_printf("%%26Umag<%d",hg->fcdb_mag);
+    break;
+  case FCDB_BAND_B:
+    mag_str=g_strdup_printf("%%26Bmag<%d",hg->fcdb_mag);
+    break;
+  case FCDB_BAND_V:
+    mag_str=g_strdup_printf("%%26Vmag<%d",hg->fcdb_mag);
+    break; 
+  case FCDB_BAND_R:
+    mag_str=g_strdup_printf("%%26Rmag<%d",hg->fcdb_mag);
+    break;
+  case FCDB_BAND_I:
+    mag_str=g_strdup_printf("%%26Imag<%d",hg->fcdb_mag);
+    break;
+  case FCDB_BAND_J:
+    mag_str=g_strdup_printf("%%26Jmag<%d",hg->fcdb_mag);
+    break;
+  case FCDB_BAND_H:
+    mag_str=g_strdup_printf("%%26Hmag<%d",hg->fcdb_mag);
+    break;
+  case FCDB_BAND_K:
+    mag_str=g_strdup_printf("%%26Kmag<%d",hg->fcdb_mag);
+    break;
+  }
+
+  switch(hg->fcdb_otype){
+  case FCDB_OTYPE_ALL:
+    otype_str=g_strdup("%0D%0A");
+    break;
+  case FCDB_OTYPE_STAR:
+    otype_str=g_strdup("%26maintypes%3Dstar");
+    break;
+  case FCDB_OTYPE_ISM:
+    otype_str=g_strdup("%26maintypes%3Dism");
+    break;
+  case FCDB_OTYPE_GALAXY:
+    otype_str=g_strdup("%26maintypes%3Dgalaxy");
+    break;
+  case FCDB_OTYPE_QSO:
+    otype_str=g_strdup("%26maintypes%3Dqso");
+    break;
+  case FCDB_OTYPE_GAMMA:
+    otype_str=g_strdup("%26maintypes%3Dgamma");
+    break;
+  case FCDB_OTYPE_X:
+    otype_str=g_strdup("%26maintypes%3DX");
+    break;
+  case FCDB_OTYPE_IR:
+    otype_str=g_strdup("%26maintypes%3DIR");
+    break;
+  case FCDB_OTYPE_RADIO:
+    otype_str=g_strdup("%26maintypes%3Dradio");
+    break;
+  }
   
   hg->fcdb_d_ra0=object_prec.ra;
   hg->fcdb_d_dec0=object_prec.dec;
   if(hg->fcdb_host) g_free(hg->fcdb_host);
   hg->fcdb_host=g_strdup(STDDB_HOST_SIMBAD);
   if(hg->fcdb_path) g_free(hg->fcdb_path);
-  hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,hg->fcdb_d_dec0,
-				(gdouble)hg->dss_arcmin/2.*1.2,MAX_FCDB);
+  //hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,hg->fcdb_d_dec0,
+  //				(gdouble)hg->dss_arcmin/2.*1.2,MAX_FCDB);
+  if(hg->fcdb_d_dec0>0){
+    hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,
+				  "%2B",hg->fcdb_d_dec0,
+				  (gdouble)hg->dss_arcmin,
+				  (gdouble)hg->dss_arcmin,
+				  mag_str,otype_str,
+				  MAX_FCDB);
+  }
+  else{
+    hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,
+				  "%2D",-hg->fcdb_d_dec0,
+				  (gdouble)hg->dss_arcmin,
+				  (gdouble)hg->dss_arcmin,
+				  mag_str,otype_str,
+				  MAX_FCDB);
+  }
+  g_free(mag_str);
+  g_free(otype_str);
+
   if(hg->fcdb_file) g_free(hg->fcdb_file);
   hg->fcdb_file=g_strconcat(hg->temp_dir,
 			    G_DIR_SEPARATOR_S,

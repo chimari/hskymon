@@ -116,7 +116,7 @@
 #define STDDB_FILE_XML "simbad.xml"
 
 #define FCDB_HOST_SIMBAD "simbad.u-strasbg.fr"
-#define FCDB_PATH "/simbad/sim-coo?Coord=%lf%+lf&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=%lf&Radius.unit=arcmin&output.max=%d&submit=submit%%20query&CoordList=&OutputMode=LIST&output.format=VOTABLE"
+#define FCDB_PATH "/simbad/sim-sam?Criteria=region%%28box%%2C%lf%s%lf%%2C%+lfm%+lfm%%29%s%s&submit=submit+query&OutputMode=LIST&maxObject=%d&CriteriaFile=&output.format=VOTABLE"
 #define FCDB_FILE_XML "simbad_fc.xml"
 
 #define FC_HOST_STSCI "archive.stsci.edu"
@@ -326,6 +326,35 @@ enum
   COLUMN_FCDB_H,
   COLUMN_FCDB_K,
   NUM_COLUMN_FCDB
+};
+
+
+enum
+{
+  FCDB_BAND_NOP,
+  FCDB_BAND_U,
+  FCDB_BAND_B,
+  FCDB_BAND_V,
+  FCDB_BAND_R,
+  FCDB_BAND_I,
+  FCDB_BAND_J,
+  FCDB_BAND_H,
+  FCDB_BAND_K,
+  NUM_FCDB_BAND
+};
+
+enum
+{
+  FCDB_OTYPE_ALL,
+  FCDB_OTYPE_STAR,
+  FCDB_OTYPE_ISM,
+  FCDB_OTYPE_GALAXY,
+  FCDB_OTYPE_QSO,
+  FCDB_OTYPE_GAMMA,
+  FCDB_OTYPE_X,
+  FCDB_OTYPE_IR,
+  FCDB_OTYPE_RADIO,
+  NUM_FCDB_OTYPE
 };
 
 
@@ -1358,7 +1387,9 @@ struct _typHOE{
   GtkWidget *fcdb_tgt;
   gchar *fcdb_label_text;
   gboolean fcdb_flag;
-
+  gint fcdb_band;
+  gint fcdb_mag;
+  gint fcdb_otype;
 
   GtkWidget *adc_main;
   GtkWidget *adc_dw;
