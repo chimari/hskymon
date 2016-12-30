@@ -59,6 +59,7 @@ void fcdb_make_tree();
 void fcdb_clear_tree();
 
 gdouble current_yrs();
+static void fcdb_toggle ();
 
 extern int  get_dss();
 extern int get_fcdb();
@@ -66,7 +67,9 @@ extern gboolean my_main_iteration();
 extern void cc_get_toggle();
 extern void cc_get_adj();
 extern void cc_get_combo_box();
+#ifdef __GTK_STOCK_H__
 extern GtkWidget* gtkut_button_new_from_stock();
+#endif
 extern GtkWidget* gtkut_button_new_from_pixbuf();
 extern void do_save_fc_pdf();
 
@@ -133,6 +136,8 @@ void fc_item (GtkWidget *widget, gpointer data)
 #endif
 
   fc_dl_draw(hg);
+
+  if(hg->fcdb_auto) fcdb_item(NULL, (gpointer)hg);
 }
 
 void fc_dl_draw (typHOE *hg)
@@ -297,8 +302,8 @@ void fc_dl_draw (typHOE *hg)
     label=gtk_label_new("Retrieving SDSS (DR7/color) image from \"" FC_HOST_SDSS "\" ...");
     break;
     
-  case FC_SDSS12:
-    label=gtk_label_new("Retrieving SDSS (DR12/color) image from \"" FC_HOST_SDSS12 "\" ...");
+  case FC_SDSS13:
+    label=gtk_label_new("Retrieving SDSS (DR13/color) image from \"" FC_HOST_SDSS13 "\" ...");
     break;
     
   }
@@ -431,7 +436,7 @@ void do_fc(typHOE *hg){
 
 void create_fc_dialog(typHOE *hg)
 {
-  GtkWidget *vbox, *hbox, *hbox1, *hbox2, *table;
+  GtkWidget *vbox, *vbox1, *hbox, *hbox1, *hbox2, *table;
   GtkWidget *frame, *check, *label, *button, *spinner;
   GtkAdjustment *adj;
   GtkWidget *menubar;
@@ -627,9 +632,9 @@ void create_fc_dialog(typHOE *hg)
     if(hg->fc_mode==FC_SDSS) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SDSS DR12 (color)",
-		       1, FC_SDSS12, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SDSS12) iter_set=iter;
+    gtk_list_store_set(store, &iter, 0, "SDSS DR13 (color)",
+		       1, FC_SDSS13, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SDSS13) iter_set=iter;
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     gtk_table_attach (GTK_TABLE(table), combo, 1, 2, 1, 2,
@@ -748,6 +753,57 @@ void create_fc_dialog(typHOE *hg)
   my_signal_connect(button,"toggled",
 		    G_CALLBACK (cc_get_toggle), 
 		    &hg->dss_invert);
+
+
+  frame = gtk_frame_new ("SIMBAD");
+  gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  table = gtk_table_new(2,2,FALSE);
+  gtk_container_add (GTK_CONTAINER (frame), table);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 0);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 3);
+
+  label=gtk_label_new("  ");
+  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 0, 1,
+		    GTK_SHRINK,GTK_FILL,0,0);
+
+#ifdef __GTK_STOCK_H__
+  button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
+#else
+  button = gtk_button_new_with_label ("Catalog matching");
+#endif
+  g_signal_connect (button, "clicked",
+		    G_CALLBACK (fcdb_item), (gpointer)hg);
+  gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+#ifdef __GTK_TOOLTIP_H__
+  gtk_widget_set_tooltip_text(button,
+			      "Catalog Matching");
+#endif
+
+  vbox1 = gtk_vbox_new(FALSE,0);
+  gtk_table_attach (GTK_TABLE(table), vbox1, 1, 2, 0, 2,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+
+  hg->fcdb_button=gtk_check_button_new_with_label("Disp");
+  gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_button), 0);
+  gtk_box_pack_start(GTK_BOX(vbox1), hg->fcdb_button, FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_button),
+			       hg->fcdb_flag);
+  my_signal_connect(hg->fcdb_button,"toggled",
+		    G_CALLBACK(fcdb_toggle), 
+		    (gpointer)hg);
+
+  button=gtk_check_button_new_with_label("Auto");
+  gtk_container_set_border_width (GTK_CONTAINER (button), 0);
+  gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->fcdb_auto);
+  my_signal_connect(button,"toggled",
+		    G_CALLBACK (cc_get_toggle), 
+		    &hg->fcdb_auto);
+
 
   frame = gtk_frame_new ("Instrument");
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
@@ -909,19 +965,6 @@ void create_fc_dialog(typHOE *hg)
   vbox = gtk_vbox_new(FALSE,3);
   gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, FALSE, 3);
 
-
-#ifdef __GTK_STOCK_H__
-  button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
-#else
-  button = gtk_button_new_with_label ("Catalog matching");
-#endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (fcdb_item), (gpointer)hg);
-  gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
-#ifdef __GTK_TOOLTIP_H__
-  gtk_widget_set_tooltip_text(button,
-			      "Catalog Matching in SIMBAD");
-#endif
 
 #ifdef __GTK_STOCK_H__
   icon = gdk_pixbuf_new_from_inline(sizeof(icon_pdf), icon_pdf, 
@@ -2181,8 +2224,8 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
       
-    case FC_SDSS12:
-      sprintf(tmp,"SDSS DR12 (color)  %dx%d arcmin",
+    case FC_SDSS13:
+      sprintf(tmp,"SDSS DR13 (color)  %dx%d arcmin",
 	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
       
@@ -2363,6 +2406,7 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
 	  fcy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
 	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	  if(hg->dss_flip) fcx=-fcx;
 	  cairo_rectangle(cr,fcx-6,fcy-6,12,12);
 	  cairo_stroke(cr);
 	}
@@ -2378,6 +2422,7 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
 	  fcy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
 	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	  if(hg->dss_flip) fcx=-fcx;
 	  cairo_rectangle(cr,fcx-10,fcy-10,16,16);
 	  cairo_stroke(cr);
 	}
@@ -2401,6 +2446,10 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	  pmy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0
 		+hg->fcdb[i_list].pmdec/1000/60/60*yrs)*60.
 	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	  if(hg->dss_flip) {
+	    fcx=-fcx;
+	    pmx=-pmx;
+	  }
 	  cairo_move_to(cr,fcx,fcy);
 	  cairo_line_to(cr,pmx,pmy);
 	  cairo_stroke(cr);
@@ -2935,11 +2984,11 @@ void set_fc_mode (typHOE *hg)
 			     FC_FILE_JPEG,NULL);
     break;
     
-  case FC_SDSS12:
+  case FC_SDSS13:
     if(hg->dss_host) g_free(hg->dss_host);
-    hg->dss_host             =g_strdup(FC_HOST_SDSS12);
+    hg->dss_host             =g_strdup(FC_HOST_SDSS13);
     if(hg->dss_path) g_free(hg->dss_path);
-    hg->dss_path             =g_strdup(FC_PATH_SDSS12);
+    hg->dss_path             =g_strdup(FC_PATH_SDSS13);
     if(hg->dss_file) g_free(hg->dss_file);
     hg->dss_file=g_strconcat(hg->temp_dir,
 			     G_DIR_SEPARATOR_S,
@@ -3460,3 +3509,13 @@ gdouble current_yrs(typHOE *hg){
   return((JD-JD2000)/365.25);
 }
       
+static void
+fcdb_toggle (GtkWidget *widget, gpointer data)
+{
+  typHOE *hg = (typHOE *)data;
+
+  hg->fcdb_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
+  if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL, (gpointer)hg);
+}
+

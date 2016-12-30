@@ -1404,7 +1404,7 @@ int http_c_fc(typHOE *hg){
 	    (hg->sdss_spec) ? "&SpecObjs=on" : "");
     break;
 
-  case FC_SDSS12:
+  case FC_SDSS13:
     /*  SDSS DR10 Server could not responce, when file size < 800??
                                       2014/2/20
     i_bin=1;

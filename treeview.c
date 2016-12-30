@@ -54,6 +54,7 @@ extern void calcpa2_main();
 extern void make_obj_list();
 #ifdef __GTK_STOCK_H__
 extern GtkWidget* gtkut_button_new_from_stock();
+extern GtkWidget* gtkut_toggle_button_new_from_stock();
 #endif
 extern void cc_get_combo_box ();
 extern void cc_get_entry_double();
@@ -89,7 +90,6 @@ extern void create_fcdb_para_dialog();
 
 extern gdouble deg_sep();
 
-extern GtkWidget* gtkut_toggle_button_new_from_stock();
 
 extern gdouble current_yrs();
 
@@ -1273,8 +1273,8 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 	    hobject_prec.dec.seconds);
       break;
 
-    case WWWDB_DR12:
-      sprintf(tmp,DR12_URL,
+    case WWWDB_DR13:
+      sprintf(tmp,DR13_URL,
 	      ln_hms_to_deg(&hobject_prec.ra),
 	      (hobject_prec.dec.neg) ? "-" : "+", 
 	      fabs(ln_dms_to_deg(&hobject_prec.dec)));
@@ -1434,7 +1434,7 @@ std_simbad (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
 
   sprintf(tmp,STD_SIMBAD_URL, 
-	  hg->std[hg->stddb_tree_focus].d_ra,hg->std[hg->stddb_tree_focus].d_dec);
+  	  hg->std[hg->stddb_tree_focus].name);
 
 #ifdef USE_WIN32
   ShellExecute(NULL, 
@@ -1465,7 +1465,7 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
 
   sprintf(tmp,STD_SIMBAD_URL, 
-	  hg->fcdb[hg->fcdb_tree_focus].d_ra,hg->fcdb[hg->fcdb_tree_focus].d_dec);
+	  hg->fcdb[hg->fcdb_tree_focus].name);
 
 #ifdef USE_WIN32
   ShellExecute(NULL, 
@@ -1577,16 +1577,6 @@ stddb_toggle (GtkWidget *widget, gpointer data)
   hg->stddb_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if(flagSkymon) draw_skymon(hg->skymon_dw,hg, FALSE);
-}
-
-static void
-fcdb_toggle (GtkWidget *widget, gpointer data)
-{
-  typHOE *hg = (typHOE *)data;
-
-  hg->fcdb_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-
-  if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL, (gpointer)hg);
 }
 
 static void
@@ -3244,9 +3234,9 @@ do_editable_cells (typHOE *hg)
       //if(hg->wwwdb_mode==WWWDB_DR8) iter_set=iter;
       
       gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SDSS(DR12)",
-			 1, WWWDB_DR12, 2, TRUE, -1);
-      if(hg->wwwdb_mode==WWWDB_DR12) iter_set=iter;
+      gtk_list_store_set(store, &iter, 0, "SDSS (DR13)",
+			 1, WWWDB_DR13, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_DR13) iter_set=iter;
       
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, 0, "MAST",
@@ -3550,23 +3540,6 @@ do_editable_cells (typHOE *hg)
     gtk_widget_set_tooltip_text(button,"Catalog Matching in SIMBAD");
 #endif
     
-#ifdef __GTK_STOCK_H__
-    hg->fcdb_button=gtkut_toggle_button_new_from_stock(NULL,GTK_STOCK_APPLY);
-#else
-    hg->fcdb_button=gtk_toggle_button_new_with_label("Display Objects in FC");
-#endif
-    gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_button), 0);
-    gtk_box_pack_start(GTK_BOX(hbox),hg->fcdb_button,FALSE,FALSE,0);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_button),
-				 hg->fcdb_flag);
-    my_signal_connect(hg->fcdb_button,"toggled",
-		      G_CALLBACK(fcdb_toggle), 
-		      (gpointer)hg);
-#ifdef __GTK_TOOLTIP_H__
-    gtk_widget_set_tooltip_text(hg->fcdb_button,
-				"Display Objects in FC");
-#endif
-
     hg->fcdb_label= gtk_label_new (hg->fcdb_label_text);
     gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_label, TRUE, TRUE, 0);
       

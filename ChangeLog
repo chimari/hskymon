@@ -1,6 +1,10 @@
 2016.12.29 ver2.8.6 - Changed catalog matching criteria SIMBAD into
 	              "region(box,..." style.
 	            - Parameter setups for SIMBAD catalog matching.
+	            - SDSS access changed DR12 -> DR13
+	            - SIMBAD Catalog Matching function implemented into the GUI
+	              of FC.
+	            - Fixed a bug on Catalog Matching with a flipped image.
 
 2016.12.27 ver2.8.5 - Added proper motion info for standard and finding chart
 	              objects.

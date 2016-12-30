@@ -6292,9 +6292,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     if(hg->fc_mode_def==FC_SDSS) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SDSS DR12 (color)",
-		       1, FC_SDSS12, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SDSS12) iter_set=iter;
+    gtk_list_store_set(store, &iter, 0, "SDSS DR13 (color)",
+		       1, FC_SDSS13, 2, TRUE, -1);
+    if(hg->fc_mode_def==FC_SDSS13) iter_set=iter;
 	
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     gtk_table_attach(GTK_TABLE(table1), combo, 1, 2, 0, 1,
@@ -7123,6 +7123,7 @@ void param_init(typHOE *hg){
   hg->fcdb_band=FCDB_BAND_NOP;
   hg->fcdb_mag=15;
   hg->fcdb_otype=FCDB_OTYPE_ALL;
+  hg->fcdb_auto=FALSE;
 
   hg->adc_inst=ADC_INST_IMR;
   hg->adc_flip=FALSE;
