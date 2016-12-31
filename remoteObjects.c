@@ -126,8 +126,13 @@ ro_makeClient(remoteObjectClient **ro_clientPP, char *host, int port,
     /* Create info bundle for server. */
     /* Do we need to malloc this url? */
     sprintf(url, "http://%s:%d/RPC2", host, port);
-    
+
     ro_clientP->server = xmlrpc_server_info_new(&(ro_clientP->env), url);
+    status = get_status(&(ro_clientP->env));
+    if (status != 0)
+    {
+        return status;
+    }
 
     /* Set the http auth info for this client. */
     if ((void *)auth_user != NULL)
@@ -136,6 +141,7 @@ ro_makeClient(remoteObjectClient **ro_clientPP, char *host, int port,
                                           ro_clientP->server,
                                           auth_user, auth_pass);
     }
+    
 
     if (*ro_clientPP != (remoteObjectClient *)NULL)
     {

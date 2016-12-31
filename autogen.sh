@@ -5,7 +5,7 @@
 # autoconf/automake/gettext 自動判別 autogen.sh 
 #
 # バグ
-#   1つのパッケージ内に複数の configure.in が含まれるものには
+#   1つのパッケージ内に複数の configure.ac が含まれるものには
 #   対応していません。
 #
 #   古いバージョンの gettext 用のパッケージには対応していません。
@@ -19,22 +19,22 @@
 #     --enable-debug=yes
 conf_flags=
 
-# configure.in が無ければ始まりません。
-(test -f configure.in) || 
+# configure.ac が無ければ始まりません。
+(test -f configure.ac) || 
 {
-  #echo "**Error**: You must write 'configure.in', first."
-  echo "**エラー**: 最初に 'configure.in' を作成してください。"
+  #echo "**Error**: You must write 'configure.ac', first."
+  echo "**エラー**: 最初に 'configure.ac' を作成してください。"
   exit 1
 }
 
-FILE=`sed 's/^.*AC_INIT.*(\(.*\)).*$/\1/;t;d' configure.in`
-PACKAGE=`sed 's/^.*PACKAGE=\(.*\)$/\1/;t;d' configure.in`
+FILE=`sed 's/^.*AC_INIT.*(\(.*\)).*$/\1/;t;d' configure.ac`
+PACKAGE=`sed 's/^.*PACKAGE=\(.*\)$/\1/;t;d' configure.ac`
 # gettext を使用するか判別します。
-ALL_LINGUAS=`sed 's/^.*ALL_LINGUAS="\?\([^"]*\)"\?$/\1/;t;d' configure.in`
+ALL_LINGUAS=`sed 's/^.*ALL_LINGUAS="\?\([^"]*\)"\?$/\1/;t;d' configure.ac`
 # automake を使用するか判別します。
 (test -f Makefile.am) && { ENABLE_AUTOMAKE=yes; }
 # aclocal 用の include ディレクトリが指定されているか調べます。
-MACRODIRS=`sed 's/^.*AM_ACLOCAL_INCLUDE(\(.*\)).*$/\1/;t;d' configure.in`
+MACRODIRS=`sed 's/^.*AM_ACLOCAL_INCLUDE(\(.*\)).*$/\1/;t;d' configure.ac`
 DIE=0
 
 # AC_INIT は必須です。
@@ -48,11 +48,11 @@ DIE=0
 # automake では、PACKAGE 名は必須です。
 (test "$ENABLE_AUTOMAKE" = "yes") && (test -z "$PACKAGE") && 
 {
-  PACKAGE=`sed 's/^.*AM_INIT_AUTOMAKE.*(\([^,]*\),[^)]*).*$/\1/;t;d' configure.in`
+  PACKAGE=`sed 's/^.*AM_INIT_AUTOMAKE.*(\([^,]*\),[^)]*).*$/\1/;t;d' configure.ac`
   (test -z "$PACKAGE") &&
   {
-    #echo "**Error**: You must set PACKAGE variable to your package name in configure.in"
-    echo "**エラー**: 'configure.in' 内に PACKAGE 変数をあなたのパッケージ名で定義してください。 "
+    #echo "**Error**: You must set PACKAGE variable to your package name in configure.ac"
+    echo "**エラー**: 'configure.ac' 内に PACKAGE 変数をあなたのパッケージ名で定義してください。 "
     exit 1
   }
 }
@@ -92,7 +92,7 @@ DIE=0
   }
 }
 # gettext がインストールされているか調べます。
-(grep "^AM_GNU_GETTEXT" configure.in > /dev/null) &&
+(grep "^AM_GNU_GETTEXT" configure.ac > /dev/null) &&
 {
   (gettext --version) < /dev/null > /dev/null 2>&1 ||
   {
@@ -109,7 +109,7 @@ DIE=0
     DIE=1
   }
 }
-(grep "^AM_GNOME_GETTEXT" configure.in > /dev/null) &&
+(grep "^AM_GNOME_GETTEXT" configure.ac > /dev/null) &&
 {
   (gettext --version) < /dev/null > /dev/null 2>&1 ||
   {
@@ -128,7 +128,7 @@ DIE=0
 }
 
 # libtool がインストールされているか調べます。
-(grep "^AM_PROG_LIBTOOL" configure.in > /dev/null) &&
+(grep "^AM_PROG_LIBTOOL" configure.ac > /dev/null) &&
 {
   (libtool --version) < /dev/null > /dev/null 2>&1 ||
   {
@@ -330,7 +330,7 @@ fi
   }
 }
 
-if grep "^AM_PROG_LIBTOOL" configure.in > /dev/null; then
+if grep "^AM_PROG_LIBTOOL" configure.ac > /dev/null; then
   #echo "Running libtoolize..."
   echo "実行中... libtoolize..."
   libtoolize --force --copy
@@ -349,7 +349,7 @@ if test "$ENABLE_AUTOMAKE" = "yes"; then
   done
 
   # GNOME_INIT があるときは、gnome 用の m4 を読みこむ
-  (grep "^GNOME_INIT" configure.in > /dev/null) &&
+  (grep "^GNOME_INIT" configure.ac > /dev/null) &&
   {
     (echo $ACLOCAL_FLAGS | grep "gnome" > /dev/null) ||
     (echo $aclocal_include | grep "gnome" > /dev/null) || 
@@ -360,12 +360,12 @@ if test "$ENABLE_AUTOMAKE" = "yes"; then
   echo "実行中... aclocal $ACLOCAL_FLAGS $aclocal_include..." &&
   aclocal $ACLOCAL_FLAGS $aclocal_include
 fi &&
-# configure.in を読み込み、configure を作成する。
+# configure.ac を読み込み、configure を作成する。
 #echo "Running autoconf..." &&
 echo "実行中... autoconf..." &&
 autoconf &&
 # acconfig.h を読み込み、config.h.in を作成する。
-if grep "^AM_CONFIG_HEADER" configure.in > /dev/null; then
+if grep "^AM_CONFIG_HEADER" configure.ac > /dev/null; then
   #echo "Running autoheader..." &&
   echo "実行中... autoheader..." &&
   autoheader
