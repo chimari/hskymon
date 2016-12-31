@@ -45,7 +45,7 @@ GZIP_ENV =
 BZIP2_ENV =
 TAR=tar
 
-ACLOCAL_AMFLAGS = -l m4
+#ACLOCAL_AMFLAGS = -I m4
 
 release: distdir
 	-chmod -R a+r $(distdir)

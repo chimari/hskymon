@@ -419,7 +419,6 @@ LDADD = @GTK_LIBS@ $(WINMM_LIBS) $(WINSOCK_LIBS) $(XMLRPC_LIBS) $(XML_LIBS) $(HS
 GZIP_ENV = 
 BZIP2_ENV = 
 TAR = tar
-ACLOCAL_AMFLAGS = -l m4
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1029,6 +1028,8 @@ uninstall-am: uninstall-binPROGRAMS
 
 @HAVE_WINDRES_TRUE@hskymon.res: hskymon_res.rc
 @HAVE_WINDRES_TRUE@	$(WINDRES) $< -O coff -o $@
+
+#ACLOCAL_AMFLAGS = -I m4
 
 release: distdir
 	-chmod -R a+r $(distdir)
