@@ -47,8 +47,11 @@ to make this program.
 *** Build from the source code
   - Enter the archive directory.
 
+  - (only when you cloned the source tree by git)
+    % touch configure configure.ac aclocal.m4 Makefile.am Makefile.in
+
   - % ./configure  (--with-xmlrpc : to get telescope status)
-         (If you failed due to aclocal error,
+         (If you failed to make due to aclocal error,
           Please try  ./autogen.sh  )
 
   - % make
