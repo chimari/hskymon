@@ -77,11 +77,16 @@
  *  \brief Macro for memory allocation
  *
  */
+#ifdef USE_WIN32
 #define QMALLOC(ptr, typ, nel) \
-                {if (!(ptr = (typ *)malloc((size_t)(nel)*sizeof(typ)))) \
+  {if (!(ptr = (typ *)malloc((size_t)(nel)*sizeof(typ))))      \
+      exit(1);;}
+#else
+#define QMALLOC(ptr, typ, nel) \
+  {if (!(ptr = (typ *)malloc((size_t)(nel)*sizeof(typ))))      \
                   error(EXIT_MEMORY, "Not enough memory for ", \
                         #ptr " (" #nel " elements) !");;}
-
+#endif
 
 
 /* ------------------------- Structure definition -----------------------*/
