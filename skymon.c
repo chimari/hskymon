@@ -20,6 +20,7 @@
 #endif
 
 extern void my_signal_connect();
+extern gboolean my_main_iteration();
 #ifdef __GTK_STOCK_H__
 extern GtkWidget* gtkut_button_new_from_stock();
 extern GtkWidget* gtkut_toggle_button_new_from_stock();
@@ -27,6 +28,7 @@ extern GtkWidget* gtkut_toggle_button_new_from_stock();
 extern GtkWidget* gtkut_toggle_button_new_from_pixbuf();
 extern GtkWidget *make_menu();
 extern void do_quit();
+extern void my_entry_set_width_chars();
 
 extern void calcpa2_skymon();
 
@@ -49,13 +51,16 @@ extern time_t ghttp_parse_date();
 
 extern void do_update_azel();
 
+extern gint tree_update_azel ();
 extern void make_tree();
+
 
 void create_skymon_dialog();
 void close_skymon();
 
 void screen_changed();
 gboolean expose_skymon();
+gboolean draw_skymon();
 gboolean draw_skymon_cairo();
 #ifdef USE_XMLRPC
 gboolean draw_skymon_with_telstat_cairo();

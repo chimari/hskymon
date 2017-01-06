@@ -19,10 +19,16 @@ static void refresh_adc();
 gboolean update_adc();
 
 
+extern gboolean my_main_iteration();
+extern void my_signal_connect();
+extern void screen_changed();
 extern void cc_get_toggle();
 extern void cc_get_adj();
 extern void cc_get_adj_double();
 extern void my_entry_set_width_chars();
+
+extern void calcpa2_main();
+extern void calcpa2_skymon();
 
 extern GtkWidget* gtkut_button_new_from_stock();
 extern void get_current_obs_time();

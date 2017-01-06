@@ -67,6 +67,9 @@ GdkPixbuf* rgb_pixbuf();
 extern int  get_dss();
 extern int get_fcdb();
 extern gboolean my_main_iteration();
+extern void popup_message();
+extern void my_signal_connect();
+extern void my_entry_set_width_chars();
 extern void cc_get_toggle();
 extern void cc_get_adj();
 extern void cc_get_combo_box();
@@ -75,6 +78,10 @@ extern GtkWidget* gtkut_button_new_from_stock();
 #endif
 extern GtkWidget* gtkut_button_new_from_pixbuf();
 extern void do_save_fc_pdf();
+
+extern void screen_changed();
+
+extern void allsky_debug_print ();
 
 extern gboolean is_separator();
 

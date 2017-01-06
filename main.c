@@ -23,6 +23,7 @@
 
 extern void calcpa2_main();
 extern void pdf_plot();
+extern void create_plot_dialog();
 
 #ifdef USE_SKYMON
 extern  void create_skymon_dialog();
@@ -46,6 +47,7 @@ extern get_telstat();
 extern get_rope();
 #endif
 
+extern void pdf_fc ();
 extern void set_fc_mode();
 extern GdkPixbuf* diff_pixbuf();
 
@@ -243,11 +245,15 @@ gchar* my_dirname(const gchar *file_name){
 
 
 gchar* get_win_home(void){
-  gchar WinPath[257]; 
+  gchar *WinPath; 
 
-  GetModuleFileName( NULL, WinPath, 256 );
+  //GetModuleFileName( NULL, WinPath, 256 );
+  WinPath=g_strconcat(getenv("APPDATA"),G_DIR_SEPARATOR_S,"hskymon",NULL);
+  if(access(WinPath,F_OK)!=0){
+    mkdir(WinPath);
+  }
 
-  return(my_dirname(WinPath));
+  return(WinPath);
 }
 
 gchar* get_win_temp(void){
@@ -9198,7 +9204,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
     fprintf(stderr," File Read Error  \"%s\" \n", hg->filename_ope);
 #endif
     printf_log(hg,"[ReadOPE_Def] File Read Error \"%s\".",hg->filename_ope);
-    return;
+    return(used_flag);
   }
   
   while(!feof(fp)){

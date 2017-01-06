@@ -795,7 +795,7 @@ int get_allsky(typHOE *hg){
   unsigned int dwThreadID;
   HANDLE hThread;
   
-  if(flag_getting_allsky) return;
+  if(flag_getting_allsky) return(-1);
   flag_getting_allsky=TRUE;
   flag_allsky_finish=FALSE;
 
@@ -822,7 +822,7 @@ int get_allsky(typHOE *hg){
   static struct sigaction act;
   int ret=0;
 
-  if(flag_getting_allsky) return;
+  if(flag_getting_allsky) return(-1);
   flag_getting_allsky=TRUE;
 
   act.sa_handler=allsky_signal;
@@ -834,7 +834,7 @@ int get_allsky(typHOE *hg){
     hg->allsky_date=g_strdup("Error: in sigaction (SIGUSR2)");
     
     flag_getting_allsky=FALSE;
-    return -1;
+    return(-1);
   }
 
   if(pipe(allsky_fd)==-1) {
@@ -844,7 +844,7 @@ int get_allsky(typHOE *hg){
     hg->allsky_date=g_strdup("Error: pipe open");
     
     flag_getting_allsky=FALSE;
-    return -1;
+    return(-1);
   }
   waitpid(allsky_pid,0,WNOHANG);
 
@@ -867,7 +867,7 @@ int get_allsky(typHOE *hg){
     hg->allsky_check_timer=-1;
     
     flag_getting_allsky=FALSE;
-    return -1;
+    return(-1);
   }
   else if(allsky_pid ==0) {
     ret=http_c(hg);
@@ -882,7 +882,7 @@ int get_allsky(typHOE *hg){
       hg->allsky_check_timer=-1;
       
       flag_getting_allsky=FALSE;
-      return -1;
+      return(-1);
     }
     if(dup2(allsky_fd[1],STDOUT_FILENO)==-1){
        fprintf(stderr,"pipe duplicate error\n");
@@ -895,7 +895,7 @@ int get_allsky(typHOE *hg){
       hg->allsky_check_timer=-1;
       
       flag_getting_allsky=FALSE;
-      return -1;
+      return(-1);
     }
     if(close(allsky_fd[0])==-1){
       fprintf(stderr,"pipe close error\n");
@@ -908,7 +908,7 @@ int get_allsky(typHOE *hg){
       hg->allsky_check_timer=-1;
       
       flag_getting_allsky=FALSE;
-      return -1;
+      return(-1);
     }
 
     allsky_debug_print("Child: pipe open/close end\n");

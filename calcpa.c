@@ -55,6 +55,9 @@ gdouble deg_sep();
 
 void calc_moon_topocen();
 
+extern gboolean my_main_iteration();
+extern void my_signal_connect();
+extern void add_day();
 
 extern void screen_changed();
 

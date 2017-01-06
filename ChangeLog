@@ -4,6 +4,9 @@
 	            - Added SkyView RGB composite in FC.
 	              Three sources can be selected in the properties window.
 	            - gdk_window_invalidate_rect() for progress bar update.
+	            - Changed the directory where hskymon.ini is saved to
+	              %APPDATA%\hskymon\ in Windows version.
+	            - Crrected implicit declarations.
 
 2016.12.29 ver2.8.6 - Changed catalog matching criteria SIMBAD into
 	              "region(box,..." style.

@@ -1,6 +1,7 @@
 #include "main.h"
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "ar_u0.xpm"
 #include "ar_u1.xpm"
@@ -70,12 +71,19 @@ extern gboolean flagPlot;
 extern gboolean flagADC;
 extern gboolean flagFC;
 
+extern gboolean my_main_iteration();
+extern void popup_message();
+extern void my_signal_connect();
+extern void my_entry_set_width_chars();
+
 extern void do_plot();
 extern void do_adc();
 
 extern void fc_item ();
 extern void fcdb_item2();
 extern void adc_item ();
+extern gboolean draw_adc_cairo();
+extern gboolean draw_fc_cairo();
 
 extern gfloat get_meridian_hour();
 
@@ -91,6 +99,8 @@ extern void create_fcdb_para_dialog();
 
 extern gdouble deg_sep();
 
+extern void fcdb_tree_update_azel_item();
+extern long get_file_size();
 
 extern gdouble current_yrs();
 
@@ -1845,6 +1855,7 @@ up_item (GtkWidget *widget, gpointer data)
 }
 
 
+static void
 down_item (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
