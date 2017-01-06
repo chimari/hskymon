@@ -17,7 +17,7 @@
 
 
 void fc_item();
-void fc_dl_draw ();
+void fc_dl ();
 static gboolean progress_timeout();
 void do_fc();
 void create_fc_dialog();
@@ -41,6 +41,7 @@ void dss_signal();
 
 glong get_file_size();
 
+void set_dss_src_RGB();
 void set_fc_mode();
 void set_fc_frame_col();
 
@@ -60,6 +61,8 @@ void fcdb_clear_tree();
 
 gdouble current_yrs();
 static void fcdb_toggle ();
+
+GdkPixbuf* rgb_pixbuf();
 
 extern int  get_dss();
 extern int get_fcdb();
@@ -135,12 +138,71 @@ void fc_item (GtkWidget *widget, gpointer data)
   }
 #endif
 
-  fc_dl_draw(hg);
+  if(hg->fc_mode==FC_SKYVIEW_RGB){
+    GdkPixbuf *pixbuf_fc_RGB[3];
+    gint i;
+    
+    for(i=0;i<3;i++){
+      pixbuf_fc_RGB[i]=NULL;
+    }
+    
+    hg->dss_arcmin_ip=hg->dss_arcmin;
+    hg->fc_mode_get=hg->fc_mode;
+    
+    for(i=0;i<3;i++){
+      hg->i_RGB=i;
+      set_dss_src_RGB(hg, hg->i_RGB);
+      fc_dl(hg);
+
+#ifndef USE_WIN32
+      if(fc_pid){
+#endif
+	pixbuf_fc_RGB[i] = gdk_pixbuf_new_from_file(hg->dss_file, NULL);
+#ifndef USE_WIN32
+      }
+#endif
+    }
+
+#ifndef USE_WIN32
+    if(fc_pid){
+#endif
+      if(pixbuf_fc)  g_object_unref(G_OBJECT(pixbuf_fc));
+      pixbuf_fc=rgb_pixbuf(pixbuf_fc_RGB[0],pixbuf_fc_RGB[1],pixbuf_fc_RGB[2]);
+      
+      do_fc(hg);
+#ifndef USE_WIN32
+    }
+#endif
+	
+    for(i=0;i<3;i++){
+        if(pixbuf_fc_RGB[i])  g_object_unref(G_OBJECT(pixbuf_fc_RGB[i]));
+    }
+    
+    fcdb_clear_tree(hg);
+  }
+  else{
+    fc_dl(hg);
+
+    hg->dss_arcmin_ip=hg->dss_arcmin;
+    hg->fc_mode_get=hg->fc_mode;
+#ifndef USE_WIN32
+    if(fc_pid){
+#endif
+      if(pixbuf_fc)  g_object_unref(G_OBJECT(pixbuf_fc));
+      pixbuf_fc = gdk_pixbuf_new_from_file(hg->dss_file, NULL);
+      
+      do_fc(hg);
+#ifndef USE_WIN32
+    }
+#endif
+
+    fcdb_clear_tree(hg);
+  }
 
   if(hg->fcdb_auto) fcdb_item(NULL, (gpointer)hg);
 }
 
-void fc_dl_draw (typHOE *hg)
+void fc_dl (typHOE *hg)
 {
   GtkTreeIter iter;
   gchar tmp[2048];
@@ -149,6 +211,7 @@ void fc_dl_draw (typHOE *hg)
   static struct sigaction act;
 #endif
   guint timer;
+  gint mode;
   
   if(flag_getDSS) return;
   flag_getDSS=TRUE;
@@ -209,7 +272,14 @@ void fc_dl_draw (typHOE *hg)
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
 #endif
   
-  switch(hg->fc_mode){
+  if(hg->fc_mode==FC_SKYVIEW_RGB){
+    mode=hg->fc_mode_RGB[hg->i_RGB];
+  }
+  else{
+    mode=hg->fc_mode;
+  }
+
+  switch(mode){
   case FC_STSCI_DSS1R:
     label=gtk_label_new("Retrieving DSS (POSS1 Red) image from \"" FC_HOST_STSCI "\" ...");
     break;
@@ -246,6 +316,14 @@ void fc_dl_draw (typHOE *hg)
     label=gtk_label_new("Retrieving DSS (POSS2 IR) image from \"" FC_HOST_ESO "\" ...");
     break;
     
+  case FC_SKYVIEW_GALEXF:
+    label=gtk_label_new("Retrieving GALEX (Far UV) image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+    
+  case FC_SKYVIEW_GALEXN:
+    label=gtk_label_new("Retrieving GALEX (Near UV) image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+    
   case FC_SKYVIEW_DSS1R:
     label=gtk_label_new("Retrieving DSS (POSS1 Red) image from \"" FC_HOST_SKYVIEW "\" ...");
     break;
@@ -266,18 +344,6 @@ void fc_dl_draw (typHOE *hg)
     label=gtk_label_new("Retrieving DSS (POSS2 IR) image from \"" FC_HOST_SKYVIEW "\" ...");
     break;
     
-  case FC_SKYVIEW_2MASSJ:
-    label=gtk_label_new("Retrieving 2MASS (J-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_2MASSH:
-    label=gtk_label_new("Retrieving 2MASS (H-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_2MASSK:
-    label=gtk_label_new("Retrieving 2MASS (K-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
   case FC_SKYVIEW_SDSSU:
     label=gtk_label_new("Retrieving SDSS (DR7/u-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
     break;
@@ -296,6 +362,34 @@ void fc_dl_draw (typHOE *hg)
     
   case FC_SKYVIEW_SDSSZ:
     label=gtk_label_new("Retrieving SDSS (DR7/z-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+    
+  case FC_SKYVIEW_2MASSJ:
+    label=gtk_label_new("Retrieving 2MASS (J-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+    
+  case FC_SKYVIEW_2MASSH:
+    label=gtk_label_new("Retrieving 2MASS (H-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+    
+  case FC_SKYVIEW_2MASSK:
+    label=gtk_label_new("Retrieving 2MASS (K-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+    
+  case FC_SKYVIEW_WISE34:
+    label=gtk_label_new("Retrieving WISE (3.4um) image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+    
+  case FC_SKYVIEW_WISE46:
+    label=gtk_label_new("Retrieving WISE (4.6um) image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+    
+  case FC_SKYVIEW_WISE12:
+    label=gtk_label_new("Retrieving WISE (12um) image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+    
+  case FC_SKYVIEW_WISE22:
+    label=gtk_label_new("Retrieving WISE (22um) image from \"" FC_HOST_SKYVIEW "\" ...");
     break;
     
   case FC_SDSS:
@@ -360,26 +454,12 @@ void fc_dl_draw (typHOE *hg)
   
   get_dss(hg);
   //#ifndef USE_WIN32  
+
   gtk_main();
   //#endif
   gtk_timeout_remove(timer);
   gtk_widget_destroy(dialog);
   
-  hg->dss_arcmin_ip=hg->dss_arcmin;
-  hg->fc_mode_get=hg->fc_mode;
-#ifndef USE_WIN32
-  if(fc_pid){
-#endif
-    if(pixbuf_fc)  g_object_unref(G_OBJECT(pixbuf_fc));
-    pixbuf_fc = gdk_pixbuf_new_from_file(hg->dss_file, NULL);
-    
-    do_fc(hg);
-#ifndef USE_WIN32
-  }
-#endif
-
-  fcdb_clear_tree(hg);
-
   flag_getDSS=FALSE;
 }
 
@@ -389,8 +469,10 @@ static gboolean progress_timeout( gpointer data ){
   gchar *tmp;
 
   if(GTK_WIDGET_REALIZED(hg->pbar)){
+    gdk_window_invalidate_rect(gtk_widget_get_window(hg->pbar),NULL,FALSE);
+
     gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
-    
+
     sz=get_file_size(hg->dss_file);
     if(sz>1024){
       sz=sz/1024;
@@ -558,6 +640,16 @@ void create_fc_dialog(typHOE *hg)
 			0, NULL, 1, FC_SEP2, 2, FALSE, -1);
 
     gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: GALEX (Far UV)",
+		       1, FC_SKYVIEW_GALEXF, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_GALEXF) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: GALEX (Near UV)",
+		       1, FC_SKYVIEW_GALEXN, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_GALEXN) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "SkyView: DSS1 (Red)",
 		       1, FC_SKYVIEW_DSS1R, 2, TRUE, -1);
     if(hg->fc_mode==FC_SKYVIEW_DSS1R) iter_set=iter;
@@ -583,21 +675,6 @@ void create_fc_dialog(typHOE *hg)
     if(hg->fc_mode==FC_SKYVIEW_DSS2IR) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (J)",
-		       1, FC_SKYVIEW_2MASSJ, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_2MASSJ) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (H)",
-		       1, FC_SKYVIEW_2MASSH, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_2MASSH) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (K)",
-		       1, FC_SKYVIEW_2MASSK, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_2MASSK) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (u)",
 		       1, FC_SKYVIEW_SDSSU, 2, TRUE, -1);
     if(hg->fc_mode==FC_SKYVIEW_SDSSU) iter_set=iter;
@@ -621,6 +698,46 @@ void create_fc_dialog(typHOE *hg)
     gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (z)",
 		       1, FC_SKYVIEW_SDSSZ, 2, TRUE, -1);
     if(hg->fc_mode==FC_SKYVIEW_SDSSZ) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (J)",
+		       1, FC_SKYVIEW_2MASSJ, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_2MASSJ) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (H)",
+		       1, FC_SKYVIEW_2MASSH, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_2MASSH) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (K)",
+		       1, FC_SKYVIEW_2MASSK, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_2MASSK) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: WISE (3.4um)",
+		       1, FC_SKYVIEW_WISE34, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_WISE34) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: WISE (4.6um)",
+		       1, FC_SKYVIEW_WISE46, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_WISE46) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: WISE (12um)",
+		       1, FC_SKYVIEW_WISE12, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_WISE12) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: WISE (22um)",
+		       1, FC_SKYVIEW_WISE22, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_WISE22) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: RGB composite",
+		       1, FC_SKYVIEW_RGB, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_RGB) iter_set=iter;
 	
     gtk_list_store_append (store, &iter);
     gtk_list_store_set (store, &iter,
@@ -2145,6 +2262,16 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 			  CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, 10.0*scale);
     switch(hg->fc_mode_get){
+    case FC_SKYVIEW_GALEXF:
+      sprintf(tmp,"GALEX (Far UV)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
+    case FC_SKYVIEW_GALEXN:
+      sprintf(tmp,"GALEX (Near UV)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
     case FC_STSCI_DSS1R:
     case FC_ESO_DSS1R:
     case FC_SKYVIEW_DSS1R:
@@ -2179,21 +2306,6 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
-    case FC_SKYVIEW_2MASSJ:
-      sprintf(tmp,"2MASS (J)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_2MASSH:
-      sprintf(tmp,"2MASS (H)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_2MASSK:
-      sprintf(tmp,"2MASS (K)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
     case FC_SKYVIEW_SDSSU:
       sprintf(tmp,"SDSS DR7 (u)  %dx%d arcmin",
 	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
@@ -2216,6 +2328,46 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 
     case FC_SKYVIEW_SDSSZ:
       sprintf(tmp,"SDSS DR7 (z)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
+    case FC_SKYVIEW_2MASSJ:
+      sprintf(tmp,"2MASS (J)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
+    case FC_SKYVIEW_2MASSH:
+      sprintf(tmp,"2MASS (H)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
+    case FC_SKYVIEW_2MASSK:
+      sprintf(tmp,"2MASS (K)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
+    case FC_SKYVIEW_WISE34:
+      sprintf(tmp,"WISE (3.4um)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
+    case FC_SKYVIEW_WISE46:
+      sprintf(tmp,"WISE (4.6um)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
+    case FC_SKYVIEW_WISE12:
+      sprintf(tmp,"WISE (12um)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
+    case FC_SKYVIEW_WISE22:
+      sprintf(tmp,"WISE (22um)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
+    case FC_SKYVIEW_RGB:
+      sprintf(tmp,"SkyView RGB composite  %dx%d arcmin",
 	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
@@ -2833,6 +2985,71 @@ glong get_file_size(gchar *fname)
 }
 
 
+void set_dss_src_RGB (typHOE *hg, gint i)
+{
+  
+  if(hg->dss_src) g_free(hg->dss_src);
+  switch(hg->fc_mode_RGB[i]){
+  case FC_SKYVIEW_GALEXF:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_GALEXF);
+    break;
+  case FC_SKYVIEW_GALEXN:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_GALEXN);
+    break;
+  case FC_SKYVIEW_DSS1R:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_DSS1R);
+    break;
+  case FC_SKYVIEW_DSS1B:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_DSS1B);
+    break;
+  case FC_SKYVIEW_DSS2R:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_DSS2R);
+    break;
+  case FC_SKYVIEW_DSS2B:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_DSS2B);
+    break;
+  case FC_SKYVIEW_DSS2IR:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_DSS2IR);
+    break;
+  case FC_SKYVIEW_SDSSU:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_SDSSU);
+    break;
+  case FC_SKYVIEW_SDSSG:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_SDSSG);
+    break;
+  case FC_SKYVIEW_SDSSR:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_SDSSR);
+    break;
+  case FC_SKYVIEW_SDSSI:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_SDSSI);
+    break;
+  case FC_SKYVIEW_SDSSZ:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_SDSSZ);
+    break;
+  case FC_SKYVIEW_2MASSJ:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_2MASSJ);
+    break;
+  case FC_SKYVIEW_2MASSH:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_2MASSH);
+    break;
+  case FC_SKYVIEW_2MASSK:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_2MASSK);
+    break;
+  case FC_SKYVIEW_WISE34:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_WISE34);
+    break;
+  case FC_SKYVIEW_WISE46:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_WISE46);
+    break;
+  case FC_SKYVIEW_WISE12:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_WISE12);
+    break;
+  case FC_SKYVIEW_WISE22:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_WISE22);
+    break;
+  }
+}
+
 void set_fc_mode (typHOE *hg)
 {
   switch(hg->fc_mode){
@@ -2904,19 +3121,25 @@ void set_fc_mode (typHOE *hg)
     }
     break;
     
+  case FC_SKYVIEW_GALEXF:
+  case FC_SKYVIEW_GALEXN:
   case FC_SKYVIEW_DSS1R:
   case FC_SKYVIEW_DSS1B:
   case FC_SKYVIEW_DSS2R:
   case FC_SKYVIEW_DSS2B:
   case FC_SKYVIEW_DSS2IR:
-  case FC_SKYVIEW_2MASSJ:
-  case FC_SKYVIEW_2MASSH:
-  case FC_SKYVIEW_2MASSK:
   case FC_SKYVIEW_SDSSU:
   case FC_SKYVIEW_SDSSG:
   case FC_SKYVIEW_SDSSR:
   case FC_SKYVIEW_SDSSI:
   case FC_SKYVIEW_SDSSZ:
+  case FC_SKYVIEW_2MASSJ:
+  case FC_SKYVIEW_2MASSH:
+  case FC_SKYVIEW_2MASSK:
+  case FC_SKYVIEW_WISE34:
+  case FC_SKYVIEW_WISE46:
+  case FC_SKYVIEW_WISE12:
+  case FC_SKYVIEW_WISE22:
     if(hg->dss_host) g_free(hg->dss_host);
     hg->dss_host             =g_strdup(FC_HOST_SKYVIEW);
     if(hg->dss_path) g_free(hg->dss_path);
@@ -2931,6 +3154,12 @@ void set_fc_mode (typHOE *hg)
 			    FC_FILE_HTML,NULL);
     if(hg->dss_src) g_free(hg->dss_src);
     switch(hg->fc_mode){
+    case FC_SKYVIEW_GALEXF:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_GALEXF);
+      break;
+    case FC_SKYVIEW_GALEXN:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_GALEXN);
+      break;
     case FC_SKYVIEW_DSS1R:
       hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_DSS1R);
       break;
@@ -2945,15 +3174,6 @@ void set_fc_mode (typHOE *hg)
       break;
     case FC_SKYVIEW_DSS2IR:
       hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_DSS2IR);
-      break;
-    case FC_SKYVIEW_2MASSJ:
-      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_2MASSJ);
-      break;
-    case FC_SKYVIEW_2MASSH:
-      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_2MASSH);
-      break;
-    case FC_SKYVIEW_2MASSK:
-      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_2MASSK);
       break;
     case FC_SKYVIEW_SDSSU:
       hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_SDSSU);
@@ -2970,7 +3190,43 @@ void set_fc_mode (typHOE *hg)
     case FC_SKYVIEW_SDSSZ:
       hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_SDSSZ);
       break;
+    case FC_SKYVIEW_2MASSJ:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_2MASSJ);
+      break;
+    case FC_SKYVIEW_2MASSH:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_2MASSH);
+      break;
+    case FC_SKYVIEW_2MASSK:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_2MASSK);
+      break;
+    case FC_SKYVIEW_WISE34:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_WISE34);
+      break;
+    case FC_SKYVIEW_WISE46:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_WISE46);
+      break;
+    case FC_SKYVIEW_WISE12:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_WISE12);
+      break;
+    case FC_SKYVIEW_WISE22:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_WISE22);
+      break;
     }
+    break;
+
+  case FC_SKYVIEW_RGB:
+    if(hg->dss_host) g_free(hg->dss_host);
+    hg->dss_host             =g_strdup(FC_HOST_SKYVIEW);
+    if(hg->dss_path) g_free(hg->dss_path);
+    hg->dss_path             =g_strdup(FC_PATH_SKYVIEW_RGB);
+    if(hg->dss_file) g_free(hg->dss_file);
+    hg->dss_file=g_strconcat(hg->temp_dir,
+			     G_DIR_SEPARATOR_S,
+			     FC_FILE_JPEG,NULL);
+    if(hg->dss_tmp) g_free(hg->dss_tmp);
+    hg->dss_tmp=g_strconcat(hg->temp_dir,
+			    G_DIR_SEPARATOR_S,
+			    FC_FILE_HTML,NULL);
     break;
     
   case FC_SDSS:
@@ -2998,7 +3254,7 @@ void set_fc_mode (typHOE *hg)
 }
 
 void set_fc_frame_col(typHOE *hg){
-  if((hg->fc_mode>=FC_SKYVIEW_DSS1R)&&(hg->fc_mode<=FC_SKYVIEW_SDSSZ)){
+  if((hg->fc_mode>=FC_SKYVIEW_GALEXF)&&(hg->fc_mode<=FC_SKYVIEW_WISE22)){
     gtk_widget_set_sensitive(hg->fc_frame_col,TRUE);
   }
   else{
@@ -3519,3 +3775,56 @@ fcdb_toggle (GtkWidget *widget, gpointer data)
   if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL, (gpointer)hg);
 }
 
+GdkPixbuf* rgb_pixbuf(GdkPixbuf *pixbufR, GdkPixbuf* pixbufG, 
+		      GdkPixbuf* pixbufB){ 
+  guint w1, w2, w3, h1,  h2, h3;
+  guint sz;
+  gint bits=0x01;
+  guchar *p1,  *p2,  *p3, *p_ret;
+  guint w ,h;
+  GdkPixbuf *pixbuf_ret=NULL;
+
+  if(!GDK_IS_PIXBUF(pixbufR)||!GDK_IS_PIXBUF(pixbufG)
+     ||!GDK_IS_PIXBUF(pixbufB)){
+    allsky_debug_print("  rgb_pixbuf() : Error in Pixbuf, Skipping...\n");
+    return(NULL);
+  }
+
+  allsky_debug_print("  rgb_pixbuf() : Starting...\n");
+
+  w1 = gdk_pixbuf_get_width(pixbufR);
+  w2 = gdk_pixbuf_get_width(pixbufG);
+  w3 = gdk_pixbuf_get_width(pixbufB);
+  if((w1!=w2)||(w1!=w3)){
+    allsky_debug_print("  rgb_pixbuf() : Error in Size of Pixbuf, Skipping...\n");
+    return(NULL);
+  }
+
+  h1 = gdk_pixbuf_get_height(pixbufR);
+  h2 = gdk_pixbuf_get_height(pixbufG);
+  h3 = gdk_pixbuf_get_height(pixbufB);
+  if((h1!=h2)||(h1!=h3)){
+    allsky_debug_print("  rgb_pixbuf() : Error in Size of Pixbuf, Skipping...\n");
+    return(NULL);
+  }
+
+  sz=gdk_pixbuf_get_rowstride(pixbufR)/w1;
+  bits=(bits << gdk_pixbuf_get_bits_per_sample (pixbufR)) -1;
+
+  pixbuf_ret=gdk_pixbuf_copy(pixbufR);
+  p1 = gdk_pixbuf_get_pixels(pixbufR);
+  p2 = gdk_pixbuf_get_pixels(pixbufG);
+  p3 = gdk_pixbuf_get_pixels(pixbufB);
+
+  p_ret = gdk_pixbuf_get_pixels(pixbuf_ret);
+
+  for(h=0;h<h1;h++){
+    for(w=0;w<w1;w++){
+      p_ret[(h*w1+w)*sz]=  (guchar)p1[(h*w1+w)*sz];
+      p_ret[(h*w1+w)*sz+1]=(guchar)p2[(h*w1+w)*sz];
+      p_ret[(h*w1+w)*sz+2]=(guchar)p3[(h*w1+w)*sz];
+    }
+  }
+
+  return(pixbuf_ret);
+}

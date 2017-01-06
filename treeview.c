@@ -25,8 +25,10 @@ void close_tree2();
 void close_tree();
 void remake_tree();
 void stddb_set_label();
+gchar *make_tgt();
 void make_std_tgt();
 void make_fcdb_tgt();
+gchar *make_simbad_id();
 void copy_stacstd();
 static void stddb_item ();
 static void fcdb_item ();
@@ -50,7 +52,6 @@ extern gboolean draw_skymon();
 #endif
 extern gboolean draw_plot_cairo();
 extern void calcpa2_main();
-//extern gchar *make_tgt();
 extern void make_obj_list();
 #ifdef __GTK_STOCK_H__
 extern GtkWidget* gtkut_button_new_from_stock();
@@ -1432,10 +1433,12 @@ std_simbad (GtkWidget *widget, gpointer data)
   gchar *cmdline;
 #endif
   typHOE *hg = (typHOE *)data;
+  gchar *tgt;
 
-  sprintf(tmp,STD_SIMBAD_URL, 
-  	  hg->std[hg->stddb_tree_focus].name);
+  tgt=make_simbad_id(hg->std[hg->stddb_tree_focus].name);
 
+  sprintf(tmp,STD_SIMBAD_URL,tgt);
+  
 #ifdef USE_WIN32
   ShellExecute(NULL, 
 	       "open", 
@@ -1452,6 +1455,7 @@ std_simbad (GtkWidget *widget, gpointer data)
   
   ext_play(cmdline);
   g_free(cmdline);
+  g_free(tgt);
 #endif
 }
 
@@ -1463,9 +1467,11 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
   gchar *cmdline;
 #endif
   typHOE *hg = (typHOE *)data;
+  gchar *tgt;
 
-  sprintf(tmp,STD_SIMBAD_URL, 
-	  hg->fcdb[hg->fcdb_tree_focus].name);
+  tgt=make_simbad_id(hg->fcdb[hg->fcdb_tree_focus].name);
+
+  sprintf(tmp,STD_SIMBAD_URL,tgt);
 
 #ifdef USE_WIN32
   ShellExecute(NULL, 
@@ -1483,6 +1489,7 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
   
   ext_play(cmdline);
   g_free(cmdline);
+  g_free(tgt);
 #endif
 }
 
@@ -3825,6 +3832,41 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
     g_free(tgt);
     gtk_entry_set_text(GTK_ENTRY(hg->fcdb_tgt),tmp);
   }
+}
+
+gchar *make_simbad_id(gchar * obj_name){
+  gchar tgt_name[BUFFSIZE], *ret_name;
+  gint  i_obj, i_tgt;
+
+  i_tgt=0;
+
+  for(i_obj=0;i_obj<strlen(obj_name);i_obj++){
+    if(obj_name[i_obj]==0x20){
+      tgt_name[i_tgt]='%';
+      i_tgt++;
+      tgt_name[i_tgt]='2';
+      i_tgt++;
+      tgt_name[i_tgt]='0';
+      i_tgt++;
+    }
+    else if(obj_name[i_obj]==0x2b){
+      tgt_name[i_tgt]='%';
+      i_tgt++;
+      tgt_name[i_tgt]='2';
+      i_tgt++;
+      tgt_name[i_tgt]='b';
+      i_tgt++;
+    }    
+    else{
+      tgt_name[i_tgt]=obj_name[i_obj];
+      i_tgt++;
+    }
+  }
+
+  tgt_name[i_tgt]='\0';
+  ret_name=g_strdup(tgt_name);
+
+  return(ret_name);
 }
 
 void close_tree(GtkWidget *w, gpointer gdata)

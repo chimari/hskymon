@@ -1,3 +1,10 @@
+2017.01.05 ver2.8.7 - Added GALEX (Far/Near UV) and WISE (4ch) in FC.
+	            - Bug fix in SIMBAD ID seach for standard and FC objects.
+                          '+' => "%2b"  and  ' ' => "%20"
+	            - Added SkyView RGB composite in FC.
+	              Three sources can be selected in the properties window.
+	            - gdk_window_invalidate_rect() for progress bar update.
+
 2016.12.29 ver2.8.6 - Changed catalog matching criteria SIMBAD into
 	              "region(box,..." style.
 	            - Parameter setups for SIMBAD catalog matching.

@@ -1343,19 +1343,25 @@ int http_c_fc(typHOE *hg){
 	    hg->dss_arcmin,hg->dss_arcmin,hg->dss_src);
     break;
 
+  case FC_SKYVIEW_GALEXF:
+  case FC_SKYVIEW_GALEXN:
   case FC_SKYVIEW_DSS1R:
   case FC_SKYVIEW_DSS1B:
   case FC_SKYVIEW_DSS2R:
   case FC_SKYVIEW_DSS2B:
   case FC_SKYVIEW_DSS2IR:
-  case FC_SKYVIEW_2MASSJ:
-  case FC_SKYVIEW_2MASSH:
-  case FC_SKYVIEW_2MASSK:
   case FC_SKYVIEW_SDSSU:
   case FC_SKYVIEW_SDSSG:
   case FC_SKYVIEW_SDSSR:
   case FC_SKYVIEW_SDSSI:
   case FC_SKYVIEW_SDSSZ:
+  case FC_SKYVIEW_2MASSJ:
+  case FC_SKYVIEW_2MASSH:
+  case FC_SKYVIEW_2MASSK:
+  case FC_SKYVIEW_WISE34:
+  case FC_SKYVIEW_WISE46:
+  case FC_SKYVIEW_WISE12:
+  case FC_SKYVIEW_WISE22:
     switch(hg->dss_scale){
     case FC_SCALE_LOG:
       sprintf(tmp_scale,"Log");
@@ -1377,6 +1383,35 @@ int http_c_fc(typHOE *hg){
 	    tmp_scale,
 	    //	    (hg->dss_log) ? "Log" : "Linear",
 	    (hg->dss_invert) ? "&invert=on&" : "&",
+	    (gdouble)hg->dss_arcmin/60.,
+	    (gdouble)hg->dss_arcmin/60.,
+	    hg->dss_pix,
+	    ln_hms_to_deg(&hobject.ra),
+	    ln_dms_to_deg(&hobject.dec));
+    break;
+
+
+  case FC_SKYVIEW_RGB:
+    switch(hg->dss_scale_RGB[hg->i_RGB]){
+    case FC_SCALE_LOG:
+      sprintf(tmp_scale,"Log");
+      break;
+    case FC_SCALE_SQRT:
+      sprintf(tmp_scale,"Sqrt");
+      break;
+    case FC_SCALE_HISTEQ:
+      sprintf(tmp_scale,"HistEq");
+      break;
+    case FC_SCALE_LOGLOG:
+      sprintf(tmp_scale,"LogLog");
+      break;
+    default:
+      sprintf(tmp_scale,"Linear");
+    }
+    sprintf(tmp,hg->dss_path,
+	    hg->dss_src, hg->obj[hg->dss_i].epoch,
+	    tmp_scale,
+	    //(hg->dss_invert) ? "&invert=on&" : "&",
 	    (gdouble)hg->dss_arcmin/60.,
 	    (gdouble)hg->dss_arcmin/60.,
 	    hg->dss_pix,
@@ -1455,19 +1490,26 @@ int http_c_fc(typHOE *hg){
   case FC_ESO_DSS2R:
   case FC_ESO_DSS2B:
   case FC_ESO_DSS2IR:
+  case FC_SKYVIEW_GALEXF:
+  case FC_SKYVIEW_GALEXN:
   case FC_SKYVIEW_DSS1R:
   case FC_SKYVIEW_DSS1B:
   case FC_SKYVIEW_DSS2R:
   case FC_SKYVIEW_DSS2B:
   case FC_SKYVIEW_DSS2IR:
-  case FC_SKYVIEW_2MASSJ:
-  case FC_SKYVIEW_2MASSH:
-  case FC_SKYVIEW_2MASSK:
   case FC_SKYVIEW_SDSSU:
   case FC_SKYVIEW_SDSSG:
   case FC_SKYVIEW_SDSSR:
   case FC_SKYVIEW_SDSSI:
   case FC_SKYVIEW_SDSSZ:
+  case FC_SKYVIEW_2MASSJ:
+  case FC_SKYVIEW_2MASSH:
+  case FC_SKYVIEW_2MASSK:
+  case FC_SKYVIEW_WISE34:
+  case FC_SKYVIEW_WISE46:
+  case FC_SKYVIEW_WISE12:
+  case FC_SKYVIEW_WISE22:
+  case FC_SKYVIEW_RGB:
     if((fp_write=fopen(hg->dss_tmp,"wb"))==NULL){
       fprintf(stderr," File Write Error  \"%s\" \n", hg->dss_tmp);
       return(HSKYMON_HTTP_ERROR_TEMPFILE);
@@ -1513,19 +1555,26 @@ int http_c_fc(typHOE *hg){
       }
       break;
 
+    case FC_SKYVIEW_GALEXF:
+    case FC_SKYVIEW_GALEXN:
     case FC_SKYVIEW_DSS1R:
     case FC_SKYVIEW_DSS1B:
     case FC_SKYVIEW_DSS2R:
     case FC_SKYVIEW_DSS2B:
     case FC_SKYVIEW_DSS2IR:
-    case FC_SKYVIEW_2MASSJ:
-    case FC_SKYVIEW_2MASSH:
-    case FC_SKYVIEW_2MASSK:
     case FC_SKYVIEW_SDSSU:
     case FC_SKYVIEW_SDSSG:
     case FC_SKYVIEW_SDSSR:
     case FC_SKYVIEW_SDSSI:
     case FC_SKYVIEW_SDSSZ:
+    case FC_SKYVIEW_2MASSJ:
+    case FC_SKYVIEW_2MASSH:
+    case FC_SKYVIEW_2MASSK:
+    case FC_SKYVIEW_WISE34:
+    case FC_SKYVIEW_WISE46:
+    case FC_SKYVIEW_WISE12:
+    case FC_SKYVIEW_WISE22:
+    case FC_SKYVIEW_RGB:
       while(!feof(fp_read)){
 	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
 	  cpp=cbuf;
@@ -1572,19 +1621,26 @@ int http_c_fc(typHOE *hg){
 	sprintf(send_mesg, "GET %s HTTP/1.1\r\n", cp3);
 	break;
 
+      case FC_SKYVIEW_GALEXF:
+      case FC_SKYVIEW_GALEXN:
       case FC_SKYVIEW_DSS1R:
       case FC_SKYVIEW_DSS1B:
       case FC_SKYVIEW_DSS2R:
       case FC_SKYVIEW_DSS2B:
       case FC_SKYVIEW_DSS2IR:
-      case FC_SKYVIEW_2MASSJ:
-      case FC_SKYVIEW_2MASSH:
-      case FC_SKYVIEW_2MASSK:
       case FC_SKYVIEW_SDSSU:
       case FC_SKYVIEW_SDSSG:
       case FC_SKYVIEW_SDSSR:
       case FC_SKYVIEW_SDSSI:
       case FC_SKYVIEW_SDSSZ:
+      case FC_SKYVIEW_2MASSJ:
+      case FC_SKYVIEW_2MASSH:
+      case FC_SKYVIEW_2MASSK:
+      case FC_SKYVIEW_WISE34:
+      case FC_SKYVIEW_WISE46:
+      case FC_SKYVIEW_WISE12:
+      case FC_SKYVIEW_WISE22:
+      case FC_SKYVIEW_RGB:
 	sprintf(send_mesg, "GET %s.jpg HTTP/1.1\r\n", cp3);
 	break;
       }
@@ -2394,3 +2450,5 @@ GdkPixbuf* diff_pixbuf(GdkPixbuf *pixbuf1, GdkPixbuf* pixbuf2,
   }
   return(pixbuf_ret);
 }
+
+

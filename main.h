@@ -131,6 +131,7 @@
 
 #define FC_HOST_SKYVIEW "skyview.gsfc.nasa.gov"
 #define FC_PATH_SKYVIEW "/current/cgi/runquery.pl?survey=%s&coordinates=J%.1lf&projection=Tan&scaling=%s&sampler=LI&lut=colortables/blue-white.bin%ssize=%lf,%lf&pixels=%d&position=%lf,%lf"
+#define FC_PATH_SKYVIEW_RGB "/current/cgi/runquery.pl?survey=%s&coordinates=J%.1lf&projection=Tan&scaling=%s&sampler=LI&lut=colortables/B-W%%20Linear&size=%lf,%lf&pixels=%d&position=%lf,%lf"
 
 #define FC_SRC_STSCI_DSS1R "poss1_red"
 #define FC_SRC_STSCI_DSS1B "poss1_blue"
@@ -143,19 +144,25 @@
 #define FC_SRC_ESO_DSS2B "DSS2-blue"
 #define FC_SRC_ESO_DSS2IR "DSS2-infrared"
 
+#define FC_SRC_SKYVIEW_GALEXF "GALEX%20Far%20UV"
+#define FC_SRC_SKYVIEW_GALEXN "GALEX%20Near%20UV"
 #define FC_SRC_SKYVIEW_DSS1R "DSS1%20Red"
 #define FC_SRC_SKYVIEW_DSS1B "DSS1%20Blue"
 #define FC_SRC_SKYVIEW_DSS2R "DSS2%20Red"
 #define FC_SRC_SKYVIEW_DSS2B "DSS2%20Blue"
 #define FC_SRC_SKYVIEW_DSS2IR "DSS2%20IR"
-#define FC_SRC_SKYVIEW_2MASSJ "2MASS-J"
-#define FC_SRC_SKYVIEW_2MASSH "2MASS-H"
-#define FC_SRC_SKYVIEW_2MASSK "2MASS-K"
 #define FC_SRC_SKYVIEW_SDSSU "SDSSdr7u"
 #define FC_SRC_SKYVIEW_SDSSG "SDSSdr7g"
 #define FC_SRC_SKYVIEW_SDSSR "SDSSdr7r"
 #define FC_SRC_SKYVIEW_SDSSI "SDSSdr7i"
 #define FC_SRC_SKYVIEW_SDSSZ "SDSSdr7z"
+#define FC_SRC_SKYVIEW_2MASSJ "2MASS-J"
+#define FC_SRC_SKYVIEW_2MASSH "2MASS-H"
+#define FC_SRC_SKYVIEW_2MASSK "2MASS-K"
+#define FC_SRC_SKYVIEW_WISE34 "WISE%203.4"
+#define FC_SRC_SKYVIEW_WISE46 "WISE%204.6"
+#define FC_SRC_SKYVIEW_WISE12 "WISE%2012"
+#define FC_SRC_SKYVIEW_WISE22 "WISE%2022"
 
 #define FC_HOST_SDSS "casjobs.sdss.org"
 #define FC_PATH_SDSS "/ImgCutoutDR7/getjpeg.aspx?ra=%lf&dec=%+lf&scale=%f&width=%d&height=%d&opt=%s%s&query=%s%s"
@@ -178,19 +185,26 @@ enum{FC_STSCI_DSS1R,
      FC_ESO_DSS2B,
      FC_ESO_DSS2IR,
      FC_SEP2,
+     FC_SKYVIEW_GALEXF,
+     FC_SKYVIEW_GALEXN,
      FC_SKYVIEW_DSS1R,
      FC_SKYVIEW_DSS1B,
      FC_SKYVIEW_DSS2R,
      FC_SKYVIEW_DSS2B,
      FC_SKYVIEW_DSS2IR,
-     FC_SKYVIEW_2MASSJ,
-     FC_SKYVIEW_2MASSH,
-     FC_SKYVIEW_2MASSK,
      FC_SKYVIEW_SDSSU,
      FC_SKYVIEW_SDSSG,
      FC_SKYVIEW_SDSSR,
      FC_SKYVIEW_SDSSI,
      FC_SKYVIEW_SDSSZ,
+     FC_SKYVIEW_2MASSJ,
+     FC_SKYVIEW_2MASSH,
+     FC_SKYVIEW_2MASSK,
+     FC_SKYVIEW_WISE34,
+     FC_SKYVIEW_WISE46,
+     FC_SKYVIEW_WISE12,
+     FC_SKYVIEW_WISE22,
+     FC_SKYVIEW_RGB,
      FC_SEP3,
      FC_SDSS,
      FC_SDSS13} ModeFC;
@@ -1323,6 +1337,8 @@ struct _typHOE{
   gchar *www_com;
 
   gint fc_mode;
+  gint fc_mode_RGB[3];
+  gint i_RGB;
   gint fc_mode_get;
   gint fc_mode_def;
   gint fc_inst;
@@ -1333,6 +1349,7 @@ struct _typHOE{
   gint dss_arcmin_ip;
   gint dss_pix;
   gint dss_scale;
+  gint dss_scale_RGB[3];
   gboolean dss_invert;
 
   gint dss_i;
