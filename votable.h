@@ -41,6 +41,7 @@
 #include <stdlib.h> /* using malloc and free */
 #include <libxml/xmlmemory.h>
 #include <libxml/xmlreader.h>
+#include "config.h"
 
 /* --------------------------------- Macros ---------------------------- */
 
