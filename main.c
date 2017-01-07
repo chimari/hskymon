@@ -4225,7 +4225,7 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
   dialog = gtk_dialog_new();
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for SIMBAD Catalog Matching");
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for SIMBAD catalog query");
 
   frame = gtk_frame_new ("Magnitude");
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
@@ -6399,6 +6399,14 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       GtkWidget *bar;
       
       store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
+
+      if(i==1){
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, "(Average of Red & Blue)",
+			   1, -1, 2, TRUE, -1);
+	if(hg->fc_mode_RGB[i]==-1) iter_set=iter;
+      
+      }
     
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, 0, "SkyView: GALEX (Far UV)",
@@ -6829,7 +6837,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->dss_scale_RGB[0]    =tmp_dss_scale_RGB[0];
     hg->dss_scale_RGB[1]    =tmp_dss_scale_RGB[1];
     hg->dss_scale_RGB[2]    =tmp_dss_scale_RGB[2];
-    hg->fc_mode             =hg->fc_mode_def;
+    //hg->fc_mode             =hg->fc_mode_def;
     hg->dss_arcmin          =tmp_dss_arcmin;
     hg->dss_pix             =tmp_dss_pix;
     set_fc_mode(hg);
@@ -6951,7 +6959,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->pres=PRES_SUBARU;
 
     hg->fc_mode_def         =FC_SKYVIEW_DSS2R;
-    hg->fc_mode             =hg->fc_mode_def;
+    //hg->fc_mode             =hg->fc_mode_def;
     hg->fc_mode_RGB[0]      =FC_SKYVIEW_DSS2IR;
     hg->fc_mode_RGB[1]      =FC_SKYVIEW_DSS2R;
     hg->fc_mode_RGB[2]      =FC_SKYVIEW_DSS2B;

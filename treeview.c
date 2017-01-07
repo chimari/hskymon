@@ -3549,13 +3549,13 @@ do_editable_cells (typHOE *hg)
 #ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
 #else
-    button = gtk_button_new_with_label ("Catalog Matching in SIMBAD");
+    button = gtk_button_new_with_label ("Catalog query in SIMBAD");
 #endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (fcdb_item), (gpointer)hg);
 #ifdef __GTK_TOOLTIP_H__
-    gtk_widget_set_tooltip_text(button,"Catalog Matching in SIMBAD");
+    gtk_widget_set_tooltip_text(button,"Catalog query in SIMBAD");
 #endif
     
     hg->fcdb_label= gtk_label_new (hg->fcdb_label_text);

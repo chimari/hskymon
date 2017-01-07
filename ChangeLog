@@ -3,6 +3,9 @@
                           '+' => "%2b"  and  ' ' => "%20"
 	            - Added SkyView RGB composite in FC.
 	              Three sources can be selected in the properties window.
+	            - Added 2-color composite for Skyview RGB composite.
+	              G is an average of R & B.
+	            - Added image source descriptions for RGB composite on FC.
 	            - gdk_window_invalidate_rect() for progress bar update.
 	            - Changed the directory where hskymon.ini is saved to
 	              %APPDATA%\hskymon\ in Windows version.

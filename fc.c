@@ -63,6 +63,7 @@ gdouble current_yrs();
 static void fcdb_toggle ();
 
 GdkPixbuf* rgb_pixbuf();
+gchar *rgb_source_txt();
 
 extern int  get_dss();
 extern int get_fcdb();
@@ -158,16 +159,18 @@ void fc_item (GtkWidget *widget, gpointer data)
     
     for(i=0;i<3;i++){
       hg->i_RGB=i;
-      set_dss_src_RGB(hg, hg->i_RGB);
-      fc_dl(hg);
+      if(hg->fc_mode_RGB[i]>=0){
+	set_dss_src_RGB(hg, hg->i_RGB);
+	fc_dl(hg);
 
 #ifndef USE_WIN32
-      if(fc_pid){
+        if(fc_pid){
 #endif
-	pixbuf_fc_RGB[i] = gdk_pixbuf_new_from_file(hg->dss_file, NULL);
+    	  pixbuf_fc_RGB[i] = gdk_pixbuf_new_from_file(hg->dss_file, NULL);
 #ifndef USE_WIN32
-      }
+        }
 #endif
+      }
     }
 
 #ifndef USE_WIN32
@@ -896,7 +899,7 @@ void create_fc_dialog(typHOE *hg)
 #ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
 #else
-  button = gtk_button_new_with_label ("Catalog matching");
+  button = gtk_button_new_with_label ("Catalog query");
 #endif
   g_signal_connect (button, "clicked",
 		    G_CALLBACK (fcdb_item), (gpointer)hg);
@@ -904,7 +907,7 @@ void create_fc_dialog(typHOE *hg)
 		    GTK_SHRINK,GTK_SHRINK,0,0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
-			      "Catalog Matching");
+			      "Catalog query");
 #endif
 
   vbox1 = gtk_vbox_new(FALSE,0);
@@ -2398,6 +2401,45 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 		  extents.height+5*scale);
     cairo_show_text(cr,tmp);
 
+    if(hg->fc_mode_get==FC_SKYVIEW_RGB){
+      gint y0;
+      gchar *rgb_txt;
+      y0=extents.height;
+
+      //R
+      cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+      rgb_txt=rgb_source_txt(hg,0);
+      cairo_text_extents (cr, rgb_txt, &extents);
+      cairo_move_to(cr,
+		    (gdouble)width_file*r-extents.width-5*scale,
+		    y0*2+5*2*scale);
+      cairo_show_text(cr,rgb_txt);
+      g_free(rgb_txt);
+
+      //G
+      cairo_set_source_rgba(cr, 0.4, 1.0, 0.4, 1.0);
+      rgb_txt=rgb_source_txt(hg,1);
+      cairo_text_extents (cr, rgb_txt, &extents);
+      cairo_move_to(cr,
+		    (gdouble)width_file*r-extents.width-5*scale,
+		    y0*3+5*3*scale);
+      cairo_show_text(cr,rgb_txt);
+      g_free(rgb_txt);
+
+      //B
+      cairo_set_source_rgba(cr, 0.4, 0.4, 1.0, 1.0);
+      rgb_txt=rgb_source_txt(hg,2);
+      cairo_text_extents (cr, rgb_txt, &extents);
+      cairo_move_to(cr,
+		    (gdouble)width_file*r-extents.width-5*scale,
+		    y0*4+5*4*scale);
+      cairo_show_text(cr,rgb_txt);
+      g_free(rgb_txt);
+    }
+
+    
+    
+
     cairo_restore(cr);
 
 
@@ -3791,8 +3833,7 @@ GdkPixbuf* rgb_pixbuf(GdkPixbuf *pixbufR, GdkPixbuf* pixbufG,
   guint w ,h;
   GdkPixbuf *pixbuf_ret=NULL;
 
-  if(!GDK_IS_PIXBUF(pixbufR)||!GDK_IS_PIXBUF(pixbufG)
-     ||!GDK_IS_PIXBUF(pixbufB)){
+  if(!GDK_IS_PIXBUF(pixbufR)||!GDK_IS_PIXBUF(pixbufB)){
     allsky_debug_print("  rgb_pixbuf() : Error in Pixbuf, Skipping...\n");
     return(NULL);
   }
@@ -3800,7 +3841,12 @@ GdkPixbuf* rgb_pixbuf(GdkPixbuf *pixbufR, GdkPixbuf* pixbufG,
   allsky_debug_print("  rgb_pixbuf() : Starting...\n");
 
   w1 = gdk_pixbuf_get_width(pixbufR);
-  w2 = gdk_pixbuf_get_width(pixbufG);
+  if(GDK_IS_PIXBUF(pixbufG)){
+    w2 = gdk_pixbuf_get_width(pixbufG);
+  }
+  else{
+    w2=w1;
+  }
   w3 = gdk_pixbuf_get_width(pixbufB);
   if((w1!=w2)||(w1!=w3)){
     allsky_debug_print("  rgb_pixbuf() : Error in Size of Pixbuf, Skipping...\n");
@@ -3808,7 +3854,12 @@ GdkPixbuf* rgb_pixbuf(GdkPixbuf *pixbufR, GdkPixbuf* pixbufG,
   }
 
   h1 = gdk_pixbuf_get_height(pixbufR);
-  h2 = gdk_pixbuf_get_height(pixbufG);
+  if(GDK_IS_PIXBUF(pixbufG)){
+    h2 = gdk_pixbuf_get_height(pixbufG);
+  }
+  else{
+    h2=h1;
+  }
   h3 = gdk_pixbuf_get_height(pixbufB);
   if((h1!=h2)||(h1!=h3)){
     allsky_debug_print("  rgb_pixbuf() : Error in Size of Pixbuf, Skipping...\n");
@@ -3820,18 +3871,146 @@ GdkPixbuf* rgb_pixbuf(GdkPixbuf *pixbufR, GdkPixbuf* pixbufG,
 
   pixbuf_ret=gdk_pixbuf_copy(pixbufR);
   p1 = gdk_pixbuf_get_pixels(pixbufR);
-  p2 = gdk_pixbuf_get_pixels(pixbufG);
+  if(GDK_IS_PIXBUF(pixbufG)){
+    p2 = gdk_pixbuf_get_pixels(pixbufG);
+  }
   p3 = gdk_pixbuf_get_pixels(pixbufB);
 
   p_ret = gdk_pixbuf_get_pixels(pixbuf_ret);
 
-  for(h=0;h<h1;h++){
-    for(w=0;w<w1;w++){
-      p_ret[(h*w1+w)*sz]=  (guchar)p1[(h*w1+w)*sz];
-      p_ret[(h*w1+w)*sz+1]=(guchar)p2[(h*w1+w)*sz];
-      p_ret[(h*w1+w)*sz+2]=(guchar)p3[(h*w1+w)*sz];
+  if(GDK_IS_PIXBUF(pixbufG)){
+    for(h=0;h<h1;h++){
+      for(w=0;w<w1;w++){
+	p_ret[(h*w1+w)*sz]=  (guchar)p1[(h*w1+w)*sz];
+	p_ret[(h*w1+w)*sz+1]=(guchar)p2[(h*w1+w)*sz];
+	p_ret[(h*w1+w)*sz+2]=(guchar)p3[(h*w1+w)*sz];
+      }
+    }
+  }
+  else{
+    for(h=0;h<h1;h++){
+      for(w=0;w<w1;w++){
+	p_ret[(h*w1+w)*sz]=  (guchar)p1[(h*w1+w)*sz];
+	p_ret[(h*w1+w)*sz+1]=(guchar)((p1[(h*w1+w)*sz]+p3[(h*w1+w)*sz])/2);
+	p_ret[(h*w1+w)*sz+2]=(guchar)p3[(h*w1+w)*sz];
+      }
     }
   }
 
   return(pixbuf_ret);
+}
+
+
+gchar *rgb_source_txt(typHOE *hg, gint i){
+  gchar *ret_name, tmp[BUFFSIZE], tmp2[BUFFSIZE];
+  const gchar *col_name[3]={"R: ", "G: ", "B: "};
+  gint  i_obj,i_tgt;
+
+  switch(hg->fc_mode_RGB[i]){
+  case -1:
+    sprintf(tmp,"(average of R & B)");
+    break;
+    
+  case FC_SKYVIEW_GALEXF:
+    sprintf(tmp,"GALEX (Far UV)");
+    break;
+    
+  case FC_SKYVIEW_GALEXN:
+    sprintf(tmp,"GALEX (Near UV)");
+    break;
+    
+  case FC_SKYVIEW_DSS1R:
+    sprintf(tmp,"DSS1 (Red)");
+    break;
+    
+  case FC_SKYVIEW_DSS1B:
+    sprintf(tmp,"DSS1 (Blue)");
+    break;
+    
+  case FC_SKYVIEW_DSS2R:
+    sprintf(tmp,"DSS2 (Red)");
+    break;
+    
+  case FC_SKYVIEW_DSS2B:
+    sprintf(tmp,"DSS2 (Blue)");
+    break;
+    
+  case FC_SKYVIEW_DSS2IR:
+    sprintf(tmp,"DSS2 (IR)");
+    break;
+    
+  case FC_SKYVIEW_SDSSU:
+    sprintf(tmp,"SDSS DR7 (u)");
+    break;
+    
+  case FC_SKYVIEW_SDSSG:
+    sprintf(tmp,"SDSS DR7 (g)");
+    break;
+    
+  case FC_SKYVIEW_SDSSR:
+    sprintf(tmp,"SDSS DR7 (r)");
+    break;
+    
+  case FC_SKYVIEW_SDSSI:
+    sprintf(tmp,"SDSS DR7 (i)");
+    break;
+    
+  case FC_SKYVIEW_SDSSZ:
+    sprintf(tmp,"SDSS DR7 (z)");
+    break;
+    
+  case FC_SKYVIEW_2MASSJ:
+    sprintf(tmp,"2MASS (J)");
+    break;
+    
+  case FC_SKYVIEW_2MASSH:
+    sprintf(tmp,"2MASS (H)");
+    break;
+    
+  case FC_SKYVIEW_2MASSK:
+    sprintf(tmp,"2MASS (K)");
+    break;
+    
+  case FC_SKYVIEW_WISE34:
+    sprintf(tmp,"WISE (3.4um)");
+    break;
+    
+  case FC_SKYVIEW_WISE46:
+    sprintf(tmp,"WISE (4.6um)");
+    break;
+    
+  case FC_SKYVIEW_WISE12:
+    sprintf(tmp,"WISE (12um)");
+    break;
+    
+  case FC_SKYVIEW_WISE22:
+    sprintf(tmp,"WISE (22um)");
+    break;
+  }
+
+  switch(hg->dss_scale_RGB[i]){
+  case FC_SCALE_LINEAR:
+    sprintf(tmp2," : Linear");
+    break;
+    
+  case FC_SCALE_LOG:
+    sprintf(tmp2," : Log");
+    break;
+    
+  case FC_SCALE_SQRT:
+    sprintf(tmp2," : Sqrt");
+    break;
+    
+  case FC_SCALE_HISTEQ:
+    sprintf(tmp2," : HistEq");
+    break;
+    
+  case FC_SCALE_LOGLOG:
+    sprintf(tmp2," : LogLog");
+    break;
+  }
+
+  ret_name=g_strconcat(col_name[i], tmp, tmp2, NULL);
+
+  return(ret_name);
 }
