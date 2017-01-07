@@ -18,7 +18,7 @@
 
 void fc_item();
 void fc_dl ();
-static gboolean progress_timeout();
+gboolean progress_timeout();
 void do_fc();
 void create_fc_dialog();
 void close_fc();
@@ -473,7 +473,7 @@ void fc_dl (typHOE *hg)
   flag_getDSS=FALSE;
 }
 
-static gboolean progress_timeout( gpointer data ){
+gboolean progress_timeout( gpointer data ){
   typHOE *hg=(typHOE *)data;
   glong sz;
   gchar *tmp;

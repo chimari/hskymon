@@ -38,7 +38,6 @@ void stddb_dl();
 void stddb_signal();
 static void cancel_stddb();
 #endif
-static gboolean progress_timeout();
 void clip_copy();
 
 #ifdef USE_XMLRPC
@@ -104,6 +103,7 @@ extern long get_file_size();
 
 extern gdouble current_yrs();
 
+extern gboolean progress_timeout();
 
 extern pid_t stddb_pid;
 
@@ -4153,40 +4153,6 @@ void stddb_signal(int sig){
   } while((child_pid>0)||(child_pid!=-1));
 }
 #endif
-
-static gboolean progress_timeout( gpointer data ){
-  typHOE *hg=(typHOE *)data;
-  glong sz;
-  gchar *tmp;
-
-  if(GTK_WIDGET_REALIZED(hg->pbar)){
-    gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
-    
-    sz=get_file_size(hg->dss_file);
-    if(sz>1024){
-      sz=sz/1024;
-      if(sz>1024){
-	tmp=g_strdup_printf("Downloaded %.2f MB",(gfloat)sz/1024.);
-      }
-      else{
-	tmp=g_strdup_printf("Downloaded %ld kB",sz);
-      }
-    }
-    else if (sz>0){
-      tmp=g_strdup_printf("Downloaded %ld bytes",sz);
-    }
-    else{
-      tmp=g_strdup_printf("Waiting for WWW responce ...");
-    }
-    gtk_label_set_text(GTK_LABEL(hg->plabel), tmp);
-    g_free(tmp);
-    
-    return TRUE;
-  }
-  else{
-    return FALSE;
-  }
-}
 
 
 void std_make_tree(GtkWidget *widget, gpointer gdata){
