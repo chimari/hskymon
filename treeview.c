@@ -1979,8 +1979,10 @@ static void fcdb_focus_item (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
   GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW(hg->fcdb_tree));
   GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->fcdb_tree));
-
-  if (gtk_tree_selection_get_selected (selection, NULL, &iter))
+  
+  
+  if ((hg->fc_ptn!=-1)&&
+      (gtk_tree_selection_get_selected (selection, NULL, &iter)))
     {
       gint i;
       GtkTreePath *path;

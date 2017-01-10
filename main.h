@@ -1083,7 +1083,8 @@ struct _FCDBpara{
   gchar *q25;
   gchar *q60;
   gchar *q100;
-
+  gdouble x;
+  gdouble y;
 };
 
 

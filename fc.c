@@ -1272,30 +1272,35 @@ gboolean resize_draw_fc(GtkWidget *widget,
 }
   
 gboolean button_draw_fc(GtkWidget *widget, 
-			GdkEventScroll *event, 
+			GdkEventButton *event, 
 			gpointer userdata){
   typHOE *hg;
-  GdkScrollDirection direction;
   gint x,y;
 
-  direction = event->direction;
   hg=(typHOE *)userdata;
 
   if(flagFC){
     gdk_window_get_pointer(widget->window,&x,&y,NULL);
 
-    if(hg->fc_ptn==2){
-      hg->fc_ptn=0;
-    }
-    else if(hg->fc_ptn==0){
-      hg->fc_ptn=1;
+    if((event->button==1)&&(hg->fcdb_flag)&&(hg->fcdb_i==hg->dss_i)){
+      hg->fc_ptn=-1;
       hg->fc_ptx1=x;
       hg->fc_pty1=y;
     }
-    else if(hg->fc_ptn==1){
-      hg->fc_ptn=2;
-      hg->fc_ptx2=x;
-      hg->fc_pty2=y;
+    else{
+      if(hg->fc_ptn==2){
+	hg->fc_ptn=0;
+      }
+      else if(hg->fc_ptn==0){
+	hg->fc_ptn=1;
+	hg->fc_ptx1=x;
+	hg->fc_pty1=y;
+      }
+      else if(hg->fc_ptn==1){
+	hg->fc_ptn=2;
+	hg->fc_ptx2=x;
+	hg->fc_pty2=y;
+      }
     }
 
     //hg->fc_output=FC_OUTPUT_WINDOW;
@@ -2586,8 +2591,108 @@ gboolean draw_fc_cairo(GtkWidget *widget,
     } // Position Angle
   }
 
+
+  if(hg->fc_ptn==-1){
+    gdouble cx, cy;
+    gdouble ptx, pty, ptx0, pty0;
+    gdouble rad, rad_min=1000.0, ptr;
+    gint i, i_list, i_sel=-1;
+    gdouble theta;
+
+  
+    cx=((gdouble)width-(gdouble)width_file*r)/2+(gdouble)width_file*r/2;
+    cy=((gdouble)height-(gdouble)height_file*r)/2+(gdouble)height_file*r/2;
+    if(hg->fc_mag!=1){
+      cx-=(hg->fc_magx*hg->fc_mag-width/2/hg->fc_mag);
+      cy-=(hg->fc_magy*hg->fc_mag-height/2/hg->fc_mag);
+    }
+
+    ptx0=((gdouble)hg->fc_ptx1-cx);
+    pty0=((gdouble)hg->fc_pty1-cy);
+
+    switch(hg->fc_inst){
+    case FC_INST_NONE:
+    case FC_INST_HDS:
+    case FC_INST_HDSAUTO:
+    case FC_INST_HDSZENITH:
+    case FC_INST_IRCS:
+    case FC_INST_COMICS:
+    case FC_INST_FOCAS:
+    case FC_INST_MOIRCS:
+    case FC_INST_FMOS:
+      if(hg->dss_flip){
+	theta=M_PI*(gdouble)hg->dss_pa/180.;
+      }
+      else{
+	theta=-M_PI*(gdouble)hg->dss_pa/180.;
+      }
+
+      break;
+
+    case FC_INST_SPCAM:
+      if(hg->dss_flip){
+	theta=M_PI*(gdouble)(90-hg->dss_pa)/180.;
+      }
+      else{
+	theta=-M_PI*(gdouble)(90-hg->dss_pa)/180.;
+      }
+      break;
+
+    case FC_INST_HSCDET:
+    case FC_INST_HSCA:
+      if(hg->dss_flip){
+	theta=M_PI*(gdouble)(270-hg->dss_pa)/180.;
+      }
+      else{
+	theta=-M_PI*(gdouble)(270-hg->dss_pa)/180.;
+      }
+      break;
+    }
+
+    ptx=ptx0*cos(theta)-pty0*sin(theta);
+    pty=ptx0*sin(theta)+pty0*cos(theta);
+
+    for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+      if((fabs(hg->fcdb[i_list].x-ptx)<10)&&(fabs(hg->fcdb[i_list].y-pty)<10)){
+	rad=(hg->fcdb[i_list].x-ptx)*(hg->fcdb[i_list].x-ptx)
+	  +(hg->fcdb[i_list].y-pty)*(hg->fcdb[i_list].y-pty);
+	if(rad<rad_min){
+	  i_sel=i_list;
+	  rad_min=rad;
+	}
+      }
+    }
+      
+    if(i_sel>=0){
+      GtkTreeModel *model 
+	= gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
+      GtkTreePath *path;
+      GtkTreeIter  iter;
+      
+      path=gtk_tree_path_new_first();
+      hg->fcdb_tree_focus=i_sel;
+      
+      for(i=0;i<hg->fcdb_i_max;i++){
+	gtk_tree_model_get_iter (model, &iter, path);
+	gtk_tree_model_get (model, &iter, COLUMN_FCDB_NUMBER, &i_list, -1);
+	i_list--;
+	
+	if(i_list==i_sel){
+	  gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->fcdb_tree), 
+				   path, NULL, FALSE);
+	  break;
+	}
+	else{
+	  gtk_tree_path_next(path);
+	}
+      }
+      gtk_tree_path_free(path);
+    }
+
+    hg->fc_ptn=0;
+  }
+
   {
-    gdouble fcx, fcy;
     gdouble pmx, pmy;
     gdouble yrs;
 
@@ -2597,18 +2702,21 @@ gboolean draw_fc_cairo(GtkWidget *widget,
       translate_to_center(cr,width,height,width_file,height_file,r,hg);
       yrs=current_yrs(hg);
 
+      for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+	hg->fcdb[i_list].x=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0)*60.
+	  *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
+	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	hg->fcdb[i_list].y=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
+	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	if(hg->dss_flip) hg->fcdb[i_list].x=-hg->fcdb[i_list].x;
+      }
+
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
       cairo_set_line_width (cr, 2*scale);
       for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
 	if(hg->fcdb_tree_focus!=i_list){
-	  fcx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0)*60.
-	    *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
-	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	  fcy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
-	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	  if(hg->dss_flip) fcx=-fcx;
-	  cairo_rectangle(cr,fcx-6,fcy-6,12,12);
+	  cairo_rectangle(cr,hg->fcdb[i_list].x-6,hg->fcdb[i_list].y-6,12,12);
 	  cairo_stroke(cr);
 	}
       }
@@ -2618,13 +2726,7 @@ gboolean draw_fc_cairo(GtkWidget *widget,
       cairo_set_line_width (cr, 4*scale);
       for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
 	if(hg->fcdb_tree_focus==i_list){
-	  fcx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0)*60.
-	    *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
-	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	  fcy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
-	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	  if(hg->dss_flip) fcx=-fcx;
-	  cairo_rectangle(cr,fcx-10,fcy-10,16,16);
+	  cairo_rectangle(cr,hg->fcdb[i_list].x-8,hg->fcdb[i_list].y-8,16,16);
 	  cairo_stroke(cr);
 	}
       }
@@ -2635,11 +2737,6 @@ gboolean draw_fc_cairo(GtkWidget *widget,
       cairo_set_line_width (cr, 1.5*scale);
       for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
 	if(hg->fcdb[i_list].pm){
-	  fcx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0)*60.
-	    *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
-	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	  fcy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
-	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
 	  pmx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0
 		+hg->fcdb[i_list].pmra/1000/60/60*yrs)*60.
 	    *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
@@ -2648,10 +2745,9 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 		+hg->fcdb[i_list].pmdec/1000/60/60*yrs)*60.
 	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
 	  if(hg->dss_flip) {
-	    fcx=-fcx;
 	    pmx=-pmx;
 	  }
-	  cairo_move_to(cr,fcx,fcy);
+	  cairo_move_to(cr,hg->fcdb[i_list].x,hg->fcdb[i_list].y);
 	  cairo_line_to(cr,pmx,pmy);
 	  cairo_stroke(cr);
 	  cairo_arc(cr,pmx,pmy,5,0,2*M_PI);
