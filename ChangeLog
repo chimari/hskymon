@@ -3,6 +3,7 @@
 	            - Layout change in FC window.
 	            - Added an interactive dialog to add an object in the
 	              object list tree_view.
+	            - Added MAST Portal for web database access.
 
 2017.01.09 ver2.8.8 - Interactive search of SIMBAD querried object in FC.
 	              (Left click on searched objects).

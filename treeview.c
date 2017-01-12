@@ -1304,6 +1304,13 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 	      fabs(ln_dms_to_deg(&hobject_prec.dec)));
       break;
 
+    case WWWDB_MASTP:
+      sprintf(tmp,MASTP_URL,
+	      ln_hms_to_deg(&hobject_prec.ra),
+	      (hobject_prec.dec.neg) ? "%2D" : "%2B", 
+	      fabs(ln_dms_to_deg(&hobject_prec.dec)));
+      break;
+
     case WWWDB_IRSA:
       sprintf(tmp,IRSA_URL,
 	    hobject_prec.ra.hours,hobject_prec.ra.minutes,
@@ -3309,6 +3316,11 @@ do_editable_cells (typHOE *hg)
       gtk_list_store_set(store, &iter, 0, "MAST",
 			 1, WWWDB_MAST, 2, TRUE, -1);
       if(hg->wwwdb_mode==WWWDB_MAST) iter_set=iter;
+	
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "MAST Portal",
+			 1, WWWDB_MASTP, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_MASTP) iter_set=iter;
 	
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, 0, "IRSA",
