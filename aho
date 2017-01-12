@@ -1,0 +1,24 @@
+Bad hostname [skyview.gsfc.nasa.gov]
+--> GET /current/cgi/runquery.pl?survey=DSS2%20Red&coordinates=J2000.0&projection=Tan&scaling=Linear&sampler=LI&lut=colortables/blue-white.bin&size=0.050000,0.050000&pixels=1000&position=10.099042,14.135417 HTTP/1.1
+--> Accept: image/gif, image/jpeg, image/png, */*
+--> User-Agent: Mozilla/5.0
+--> Host: skyview.gsfc.nasa.gov
+--> Connection: close
+--> 
+--> GET /tempspace/fits/skv7816090646051.jpg HTTP/1.1
+--> Accept: image/gif, image/jpeg, image/png, */*
+--> User-Agent: Mozilla/5.0
+--> Host: skyview.gsfc.nasa.gov
+--> Connection: close
+--> 
+aho1 /simbad/sim-sam?Criteria=region%28box%2C10.099042%2B14.135417%2C+3.000000m+3.000000m%29%0D%0A%0D%0A&submit=submit+query&OutputMode=LIST&maxObject=500&CriteriaFile=&output.format=VOTABLE
+aho2
+--> GET /simbad/sim-sam?Criteria=region%28box%2C10.099042%2B14.135417%2C+3.000000m+3.000000m%29%0D%0A%0D%0A&submit=submit+query&OutputMode=LIST&maxObject=500&CriteriaFile=&output.format=VOTABLE HTTP/1.0
+aho3
+--> Accept: application/xml
+aho4
+--> User-Agent: Mozilla/5.0
+aho5
+--> Host: simbad.u-strasbg.fr
+--> Connection: close
+--> 

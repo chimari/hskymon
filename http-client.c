@@ -70,7 +70,8 @@ gint allsky_repeat=0;
 #ifdef USE_WIN32
 #define BUF_LEN 65535             /* バッファのサイズ */
 #else
-#define BUF_LEN 255             /* バッファのサイズ */
+//#define BUF_LEN 255             /* バッファのサイズ */
+#define BUF_LEN 1023             /* バッファのサイズ */
 #endif
 
 int debug_flg = 0;      /* -d オプションを付けると turn on する */
@@ -1250,7 +1251,6 @@ int http_c_fc(typHOE *hg){
   int err;
   const char *cause=NULL;
    
-  
   /* ホストの情報 (IP アドレスなど) を取得 */
   memset(&hints, 0, sizeof(hints));
   hints.ai_socktype = SOCK_STREAM;
@@ -1285,7 +1285,6 @@ int http_c_fc(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
   
-
   // bin mode
   ra_0=hg->obj[hg->dss_i].ra;
   hobject.ra.hours=(gint)(ra_0/10000);

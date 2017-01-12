@@ -1,3 +1,9 @@
+2017.01.11 ver2.8.9 - Bug fix about tree_view_set_focus in FC + database query.
+	            - Added "NED" for database query.
+	            - Layout change in FC window.
+	            - Added an interactive dialog to add an object in the
+	              object list tree_view.
+
 2017.01.09 ver2.8.8 - Interactive search of SIMBAD querried object in FC.
 	              (Left click on searched objects).
 

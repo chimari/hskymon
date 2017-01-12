@@ -41,6 +41,7 @@
 
 void stddb_vo_parse();
 void fcdb_vo_parse();
+void fcdb_ned_vo_parse();
 extern gdouble deg_sep();
 
 static list_field *insert_field(xmlTextReaderPtr reader, 
@@ -957,6 +958,191 @@ void fcdb_vo_parse(typHOE *hg) {
     hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
 				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
   }
+}
+
+
+void fcdb_ned_vo_parse(typHOE *hg) {
+  xmlTextReaderPtr reader;
+  list_field *vfield_move;
+  list_tabledata *vtabledata_move;
+  VOTable votable;
+  int nbFields, process_column;
+  int *columns;
+  reader = Init_VO_Parser(hg->fcdb_file,&votable);
+  int i_list=0;
+  struct ln_hms hms;
+  struct ln_dms dms;
+
+  Extract_Att_VO_Table(reader,&votable);
+
+  Extract_VO_Fields(reader,&votable,&nbFields,&columns);
+  for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
+    if(xmlStrcmp(vfield_move->name,"Object Name") == 0) 
+      columns[0] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"RA(deg)") == 0)
+      columns[1] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"DEC(deg)") == 0) 
+      columns[2] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Type") == 0) 
+      columns[3] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Velocity") == 0) 
+      columns[4] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Redshift") == 0) 
+      columns[5] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Magnitude and Filter") == 0) 
+      columns[6] = vfield_move->position;
+ }
+
+
+ Extract_VO_TableData(reader,&votable, nbFields, columns);
+ for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+   if(i_list==MAX_FCDB) break;
+
+   if (vtabledata_move->colomn == columns[0]){
+     if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+     hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
+     i_list++;
+   }
+   else if (vtabledata_move->colomn == columns[1]){
+     hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
+     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
+     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
+       + (gdouble)hms.minutes*100. + hms.seconds;
+   }
+   else if (vtabledata_move->colomn == columns[2]){
+     hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
+     ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
+     if(dms.neg==1){ 
+       hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
+	 - (gdouble)dms.minutes*100. - dms.seconds;
+     }
+     else{
+       hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
+	 + (gdouble)dms.minutes*100. + dms.seconds;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[3]){
+     if(hg->fcdb[i_list].otype) g_free(hg->fcdb[i_list].otype);
+     hg->fcdb[i_list].otype=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[4]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].nedvel=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].nedvel=-1.1e+15;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[5]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].nedz=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].nedz=-100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[6]){
+     if(hg->fcdb[i_list].nedmag) g_free(hg->fcdb[i_list].nedmag);
+     hg->fcdb[i_list].nedmag=g_strdup(vtabledata_move->value);
+   }
+  }
+  hg->fcdb_i_max=i_list;
+
+  if (Free_VO_Parser(reader,&votable,&columns) == 1)
+    fprintf(stderr,"memory problem\n");
+
+  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    if(!hg->fcdb[i_list].otype) hg->fcdb[i_list].otype=g_strdup("---");
+    if(!hg->fcdb[i_list].nedmag) hg->fcdb[i_list].nedmag=g_strdup("---");
+    hg->fcdb[i_list].epoch=2000.00;
+    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
+				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+    hg->fcdb[i_list].pmra=0;
+    hg->fcdb[i_list].pmdec=0;
+    hg->fcdb[i_list].pm=FALSE;
+  }
+}
+
+
+void addobj_vo_parse(typHOE *hg) {
+  xmlTextReaderPtr reader;
+  list_field *vfield_move;
+  list_tabledata *vtabledata_move;
+  VOTable votable;
+  int nbFields, process_column;
+  int *columns;
+  reader = Init_VO_Parser(hg->fcdb_file,&votable);
+  struct ln_hms hms;
+  struct ln_dms dms;
+  gdouble tmp_d_ra, tmp_d_dec;
+
+  if(hg->addobj_voname) g_free(hg->addobj_voname);
+  hg->addobj_voname=NULL;
+
+  Extract_Att_VO_Table(reader,&votable);
+
+  Extract_VO_Fields(reader,&votable,&nbFields,&columns);
+  if(hg->addobj_type==FCDB_TYPE_SIMBAD){
+    for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
+      if(xmlStrcmp(vfield_move->name,"MAIN_ID") == 0) 
+	columns[0] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"RA_d") == 0)
+	columns[1] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"DEC_d") == 0) 
+	columns[2] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"OTYPE_S") == 0) 
+	columns[3] = vfield_move->position;
+    }
+  }
+  else if (hg->addobj_type==FCDB_TYPE_NED){
+    for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
+      if(xmlStrcmp(vfield_move->name,"Object Name") == 0) 
+	columns[0] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"RA(deg)") == 0)
+	columns[1] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"DEC(deg)") == 0) 
+	columns[2] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"Type") == 0) 
+	columns[3] = vfield_move->position;
+    }
+  }
+
+
+ Extract_VO_TableData(reader,&votable, nbFields, columns);
+ for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+   if (vtabledata_move->colomn == columns[0]){
+     if(hg->addobj_voname) g_free(hg->addobj_voname);
+     hg->addobj_voname=g_strdup(vtabledata_move->value);
+     break;
+   }
+   else if (vtabledata_move->colomn == columns[1]){
+     tmp_d_ra=atof(vtabledata_move->value);
+     ln_deg_to_hms(tmp_d_ra, &hms);
+     hg->addobj_ra=(gdouble)hms.hours*10000.
+       + (gdouble)hms.minutes*100. + hms.seconds;
+   }
+   else if (vtabledata_move->colomn == columns[2]){
+     tmp_d_dec=atof(vtabledata_move->value);
+     ln_deg_to_dms(tmp_d_dec, &dms);
+     if(dms.neg==1){ 
+       hg->addobj_dec=-(gdouble)dms.degrees*10000.
+	 - (gdouble)dms.minutes*100. - dms.seconds;
+     }
+     else{
+       hg->addobj_dec=(gdouble)dms.degrees*10000.
+	 + (gdouble)dms.minutes*100. + dms.seconds;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[3]){
+     if(hg->addobj_votype) g_free(hg->addobj_votype);
+     hg->addobj_votype=g_strdup(vtabledata_move->value);
+   }
+  }
+
+  if (Free_VO_Parser(reader,&votable,&columns) == 1)
+    fprintf(stderr,"memory problem\n");
+
+  if(!hg->addobj_votype) hg->addobj_votype=g_strdup("(None)");
 }
 
 

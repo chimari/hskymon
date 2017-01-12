@@ -37,6 +37,7 @@ extern void calc_moon();
 
 extern void make_tree();
 extern void remake_tree();
+extern void rebuild_tree();
 extern gint tree_update_azel();
 
 extern int get_allsky();
@@ -55,6 +56,8 @@ extern GdkPixbuf* diff_pixbuf();
 extern void ln_deg_to_dms();
 extern double ln_dms_to_deg();
 
+extern gboolean flagFC;
+
 #ifndef USE_WIN32
 void ChildTerm();
 #endif // USE_WIN32
@@ -69,7 +72,7 @@ static void fs_set_list3ext();
 void cc_get_toggle();
 void cc_get_adj();
 void cc_get_adj_double();
-static void cc_get_entry();
+void cc_get_entry();
 void cc_get_entry_int();
 void cc_get_entry_double();
 void cc_get_combo_box ();
@@ -82,6 +85,7 @@ void PresetAllSky();
 void SetAllSkyPreset();
 void set_allsky_param_from_preset();
 void RadioPresetAllSky();
+void RadioFCDB();
 void SetObsPreset();
 void PresetObs();
 void SetAllSkyObs();
@@ -638,10 +642,10 @@ GtkWidget *make_menu(typHOE *hg){
 
 #ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
-  popup_button =gtk_image_menu_item_new_with_label ("SIMBAD Catalog Match");
+  popup_button =gtk_image_menu_item_new_with_label ("Database query");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
 #else
-  popup_button =gtk_menu_item_new_with_label ("SIMBAD Catalog Match");
+  popup_button =gtk_menu_item_new_with_label ("Database query");
 #endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
@@ -772,7 +776,7 @@ void cc_get_adj_double (GtkWidget *widget, gdouble * gdata)
   *gdata=GTK_ADJUSTMENT(widget)->value;
 }
 
-static void cc_get_entry (GtkWidget *widget, gchar **gdata)
+void cc_get_entry (GtkWidget *widget, gchar **gdata)
 {
   g_free(*gdata);
   *gdata=g_strdup(gtk_entry_get_text(GTK_ENTRY(widget)));
@@ -2085,6 +2089,22 @@ void RadioPresetAllSky (GtkWidget *widget,  gpointer * gdata)
      
 }
 
+
+
+void RadioFCDB (GtkWidget *widget,  gpointer * gdata)
+{
+  typHOE *hg;
+
+  hg=(typHOE *)gdata;
+
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))){
+    hg->fcdb_type_tmp=FCDB_TYPE_SIMBAD;
+  }
+  else{
+    hg->fcdb_type_tmp=FCDB_TYPE_NED;
+  }
+     
+}
 
 void RadioPresetObs (GtkWidget *widget,  gpointer * gdata)
 {
@@ -4195,13 +4215,14 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 
 void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
 {
-  GtkWidget *dialog, *label, *button, *frame, *hbox,
-    *spinner, *combo;
+  GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
+    *spinner, *combo, *table;
   GtkAdjustment *adj;
-  gint tmp_band, tmp_mag, tmp_otype;
+  gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam;
   confProp *cdata;
   typHOE *hg;
- 
+  GSList *fcdb_group=NULL; 
+  gboolean rebuild_flag=FALSE;
 
   if(flagChildDialog){
     return;
@@ -4218,6 +4239,9 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
   tmp_band=hg->fcdb_band;
   tmp_mag=hg->fcdb_mag;
   tmp_otype=hg->fcdb_otype;
+  tmp_ned_diam=hg->fcdb_ned_diam;
+  tmp_ned_otype=hg->fcdb_ned_otype;
+  hg->fcdb_type_tmp=hg->fcdb_type;
 
   while (my_main_iteration(FALSE));
   gdk_flush();
@@ -4225,16 +4249,48 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
   dialog = gtk_dialog_new();
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for SIMBAD catalog query");
-
-  frame = gtk_frame_new ("Magnitude");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-		     frame,FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for database query");
 
   hbox = gtk_hbox_new(FALSE,2);
-  gtk_container_add (GTK_CONTAINER (frame), hbox);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     hbox,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+
+  button = gtk_radio_button_new_with_label (fcdb_group, "SIMBAD");
+  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+  fcdb_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (button));
+  if(hg->fcdb_type==FCDB_TYPE_SIMBAD)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+  my_signal_connect (button, "toggled", RadioFCDB, (gpointer)hg);
+
+  button = gtk_radio_button_new_with_label (fcdb_group, "NED");
+  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+  gtk_widget_show (button);
+  if(hg->fcdb_type==FCDB_TYPE_NED)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),
+				 TRUE);
+
+
+  frame = gtk_frame_new ("SIMBAD query parameters");
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+
+  table = gtk_table_new(2,2,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (frame), table);
+
+  label = gtk_label_new ("Magnitude");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   {
     GtkListStore *store;
@@ -4311,21 +4367,16 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
+			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_mag);
 
 
-
-  frame = gtk_frame_new ("Object Type");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-		     frame,FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-
-  hbox = gtk_hbox_new(FALSE,2);
-  gtk_container_add (GTK_CONTAINER (frame), hbox);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+  label = gtk_label_new ("Object Type");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
 
   {
     GtkListStore *store;
@@ -4348,6 +4399,16 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
     gtk_list_store_set(store, &iter, 0, "ISM",
 		       1, FCDB_OTYPE_ISM, -1);
     if(hg->fcdb_otype==FCDB_OTYPE_ISM) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "Planetary Nebula",
+		       1, FCDB_OTYPE_PN, -1);
+    if(hg->fcdb_otype==FCDB_OTYPE_PN) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "H II region",
+		       1, FCDB_OTYPE_HII, -1);
+    if(hg->fcdb_otype==FCDB_OTYPE_HII) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "Galaxy",
@@ -4380,7 +4441,8 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
     if(hg->fcdb_otype==FCDB_OTYPE_RADIO) iter_set=iter;
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
-    gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
+    gtk_table_attach(GTK_TABLE(table), combo, 1, 2, 1, 2,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
     g_object_unref(store);
     
     renderer = gtk_cell_renderer_text_new();
@@ -4392,6 +4454,104 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
     my_signal_connect (combo,"changed",cc_get_combo_box,
 		       &tmp_otype);
   }
+
+  frame = gtk_frame_new ("NED query parameters");
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+
+  table = gtk_table_new(2,2,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (frame), table);
+
+  label = gtk_label_new ("Max Search Diameter");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_ned_diam,
+					    2, 30, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_ned_diam);
+
+  label = gtk_label_new ("[arcmin]");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+  label = gtk_label_new ("Object Type");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  {
+    GtkListStore *store;
+    GtkTreeIter iter, iter_set;	  
+    GtkCellRenderer *renderer;
+      
+    store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "All Types",
+		       1, FCDB_NED_OTYPE_ALL, -1);
+    if(hg->fcdb_ned_otype==FCDB_NED_OTYPE_ALL) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "Extragalactic Object",
+		       1, FCDB_NED_OTYPE_EXTRAG, -1);
+    if(hg->fcdb_ned_otype==FCDB_NED_OTYPE_EXTRAG) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "QSO",
+		       1, FCDB_NED_OTYPE_QSO, -1);
+    if(hg->fcdb_ned_otype==FCDB_NED_OTYPE_QSO) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "Star",
+		       1, FCDB_NED_OTYPE_STAR, -1);
+    if(hg->fcdb_ned_otype==FCDB_NED_OTYPE_STAR) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "Nova / Super Nova",
+		       1, FCDB_NED_OTYPE_SN, -1);
+    if(hg->fcdb_ned_otype==FCDB_NED_OTYPE_SN) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "Planetary nebula",
+		       1, FCDB_NED_OTYPE_PN, -1);
+    if(hg->fcdb_ned_otype==FCDB_NED_OTYPE_PN) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "H II region",
+		       1, FCDB_NED_OTYPE_HII, -1);
+    if(hg->fcdb_ned_otype==FCDB_NED_OTYPE_HII) iter_set=iter;
+
+    combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    gtk_table_attach(GTK_TABLE(table), combo, 1, 2, 1, 2,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+    g_object_unref(store);
+    
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+    	
+    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+    gtk_widget_show(combo);
+    my_signal_connect (combo,"changed",cc_get_combo_box,
+		       &tmp_ned_otype);
+  }
+
 
 #ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
@@ -4434,12 +4594,29 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
       hg->fcdb_band  = tmp_band;
       hg->fcdb_mag   = tmp_mag;
       hg->fcdb_otype = tmp_otype;
+      hg->fcdb_ned_diam = tmp_ned_diam;
+      hg->fcdb_ned_otype = tmp_ned_otype;
+      if(hg->fcdb_type!=hg->fcdb_type_tmp) rebuild_flag=TRUE;
+      hg->fcdb_type  = hg->fcdb_type_tmp;
     }
     else{
       hg->fcdb_band  = FCDB_BAND_NOP;
       hg->fcdb_mag   = 15;
       hg->fcdb_otype = FCDB_OTYPE_ALL;
+      hg->fcdb_ned_diam = 20;
+      hg->fcdb_ned_otype = FCDB_NED_OTYPE_ALL;
+      if(hg->fcdb_type!=FCDB_TYPE_SIMBAD) rebuild_flag=TRUE;
+      hg->fcdb_type  = FCDB_TYPE_SIMBAD;
     }
+
+    if(flagFC){
+      if(hg->fcdb_type==FCDB_TYPE_SIMBAD)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SIMBAD");
+      else if(hg->fcdb_type==FCDB_TYPE_NED)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"NED");
+    }
+
+    if(rebuild_flag) rebuild_tree(hg);
   }
 
   flagChildDialog=FALSE;
@@ -6172,7 +6349,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     GtkListStore *store;
     GtkTreeIter iter, iter_set;	  
     GtkCellRenderer *renderer;
-    GtkWidget *bar;
     
     store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
     
@@ -6396,7 +6572,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       GtkListStore *store;
       GtkTreeIter iter, iter_set;	  
       GtkCellRenderer *renderer;
-      GtkWidget *bar;
       
       store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
 
@@ -7394,6 +7569,8 @@ void param_init(typHOE *hg){
   hg->fcdb_band=FCDB_BAND_NOP;
   hg->fcdb_mag=15;
   hg->fcdb_otype=FCDB_OTYPE_ALL;
+  hg->fcdb_ned_diam=20;
+  hg->fcdb_ned_otype=FCDB_NED_OTYPE_ALL;
   hg->fcdb_auto=FALSE;
 
   hg->adc_inst=ADC_INST_IMR;
@@ -7422,6 +7599,7 @@ void param_init(typHOE *hg){
   hg->tree_height=DEF_TREE_HEIGHT;
   hg->stddb_flag=TRUE;
   hg->fcdb_flag=TRUE;
+  hg->fcdb_type=FCDB_TYPE_SIMBAD;
 
   hg->std_dra   =STD_DRA;
   hg->std_ddec  =STD_DDEC;

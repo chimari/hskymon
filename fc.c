@@ -51,6 +51,7 @@ static void close_fc_help();
 void fcdb_item2();
 static void fcdb_item();
 void fcdb_dl();
+void addobj_dl();
 #ifndef USE_WIN32
 void fcdb_signal();
 static void cancel_fcdb();
@@ -79,6 +80,7 @@ extern GtkWidget* gtkut_button_new_from_stock();
 #endif
 extern GtkWidget* gtkut_button_new_from_pixbuf();
 extern void do_save_fc_pdf();
+extern void create_fcdb_para_dialog();
 
 extern void screen_changed();
 
@@ -87,7 +89,11 @@ extern void allsky_debug_print ();
 extern gboolean is_separator();
 
 extern void fcdb_vo_parse();
+extern void fcdb_ned_vo_parse();
+extern void addobj_vo_parse();
 extern double get_julian_day_of_epoch();
+
+extern gchar *make_simbad_id();
 
 extern pid_t fc_pid;
 extern gboolean flagTree;
@@ -355,23 +361,23 @@ void fc_dl (typHOE *hg)
     break;
     
   case FC_SKYVIEW_SDSSU:
-    label=gtk_label_new("Retrieving SDSS (DR7/u-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
+    label=gtk_label_new("Retrieving SDSS (u-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
     break;
     
   case FC_SKYVIEW_SDSSG:
-    label=gtk_label_new("Retrieving SDSS (DR7/g-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
+    label=gtk_label_new("Retrieving SDSS (g-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
     break;
     
   case FC_SKYVIEW_SDSSR:
-    label=gtk_label_new("Retrieving SDSS (DR7/r-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
+    label=gtk_label_new("Retrieving SDSS (r-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
     break;
     
   case FC_SKYVIEW_SDSSI:
-    label=gtk_label_new("Retrieving SDSS (DR7/i-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
+    label=gtk_label_new("Retrieving SDSS (i-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
     break;
     
   case FC_SKYVIEW_SDSSZ:
-    label=gtk_label_new("Retrieving SDSS (DR7/z-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
+    label=gtk_label_new("Retrieving SDSS (z-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
     break;
     
   case FC_SKYVIEW_2MASSJ:
@@ -557,7 +563,7 @@ void create_fc_dialog(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
   frame = gtk_frame_new ("Image Source");
-  gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
   table = gtk_table_new(5,2,FALSE);
@@ -765,7 +771,7 @@ void create_fc_dialog(typHOE *hg)
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     gtk_table_attach (GTK_TABLE(table), combo, 1, 2, 1, 2,
-		      GTK_SHRINK,GTK_SHRINK,0,0);
+		      GTK_FILL|GTK_EXPAND,GTK_SHRINK,0,0);
     //gtk_container_add (GTK_CONTAINER (hbox2), combo);
     g_object_unref(store);
 	
@@ -782,7 +788,7 @@ void create_fc_dialog(typHOE *hg)
 		       (gpointer)hg);
   }
 
-  frame = gtk_frame_new ("Size [\']");
+  frame = gtk_frame_new ("Size [min]");
   gtk_table_attach (GTK_TABLE(table), frame, 2, 3, 0, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   //gtk_box_pack_start(GTK_BOX(hbox1), frame, FALSE, FALSE, 0);
@@ -799,7 +805,7 @@ void create_fc_dialog(typHOE *hg)
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox2),spinner,FALSE,FALSE,0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
   my_signal_connect (hg->fc_adj_dss_arcmin, "value_changed",
 		     cc_get_adj,
 		     &hg->dss_arcmin);
@@ -873,7 +879,7 @@ void create_fc_dialog(typHOE *hg)
 		       &hg->dss_scale);
   }
 
-  button=gtk_check_button_new_with_label("Inv");
+  button=gtk_check_button_new_with_label("Inverse");
   gtk_container_set_border_width (GTK_CONTAINER (button), 0);
   gtk_box_pack_start(GTK_BOX(hbox2),button,FALSE,FALSE,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->dss_invert);
@@ -881,59 +887,11 @@ void create_fc_dialog(typHOE *hg)
 		    G_CALLBACK (cc_get_toggle), 
 		    &hg->dss_invert);
 
-
-  frame = gtk_frame_new ("SIMBAD");
-  gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
-
-  table = gtk_table_new(2,2,FALSE);
-  gtk_container_add (GTK_CONTAINER (frame), table);
-  gtk_container_set_border_width (GTK_CONTAINER (table), 0);
-  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
-  gtk_table_set_col_spacings (GTK_TABLE (table), 3);
-
-  label=gtk_label_new("  ");
-  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 0, 1,
-		    GTK_SHRINK,GTK_FILL,0,0);
-
-#ifdef __GTK_STOCK_H__
-  button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
-#else
-  button = gtk_button_new_with_label ("Catalog query");
-#endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (fcdb_item), (gpointer)hg);
-  gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
-#ifdef __GTK_TOOLTIP_H__
-  gtk_widget_set_tooltip_text(button,
-			      "Catalog query");
-#endif
-
-  vbox1 = gtk_vbox_new(FALSE,0);
-  gtk_table_attach (GTK_TABLE(table), vbox1, 1, 2, 0, 2,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
-
-  hg->fcdb_button=gtk_check_button_new_with_label("Disp");
-  gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_button), 0);
-  gtk_box_pack_start(GTK_BOX(vbox1), hg->fcdb_button, FALSE, FALSE, 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_button),
-			       hg->fcdb_flag);
-  my_signal_connect(hg->fcdb_button,"toggled",
-		    G_CALLBACK(fcdb_toggle), 
-		    (gpointer)hg);
-
-  button=gtk_check_button_new_with_label("Auto");
-  gtk_container_set_border_width (GTK_CONTAINER (button), 0);
-  gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->fcdb_auto);
-  my_signal_connect(button,"toggled",
-		    G_CALLBACK (cc_get_toggle), 
-		    &hg->fcdb_auto);
-
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
   frame = gtk_frame_new ("Instrument");
-  gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
   table = gtk_table_new(4,2,FALSE);
@@ -1029,7 +987,7 @@ void create_fc_dialog(typHOE *hg)
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     gtk_table_attach (GTK_TABLE(table), combo, 1, 2, 1, 2,
-		      GTK_SHRINK,GTK_SHRINK,0,0);
+		      GTK_FILL|GTK_EXPAND,GTK_SHRINK,0,0);
     //gtk_container_add (GTK_CONTAINER (hbox2), combo);
     g_object_unref(store);
 	
@@ -1084,6 +1042,80 @@ void create_fc_dialog(typHOE *hg)
   my_signal_connect(hg->fc_button_flip,"toggled",
 		    G_CALLBACK (cc_get_toggle), 
 		    &hg->dss_flip);
+
+
+  hg->fcdb_frame = gtk_frame_new ("SIMBAD");
+  if(hg->fcdb_type==FCDB_TYPE_SIMBAD){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "SIMBAD");
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_NED){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "NED");
+  }
+  gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_frame, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_frame), 3);
+
+  table = gtk_table_new(3,2,FALSE);
+  gtk_container_add (GTK_CONTAINER (hg->fcdb_frame), table);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 0);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 3);
+
+  label=gtk_label_new("  ");
+  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 0, 1,
+  		    GTK_SHRINK,GTK_FILL,0,0);
+
+#ifdef __GTK_STOCK_H__
+  button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
+#else
+  button = gtk_button_new_with_label ("Query");
+#endif
+  g_signal_connect (button, "clicked",
+		    G_CALLBACK (fcdb_item), (gpointer)hg);
+  gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
+  		    GTK_SHRINK,GTK_SHRINK,0,0);
+#ifdef __GTK_TOOLTIP_H__
+  gtk_widget_set_tooltip_text(button,
+			      "Query");
+#endif
+
+  vbox1 = gtk_vbox_new(FALSE,0);
+  gtk_table_attach (GTK_TABLE(table), vbox1, 1, 2, 0, 2,
+  		    GTK_SHRINK,GTK_SHRINK,0,0);
+
+  hg->fcdb_button=gtk_check_button_new_with_label("Disp");
+  gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_button), 0);
+  gtk_box_pack_start(GTK_BOX(vbox1), hg->fcdb_button, FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_button),
+			       hg->fcdb_flag);
+  my_signal_connect(hg->fcdb_button,"toggled",
+		    G_CALLBACK(fcdb_toggle), 
+		    (gpointer)hg);
+
+  button=gtk_check_button_new_with_label("Auto");
+  gtk_container_set_border_width (GTK_CONTAINER (button), 0);
+  gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->fcdb_auto);
+  my_signal_connect(button,"toggled",
+		    G_CALLBACK (cc_get_toggle), 
+		    &hg->fcdb_auto);
+
+  label=gtk_label_new("  ");
+  gtk_table_attach (GTK_TABLE(table), label, 2, 3, 0, 1,
+  		    GTK_SHRINK,GTK_FILL,0,0);
+
+#ifdef __GTK_STOCK_H__
+  button=gtkut_button_new_from_stock(NULL,GTK_STOCK_PROPERTIES);
+#else
+  button = gtk_button_new_with_label ("Search Param.");
+#endif
+  my_signal_connect (button, "clicked",
+		     create_fcdb_para_dialog, (gpointer)hg);
+  gtk_table_attach (GTK_TABLE(table), button, 2, 3, 1, 2,
+  		    GTK_SHRINK,GTK_SHRINK,0,0);
+#ifdef __GTK_TOOLTIP_H__
+  gtk_widget_set_tooltip_text(button,
+			      "Search Param.");
+#endif
 
   
   hbox = gtk_hbox_new(FALSE,0);
@@ -1521,13 +1553,11 @@ gboolean draw_fc_cairo(GtkWidget *widget,
     }
   }
 
- 
   /* draw the background */
   cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
   cairo_paint (cr);
   
   cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
-
 
   if(!pixbuf_fc){
     gdouble l_h;
@@ -1613,7 +1643,6 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 					 GDK_INTERP_BILINEAR);
     }
 
-      
     cairo_save (cr);
 
     translate_to_center(cr,width,height,width_file,height_file,r,hg);
@@ -2322,27 +2351,27 @@ gboolean draw_fc_cairo(GtkWidget *widget,
       break;
 
     case FC_SKYVIEW_SDSSU:
-      sprintf(tmp,"SDSS DR7 (u)  %dx%d arcmin",
+      sprintf(tmp,"SDSS (u)  %dx%d arcmin",
 	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_SDSSG:
-      sprintf(tmp,"SDSS DR7 (g)  %dx%d arcmin",
+      sprintf(tmp,"SDSS (g)  %dx%d arcmin",
 	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_SDSSR:
-      sprintf(tmp,"SDSS DR7 (r)  %dx%d arcmin",
+      sprintf(tmp,"SDSS (r)  %dx%d arcmin",
 	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_SDSSI:
-      sprintf(tmp,"SDSS DR7 (i)  %dx%d arcmin",
+      sprintf(tmp,"SDSS (i)  %dx%d arcmin",
 	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_SDSSZ:
-      sprintf(tmp,"SDSS DR7 (z)  %dx%d arcmin",
+      sprintf(tmp,"SDSS (z)  %dx%d arcmin",
 	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
@@ -2664,29 +2693,31 @@ gboolean draw_fc_cairo(GtkWidget *widget,
     }
       
     if(i_sel>=0){
-      GtkTreeModel *model 
-	= gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
-      GtkTreePath *path;
-      GtkTreeIter  iter;
-      
-      path=gtk_tree_path_new_first();
       hg->fcdb_tree_focus=i_sel;
-      
-      for(i=0;i<hg->fcdb_i_max;i++){
-	gtk_tree_model_get_iter (model, &iter, path);
-	gtk_tree_model_get (model, &iter, COLUMN_FCDB_NUMBER, &i_list, -1);
-	i_list--;
+      if(flagTree){
+	GtkTreeModel *model 
+	  = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
+	GtkTreePath *path;
+	GtkTreeIter  iter;
 	
-	if(i_list==i_sel){
-	  gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->fcdb_tree), 
-				   path, NULL, FALSE);
-	  break;
+	path=gtk_tree_path_new_first();
+	
+	for(i=0;i<hg->fcdb_i_max;i++){
+	  gtk_tree_model_get_iter (model, &iter, path);
+	  gtk_tree_model_get (model, &iter, COLUMN_FCDB_NUMBER, &i_list, -1);
+	  i_list--;
+	  
+	  if(i_list==i_sel){
+	    gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->fcdb_tree), 
+				     path, NULL, FALSE);
+	    break;
+	  }
+	  else{
+	    gtk_tree_path_next(path);
+	  }
 	}
-	else{
-	  gtk_tree_path_next(path);
-	}
+	gtk_tree_path_free(path);
       }
-      gtk_tree_path_free(path);
     }
 
     hg->fc_ptn=0;
@@ -3592,7 +3623,15 @@ void fcdb_dl(typHOE *hg)
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
 #endif
   
-  label=gtk_label_new("Searching objects in SIMBAD ...");
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_SIMBAD:
+    label=gtk_label_new("Searching objects in SIMBAD ...");
+    break;
+
+  case FCDB_TYPE_NED:
+    label=gtk_label_new("Searching objects in NED ...");
+    break;
+  }
 
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
@@ -3606,13 +3645,21 @@ void fcdb_dl(typHOE *hg)
   gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
   gtk_widget_show(hg->pbar);
   
-  unlink(hg->std_file);
+  unlink(hg->fcdb_file);
   
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
   
-  hg->plabel=gtk_label_new("Searching objects in SIMBAD ...");
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_SIMBAD:
+    hg->plabel=gtk_label_new("Searching objects in SIMBAD ...");
+    break;
+
+  case FCDB_TYPE_NED:
+    hg->plabel=gtk_label_new("Searching objects in NED ...");
+    break;
+  }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     hg->plabel,FALSE,FALSE,0);
@@ -3641,7 +3688,7 @@ void fcdb_dl(typHOE *hg)
 #endif
   
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
-  
+
   get_fcdb(hg);
   gtk_main();
 
@@ -3651,6 +3698,180 @@ void fcdb_dl(typHOE *hg)
   flag_getFCDB=FALSE;
 }
 
+void addobj_dl(typHOE *hg)
+{
+  GtkTreeIter iter;
+  GtkWidget *dialog, *vbox, *label, *button;
+#ifndef USE_WIN32
+  static struct sigaction act;
+#endif
+  guint timer;
+  gchar *tgt;
+  gchar *tmp;
+  
+  if(flag_getFCDB) return;
+  flag_getFCDB=TRUE;
+
+  tgt=make_simbad_id(hg->addobj_name);
+
+  switch(hg->addobj_type){
+  case FCDB_TYPE_SIMBAD:
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+    hg->fcdb_path=g_strdup_printf(ADDOBJ_SIMBAD_PATH,tgt);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_SIMBAD);
+    break;
+
+  case FCDB_TYPE_NED:
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+    hg->fcdb_path=g_strdup_printf(ADDOBJ_NED_PATH,tgt);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_NED);
+    break;
+  }
+  g_free(tgt);
+
+  if(hg->fcdb_file) g_free(hg->fcdb_file);
+  hg->fcdb_file=g_strconcat(hg->temp_dir,
+			    G_DIR_SEPARATOR_S,
+			    FCDB_FILE_XML,NULL);
+
+  while (my_main_iteration(FALSE));
+  gdk_flush();
+
+  dialog = gtk_dialog_new();
+  
+  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
+  gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
+  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+  
+#ifdef USE_GTK2  
+  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
+#endif
+  
+  switch(hg->addobj_type){
+  case FCDB_TYPE_SIMBAD:
+    label=gtk_label_new("Searching objects in SIMBAD ...");
+    break;
+
+  case FCDB_TYPE_NED:
+    label=gtk_label_new("Searching objects in NED ...");
+    break;
+  }
+
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
+  gtk_widget_show(label);
+  
+  hg->pbar=gtk_progress_bar_new();
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar,TRUE,TRUE,0);
+  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
+  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
+				    GTK_PROGRESS_RIGHT_TO_LEFT);
+  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
+  gtk_widget_show(hg->pbar);
+  
+  unlink(hg->fcdb_file);
+  
+  timer=g_timeout_add(100, 
+		      (GSourceFunc)progress_timeout,
+		      (gpointer)hg);
+  
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_SIMBAD:
+    hg->plabel=gtk_label_new("Searching objects in SIMBAD ...");
+    break;
+
+  case FCDB_TYPE_NED:
+    hg->plabel=gtk_label_new("Searching objects in NED ...");
+    break;
+  }
+  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     hg->plabel,FALSE,FALSE,0);
+  
+#ifndef USE_WIN32
+#ifdef __GTK_STOCK_H__
+  button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#else
+  button=gtk_button_new_with_label("Cancel");
+#endif
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed",
+		    cancel_fcdb, 
+		    (gpointer)hg);
+#endif
+  
+  gtk_widget_show_all(dialog);
+  
+#ifndef USE_WIN32
+  act.sa_handler=fcdb_signal;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags=0;
+  if(sigaction(SIGUSR1, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGUSR1).\n");
+#endif
+  
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
+
+  get_fcdb(hg);
+  gtk_main();
+
+  gtk_timeout_remove(timer);
+  gtk_widget_destroy(dialog);
+
+  flag_getFCDB=FALSE;
+
+  
+  addobj_vo_parse(hg);
+
+  if(hg->addobj_voname){
+    tmp=g_strdup_printf("%09.2lf",hg->addobj_ra);
+    gtk_entry_set_text(GTK_ENTRY(hg->addobj_entry_ra),tmp);
+    g_free(tmp);
+
+    tmp=g_strdup_printf("%+010.2lf",hg->addobj_dec);
+    gtk_entry_set_text(GTK_ENTRY(hg->addobj_entry_dec),tmp);
+    g_free(tmp);
+
+    switch(hg->addobj_type){
+    case FCDB_TYPE_SIMBAD:
+      tmp=g_strdup_printf("Your input \"%s\" is identified with \"%s\" (%s) in SIMBAD",
+			  hg->addobj_name, 
+			  hg->addobj_voname, 
+			  hg->addobj_votype);
+      break;
+
+    case FCDB_TYPE_NED:
+      tmp=g_strdup_printf("Your input \"%s\" is identified with \"%s\" (%s) in NED",
+			  hg->addobj_name, 
+			  hg->addobj_voname, 
+			  hg->addobj_votype);
+      break;
+    }
+    gtk_label_set_text(GTK_LABEL(hg->addobj_label),tmp);
+    g_free(tmp);
+  }
+  else{
+    switch(hg->addobj_type){
+    case FCDB_TYPE_SIMBAD:
+      tmp=g_strdup_printf("Your input \"%s\" is not found in SIMBAD",
+			  hg->addobj_name); 
+      break;
+
+    case FCDB_TYPE_NED:
+      tmp=g_strdup_printf("Your input \"%s\" is not found in NED",
+			  hg->addobj_name); 
+      break;
+    }
+    gtk_label_set_text(GTK_LABEL(hg->addobj_label),tmp);
+    g_free(tmp);
+  }
+  
+}
 
 
 void fcdb_item2 (typHOE *hg)
@@ -3660,6 +3881,8 @@ void fcdb_item2 (typHOE *hg)
   struct lnh_equ_posn hobject;
   struct ln_equ_posn object;
   struct ln_equ_posn object_prec;
+  struct lnh_equ_posn hobject_prec;
+  gdouble ned_arcmin;
 
   hg->fcdb_i=hg->dss_i;
 
@@ -3687,100 +3910,184 @@ void fcdb_item2 (typHOE *hg)
 		    get_julian_day_of_epoch(hg->obj[hg->fcdb_i].epoch),
 		    JD2000, &object_prec);
 
-  switch(hg->fcdb_band){
-  case FCDB_BAND_NOP:
-    mag_str=g_strdup("%0D%0A");
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_SIMBAD:
+    switch(hg->fcdb_band){
+    case FCDB_BAND_NOP:
+      mag_str=g_strdup("%0D%0A");
+      break;
+    case FCDB_BAND_U:
+      mag_str=g_strdup_printf("%%26Umag<%d",hg->fcdb_mag);
+      break;
+    case FCDB_BAND_B:
+      mag_str=g_strdup_printf("%%26Bmag<%d",hg->fcdb_mag);
+      break;
+    case FCDB_BAND_V:
+      mag_str=g_strdup_printf("%%26Vmag<%d",hg->fcdb_mag);
+      break; 
+    case FCDB_BAND_R:
+      mag_str=g_strdup_printf("%%26Rmag<%d",hg->fcdb_mag);
+      break;
+    case FCDB_BAND_I:
+      mag_str=g_strdup_printf("%%26Imag<%d",hg->fcdb_mag);
+      break;
+    case FCDB_BAND_J:
+      mag_str=g_strdup_printf("%%26Jmag<%d",hg->fcdb_mag);
+      break;
+    case FCDB_BAND_H:
+      mag_str=g_strdup_printf("%%26Hmag<%d",hg->fcdb_mag);
+      break;
+    case FCDB_BAND_K:
+      mag_str=g_strdup_printf("%%26Kmag<%d",hg->fcdb_mag);
+      break;
+    }
+    
+    switch(hg->fcdb_otype){
+    case FCDB_OTYPE_ALL:
+      otype_str=g_strdup("%0D%0A");
+      break;
+    case FCDB_OTYPE_STAR:
+      otype_str=g_strdup("%26maintypes%3Dstar");
+      break;
+    case FCDB_OTYPE_ISM:
+      otype_str=g_strdup("%26maintypes%3Dism");
+      break;
+    case FCDB_OTYPE_PN:
+      otype_str=g_strdup("%26maintypes%3DPN");
+      break;
+    case FCDB_OTYPE_HII:
+      otype_str=g_strdup("%26maintypes%3DHII");
+      break;
+    case FCDB_OTYPE_GALAXY:
+      otype_str=g_strdup("%26maintypes%3Dgalaxy");
+      break;
+    case FCDB_OTYPE_QSO:
+      otype_str=g_strdup("%26maintypes%3Dqso");
+      break;
+    case FCDB_OTYPE_GAMMA:
+      otype_str=g_strdup("%26maintypes%3Dgamma");
+      break;
+    case FCDB_OTYPE_X:
+      otype_str=g_strdup("%26maintypes%3DX");
+      break;
+    case FCDB_OTYPE_IR:
+      otype_str=g_strdup("%26maintypes%3DIR");
+      break;
+    case FCDB_OTYPE_RADIO:
+      otype_str=g_strdup("%26maintypes%3Dradio");
+      break;
+    }
+    
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_SIMBAD);
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+
+    if(hg->fcdb_d_dec0>0){
+      hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,
+				    "%2B",hg->fcdb_d_dec0,
+				    (gdouble)hg->dss_arcmin,
+				    (gdouble)hg->dss_arcmin,
+				    mag_str,otype_str,
+				    MAX_FCDB);
+    }
+    else{
+      hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,
+				    "%2D",-hg->fcdb_d_dec0,
+				    (gdouble)hg->dss_arcmin,
+				    (gdouble)hg->dss_arcmin,
+				    mag_str,otype_str,
+				    MAX_FCDB);
+    }
+    g_free(mag_str);
+    g_free(otype_str);
+    
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+    
+    fcdb_dl(hg);
+
+    fcdb_vo_parse(hg);
     break;
-  case FCDB_BAND_U:
-    mag_str=g_strdup_printf("%%26Umag<%d",hg->fcdb_mag);
-    break;
-  case FCDB_BAND_B:
-    mag_str=g_strdup_printf("%%26Bmag<%d",hg->fcdb_mag);
-    break;
-  case FCDB_BAND_V:
-    mag_str=g_strdup_printf("%%26Vmag<%d",hg->fcdb_mag);
-    break; 
-  case FCDB_BAND_R:
-    mag_str=g_strdup_printf("%%26Rmag<%d",hg->fcdb_mag);
-    break;
-  case FCDB_BAND_I:
-    mag_str=g_strdup_printf("%%26Imag<%d",hg->fcdb_mag);
-    break;
-  case FCDB_BAND_J:
-    mag_str=g_strdup_printf("%%26Jmag<%d",hg->fcdb_mag);
-    break;
-  case FCDB_BAND_H:
-    mag_str=g_strdup_printf("%%26Hmag<%d",hg->fcdb_mag);
-    break;
-  case FCDB_BAND_K:
-    mag_str=g_strdup_printf("%%26Kmag<%d",hg->fcdb_mag);
+    
+  case FCDB_TYPE_NED:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_NED);
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+
+    if(hg->dss_arcmin > hg->fcdb_ned_diam){
+      ned_arcmin=(gdouble)hg->fcdb_ned_diam/2.;
+    }
+    else{
+      ned_arcmin=(gdouble)hg->dss_arcmin/2.;
+    }
+
+    switch(hg->fcdb_ned_otype){
+    case FCDB_NED_OTYPE_ALL:
+      otype_str=g_strdup("&");
+      break;
+    case FCDB_NED_OTYPE_EXTRAG:
+      otype_str=g_strdup("&in_objtypes1=Galaxies&in_objtypes1=GPairs&in_objtypes1=GTriples&in_objtypes1=GGroups&in_objtypes1=GClusters&in_objtypes1=QSO&in_objtypes1=QSOGroups&in_objtypes1=GravLens&in_objtypes1=AbsLineSys&in_objtypes1=EmissnLine&");
+      break;
+    case FCDB_NED_OTYPE_QSO:
+      otype_str=g_strdup("&in_objtypes1=QSO&in_objtypes1=QSOGroups&in_objtypes1=GravLens&in_objtypes1=AbsLineSys&");
+      break;
+    case FCDB_NED_OTYPE_STAR:
+      otype_str=g_strdup("&in_objtypes3=Star&in_objtypes3=BlueStar&in_objtypes3=RedStar&in_objtypes3=VarStar&in_objtypes3=Walfrayet&in_objtypes3=CarbonStar&in_objtypes3=WhiteDwarf&");
+      break;
+    case FCDB_NED_OTYPE_SN:
+      otype_str=g_strdup("&in_objtypes3=Nova&in_objtypes3=Supernovae&in_objtypes3=SNR&");
+      break;
+    case FCDB_NED_OTYPE_PN:
+      otype_str=g_strdup("&in_objtypes3=PN&");
+      break;
+    case FCDB_NED_OTYPE_HII:
+      otype_str=g_strdup("&in_objtypes3=HIIregion&");
+      break;
+    }
+
+    if(hobject_prec.dec.neg==0){
+      hg->fcdb_path=g_strdup_printf(FCDB_NED_PATH,
+				    hobject_prec.ra.hours,
+				    hobject_prec.ra.minutes,
+				    hobject_prec.ra.seconds,
+				    "%2B",hobject_prec.dec.degrees,
+				    hobject_prec.dec.minutes,
+				    hobject_prec.dec.seconds,
+				    ned_arcmin,
+				    otype_str);
+    }
+    else{
+      hg->fcdb_path=g_strdup_printf(FCDB_NED_PATH,
+				    hobject_prec.ra.hours,
+				    hobject_prec.ra.minutes,
+				    hobject_prec.ra.seconds,
+				    "%2D",hobject_prec.dec.degrees,
+				    hobject_prec.dec.minutes,
+				    hobject_prec.dec.seconds,
+				    ned_arcmin,
+				    otype_str);
+    }
+    g_free(otype_str);
+
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+
+    fcdb_dl(hg);
+
+    fcdb_ned_vo_parse(hg);
+
     break;
   }
-
-  switch(hg->fcdb_otype){
-  case FCDB_OTYPE_ALL:
-    otype_str=g_strdup("%0D%0A");
-    break;
-  case FCDB_OTYPE_STAR:
-    otype_str=g_strdup("%26maintypes%3Dstar");
-    break;
-  case FCDB_OTYPE_ISM:
-    otype_str=g_strdup("%26maintypes%3Dism");
-    break;
-  case FCDB_OTYPE_GALAXY:
-    otype_str=g_strdup("%26maintypes%3Dgalaxy");
-    break;
-  case FCDB_OTYPE_QSO:
-    otype_str=g_strdup("%26maintypes%3Dqso");
-    break;
-  case FCDB_OTYPE_GAMMA:
-    otype_str=g_strdup("%26maintypes%3Dgamma");
-    break;
-  case FCDB_OTYPE_X:
-    otype_str=g_strdup("%26maintypes%3DX");
-    break;
-  case FCDB_OTYPE_IR:
-    otype_str=g_strdup("%26maintypes%3DIR");
-    break;
-  case FCDB_OTYPE_RADIO:
-    otype_str=g_strdup("%26maintypes%3Dradio");
-    break;
-  }
-  
-  hg->fcdb_d_ra0=object_prec.ra;
-  hg->fcdb_d_dec0=object_prec.dec;
-  if(hg->fcdb_host) g_free(hg->fcdb_host);
-  hg->fcdb_host=g_strdup(STDDB_HOST_SIMBAD);
-  if(hg->fcdb_path) g_free(hg->fcdb_path);
-  //hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,hg->fcdb_d_dec0,
-  //				(gdouble)hg->dss_arcmin/2.*1.2,MAX_FCDB);
-  if(hg->fcdb_d_dec0>0){
-    hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,
-				  "%2B",hg->fcdb_d_dec0,
-				  (gdouble)hg->dss_arcmin,
-				  (gdouble)hg->dss_arcmin,
-				  mag_str,otype_str,
-				  MAX_FCDB);
-  }
-  else{
-    hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,
-				  "%2D",-hg->fcdb_d_dec0,
-				  (gdouble)hg->dss_arcmin,
-				  (gdouble)hg->dss_arcmin,
-				  mag_str,otype_str,
-				  MAX_FCDB);
-  }
-  g_free(mag_str);
-  g_free(otype_str);
-
-  if(hg->fcdb_file) g_free(hg->fcdb_file);
-  hg->fcdb_file=g_strconcat(hg->temp_dir,
-			    G_DIR_SEPARATOR_S,
-			    FCDB_FILE_XML,NULL);
-
-  fcdb_dl(hg);
-
-  fcdb_vo_parse(hg);
 
   if(flagTree) fcdb_make_tree(NULL, hg);
 
@@ -3834,21 +4141,31 @@ void fcdb_tree_update_azel_item(typHOE *hg,
   gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 		     COLUMN_FCDB_OTYPE, hg->fcdb[i_list].otype, -1);
 
-  // SpType
-  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
-		     COLUMN_FCDB_SP, hg->fcdb[i_list].sp, -1);
+  if(hg->fcdb_type==FCDB_TYPE_SIMBAD){
+    // SpType
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_SP, hg->fcdb[i_list].sp, -1);
 
-  // UBVRIJHK
-  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
-		     COLUMN_FCDB_U, hg->fcdb[i_list].u,
-		     COLUMN_FCDB_B, hg->fcdb[i_list].b,
-		     COLUMN_FCDB_V, hg->fcdb[i_list].v,
-		     COLUMN_FCDB_R, hg->fcdb[i_list].r,
-		     COLUMN_FCDB_I, hg->fcdb[i_list].i,
-		     COLUMN_FCDB_J, hg->fcdb[i_list].j,
-		     COLUMN_FCDB_H, hg->fcdb[i_list].h,
-		     COLUMN_FCDB_K, hg->fcdb[i_list].k,
-		     -1);
+    // UBVRIJHK
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_U, hg->fcdb[i_list].u,
+		       COLUMN_FCDB_B, hg->fcdb[i_list].b,
+		       COLUMN_FCDB_V, hg->fcdb[i_list].v,
+		       COLUMN_FCDB_R, hg->fcdb[i_list].r,
+		       COLUMN_FCDB_I, hg->fcdb[i_list].i,
+		       COLUMN_FCDB_J, hg->fcdb[i_list].j,
+		       COLUMN_FCDB_H, hg->fcdb[i_list].h,
+		       COLUMN_FCDB_K, hg->fcdb[i_list].k,
+		       -1);
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_NED){
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_NEDMAG, hg->fcdb[i_list].nedmag, 
+		       -1);
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_NEDZ,   hg->fcdb[i_list].nedz, 
+		       -1);
+  }
 }
 
 
@@ -4110,3 +4427,4 @@ gchar *rgb_source_txt(typHOE *hg, gint i){
 
   return(ret_name);
 }
+

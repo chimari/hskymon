@@ -66,6 +66,7 @@
 #define MIRSTD_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&output.max=%d&OutputMode=LIST"
 #define SSLOC_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&output.max=%d&OutputMode=LIST"
 #define STD_SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=HTML"
+#define FCDB_NED_URL "http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES"
 #elif defined(USE_OSX)
 #define DSS_URL "open http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick\\&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf\\&SURVEY=Digitized+Sky+Survey"
 #define SIMBAD_URL "open http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none\\&CooEpoch=2000\\&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf\\&submit=submit%%20query\\&Radius.unit=arcmin\\&CooEqui=2000\\&CooFrame=FK5\\&Radius=2\\&output.format=HTML"
@@ -80,6 +81,7 @@
 #define MIRSTD_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d\\&submit=submit%%20query\\&output.max=%d\\&OutputMode=LIST"
 #define SSLOC_URL "http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s\\&submit=submit%%20query\\&output.max=%d\\&OutputMode=LIST"
 #define STD_SIMBAD_URL "http://simbad.u-strasbg.fr/simbad/sim-id?Ident=%s\\&NbIdent=1\\&Radius=2\\&Radius.unit=arcmin\\&submit=submit+id\\&output.format=HTML"
+#define FCDB_NED_URL "http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s\\&extend=no\\&hconst=73\\&omegam=0.27\\&omegav=0.73\\&corr_z=1\\&out_csys=Equatorial\\&out_equinox=J2000.0\\&obj_sort=RA+or+Longitude\\&of=pre_text\\&zv_breaker=30000.0\\&list_limit=5\\&img_stamp=YES"
 #else
 #define DSS_URL "\"http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey\""
 #define SIMBAD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-coo?CooDefinedFrames=none&CooEpoch=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML\""
@@ -94,6 +96,7 @@
 #define MIRSTD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&output.max=%d&OutputMode=LIST\""
 #define SSLOC_URL "\"http://simbad.u-strasbg.fr/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&output.max=%d&OutputMode=LIST\""
 #define STD_SIMBAD_URL "\"http://simbad.u-strasbg.fr/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=HTML\""
+#define FCDB_NED_URL "\"http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES\""
 #endif
 
 #ifdef USE_WIN32
@@ -117,7 +120,14 @@
 
 #define FCDB_HOST_SIMBAD "simbad.u-strasbg.fr"
 #define FCDB_PATH "/simbad/sim-sam?Criteria=region%%28box%%2C%lf%s%lf%%2C%+lfm%+lfm%%29%s%s&submit=submit+query&OutputMode=LIST&maxObject=%d&CriteriaFile=&output.format=VOTABLE"
-#define FCDB_FILE_XML "simbad_fc.xml"
+#define FCDB_FILE_XML "database_fc.xml"
+
+#define FCDB_HOST_NED "ned.ipac.caltech.edu"
+#define FCDB_NED_PATH "/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=%.2lf&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY%sout_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=0&img_stamp=YES&of=xml_main"
+
+#define ADDOBJ_SIMBAD_PATH "/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=VOTABLE"
+#define ADDOBJ_NED_PATH "/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES&of=xml_main"
+
 
 #define FC_HOST_STSCI "archive.stsci.edu"
 #define FC_PATH_STSCI "/cgi-bin/dss_search?v=%s&r=%d+%d+%lf&d=%s%d+%d+%lf&e=J2000&h=%d.0&w=%d.0&f=gif&c=none&fov=NONE&v3="
@@ -151,11 +161,11 @@
 #define FC_SRC_SKYVIEW_DSS2R "DSS2%20Red"
 #define FC_SRC_SKYVIEW_DSS2B "DSS2%20Blue"
 #define FC_SRC_SKYVIEW_DSS2IR "DSS2%20IR"
-#define FC_SRC_SKYVIEW_SDSSU "SDSSdr7u"
-#define FC_SRC_SKYVIEW_SDSSG "SDSSdr7g"
-#define FC_SRC_SKYVIEW_SDSSR "SDSSdr7r"
-#define FC_SRC_SKYVIEW_SDSSI "SDSSdr7i"
-#define FC_SRC_SKYVIEW_SDSSZ "SDSSdr7z"
+#define FC_SRC_SKYVIEW_SDSSU "SDSSu"
+#define FC_SRC_SKYVIEW_SDSSG "SDSSg"
+#define FC_SRC_SKYVIEW_SDSSR "SDSSr"
+#define FC_SRC_SKYVIEW_SDSSI "SDSSi"
+#define FC_SRC_SKYVIEW_SDSSZ "SDSSz"
 #define FC_SRC_SKYVIEW_2MASSJ "2MASS-J"
 #define FC_SRC_SKYVIEW_2MASSH "2MASS-H"
 #define FC_SRC_SKYVIEW_2MASSK "2MASS-K"
@@ -339,9 +349,17 @@ enum
   COLUMN_FCDB_J,
   COLUMN_FCDB_H,
   COLUMN_FCDB_K,
+  COLUMN_FCDB_NEDMAG,
+  COLUMN_FCDB_NEDZ,
   NUM_COLUMN_FCDB
 };
 
+// FCDB_TYPE
+enum
+{
+  FCDB_TYPE_SIMBAD,
+  FCDB_TYPE_NED
+};
 
 enum
 {
@@ -362,6 +380,8 @@ enum
   FCDB_OTYPE_ALL,
   FCDB_OTYPE_STAR,
   FCDB_OTYPE_ISM,
+  FCDB_OTYPE_PN,
+  FCDB_OTYPE_HII,
   FCDB_OTYPE_GALAXY,
   FCDB_OTYPE_QSO,
   FCDB_OTYPE_GAMMA,
@@ -371,9 +391,21 @@ enum
   NUM_FCDB_OTYPE
 };
 
+enum
+{
+  FCDB_NED_OTYPE_ALL,
+  FCDB_NED_OTYPE_EXTRAG,
+  FCDB_NED_OTYPE_QSO,
+  FCDB_NED_OTYPE_STAR,
+  FCDB_NED_OTYPE_SN,
+  FCDB_NED_OTYPE_PN,
+  FCDB_NED_OTYPE_HII,
+  NUM_NED_FCDB_OTYPE
+};
+
 
 #define DEF_TREE_WIDTH 320
-#define DEF_TREE_HEIGHT 600
+#define DEF_TREE_HEIGHT 300
 
 enum
 {
@@ -1067,6 +1099,9 @@ struct _FCDBpara{
   gchar *otype;
   gchar *sp;
   gdouble sep;
+  gchar *nedmag;
+  gdouble nedvel;
+  gdouble nedz;
   gdouble u;
   gdouble b;
   gdouble v;
@@ -1391,6 +1426,8 @@ struct _typHOE{
   gchar *stddb_label_text;
   gboolean stddb_flag;
 
+  gint fcdb_type;
+  gint fcdb_type_tmp;
   gchar *fcdb_file;
   gchar *fcdb_host;
   gchar *fcdb_path;
@@ -1401,6 +1438,7 @@ struct _typHOE{
   gint  fcdb_i_max;
   GtkWidget *fcdb_tree;
   GtkWidget *fcdb_label;
+  GtkWidget *fcdb_frame;
   GtkWidget *fcdb_button;
   GtkWidget *fcdb_tgt;
   gchar *fcdb_label_text;
@@ -1408,7 +1446,19 @@ struct _typHOE{
   gint fcdb_band;
   gint fcdb_mag;
   gint fcdb_otype;
+  gint fcdb_ned_diam;
+  gint fcdb_ned_otype;
   gboolean fcdb_auto;
+
+  gint addobj_type;
+  gchar *addobj_name;
+  gchar *addobj_voname;
+  gchar *addobj_votype;
+  gdouble addobj_ra;
+  gdouble addobj_dec;
+  GtkWidget *addobj_label;
+  GtkWidget *addobj_entry_ra;
+  GtkWidget *addobj_entry_dec;
 
   GtkWidget *adc_main;
   GtkWidget *adc_dw;
