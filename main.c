@@ -4616,7 +4616,7 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"NED");
     }
 
-    if(rebuild_flag) rebuild_tree(hg);
+    if((rebuild_flag)&&(flagTree)) rebuild_tree(hg);
   }
 
   flagChildDialog=FALSE;
