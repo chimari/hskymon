@@ -95,6 +95,8 @@ extern double get_julian_day_of_epoch();
 
 extern gchar *make_simbad_id();
 
+extern void raise_tree();
+
 extern pid_t fc_pid;
 extern gboolean flagTree;
 extern pid_t fcdb_pid;
@@ -2708,8 +2710,11 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	  i_list--;
 	  
 	  if(i_list==i_sel){
+	    gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),2);
+	    gtk_widget_grab_focus (hg->fcdb_tree);
 	    gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->fcdb_tree), 
 				     path, NULL, FALSE);
+	    raise_tree();
 	    break;
 	  }
 	  else{
@@ -4164,6 +4169,9 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       -1);
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 		       COLUMN_FCDB_NEDZ,   hg->fcdb[i_list].nedz, 
+		       -1);
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_REF, hg->fcdb[i_list].ref, 
 		       -1);
   }
 }

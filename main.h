@@ -354,6 +354,7 @@ enum
   COLUMN_FCDB_K,
   COLUMN_FCDB_NEDMAG,
   COLUMN_FCDB_NEDZ,
+  COLUMN_FCDB_REF,
   NUM_COLUMN_FCDB
 };
 
@@ -1123,6 +1124,7 @@ struct _FCDBpara{
   gchar *q100;
   gdouble x;
   gdouble y;
+  gint ref;
 };
 
 
@@ -1452,6 +1454,7 @@ struct _typHOE{
   gint fcdb_ned_diam;
   gint fcdb_ned_otype;
   gboolean fcdb_auto;
+  gboolean fcdb_ned_ref;
 
   gint addobj_type;
   gchar *addobj_name;

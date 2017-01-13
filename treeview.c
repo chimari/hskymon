@@ -44,6 +44,8 @@ void clip_copy();
 
 void addobj_dialog();
 
+void raise_tree();
+
 #ifdef USE_XMLRPC
 GdkColor col_lock={0,0xFFFF,0xC000,0xC000};
 GdkColor col_sub={0,0xDDDD,0xFFFF,0xFFFF};
@@ -483,6 +485,34 @@ void fcdb_double_cell_data_func(GtkTreeViewColumn *col ,
   case COLUMN_FCDB_NEDZ:
     if(value<-99) str=g_strdup_printf("---");
     else str=g_strdup_printf("%.6lf",value);
+    break;
+  }
+
+  g_object_set(renderer, "text", str, NULL);
+  if(str)g_free(str);
+}
+
+void fcdb_int_cell_data_func(GtkTreeViewColumn *col , 
+			     GtkCellRenderer *renderer,
+			     GtkTreeModel *model, 
+			     GtkTreeIter *iter,
+			     gpointer user_data)
+{
+  const guint index = GPOINTER_TO_UINT(user_data);
+  guint64 size;
+  gint value;
+  gchar *str;
+
+  gtk_tree_model_get (model, iter, 
+		      index, &value,
+		      -1);
+
+  switch (index) {
+  case COLUMN_FCDB_REF:
+    if(value==0)
+      str=NULL;
+    else
+      str=g_strdup_printf("%d",value);
     break;
   }
 
@@ -1007,7 +1037,8 @@ fcdb_create_items_model (typHOE *hg)
 			      G_TYPE_DOUBLE,  // H
 			      G_TYPE_DOUBLE,  // K
 			      G_TYPE_STRING,  // NED mag
-			      G_TYPE_DOUBLE); // NED z
+			      G_TYPE_DOUBLE,  // NED z
+			      G_TYPE_INT);    // References
 
   for (i = 0; i < hg->fcdb_i_max; i++){
     gtk_list_store_append (model, &iter);
@@ -3064,7 +3095,24 @@ fcdb_add_columns (typHOE *hg,
 					    NULL);
     gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_NEDZ);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+    // References
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_OTYPE));
+    column=gtk_tree_view_column_new_with_attributes ("ref.",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_REF,
+						     NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_REF);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_int_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_REF),
+					    NULL);
   }
+
 }
 
 
@@ -3558,15 +3606,6 @@ do_editable_cells (typHOE *hg)
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (std_simbad), (gpointer)hg);
     
-#ifdef __GTK_STOCK_H__
-    button=gtkut_button_new_from_stock("Search Param.",GTK_STOCK_PROPERTIES);
-#else
-    button = gtk_button_new_with_label ("Search Param.");
-#endif
-    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
-    my_signal_connect (button, "clicked",
-		       create_std_para_dialog, (gpointer)hg);
-    
     label= gtk_label_new ("    ");
     gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
     
@@ -3672,15 +3711,6 @@ do_editable_cells (typHOE *hg)
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (fcdb_simbad), (gpointer)hg);
-    
-#ifdef __GTK_STOCK_H__
-    button=gtkut_button_new_from_stock("Search Param.",GTK_STOCK_PROPERTIES);
-#else
-    button = gtk_button_new_with_label ("Search Param.");
-#endif
-    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
-    my_signal_connect (button, "clicked",
-		       create_fcdb_para_dialog, (gpointer)hg);
     
     label= gtk_label_new ("    ");
     gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
@@ -4429,3 +4459,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   flagChildDialog=FALSE;
 }
 
+void raise_tree(){
+  gdk_window_deiconify(window->window);
+  gdk_window_raise(window->window);
+}

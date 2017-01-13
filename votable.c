@@ -991,6 +991,8 @@ void fcdb_ned_vo_parse(typHOE *hg) {
       columns[5] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,"Magnitude and Filter") == 0) 
       columns[6] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"References") == 0) 
+      columns[7] = vfield_move->position;
  }
 
 
@@ -1001,7 +1003,9 @@ void fcdb_ned_vo_parse(typHOE *hg) {
    if (vtabledata_move->colomn == columns[0]){
      if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
      hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
-     i_list++;
+     if((!hg->fcdb_ned_ref)||(hg->fcdb[i_list].ref!=0)){
+       i_list++;
+     }
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
@@ -1044,6 +1048,14 @@ void fcdb_ned_vo_parse(typHOE *hg) {
    else if (vtabledata_move->colomn == columns[6]){
      if(hg->fcdb[i_list].nedmag) g_free(hg->fcdb[i_list].nedmag);
      hg->fcdb[i_list].nedmag=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[7]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].ref=atoi(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].ref=0;
+     }
    }
   }
   hg->fcdb_i_max=i_list;

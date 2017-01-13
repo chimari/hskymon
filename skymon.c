@@ -53,7 +53,7 @@ extern void do_update_azel();
 
 extern gint tree_update_azel ();
 extern void make_tree();
-
+extern void raise_tree();
 
 void create_skymon_dialog();
 void close_skymon();
@@ -3814,7 +3814,10 @@ gint button_signal(GtkWidget *widget,
 	    i_list--;
 
 	    if(i_list==i_sel){
+	      gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
+	      gtk_widget_grab_focus (hg->tree);
 	      gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->tree), path, NULL, FALSE);
+	      raise_tree();
 	      break;
 	    }
 	    else{

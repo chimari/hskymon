@@ -4216,9 +4216,9 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
-    *spinner, *combo, *table;
+    *spinner, *combo, *table, *check;
   GtkAdjustment *adj;
-  gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam;
+  gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, tmp_ned_ref;
   confProp *cdata;
   typHOE *hg;
   GSList *fcdb_group=NULL; 
@@ -4242,6 +4242,7 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
   tmp_ned_diam=hg->fcdb_ned_diam;
   tmp_ned_otype=hg->fcdb_ned_otype;
   hg->fcdb_type_tmp=hg->fcdb_type;
+  tmp_ned_ref=hg->fcdb_ned_ref;
 
   while (my_main_iteration(FALSE));
   gdk_flush();
@@ -4460,7 +4461,7 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
 
-  table = gtk_table_new(2,2,FALSE);
+  table = gtk_table_new(2,3,FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
@@ -4552,6 +4553,15 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
 		       &tmp_ned_otype);
   }
 
+  check = gtk_check_button_new_with_label("Only objects w/references");
+  gtk_table_attach(GTK_TABLE(table), check, 0, 2, 2, 3,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_ned_ref);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       hg->fcdb_ned_ref);
+
 
 #ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
@@ -4598,6 +4608,7 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
       hg->fcdb_ned_otype = tmp_ned_otype;
       if(hg->fcdb_type!=hg->fcdb_type_tmp) rebuild_flag=TRUE;
       hg->fcdb_type  = hg->fcdb_type_tmp;
+      hg->fcdb_ned_ref  = tmp_ned_ref;
     }
     else{
       hg->fcdb_band  = FCDB_BAND_NOP;
@@ -4607,6 +4618,7 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
       hg->fcdb_ned_otype = FCDB_NED_OTYPE_ALL;
       if(hg->fcdb_type!=FCDB_TYPE_SIMBAD) rebuild_flag=TRUE;
       hg->fcdb_type  = FCDB_TYPE_SIMBAD;
+      hg->fcdb_ned_ref = FALSE;
     }
 
     if(flagFC){
@@ -7574,6 +7586,7 @@ void param_init(typHOE *hg){
   hg->fcdb_ned_diam=20;
   hg->fcdb_ned_otype=FCDB_NED_OTYPE_ALL;
   hg->fcdb_auto=FALSE;
+  hg->fcdb_ned_ref=FALSE;
 
   hg->adc_inst=ADC_INST_IMR;
   hg->adc_flip=FALSE;
