@@ -409,7 +409,7 @@ enum
 
 
 #define DEF_TREE_WIDTH 320
-#define DEF_TREE_HEIGHT 300
+#define DEF_TREE_HEIGHT 360
 
 enum
 {

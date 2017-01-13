@@ -1998,6 +1998,9 @@ int get_dss(typHOE *hg){
 #else
   waitpid(fc_pid,0,WNOHANG);
 
+  printf_log(hg, "[FC] fetching FC image from %s.",
+	     hg->dss_host);
+
   if( (fc_pid = fork()) <0){
     fprintf(stderr,"fork error\n");
   }
@@ -2031,6 +2034,8 @@ int get_stddb(typHOE *hg){
 #else
   waitpid(stddb_pid,0,WNOHANG);
 
+  printf_log(hg, "[StdDB] fetching database XML from %s.",
+	     hg->std_host);
   if( (stddb_pid = fork()) <0){
     fprintf(stderr,"fork error\n");
   }
@@ -2065,6 +2070,8 @@ int get_fcdb(typHOE *hg){
 #else
   waitpid(fcdb_pid,0,WNOHANG);
 
+  printf_log(hg, "[FCDB] fetching database XML from %s.",
+	     hg->fcdb_host);
   if( (fcdb_pid = fork()) <0){
     fprintf(stderr,"fork error\n");
   }

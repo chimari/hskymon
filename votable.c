@@ -43,6 +43,7 @@ void stddb_vo_parse();
 void fcdb_vo_parse();
 void fcdb_ned_vo_parse();
 extern gdouble deg_sep();
+extern void printf_log();
 
 static list_field *insert_field(xmlTextReaderPtr reader, 
 				  list_field *list, 
@@ -468,6 +469,8 @@ void stddb_vo_parse(typHOE *hg) {
   gdouble ra_0, dec_0, d_ra0,d_dec0;
   struct lnh_equ_posn hobject;
 
+  printf_log(hg,"[StdDB] pursing XML.");
+
   ra_0=hg->obj[hg->std_i].ra;
   hobject.ra.hours=(gint)(ra_0/10000);
   ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
@@ -733,6 +736,8 @@ void fcdb_vo_parse(typHOE *hg) {
   struct ln_hms hms;
   struct ln_dms dms;
 
+  printf_log(hg,"[FCDB] pursing XML.");
+
   Extract_Att_VO_Table(reader,&votable);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
@@ -973,6 +978,8 @@ void fcdb_ned_vo_parse(typHOE *hg) {
   struct ln_hms hms;
   struct ln_dms dms;
 
+  printf_log(hg,"[FCDB] pursing XML.");
+
   Extract_Att_VO_Table(reader,&votable);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
@@ -1087,6 +1094,8 @@ void addobj_vo_parse(typHOE *hg) {
   struct ln_hms hms;
   struct ln_dms dms;
   gdouble tmp_d_ra, tmp_d_dec;
+
+  printf_log(hg,"[FCDB] pursing XML.");
 
   if(hg->addobj_voname) g_free(hg->addobj_voname);
   hg->addobj_voname=NULL;

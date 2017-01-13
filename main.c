@@ -169,7 +169,7 @@ gboolean close_popup();
 static void destroy_popup();
 
 #ifdef __GTK_FILE_CHOOSER_H__
-void my_file_chooser_add_filter ();
+void my_file_chooser_add_filter (GtkWidget *dialog, const gchar *name, ...);
 #endif
 void my_signal_connect();
 gboolean my_main_iteration();
@@ -2265,10 +2265,12 @@ void do_open (GtkWidget *widget, gpointer gdata)
 				      to_utf8(hg->filename_list));
   }
 
-  my_file_chooser_add_filter(fdialog,"All File","*");
-  my_file_chooser_add_filter(fdialog,"List File","*." LIST1_EXTENSION);
-  my_file_chooser_add_filter(fdialog,"List File","*." LIST2_EXTENSION);
-  my_file_chooser_add_filter(fdialog,"List File","*." LIST3_EXTENSION);
+  my_file_chooser_add_filter(fdialog,"All File","*",NULL);
+  my_file_chooser_add_filter(fdialog,"List File", 
+			     "*." LIST1_EXTENSION,
+			     "*." LIST2_EXTENSION,
+			     "*." LIST3_EXTENSION,
+			     NULL);
 
   gtk_widget_show_all(fdialog);
 
@@ -2492,8 +2494,8 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
   }
 #endif
 
-  my_file_chooser_add_filter(fdialog,"OPE File","*." OPE_EXTENSION);
-  my_file_chooser_add_filter(fdialog,"All File","*");
+  my_file_chooser_add_filter(fdialog,"OPE File","*." OPE_EXTENSION,NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*", NULL);
 
   gtk_widget_show_all(fdialog);
 
@@ -2652,8 +2654,8 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
 				      to_utf8(hg->filename_ope));
   }
 
-  my_file_chooser_add_filter(fdialog,"OPE File","*." OPE_EXTENSION);
-  my_file_chooser_add_filter(fdialog,"All File","*");
+  my_file_chooser_add_filter(fdialog,"OPE File","*." OPE_EXTENSION,NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*",NULL);
 
   gtk_widget_show_all(fdialog);
 
@@ -2811,8 +2813,8 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
 				      to_utf8(hg->filename_prm));
   }
 
-  my_file_chooser_add_filter(fdialog,"PRM File","*." PRM_EXTENSION);
-  my_file_chooser_add_filter(fdialog,"All File","*");
+  my_file_chooser_add_filter(fdialog,"PRM File","*." PRM_EXTENSION,NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*",NULL);
 
   gtk_widget_show_all(fdialog);
 
@@ -2899,10 +2901,12 @@ void do_merge (GtkWidget *widget, gpointer gdata)
 				      to_utf8(hg->filename_list));
   }
 
-  my_file_chooser_add_filter(fdialog,"All File","*");
-  my_file_chooser_add_filter(fdialog,"List File","*." LIST1_EXTENSION);
-  my_file_chooser_add_filter(fdialog,"List File","*." LIST2_EXTENSION);
-  my_file_chooser_add_filter(fdialog,"List File","*." LIST3_EXTENSION);
+  my_file_chooser_add_filter(fdialog,"All File","*",NULL);
+  my_file_chooser_add_filter(fdialog,"List File", 
+			     "*." LIST1_EXTENSION,
+			     "*." LIST2_EXTENSION,
+			     "*." LIST3_EXTENSION,
+			     NULL);
 
   gtk_widget_show_all(fdialog);
 
@@ -4673,8 +4677,8 @@ void do_save_pdf (GtkWidget *widget, gpointer gdata)
   }
 
 
-  my_file_chooser_add_filter(fdialog,"PDF File","*." PDF_EXTENSION);
-  my_file_chooser_add_filter(fdialog,"All File","*");
+  my_file_chooser_add_filter(fdialog,"PDF File","*." PDF_EXTENSION,NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*", NULL);
 
   gtk_widget_show_all(fdialog);
 
@@ -4767,8 +4771,8 @@ void do_save_fc_pdf (GtkWidget *widget, gpointer gdata)
   }
 
 
-  my_file_chooser_add_filter(fdialog,"PDF File","*." PDF_EXTENSION);
-  my_file_chooser_add_filter(fdialog,"All File","*");
+  my_file_chooser_add_filter(fdialog,"PDF File","*." PDF_EXTENSION,NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*", NULL);
 
   gtk_widget_show_all(fdialog);
 
@@ -10618,17 +10622,38 @@ static void destroy_popup(GtkWidget *w, guint data)
 #ifdef __GTK_FILE_CHOOSER_H__
 void my_file_chooser_add_filter (GtkWidget *dialog, 
 				 const gchar *name,
-				 const gchar *pattern)
+				 ...)
 {
   GtkFileFilter *filter;
   gchar *name_tmp;
+  va_list args;
+  gchar *pattern, *ptncat=NULL, *ptncat2=NULL;
 
   filter=gtk_file_filter_new();
-  name_tmp=g_strconcat(name,"[",pattern,"]",NULL);
+
+  va_start(args, name);
+  while(1){
+    pattern=va_arg(args, gchar*);
+    if(!pattern) break;
+    gtk_file_filter_add_pattern(filter, pattern);
+    if(!ptncat){
+      ptncat=g_strdup(pattern);
+    }
+    else{
+      if(ptncat2) g_free(ptncat2);
+      ptncat2=g_strdup(ptncat);
+      if(ptncat) g_free(ptncat);
+      ptncat=g_strconcat(ptncat2,",",pattern,NULL);
+    }
+  }
+  va_end(args);
+
+  name_tmp=g_strconcat(name," [",ptncat,"]",NULL);
   gtk_file_filter_set_name(filter, name_tmp);
-  gtk_file_filter_add_pattern(filter, pattern);
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog),filter);
-  g_free(name_tmp);
+  if(name_tmp) g_free(name_tmp);
+  if(ptncat) g_free(ptncat);
+  if(ptncat2) g_free(ptncat2);
 }
 #endif
 

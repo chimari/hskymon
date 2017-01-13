@@ -97,6 +97,8 @@ extern gchar *make_simbad_id();
 
 extern void raise_tree();
 
+extern void printf_log();
+
 extern pid_t fc_pid;
 extern gboolean flagTree;
 extern pid_t fcdb_pid;
@@ -174,6 +176,7 @@ void fc_item (GtkWidget *widget, gpointer data)
 #ifndef USE_WIN32
         if(fc_pid){
 #endif
+	  printf_log(hg,"[FC] reading image.");
     	  pixbuf_fc_RGB[i] = gdk_pixbuf_new_from_file(hg->dss_file, NULL);
 #ifndef USE_WIN32
         }
@@ -206,6 +209,7 @@ void fc_item (GtkWidget *widget, gpointer data)
 #ifndef USE_WIN32
     if(fc_pid){
 #endif
+      printf_log(hg,"[FC] reading image.");
       if(pixbuf_fc)  g_object_unref(G_OBJECT(pixbuf_fc));
       pixbuf_fc = gdk_pixbuf_new_from_file(hg->dss_file, NULL);
       

@@ -3799,11 +3799,6 @@ void make_tree(GtkWidget *widget, gpointer gdata){
     gdk_window_raise(window->window);
   }
 
-  /*
-  g_timeout_add(AZEL_INTERVAL, 
-		(GSourceFunc)tree_update_azel, 
-		(gpointer)hg);
-  */
 }
 
 
@@ -4017,6 +4012,35 @@ void rebuild_tree(typHOE *hg)
   hg->fcdb_i_max=0;
 
   make_tree(NULL,hg);
+  
+  if(hg->tree_focus<hg->i_max){
+    GtkTreeModel *model 
+      = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+    GtkTreePath *path;
+    GtkTreeIter  iter;
+    gint i,i_list;
+    
+    path=gtk_tree_path_new_first();
+    
+    for(i=0;i<hg->i_max;i++){
+      gtk_tree_model_get_iter (model, &iter, path);
+      gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i_list, -1);
+      i_list--;
+      
+      if(i_list==hg->tree_focus){
+	gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
+	gtk_widget_grab_focus (hg->tree);
+	gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->tree), 
+				 path, NULL, FALSE);
+	raise_tree();
+	break;
+      }
+      else{
+	gtk_tree_path_next(path);
+      }
+    }
+    gtk_tree_path_free(path);
+  }
 }
 
 void stddb_set_label(typHOE *hg)
