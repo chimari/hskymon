@@ -4484,6 +4484,6 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 }
 
 void raise_tree(){
-  //gdk_window_deiconify(window->window);
-  //gdk_window_raise(window->window);
+  gdk_window_deiconify(window->window);
+  gdk_window_raise(window->window);
 }
