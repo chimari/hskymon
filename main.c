@@ -7113,6 +7113,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     
     update_c_label(hg);
     if(flagTree){
+      rebuild_tree(hg);
       tree_update_azel((gpointer)hg);
     }
   }
@@ -7208,6 +7209,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     
     update_c_label(hg);
     if(flagTree){
+      rebuild_tree(hg);
       tree_update_azel((gpointer)hg);
     }
   }
