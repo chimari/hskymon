@@ -3803,7 +3803,7 @@ static gint button_signal(GtkWidget *widget,
 	  while (my_main_iteration(FALSE));
 	  gdk_flush();
 	}
-	{
+	if(GTK_WIDGET_REALIZED(hg->tree)){
 	  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
 	  GtkTreePath *path;
 	  GtkTreeIter  iter;
