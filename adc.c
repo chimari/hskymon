@@ -38,13 +38,6 @@ extern void calcpa2_main();
 gboolean flagADC=FALSE;
 
 
-void adc_item (GtkWidget *widget, gpointer data)
-{
-  typHOE *hg = (typHOE *)data;
-
-  adc_item2(hg);
-}
-
 void adc_item2 (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;

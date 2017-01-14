@@ -16,7 +16,8 @@
 #include <signal.h>
 
 
-void fc_item();
+static void fc_item();
+void fc_item2();
 void fc_dl ();
 gboolean progress_timeout();
 void do_fc();
@@ -48,6 +49,7 @@ void set_fc_frame_col();
 void show_fc_help();
 static void close_fc_help();
 
+static void fcdb_para_item();
 void fcdb_item2();
 static void fcdb_item();
 void fcdb_dl();
@@ -107,10 +109,8 @@ gboolean flagFC=FALSE, flag_getDSS=FALSE, flag_getFCDB=FALSE;
 GdkPixbuf *pixbuf_fc=NULL, *pixbuf2_fc=NULL;
 
 
-void fc_item (GtkWidget *widget, gpointer data)
+void fc_item2 (typHOE *hg)
 {
-  typHOE *hg = (typHOE *)data;
-
 #ifdef USE_XMLRPC
   if(hg->fc_inst==FC_INST_NO_SELECT){ // First Time
     if(hg->stat_obcp){
@@ -1115,7 +1115,7 @@ void create_fc_dialog(typHOE *hg)
   button = gtk_button_new_with_label ("Search Param.");
 #endif
   my_signal_connect (button, "clicked",
-		     create_fcdb_para_dialog, (gpointer)hg);
+		     fcdb_para_item, (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 2, 3, 1, 2,
   		    GTK_SHRINK,GTK_SHRINK,0,0);
 #ifdef __GTK_TOOLTIP_H__
@@ -4107,11 +4107,25 @@ void fcdb_item2 (typHOE *hg)
   if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL, (gpointer)hg);
 }
 
+static void fc_item (GtkWidget *widget, gpointer data)
+{
+  typHOE *hg = (typHOE *)data;
+  
+  fc_item2(hg);
+}
+
 static void fcdb_item (GtkWidget *widget, gpointer data)
 {
   typHOE *hg = (typHOE *)data;
   
   fcdb_item2(hg);
+}
+
+static void fcdb_para_item (GtkWidget *widget, gpointer data)
+{
+  typHOE *hg = (typHOE *)data;
+  
+  create_fcdb_para_dialog(hg);
 }
 
 

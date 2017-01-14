@@ -129,6 +129,7 @@ void close_disp_para();
 void create_diff_para_dialog();
 void create_disp_para_dialog();
 void create_std_para_dialog();
+static void fcdb_para_item();
 void create_fcdb_para_dialog();
 
 
@@ -650,7 +651,7 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",
-		     create_fcdb_para_dialog, (gpointer)hg);
+		     fcdb_para_item, (gpointer)hg);
 
 
   //// Info
@@ -4217,14 +4218,20 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 }
 
 
-void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
+static void fcdb_para_item (GtkWidget *widget, gpointer data)
+{
+  typHOE *hg = (typHOE *)data;
+  
+  create_fcdb_para_dialog(hg);
+}
+
+void create_fcdb_para_dialog (typHOE *hg)
 {
   GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
     *spinner, *combo, *table, *check;
   GtkAdjustment *adj;
   gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, tmp_ned_ref;
   confProp *cdata;
-  typHOE *hg;
   GSList *fcdb_group=NULL; 
   gboolean rebuild_flag=FALSE;
 
@@ -4235,8 +4242,6 @@ void create_fcdb_para_dialog (GtkWidget *widget, gpointer gdata)
     flagChildDialog=TRUE;
   }
 
-  hg=(typHOE *)gdata;
-  
   cdata=g_malloc0(sizeof(confProp));
   cdata->mode=0;
 

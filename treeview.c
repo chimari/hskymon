@@ -33,8 +33,10 @@ void make_fcdb_tgt();
 gchar *make_simbad_id();
 void copy_stacstd();
 static void add_item();
+static void fc_item ();
 static void stddb_item ();
 static void fcdb_item ();
+static void adc_item ();
 void stddb_dl();
 #ifndef USE_WIN32
 void stddb_signal();
@@ -42,7 +44,7 @@ static void cancel_stddb();
 #endif
 void clip_copy();
 
-void addobj_dialog();
+static void addobj_dialog();
 
 void raise_tree();
 
@@ -86,9 +88,9 @@ extern void my_entry_set_width_chars();
 extern void do_plot();
 extern void do_adc();
 
-extern void fc_item ();
+extern void fc_item2 ();
 extern void fcdb_item2();
-extern void adc_item ();
+extern void adc_item2 ();
 extern gboolean draw_adc_cairo();
 extern gboolean draw_fc_cairo();
 
@@ -1866,11 +1868,25 @@ stddb_item (GtkWidget *widget, gpointer data)
   }
 }
 
+static void fc_item (GtkWidget *widget, gpointer data)
+{
+  typHOE *hg = (typHOE *)data;
+  
+  fc_item2(hg);
+}
+
 static void fcdb_item (GtkWidget *widget, gpointer data)
 {
   typHOE *hg = (typHOE *)data;
 
   fcdb_item2(hg);
+}
+
+static void adc_item (GtkWidget *widget, gpointer data)
+{
+  typHOE *hg = (typHOE *)data;
+
+  adc_item2(hg);
 }
 
 static void
@@ -4348,7 +4364,7 @@ void addobj_ned_query (GtkWidget *widget, gpointer gdata)
   addobj_dl(hg);
 }
 
-void addobj_dialog (GtkWidget *widget, gpointer gdata)
+static void addobj_dialog (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
     *spinner, *table, *entry, *bar;
