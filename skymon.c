@@ -103,7 +103,7 @@ static void skymon_rev();
 gint skymon_back();
 void skymon_set_time_current();
 
-gint button_signal();
+static gint button_signal();
 void draw_stderr_graph();
 
 
@@ -3766,7 +3766,7 @@ void skymon_debug_print(const gchar *format, ...)
 #endif
 }
 
-gint button_signal(GtkWidget *widget, 
+static gint button_signal(GtkWidget *widget, 
 		   GdkEventButton *event, 
 		   gpointer userdata){
   typHOE *hg;
@@ -3800,6 +3800,8 @@ gint button_signal(GtkWidget *widget,
       if(i_sel>=0){
 	if(!flagTree){
 	  make_tree(hg->skymon_main,hg);
+	  while (my_main_iteration(FALSE));
+	  gdk_flush();
 	}
 	{
 	  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
