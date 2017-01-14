@@ -195,18 +195,21 @@ void ln_get_date_from_sys (struct ln_date * date)
 {
 	struct tm * gmt;
 //*#ifndef __WIN32__
-        struct timeval tv;
-        struct timezone tz;
+        //struct timeval tv;
+        //struct timezone tz;
+	struct timespec ts;
 //*#else
 //*	time_t now;
 //*#endif 
 		
 //*#ifndef __WIN32__
 	/* get current time with microseconds precission*/
-	gettimeofday (&tv, &tz);
+	//gettimeofday (&tv, &tz);
+	clock_gettime(CLOCK_REALTIME, &ts);
 	
 	/* convert to UTC time representation */
-	gmt = gmtime(&tv.tv_sec);
+	//gmt = gmtime(&tv.tv_sec);
+	gmt = gmtime(&ts.tv_sec);
 //*#else
 //*	now = time (NULL);
 //*	gmtime (&gmt, &now);
@@ -214,7 +217,8 @@ void ln_get_date_from_sys (struct ln_date * date)
     	
 	/* fill in date struct */
 //*#ifndef __WIN32__
-	date->seconds = gmt->tm_sec + ((double)tv.tv_usec / 1000000);
+	//date->seconds = gmt->tm_sec + ((double)tv.tv_usec / 1000000);
+	date->seconds = gmt->tm_sec + ((double)ts.tv_nsec / 1e9);
 //*#else
 //*	date->seconds = gmt->tm_sec;
 //*#endif

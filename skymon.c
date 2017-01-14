@@ -1693,6 +1693,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
       time_t t,t0;
       double JD0;
       int ago;
+      /*
       int bias;
 #ifdef USE_WIN32
       TIME_ZONE_INFORMATION TimeZoneInfo;
@@ -1706,9 +1707,10 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
       gettimeofday (&tv, &tz);
       bias=tz.tz_minuteswest;
 #endif
+      */
       JD0=ln_get_julian_from_sys();
       ln_get_timet_from_julian (JD0, &t0);
-      t0+=(bias*60+hg->obs_timezone*3600);
+      //t0+=(bias*60+hg->obs_timezone*3600);
       
       if(hg->skymon_mode==SKYMON_CUR){
 	if(hg->allsky_last_t[hg->allsky_last_i-1]>0){
