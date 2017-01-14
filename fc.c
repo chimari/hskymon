@@ -22,7 +22,7 @@ void fc_dl ();
 gboolean progress_timeout();
 void do_fc();
 void create_fc_dialog();
-void close_fc();
+static void close_fc();
 #ifndef USE_WIN32
 static void cancel_fc();
 #endif
@@ -31,10 +31,10 @@ gboolean resize_draw_fc();
 gboolean button_draw_fc();
 void rot_pa();
 static void refresh_fc();
-void cc_get_fc_inst();
-void cc_get_fc_mode();
+static void cc_get_fc_inst();
+static void cc_get_fc_mode();
 void pdf_fc();
-void do_print_fc();
+static void do_print_fc();
 static void draw_page();
 #ifndef USE_WIN32
 void dss_signal();
@@ -46,7 +46,7 @@ void set_dss_src_RGB();
 void set_fc_mode();
 void set_fc_frame_col();
 
-void show_fc_help();
+static void show_fc_help();
 static void close_fc_help();
 
 static void fcdb_para_item();
@@ -2962,7 +2962,7 @@ void rot_pa(cairo_t *cr, typHOE *hg){
   }
 }
 
-void cc_get_fc_inst (GtkWidget *widget,  gpointer * gdata)
+static void cc_get_fc_inst (GtkWidget *widget,  gpointer * gdata)
 {
   typHOE *hg;
   GtkTreeIter iter;
@@ -3045,7 +3045,7 @@ void cc_get_fc_inst (GtkWidget *widget,  gpointer * gdata)
 }
 
 
-void cc_get_fc_mode (GtkWidget *widget,  gpointer gdata)
+static void cc_get_fc_mode (GtkWidget *widget,  gpointer gdata)
 {
   GtkTreeIter iter;
   typHOE *hg = (typHOE *)gdata;
@@ -3076,7 +3076,7 @@ void pdf_fc (typHOE *hg)
   hg->fc_output=FC_OUTPUT_WINDOW;
 }
 
-void do_print_fc (GtkWidget *widget, gpointer gdata)
+static void do_print_fc (GtkWidget *widget, gpointer gdata)
 {
   typHOE *hg;
   GtkPrintOperation *op; 
@@ -3447,7 +3447,7 @@ void set_fc_frame_col(typHOE *hg){
   }
 }
 
-void show_fc_help (GtkWidget *widget, gpointer gdata)
+static void show_fc_help (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox, *table;
 #ifdef USE_GTK2

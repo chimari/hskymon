@@ -4336,7 +4336,7 @@ void clip_copy(GtkWidget *widget, gpointer gdata){
 }
 
 
-void ok_addobj(GtkWidget *w, gpointer gdata)
+static void ok_addobj(GtkWidget *w, gpointer gdata)
 {
   typHOE *hg;
   hg=(typHOE *)gdata;
@@ -4346,7 +4346,7 @@ void ok_addobj(GtkWidget *w, gpointer gdata)
   add_item(hg);
 }
 
-void addobj_simbad_query (GtkWidget *widget, gpointer gdata)
+static void addobj_simbad_query (GtkWidget *widget, gpointer gdata)
 {
   typHOE *hg;
   hg=(typHOE *)gdata;
@@ -4355,7 +4355,7 @@ void addobj_simbad_query (GtkWidget *widget, gpointer gdata)
   addobj_dl(hg);
 }
 
-void addobj_ned_query (GtkWidget *widget, gpointer gdata)
+static void addobj_ned_query (GtkWidget *widget, gpointer gdata)
 {
   typHOE *hg;
   hg=(typHOE *)gdata;
