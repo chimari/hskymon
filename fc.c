@@ -27,8 +27,9 @@ static void close_fc();
 static void cancel_fc();
 #endif
 gboolean draw_fc_cairo();
-gboolean resize_draw_fc();
-gboolean button_draw_fc();
+static void expose_draw_fc();
+static gboolean resize_draw_fc();
+static gboolean button_draw_fc();
 void rot_pa();
 static void refresh_fc();
 static void cc_get_fc_inst();
@@ -232,7 +233,7 @@ void fc_dl (typHOE *hg)
 #ifndef USE_WIN32
   static struct sigaction act;
 #endif
-  guint timer;
+  gint timer=-1;
   gint mode;
   
   if(flag_getDSS) return;
@@ -479,7 +480,7 @@ void fc_dl (typHOE *hg)
 
   gtk_main();
   //#endif
-  gtk_timeout_remove(timer);
+  if(timer!=-1) gtk_timeout_remove(timer);
   gtk_widget_destroy(dialog);
   
   flag_getDSS=FALSE;
@@ -491,7 +492,7 @@ gboolean progress_timeout( gpointer data ){
   gchar *tmp;
 
   if(GTK_WIDGET_REALIZED(hg->pbar)){
-    gdk_window_invalidate_rect(gtk_widget_get_window(hg->pbar),NULL,FALSE);
+    //gdk_window_invalidate_rect(gtk_widget_get_window(hg->pbar),NULL,FALSE);
 
     gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
 
@@ -527,20 +528,17 @@ void do_fc(typHOE *hg){
     gdk_window_deiconify(hg->fc_main->window);
     gdk_window_raise(hg->fc_main->window);
     hg->fc_output=FC_OUTPUT_WINDOW;
-    draw_fc_cairo(hg->fc_dw,NULL,
-		  (gpointer)hg);
-    return;
+    draw_fc_cairo(hg->fc_dw,(gpointer)hg);
   }
   else{
     flagFC=TRUE;
+    create_fc_dialog(hg);
   }
-  
-  create_fc_dialog(hg);
 }
 
 void create_fc_dialog(typHOE *hg)
 {
-  GtkWidget *vbox, *vbox1, *hbox, *hbox1, *hbox2, *table;
+  GtkWidget *vbox, *vbox1, *hbox, *hbox1, *hbox2, *ebox, *table;
   GtkWidget *frame, *check, *label, *button, *spinner;
   GtkAdjustment *adj;
   GtkWidget *menubar;
@@ -551,8 +549,8 @@ void create_fc_dialog(typHOE *hg)
   gdk_flush();
 
   hg->fc_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  //hg->fc_main = gtk_dialog_new();
   gtk_window_set_title(GTK_WINDOW(hg->fc_main), "Sky Monitor : Finding Chart");
-  //gtk_widget_set_usize(hg->skymon_main, SKYMON_SIZE, SKYMON_SIZE);
   
   my_signal_connect(hg->fc_main,
 		    "destroy",
@@ -564,9 +562,9 @@ void create_fc_dialog(typHOE *hg)
   vbox = gtk_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (hg->fc_main), vbox);
 
-
   hbox = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), 
+		     hbox, FALSE, FALSE, 0);
 
   frame = gtk_frame_new ("Image Source");
   gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
@@ -894,7 +892,8 @@ void create_fc_dialog(typHOE *hg)
 		    &hg->dss_invert);
 
   hbox = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), 
+		     hbox, FALSE, FALSE, 0);
 
   frame = gtk_frame_new ("Instrument");
   gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
@@ -1125,10 +1124,11 @@ void create_fc_dialog(typHOE *hg)
 
   
   hbox = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), 
+		     hbox, TRUE, TRUE, 0);
 
-  vbox = gtk_vbox_new(FALSE,3);
-  gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, FALSE, 3);
+  vbox1 = gtk_vbox_new(FALSE,3);
+  gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 3);
 
 
 #ifdef __GTK_STOCK_H__
@@ -1141,7 +1141,7 @@ void create_fc_dialog(typHOE *hg)
 #endif
   g_signal_connect (button, "clicked",
 		    G_CALLBACK (do_save_fc_pdf), (gpointer)hg);
-  gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Save as PDF");
@@ -1154,7 +1154,7 @@ void create_fc_dialog(typHOE *hg)
 #endif
   g_signal_connect (button, "clicked",
 		    G_CALLBACK (do_print_fc), (gpointer)hg);
-  gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Print out");
@@ -1167,11 +1167,12 @@ void create_fc_dialog(typHOE *hg)
 #endif
   g_signal_connect (button, "clicked",
 		    G_CALLBACK (show_fc_help), (gpointer)hg);
-  gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Show Help");
 #endif
+  gtk_widget_grab_focus (button);
 
 #ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
@@ -1180,7 +1181,7 @@ void create_fc_dialog(typHOE *hg)
 #endif
   g_signal_connect (button, "clicked",
 		    G_CALLBACK (close_fc), (gpointer)hg);
-  gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Close");
@@ -1196,13 +1197,12 @@ void create_fc_dialog(typHOE *hg)
   gtk_widget_set_size_request (hg->fc_dw, FC_WIDTH, FC_HEIGHT);
   gtk_box_pack_start(GTK_BOX(hbox), hg->fc_dw, TRUE, TRUE, 0);
   gtk_widget_set_app_paintable(hg->fc_dw, TRUE);
-  gtk_widget_show(hg->fc_dw);
 
   screen_changed(hg->fc_dw,NULL,NULL);
 
   my_signal_connect(hg->fc_dw, 
 		    "expose-event", 
-		    draw_fc_cairo,
+		    expose_draw_fc,
 		    (gpointer)hg);
   my_signal_connect(hg->fc_dw,
 		    "scroll-event", 
@@ -1213,13 +1213,14 @@ void create_fc_dialog(typHOE *hg)
 		    button_draw_fc,
 		    (gpointer)hg);
   gtk_widget_set_events(hg->fc_dw, GDK_SCROLL_MASK |
-			GDK_SHIFT_MASK | 
-                        GDK_BUTTON_RELEASE_MASK | 
-                        GDK_BUTTON_PRESS_MASK | 
-                        GDK_EXPOSURE_MASK);
+                      GDK_BUTTON_PRESS_MASK | 
+                      GDK_EXPOSURE_MASK);
+
+  gtk_widget_show(hg->fc_dw);
 
   gtk_widget_show_all(hg->fc_main);
 
+  //gdk_window_invalidate_rect(gtk_widget_get_window(hg->fc_dw),NULL,FALSE);
   gdk_window_raise(hg->fc_main->window);
 
   gdk_flush();
@@ -1249,8 +1250,69 @@ gboolean resize_draw_fc(GtkWidget *widget,
 				 (gdouble)(hg->dss_pa+5));
       }
       hg->fc_output=FC_OUTPUT_WINDOW;
-      draw_fc_cairo(hg->fc_dw,NULL,
-		    (gpointer)hg);
+      draw_fc_cairo(hg->fc_dw,(gpointer)hg);
+    }
+    else if(event->state & GDK_CONTROL_MASK){
+      if(direction & GDK_SCROLL_DOWN){
+	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
+				 (gdouble)(hg->dss_pa-1));
+      }
+      else{
+	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
+				 (gdouble)(hg->dss_pa+1));
+      }
+      hg->fc_output=FC_OUTPUT_WINDOW;
+      draw_fc_cairo(hg->fc_dw,(gpointer)hg);
+    }
+    else if(event->state & GDK_MOD1_MASK){
+      width= widget->allocation.width;
+      height=widget->allocation.height;
+
+      x=width/2;
+      y=height/2;
+	  
+      mag0=hg->fc_mag;
+      magx0=hg->fc_magx;
+      magy0=hg->fc_magy;
+      
+      if(direction & GDK_SCROLL_DOWN){
+	hg->fc_mag--;
+	hg->fc_ptn=0;
+      }
+      else{
+	hg->fc_mag++;
+	hg->fc_ptn=0;
+      }
+      
+      if(hg->fc_mag<1){
+	hg->fc_mag=1;
+	hg->fc_magmode=0;
+      }
+      else if(hg->fc_mag>5){
+	hg->fc_mag=5;
+      }
+      else{
+	if(mag0==1){
+	  hg->fc_magmode=0;
+	}
+	else if(hg->fc_magmode==0){
+	  if((magx0!=x)||(magy0!=y)){
+	    hg->fc_magmode=1;
+	  }
+	}
+	
+	if(hg->fc_magmode==0){
+	  hg->fc_magx=x;
+	  hg->fc_magy=y;
+	}
+	else{
+	  hg->fc_magx=magx0+(x-width/2)/mag0;
+	  hg->fc_magy=magy0+(y-height/2)/mag0;
+	}
+	gtk_drawing_area_size (GTK_DRAWING_AREA(hg->fc_dw),
+			       hg->fc_dw->allocation.width*hg->fc_mag,
+			       hg->fc_dw->allocation.height*hg->fc_mag);
+      }
     }
     else{
       gdk_window_get_pointer(widget->window,&x,&y,NULL);
@@ -1299,9 +1361,6 @@ gboolean resize_draw_fc(GtkWidget *widget,
 	gtk_drawing_area_size (GTK_DRAWING_AREA(hg->fc_dw),
 			       hg->fc_dw->allocation.width*hg->fc_mag,
 			       hg->fc_dw->allocation.height*hg->fc_mag);
-	//hg->fc_output=FC_OUTPUT_WINDOW;
-	//draw_fc_cairo(hg->fc_dw,NULL,
-	//		    (gpointer)hg);
       }
     }
   }
@@ -1309,11 +1368,11 @@ gboolean resize_draw_fc(GtkWidget *widget,
   return(TRUE);
 }
   
-gboolean button_draw_fc(GtkWidget *widget, 
+static gboolean button_draw_fc(GtkWidget *widget, 
 			GdkEventButton *event, 
 			gpointer userdata){
   typHOE *hg;
-  gint x,y;
+  gint x,y, width, height;
 
   hg=(typHOE *)userdata;
 
@@ -1324,6 +1383,13 @@ gboolean button_draw_fc(GtkWidget *widget,
       hg->fc_ptn=-1;
       hg->fc_ptx1=x;
       hg->fc_pty1=y;
+    }
+    else if(event->button==2){
+      width= widget->allocation.width;
+      height=widget->allocation.height;
+	  
+      hg->fc_magx+=(x-width/2)/hg->fc_mag;
+      hg->fc_magy+=(y-height/2)/hg->fc_mag;
     }
     else{
       if(hg->fc_ptn==2){
@@ -1342,8 +1408,7 @@ gboolean button_draw_fc(GtkWidget *widget,
     }
 
     //hg->fc_output=FC_OUTPUT_WINDOW;
-    draw_fc_cairo(hg->fc_dw,NULL,
-		  (gpointer)hg);
+    draw_fc_cairo(hg->fc_dw,hg);
   }
 
   return(TRUE);
@@ -1478,13 +1543,9 @@ void translate_to_center(cairo_t *cr, int width, int height, int width_file, int
     }
 }
 
-
-gboolean draw_fc_cairo(GtkWidget *widget, 
-		       GdkEventExpose *event, 
-		       gpointer userdata){
+gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
   cairo_t *cr;
   cairo_surface_t *surface;
-  typHOE *hg;
   cairo_text_extents_t extents;
   double x,y;
   gint i_list;
@@ -1506,8 +1567,6 @@ gboolean draw_fc_cairo(GtkWidget *widget,
   
   if(!flagFC) return (FALSE);
 
-  hg=(typHOE *)userdata;
-  
   while (my_main_iteration(FALSE));
   gdk_flush();
   //printf("Drawing!\n");
@@ -2910,6 +2969,17 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 
 }
 
+static void expose_draw_fc (GtkWidget *widget, 
+			    GdkEventExpose *event, 
+			    gpointer data)
+{
+  if(!flagFC) return;
+
+  typHOE *hg = (typHOE *)data;
+  
+  draw_fc_cairo(widget, hg);
+}
+
 
 static void refresh_fc (GtkWidget *widget, gpointer data)
 {
@@ -2917,8 +2987,7 @@ static void refresh_fc (GtkWidget *widget, gpointer data)
 
   if(flagFC){
     hg->fc_output=FC_OUTPUT_WINDOW;
-    draw_fc_cairo(hg->fc_dw,NULL,
-		  (gpointer)hg);
+    draw_fc_cairo(hg->fc_dw, hg);
   }
 }
 
@@ -3069,8 +3138,7 @@ void pdf_fc (typHOE *hg)
   hg->fc_output=FC_OUTPUT_PDF;
 
   if(flagFC){
-    draw_fc_cairo(hg->fc_dw,NULL,
-		  (gpointer)hg);
+    draw_fc_cairo(hg->fc_dw, hg);
   }
 
   hg->fc_output=FC_OUTPUT_WINDOW;
@@ -3129,8 +3197,7 @@ static void draw_page (GtkPrintOperation *operation,
   hg->fc_output=FC_OUTPUT_PRINT;
   hg->context=context;
   if(flagFC){
-    draw_fc_cairo(hg->fc_dw,NULL,
-		  (gpointer)hg);
+    draw_fc_cairo(hg->fc_dw, hg);
   }
 
   hg->fc_output=FC_OUTPUT_WINDOW;
@@ -3465,7 +3532,7 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
 		    close_fc_help, 
 		    GTK_WIDGET(dialog));
   
-  table = gtk_table_new(2,5,FALSE);
+  table = gtk_table_new(2,11,FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
@@ -3501,37 +3568,97 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 1, 2,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
-
-  label = gtk_label_new ("<wheel-scroll>");
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 2, 3,
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_FIND, GTK_ICON_SIZE_MENU);
+  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 2, 3,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
-  
-  label = gtk_label_new ("  Enlarge view around cursor (upto x5)");
+  gtk_widget_show(pixmap);
+  //  g_object_unref(pixmap);
+
+  label = gtk_label_new ("  Query objects in the finding chart via online database (SIMBAD/NED)");
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 2, 3,
 		    GTK_FILL,GTK_SHRINK,0,0);
-  
 
-  label = gtk_label_new ("<shift>+<wheel-scroll>");
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 3, 4,
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
+  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 3, 4,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
-  
-  label = gtk_label_new ("  Rotate position angle (w/5 deg step)");
+  gtk_widget_show(pixmap);
+  //g_object_unref(pixmap);
+
+  label = gtk_label_new ("  Change parameters for database query");
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 3, 4,
 		    GTK_FILL,GTK_SHRINK,0,0);
-  
 
-  label = gtk_label_new ("<left-click>");
+
+  label = gtk_label_new ("<wheel-scroll>");
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 0, 1, 4, 5,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   
-  label = gtk_label_new ("  Measure the distance between 2-points (The 3rd click to clear)");
+  label = gtk_label_new ("  Enlarge view around cursor (upto x5)");
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 4, 5,
+		    GTK_FILL,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("<alt>+<wheel-scroll>");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 5, 6,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("  Enlarge view w/o moving the center (upto x5)");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 5, 6,
+		    GTK_FILL,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("<ctrl>+<wheel-scroll>");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 6, 7,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("  Rotate position angle (w/1 deg step)");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 6, 7,
+		    GTK_FILL,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("<shift>+<wheel-scroll>");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 7, 8,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("  Rotate position angle (w/5 deg step)");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 7, 8,
+		    GTK_FILL,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("<left-click>");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 8, 9,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("  Focus on the identified object");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 8, 9,
+		    GTK_FILL,GTK_SHRINK,0,0);
+
+  label = gtk_label_new ("<middle-click>");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 9, 10,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("  Move the clicked point to the center");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 9, 10,
+		    GTK_FILL,GTK_SHRINK,0,0);
+
+  label = gtk_label_new ("<right-click>");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 10, 11,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("  Measure the distance between 2-points (The 3rd click to clear)");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 10, 11,
 		    GTK_FILL,GTK_SHRINK,0,0);
   
 
@@ -3572,13 +3699,13 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
 
   gtk_widget_show_all(dialog);
 
-  gtk_main();
+  //gtk_main();
 
 }
 
 static void close_fc_help(GtkWidget *w, GtkWidget *dialog)
 {
-  gtk_main_quit();
+  //gtk_main_quit();
   gtk_widget_destroy(dialog);
 }
 
@@ -3612,7 +3739,7 @@ void fcdb_dl(typHOE *hg)
 #ifndef USE_WIN32
   static struct sigaction act;
 #endif
-  guint timer;
+  gint timer=-1;
   
   if(flag_getFCDB) return;
   flag_getFCDB=TRUE;
@@ -3701,7 +3828,7 @@ void fcdb_dl(typHOE *hg)
   get_fcdb(hg);
   gtk_main();
 
-  gtk_timeout_remove(timer);
+  if(timer!=-1) gtk_timeout_remove(timer);
   gtk_widget_destroy(dialog);
 
   flag_getFCDB=FALSE;
@@ -3714,7 +3841,7 @@ void addobj_dl(typHOE *hg)
 #ifndef USE_WIN32
   static struct sigaction act;
 #endif
-  guint timer;
+  gint timer=-1;
   gchar *tgt;
   gchar *tmp;
   
@@ -3829,7 +3956,7 @@ void addobj_dl(typHOE *hg)
   get_fcdb(hg);
   gtk_main();
 
-  gtk_timeout_remove(timer);
+  if(timer!=-1) gtk_timeout_remove(timer);
   gtk_widget_destroy(dialog);
 
   flag_getFCDB=FALSE;
@@ -4104,7 +4231,7 @@ void fcdb_item2 (typHOE *hg)
 			       TRUE);
   hg->fcdb_flag=TRUE;
 
-  if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL, (gpointer)hg);
+  if(flagFC)  draw_fc_cairo(hg->fc_dw, hg);
 }
 
 static void fc_item (GtkWidget *widget, gpointer data)
@@ -4260,7 +4387,7 @@ fcdb_toggle (GtkWidget *widget, gpointer data)
 
   hg->fcdb_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
-  if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL, (gpointer)hg);
+  if(flagFC)  draw_fc_cairo(hg->fc_dw, hg);
 }
 
 GdkPixbuf* rgb_pixbuf(GdkPixbuf *pixbufR, GdkPixbuf* pixbufG, 
@@ -4379,23 +4506,23 @@ gchar *rgb_source_txt(typHOE *hg, gint i){
     break;
     
   case FC_SKYVIEW_SDSSU:
-    sprintf(tmp,"SDSS DR7 (u)");
+    sprintf(tmp,"SDSS (u)");
     break;
     
   case FC_SKYVIEW_SDSSG:
-    sprintf(tmp,"SDSS DR7 (g)");
+    sprintf(tmp,"SDSS (g)");
     break;
     
   case FC_SKYVIEW_SDSSR:
-    sprintf(tmp,"SDSS DR7 (r)");
+    sprintf(tmp,"SDSS (r)");
     break;
     
   case FC_SKYVIEW_SDSSI:
-    sprintf(tmp,"SDSS DR7 (i)");
+    sprintf(tmp,"SDSS (i)");
     break;
     
   case FC_SKYVIEW_SDSSZ:
-    sprintf(tmp,"SDSS DR7 (z)");
+    sprintf(tmp,"SDSS (z)");
     break;
     
   case FC_SKYVIEW_2MASSJ:

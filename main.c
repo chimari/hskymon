@@ -110,6 +110,7 @@ void do_merge();
 void do_save_pdf();
 void do_save_fc_pdf();
 void show_version();
+static void show_help();
 void show_properties();
 #ifdef USE_SKYMON
 void do_skymon();
@@ -692,6 +693,17 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",show_version, NULL);
+
+#ifdef __GTK_STOCK_H__
+  image=gtk_image_new_from_stock (GTK_STOCK_HELP, GTK_ICON_SIZE_MENU);
+  popup_button =gtk_image_menu_item_new_with_label ("Help");
+  gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#else
+  popup_button =gtk_menu_item_new_with_label ("Help");
+#endif
+  gtk_widget_show (popup_button);
+  gtk_container_add (GTK_CONTAINER (menu), popup_button);
+  my_signal_connect (popup_button, "activate",show_help, NULL);
 
 
   //Info/Properties
@@ -3163,6 +3175,169 @@ void show_version (GtkWidget *widget, gpointer gdata)
 
   flagChildDialog=FALSE;
 }
+
+static void show_help (GtkWidget *widget, gpointer gdata)
+{
+  GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox, *table;
+#ifdef USE_GTK2
+  GdkPixbuf *icon, *pixbuf;
+#endif  
+  flagChildDialog=FALSE;
+
+  while (my_main_iteration(FALSE));
+  gdk_flush();
+
+  dialog = gtk_dialog_new();
+  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Help");
+
+  my_signal_connect(dialog,"destroy",
+		    close_child_dialog, 
+		    GTK_WIDGET(dialog));
+  
+  table = gtk_table_new(2,11,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     table,FALSE, FALSE, 0);
+
+  icon = gdk_pixbuf_new_from_inline(sizeof(icon_feed), icon_feed, 
+				      FALSE, NULL);
+  pixbuf=gdk_pixbuf_scale_simple(icon, 16,16,GDK_INTERP_BILINEAR);
+  pixmap=gtk_image_new_from_pixbuf (pixbuf);
+  g_object_unref(G_OBJECT(icon));
+  g_object_unref(G_OBJECT(pixbuf));
+  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 0, 1,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_show(pixmap);
+  //g_object_unref(pixmap);
+
+  label = gtk_label_new ("  All sky camera ON/OFF");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 0, 1,
+		    GTK_FILL,GTK_SHRINK,0,0);
+  
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_REMOVE, GTK_ICON_SIZE_MENU);
+  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 1, 2,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_show(pixmap);
+  //g_object_unref(pixmap);
+
+  label = gtk_label_new ("  Hide objects not used in GetObject in OPE files");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 1, 2,
+		    GTK_FILL,GTK_SHRINK,0,0);
+
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_STRIKETHROUGH, GTK_ICON_SIZE_MENU);
+  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 2, 3,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_show(pixmap);
+  //  g_object_unref(pixmap);
+
+  label = gtk_label_new ("  Hide objects and characters in SkyMonitor to check the all sky camera image");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 2, 3,
+		    GTK_FILL,GTK_SHRINK,0,0);
+
+  icon = gdk_pixbuf_new_from_inline(sizeof(icon_subaru), icon_subaru, 
+				    FALSE, NULL);
+  pixbuf=gdk_pixbuf_scale_simple(icon, 16,16,GDK_INTERP_BILINEAR);
+  pixmap=gtk_image_new_from_pixbuf (pixbuf);
+  g_object_unref(G_OBJECT(icon));
+  g_object_unref(G_OBJECT(pixbuf));
+  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 3, 4,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_show(pixmap);
+  //g_object_unref(pixmap);
+
+  label = gtk_label_new ("  Telescope status ON/OFF (only w/xmlrpc)");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 3, 4,
+		    GTK_FILL,GTK_SHRINK,0,0);
+
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_APPLY, GTK_ICON_SIZE_MENU);
+  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 4, 5,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_show(pixmap);
+  //  g_object_unref(pixmap);
+
+  label = gtk_label_new ("  [Current Mode] Set current time & date into the indicator");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 4, 5,
+		    GTK_FILL,GTK_SHRINK,0,0);
+
+  label = gtk_label_new ("  [Set Mode] Draw the sky on the time set in the indicator");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 5, 6,
+		    GTK_FILL,GTK_SHRINK,0,0);
+
+
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_PREVIOUS, GTK_ICON_SIZE_MENU);
+  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 6, 7,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_show(pixmap);
+
+  label = gtk_label_new ("  [Set Mode] Set time 25 min after sunset");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 6, 7,
+		    GTK_FILL,GTK_SHRINK,0,0);
+
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_REWIND, GTK_ICON_SIZE_MENU);
+  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 7, 8,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_show(pixmap);
+
+  label = gtk_label_new ("  [Set Mode] Start/Stop animation backwards");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 7, 8,
+		    GTK_FILL,GTK_SHRINK,0,0);
+
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_FORWARD, GTK_ICON_SIZE_MENU);
+  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 8, 9,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_show(pixmap);
+
+  label = gtk_label_new ("  [Set Mode] Start/Stop animation forwards");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 8, 9,
+		    GTK_FILL,GTK_SHRINK,0,0);
+
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_NEXT, GTK_ICON_SIZE_MENU);
+  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 9, 10,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_show(pixmap);
+
+  label = gtk_label_new ("  [Set Mode] Set time 25 min before sunrise");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 9, 10,
+		    GTK_FILL,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("<left-click>");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 10, 11,
+		    GTK_SHRINK,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("  Select the object");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 10, 11,
+		    GTK_FILL,GTK_SHRINK,0,0);
+
+
+  button=gtk_button_new_with_label("OK");
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed",
+		    close_child_dialog, 
+		    GTK_WIDGET(dialog));
+
+  gtk_widget_show_all(dialog);
+
+  gtk_main();
+
+  flagChildDialog=FALSE;
+}
+
 
 void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 {
@@ -7120,9 +7295,12 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     allsky_bufclear(hg);
     if(hg->allsky_flag){
       if(hg->allsky_timer!=-1){
-	if(hg->allsky_check_timer!=-1) gtk_timeout_remove(hg->allsky_check_timer);
+	if(hg->allsky_check_timer!=-1)
+	  gtk_timeout_remove(hg->allsky_check_timer);
+	hg->allsky_check_timer=-1;
 	gtk_timeout_remove(hg->allsky_timer);
       }
+      hg->allsky_timer=-1;
 
       get_allsky(hg);
       hg->allsky_timer=g_timeout_add(hg->allsky_interval*1000, 
@@ -7216,9 +7394,12 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     allsky_bufclear(hg);
     if(hg->allsky_flag){
       if(hg->allsky_timer!=-1){
-	if(hg->allsky_check_timer!=-1) gtk_timeout_remove(hg->allsky_check_timer);
+	if(hg->allsky_check_timer!=-1)
+	  gtk_timeout_remove(hg->allsky_check_timer);
+	hg->allsky_check_timer=-1;
 	gtk_timeout_remove(hg->allsky_timer);
       }
+      hg->allsky_timer=-1;
 
       get_allsky(hg);
       hg->allsky_timer=g_timeout_add(hg->allsky_interval*1000, 
@@ -7484,6 +7665,8 @@ void param_init(typHOE *hg){
   hg->skymon_mode=SKYMON_CUR;
   //hg->skymon_objsz=SKYMON_DEF_OBJSZ;
 #endif
+
+  hg->skymon_timer=-1;
 
   hg->plot_mode=PLOT_EL;
   hg->plot_timer=-1;

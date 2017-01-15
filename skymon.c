@@ -622,10 +622,14 @@ void close_skymon(GtkWidget *w, gpointer gdata)
   hg=(typHOE *)gdata;
 
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hg->skymon_button_fwd))){
-    gtk_timeout_remove(hg->skymon_timer);
+    if(hg->skymon_timer!=-1)
+      gtk_timeout_remove(hg->skymon_timer);
+    hg->skymon_timer=-1;
   }
   else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hg->skymon_button_rev))){
-    gtk_timeout_remove(hg->skymon_timer);
+    if(hg->skymon_timer!=-1)
+      gtk_timeout_remove(hg->skymon_timer);
+    hg->skymon_timer=-1;
   }
 
   gtk_widget_destroy(GTK_WIDGET(w));
@@ -3260,6 +3264,8 @@ static void cc_skymon_mode (GtkWidget *widget,  gpointer * gdata)
   if(hg->skymon_mode==SKYMON_SET){
     if(hg->allsky_last_timer!=-1)
       gtk_timeout_remove(hg->allsky_last_timer);
+    hg->allsky_last_timer=-1;
+      
     gtk_widget_set_sensitive(hg->skymon_frame_date,TRUE);
     gtk_widget_set_sensitive(hg->skymon_frame_time,TRUE);
     gtk_widget_set_sensitive(hg->skymon_button_fwd,TRUE);
@@ -3281,6 +3287,7 @@ static void cc_skymon_mode (GtkWidget *widget,  gpointer * gdata)
   else if(hg->skymon_mode==SKYMON_CUR){
     if(hg->allsky_last_timer!=-1)
       gtk_timeout_remove(hg->allsky_last_timer);
+    hg->allsky_last_timer=-1;
  
     gtk_widget_set_sensitive(hg->skymon_frame_date,FALSE);
     gtk_widget_set_sensitive(hg->skymon_frame_time,FALSE);
@@ -3301,6 +3308,7 @@ static void cc_skymon_mode (GtkWidget *widget,  gpointer * gdata)
   else if(hg->skymon_mode==SKYMON_LAST){
     if(hg->allsky_last_timer!=-1)
       gtk_timeout_remove(hg->allsky_last_timer);
+    hg->allsky_last_timer=-1;
 
     gtk_widget_set_sensitive(hg->skymon_frame_date,FALSE);
     gtk_widget_set_sensitive(hg->skymon_frame_time,FALSE);
@@ -3426,6 +3434,8 @@ static void skymon_set_allsky (GtkWidget *w,   gpointer gdata)
   if(hg->allsky_flag){
     if(hg->allsky_timer!=-1)
       gtk_timeout_remove(hg->allsky_timer);
+    hg->allsky_timer=-1;
+
     get_allsky(hg);
 
     hg->allsky_timer=g_timeout_add(hg->allsky_interval*1000, 
@@ -3435,6 +3445,8 @@ static void skymon_set_allsky (GtkWidget *w,   gpointer gdata)
   else{
     if(hg->allsky_timer!=-1){
       gtk_timeout_remove(hg->allsky_timer);
+      hg->allsky_timer=-1;
+
       if(flag_getting_allsky){
 
 #ifndef USE_WIN32
@@ -3451,6 +3463,7 @@ static void skymon_set_allsky (GtkWidget *w,   gpointer gdata)
       }
       if(hg->allsky_check_timer!=-1){
 	gtk_timeout_remove(hg->allsky_check_timer); 
+	hg->allsky_check_timer=-1;
 	allsky_debug_print("Parent: terminated checking timeout\n");
      }
     }
@@ -3473,6 +3486,7 @@ static void skymon_set_telstat (GtkWidget *w,   gpointer gdata)
   if(hg->telstat_flag){
     if(hg->telstat_timer!=-1)
       gtk_timeout_remove(hg->telstat_timer);
+    hg->telstat_timer=-1;
 
     printf_log(hg,"[TelStat] starting to fetch telescope status from %s",
 	       hg->ro_ns_host);
@@ -3588,7 +3602,9 @@ static void skymon_fwd (GtkWidget *w,   gpointer gdata)
 				   (gpointer)hg);
   }
   else{
-    gtk_timeout_remove(hg->skymon_timer);
+    if(hg->skymon_timer!=-1)
+      gtk_timeout_remove(hg->skymon_timer);
+    hg->skymon_timer=-1;
   
     gtk_widget_set_sensitive(hg->skymon_frame_mode,TRUE);
     gtk_widget_set_sensitive(hg->skymon_button_set,TRUE);
@@ -3621,7 +3637,10 @@ gint skymon_go(typHOE *hg){
 
 
   if((hg->skymon_hour==7)||(hg->skymon_hour==7+24)){
-    gtk_timeout_remove(hg->skymon_timer);
+    if(hg->skymon_timer!=-1)
+      gtk_timeout_remove(hg->skymon_timer);
+    hg->skymon_timer=-1;
+
     gtk_widget_set_sensitive(hg->skymon_frame_mode,TRUE);
     gtk_widget_set_sensitive(hg->skymon_button_set,TRUE);
     gtk_widget_set_sensitive(hg->skymon_button_rev,TRUE);
@@ -3679,7 +3698,9 @@ static void skymon_rev (GtkWidget *w,   gpointer gdata)
 				   (gpointer)hg);
   }
   else{
-    gtk_timeout_remove(hg->skymon_timer);
+    if(hg->skymon_timer!=-1)
+      gtk_timeout_remove(hg->skymon_timer);
+    hg->skymon_timer=-1;
   
     gtk_widget_set_sensitive(hg->skymon_frame_mode,TRUE);
     gtk_widget_set_sensitive(hg->skymon_button_set,TRUE);
@@ -3713,7 +3734,10 @@ gint skymon_back(typHOE *hg){
 	     
 
   if((hg->skymon_hour==18)||(hg->skymon_hour==18-24)){
-    gtk_timeout_remove(hg->skymon_timer);
+    if(hg->skymon_timer!=-1)
+      gtk_timeout_remove(hg->skymon_timer);
+    hg->skymon_timer=-1;
+
     gtk_widget_set_sensitive(hg->skymon_frame_mode,TRUE);
     gtk_widget_set_sensitive(hg->skymon_button_set,TRUE);
     gtk_widget_set_sensitive(hg->skymon_button_fwd,TRUE);

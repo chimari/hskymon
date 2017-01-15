@@ -395,8 +395,10 @@ void close_adc(GtkWidget *w, gpointer gdata)
   typHOE *hg;
   hg=(typHOE *)gdata;
 
-  if(hg->adc_timer!=-1)
+  if(hg->adc_timer!=-1){
     gtk_timeout_remove(hg->adc_timer);
+    hg->adc_timer=-1;
+  }
 
   gtk_widget_destroy(GTK_WIDGET(hg->adc_main));
   flagADC=FALSE;

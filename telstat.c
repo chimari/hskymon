@@ -542,8 +542,10 @@ int close_telstat(typHOE *hg){
   hg->stat_obcp=NULL;
 
     hg->stat_initflag=FALSE;
-    if(hg->telstat_timer!=-1)
+    if(hg->telstat_timer!=-1){
       gtk_timeout_remove(hg->telstat_timer);
+      hg->telstat_timer=-1;
+    }
     hg->telstat_flag=FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->skymon_button_telstat),
 				 FALSE);

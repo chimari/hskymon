@@ -76,8 +76,10 @@ void close_plot(GtkWidget *w, gpointer gdata)
   typHOE *hg;
   hg=(typHOE *)gdata;
 
-  if(hg->plot_timer!=-1)
+  if(hg->plot_timer!=-1){
     gtk_timeout_remove(hg->plot_timer);
+    hg->plot_timer=-1;
+  }
 
   gtk_widget_destroy(GTK_WIDGET(hg->plot_main));
   flagPlot=FALSE;

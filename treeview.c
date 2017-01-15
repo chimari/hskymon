@@ -2064,7 +2064,7 @@ static void fcdb_focus_item (GtkWidget *widget, gpointer data)
       
       gtk_tree_path_free (path);
       
-      if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL, (gpointer)hg);
+      if(flagFC)  draw_fc_cairo(hg->fc_dw, hg);
     }
 }
 
@@ -3808,6 +3808,7 @@ void make_tree(GtkWidget *widget, gpointer gdata){
 #endif
 
     do_editable_cells (hg);
+    gtk_widget_grab_focus (hg->tree);
     
   }
   else{
@@ -4152,7 +4153,7 @@ void stddb_dl(typHOE *hg)
 #ifndef USE_WIN32
   static struct sigaction act;
 #endif
-  guint timer;
+  gint timer=-1;
   
   while (my_main_iteration(FALSE));
   gdk_flush();
@@ -4255,7 +4256,7 @@ void stddb_dl(typHOE *hg)
   //#ifndef USE_WIN32  
   gtk_main();
   //#endif
-  gtk_timeout_remove(timer);
+  if(timer!=-1) gtk_timeout_remove(timer);
   gtk_widget_destroy(dialog);
 
   flag_getSTD=FALSE;
