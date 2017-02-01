@@ -2278,12 +2278,12 @@ void do_open (GtkWidget *widget, gpointer gdata)
 				      to_utf8(hg->filename_list));
   }
 
-  my_file_chooser_add_filter(fdialog,"All File","*",NULL);
   my_file_chooser_add_filter(fdialog,"List File", 
 			     "*." LIST1_EXTENSION,
 			     "*." LIST2_EXTENSION,
 			     "*." LIST3_EXTENSION,
 			     NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*",NULL);
 
   gtk_widget_show_all(fdialog);
 
@@ -2914,12 +2914,12 @@ void do_merge (GtkWidget *widget, gpointer gdata)
 				      to_utf8(hg->filename_list));
   }
 
-  my_file_chooser_add_filter(fdialog,"All File","*",NULL);
   my_file_chooser_add_filter(fdialog,"List File", 
 			     "*." LIST1_EXTENSION,
 			     "*." LIST2_EXTENSION,
 			     "*." LIST3_EXTENSION,
 			     NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*",NULL);
 
   gtk_widget_show_all(fdialog);
 
@@ -5044,8 +5044,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gboolean tmp_allsky_limit;
   gboolean tmp_allsky_flip;
   gboolean tmp_allsky_pixbuf_flag0;
-  gboolean tmp_show_def,tmp_show_elmax,tmp_show_ha,tmp_show_ad,tmp_show_ang,
-    tmp_show_hpa,tmp_show_moon,
+  gboolean tmp_show_def,tmp_show_elmax,tmp_show_secz,tmp_show_ha,tmp_show_ad,
+    tmp_show_ang,tmp_show_hpa,tmp_show_moon,
     tmp_show_ra,tmp_show_dec,tmp_show_epoch,tmp_show_note;
 #ifdef USE_XMLRPC
   gboolean tmp_show_rt;
@@ -5120,6 +5120,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
   tmp_show_def      =hg->show_def;
   tmp_show_elmax      =hg->show_elmax;
+  tmp_show_secz       =hg->show_secz;
   tmp_show_ha      =hg->show_ha;
 #ifdef USE_XMLRPC
   tmp_show_rt      =hg->show_rt;
@@ -6313,7 +6314,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   
-  table1 = gtk_table_new(4,3,FALSE);
+  table1 = gtk_table_new(4,4,FALSE);
   gtk_container_add (GTK_CONTAINER (frame), table1);
   gtk_container_set_border_width (GTK_CONTAINER (table1), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table1), 5);
@@ -6335,8 +6336,16 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     cc_get_toggle,
 		     &tmp_show_elmax);
 
-  check = gtk_check_button_new_with_label("Hour Angle");
+  check = gtk_check_button_new_with_label("Sec Z");
   gtk_table_attach(GTK_TABLE(table1), check, 2, 3, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_secz);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_show_secz);
+
+  check = gtk_check_button_new_with_label("Hour Angle");
+  gtk_table_attach(GTK_TABLE(table1), check, 3, 4, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_ha);
   my_signal_connect (check, "toggled",
@@ -6344,7 +6353,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_show_ha);
 
   check = gtk_check_button_new_with_label("Atm. Disp.");
-  gtk_table_attach(GTK_TABLE(table1), check, 3, 4, 0, 1,
+  gtk_table_attach(GTK_TABLE(table1), check, 0, 1, 1, 2,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_ad);
   my_signal_connect (check, "toggled",
@@ -6352,7 +6361,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_show_ad);
 
   check = gtk_check_button_new_with_label("Parallactirc Angle");
-  gtk_table_attach(GTK_TABLE(table1), check, 0, 1, 1, 2,
+  gtk_table_attach(GTK_TABLE(table1), check, 1, 2, 1, 2,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_ang);
   my_signal_connect (check, "toggled",
@@ -6360,7 +6369,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_show_ang);
 
   check = gtk_check_button_new_with_label("HDS PA w/o ImR");
-  gtk_table_attach(GTK_TABLE(table1), check, 1, 2, 1, 2,
+  gtk_table_attach(GTK_TABLE(table1), check, 2, 3, 1, 2,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_hpa);
   my_signal_connect (check, "toggled",
@@ -6368,7 +6377,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_show_hpa);
 
   check = gtk_check_button_new_with_label("Moon Distance");
-  gtk_table_attach(GTK_TABLE(table1), check, 2, 3, 1, 2,
+  gtk_table_attach(GTK_TABLE(table1), check, 3, 4, 1, 2,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_moon);
   my_signal_connect (check, "toggled",
@@ -6377,7 +6386,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
 #ifdef USE_XMLRPC
   check = gtk_check_button_new_with_label("Slewing Time");
-  gtk_table_attach(GTK_TABLE(table1), check, 3, 4, 1, 2,
+  gtk_table_attach(GTK_TABLE(table1), check, 0, 1, 2, 3,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_rt);
   my_signal_connect (check, "toggled",
@@ -6386,7 +6395,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 #endif
 
   check = gtk_check_button_new_with_label("RA");
-  gtk_table_attach(GTK_TABLE(table1), check, 0, 1, 2, 3,
+  gtk_table_attach(GTK_TABLE(table1), check, 1, 2, 2, 3,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_ra);
   my_signal_connect (check, "toggled",
@@ -6394,7 +6403,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_show_ra);
 
   check = gtk_check_button_new_with_label("Dec");
-  gtk_table_attach(GTK_TABLE(table1), check, 1, 2, 2, 3,
+  gtk_table_attach(GTK_TABLE(table1), check, 2, 3, 2, 3,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_dec);
   my_signal_connect (check, "toggled",
@@ -6402,7 +6411,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_show_dec);
 
   check = gtk_check_button_new_with_label("Epoch");
-  gtk_table_attach(GTK_TABLE(table1), check, 2, 3, 2, 3,
+  gtk_table_attach(GTK_TABLE(table1), check, 3, 4, 2, 3,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_epoch);
   my_signal_connect (check, "toggled",
@@ -6410,7 +6419,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_show_epoch);
 
   check = gtk_check_button_new_with_label("Note");
-  gtk_table_attach(GTK_TABLE(table1), check, 3, 4, 2, 3,
+  gtk_table_attach(GTK_TABLE(table1), check, 0, 1, 3, 4,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_note);
   my_signal_connect (check, "toggled",
@@ -7242,6 +7251,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
     hg->show_def   = tmp_show_def;
     hg->show_elmax   = tmp_show_elmax;
+    hg->show_secz    = tmp_show_secz;
     hg->show_ha   = tmp_show_ha;
 #ifdef USE_XMLRPC
     hg->show_rt   = tmp_show_rt;
@@ -7355,6 +7365,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
     hg->show_def   = FALSE;
     hg->show_elmax   = FALSE;
+    hg->show_secz    = FALSE;
     hg->show_ha   = TRUE;
 #ifdef USE_XMLRPC
     hg->show_rt   = TRUE;
@@ -7807,6 +7818,7 @@ void param_init(typHOE *hg){
   hg->stddb_flag=TRUE;
   hg->fcdb_flag=TRUE;
   hg->fcdb_type=FCDB_TYPE_SIMBAD;
+  hg->stddb_mode=STDDB_IRAFSTD;
 
   hg->std_dra   =STD_DRA;
   hg->std_ddec  =STD_DDEC;
@@ -10039,6 +10051,7 @@ void WriteConf(typHOE *hg){
   // Show
   xmms_cfg_write_boolean(cfgfile, "Show", "Def",hg->show_def);
   xmms_cfg_write_boolean(cfgfile, "Show", "ElMax",hg->show_elmax);
+  xmms_cfg_write_boolean(cfgfile, "Show", "SecZ",hg->show_secz);
   xmms_cfg_write_boolean(cfgfile, "Show", "HA",hg->show_ha);
 #ifdef USE_XMLRPC
   xmms_cfg_write_boolean(cfgfile, "Show", "ReachTime",hg->show_rt);
@@ -10346,6 +10359,10 @@ void ReadConf(typHOE *hg)
       hg->show_elmax =b_buf;
     else
       hg->show_elmax =FALSE;
+    if(xmms_cfg_read_boolean(cfgfile, "Show", "SecZ", &b_buf))
+      hg->show_secz =b_buf;
+    else
+      hg->show_secz =FALSE;
     if(xmms_cfg_read_boolean(cfgfile, "Show", "HA", &b_buf))
       hg->show_ha =b_buf;
     else
@@ -10497,6 +10514,7 @@ void ReadConf(typHOE *hg)
 
     hg->show_def=FALSE;
     hg->show_elmax=FALSE;
+    hg->show_secz=FALSE;
     hg->show_ha=TRUE;
 #ifdef USE_XMLRPC
     hg->show_rt=TRUE;

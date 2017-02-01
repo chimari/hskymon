@@ -689,6 +689,9 @@ void allsky_read_data(typHOE *hg){
 	  printf_log(hg,"[AllSky] Error in reading image.");
 	}
       }
+      else{
+	  printf_log(hg,"[AllSky] Time stamp is not changed. Skip image.");
+      }
     }
     else{         //  Make temp file
       if(hg->allsky_last_i==0){
@@ -777,7 +780,7 @@ void allsky_read_data(typHOE *hg){
 #ifndef USE_WIN32
 void allsky_signal(int sig){
   pid_t child_pid=0;
-  allsky_debug_print("ALLSkySignal got SIGUSR2\n");
+  allsky_debug_print("ALLSkySignal got SIGRTMIN+1\n");
 
   do{
     int child_ret;
@@ -829,10 +832,10 @@ int get_allsky(typHOE *hg){
   act.sa_handler=allsky_signal;
   sigemptyset(&act.sa_mask);
   act.sa_flags=0;
-  if(sigaction(SIGUSR2, &act, NULL)==-1){
-    fprintf(stderr,"Error in sigaction (SIGUSR2).\n");
+  if(sigaction(SIGRTMIN+1, &act, NULL)==-1){
+    fprintf(stderr,"Error in sigaction (SIGRTMIN+1).\n");
     if(hg->allsky_date) g_free(hg->allsky_date);
-    hg->allsky_date=g_strdup("Error: in sigaction (SIGUSR2)");
+    hg->allsky_date=g_strdup("Error: in sigaction (SIGRTMIN+1)");
     
     flag_getting_allsky=FALSE;
     return(-1);
@@ -922,7 +925,7 @@ int get_allsky(typHOE *hg){
     fflush(stdout);
     fflush(stdin);
     fflush(stderr);
-    kill(getppid(), SIGUSR2);  //calling allsky_signal
+    kill(getppid(), SIGRTMIN+1);  //calling allsky_signal
     _exit(1);
   }
 #endif
@@ -2006,7 +2009,7 @@ int get_dss(typHOE *hg){
   }
   else if(fc_pid ==0) {
     http_c_fc(hg);
-    kill(getppid(), SIGUSR1);  //calling dss_signal
+    kill(getppid(), SIGRTMIN);  //calling dss_signal
     _exit(1);
   }
 #endif
@@ -2041,7 +2044,7 @@ int get_stddb(typHOE *hg){
   }
   else if(stddb_pid ==0) {
     http_c_std(hg);
-    kill(getppid(), SIGUSR1);  //calling dss_signal
+    kill(getppid(), SIGRTMIN);  //calling dss_signal
     _exit(1);
   }
 #endif
@@ -2077,7 +2080,7 @@ int get_fcdb(typHOE *hg){
   }
   else if(fcdb_pid ==0) {
     http_c_fcdb(hg);
-    kill(getppid(), SIGUSR1);  //calling dss_signal
+    kill(getppid(), SIGRTMIN);  //calling dss_signal
     _exit(1);
   }
 #endif

@@ -155,8 +155,8 @@ void create_adc_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("Close");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (close_adc), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (close_adc), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
 #ifdef __GTK_TOOLTIP_H__
@@ -169,8 +169,8 @@ void create_adc_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("Redraw");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (refresh_adc), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (refresh_adc), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 1, 2, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
 #ifdef __GTK_TOOLTIP_H__

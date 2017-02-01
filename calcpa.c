@@ -290,8 +290,8 @@ void create_plot_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("Refresh");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (refresh_plot), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (refresh_plot), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
@@ -303,8 +303,8 @@ void create_plot_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("Close");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (close_plot), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (close_plot), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
@@ -320,8 +320,8 @@ void create_plot_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("PDF");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (do_save_pdf), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (do_save_pdf), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
@@ -333,8 +333,8 @@ void create_plot_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("Print");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (do_print), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (do_print), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
@@ -5081,7 +5081,7 @@ void do_print (GtkWidget *widget, gpointer gdata)
 
   gtk_print_operation_set_n_pages (op, 1); 
   gtk_print_operation_set_unit (op, GTK_UNIT_PIXEL); 
-  g_signal_connect (op, "draw_page", G_CALLBACK (draw_page), (gpointer)hg); 
+  my_signal_connect (op, "draw_page", G_CALLBACK (draw_page), (gpointer)hg); 
   res = gtk_print_operation_run (op, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
 				 NULL, NULL);
   g_object_unref(G_OBJECT(op));

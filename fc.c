@@ -469,8 +469,8 @@ void fc_dl (typHOE *hg)
   act.sa_handler=dss_signal;
   sigemptyset(&act.sa_mask);
   act.sa_flags=0;
-  if(sigaction(SIGUSR1, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGUSR1).\n");
+  if(sigaction(SIGRTMIN, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGRTMIN).\n");
 #endif
   
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
@@ -586,8 +586,8 @@ void create_fc_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("Download & Redraw");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (fc_item), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (fc_item), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   //gtk_box_pack_start(GTK_BOX(hbox2),button,FALSE,FALSE,0);
@@ -911,8 +911,8 @@ void create_fc_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("Redraw");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (refresh_fc), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (refresh_fc), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   //gtk_box_pack_start(GTK_BOX(hbox2),button,FALSE,FALSE,0);
@@ -1074,8 +1074,8 @@ void create_fc_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("Query");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (fcdb_item), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (fcdb_item), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
   		    GTK_SHRINK,GTK_SHRINK,0,0);
 #ifdef __GTK_TOOLTIP_H__
@@ -1139,8 +1139,8 @@ void create_fc_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("PDF");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (do_save_fc_pdf), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (do_save_fc_pdf), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
@@ -1152,8 +1152,8 @@ void create_fc_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("Print");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (do_print_fc), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (do_print_fc), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
@@ -1165,8 +1165,8 @@ void create_fc_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("Help");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (show_fc_help), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (show_fc_help), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
@@ -1179,8 +1179,8 @@ void create_fc_dialog(typHOE *hg)
 #else
   button = gtk_button_new_with_label ("Close");
 #endif
-  g_signal_connect (button, "clicked",
-		    G_CALLBACK (close_fc), (gpointer)hg);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (close_fc), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
@@ -3149,41 +3149,16 @@ static void do_print_fc (GtkWidget *widget, gpointer gdata)
   typHOE *hg;
   GtkPrintOperation *op; 
   GtkPrintOperationResult res; 
-  //GError *error;
-  //GtkWidget *error_dialog;
-  //GtkPrintSettings *settings;
 
   hg=(typHOE *)gdata;
 
   op = gtk_print_operation_new ();
 
   gtk_print_operation_set_n_pages (op, 1); 
-  //gtk_print_operation_set_unit (op, GTK_UNIT_MM); 
-  g_signal_connect (op, "draw_page", G_CALLBACK (draw_page), (gpointer)hg); 
-  //res = gtk_print_operation_run (op, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
-  //			 GTK_WINDOW(hg->fc_main), &error);
+  my_signal_connect (op, "draw_page", G_CALLBACK (draw_page), (gpointer)hg); 
   res = gtk_print_operation_run (op, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
 				 NULL,NULL);
 
-  /*
-  if (res == GTK_PRINT_OPERATION_RESULT_ERROR) {
-    error_dialog = gtk_message_dialog_new (GTK_WINDOW(hg->fc_main),
-					   GTK_DIALOG_DESTROY_WITH_PARENT,
-					   GTK_MESSAGE_ERROR,
-					   GTK_BUTTONS_CLOSE,
-					   "Error printing file:\n%s",
-					   error->message);
-    g_signal_connect (error_dialog, "response", 
-		      G_CALLBACK (gtk_widget_destroy), NULL);
-    gtk_widget_show (error_dialog);
-    g_error_free (error);
-  }
-  else if (res == GTK_PRINT_OPERATION_RESULT_APPLY)   {
-    if (settings != NULL)
-      g_object_unref (settings);
-    settings = g_object_ref (gtk_print_operation_get_print_settings (op));
-  }
-  */
   g_object_unref(G_OBJECT(op));
 }
 
@@ -3819,8 +3794,8 @@ void fcdb_dl(typHOE *hg)
   act.sa_handler=fcdb_signal;
   sigemptyset(&act.sa_mask);
   act.sa_flags=0;
-  if(sigaction(SIGUSR1, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGUSR1).\n");
+  if(sigaction(SIGRTMIN, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGRTMIN).\n");
 #endif
   
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
@@ -3947,8 +3922,8 @@ void addobj_dl(typHOE *hg)
   act.sa_handler=fcdb_signal;
   sigemptyset(&act.sa_mask);
   act.sa_flags=0;
-  if(sigaction(SIGUSR1, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGUSR1).\n");
+  if(sigaction(SIGRTMIN, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGRTMIN).\n");
 #endif
   
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);

@@ -60,6 +60,7 @@ extern gboolean draw_skymon();
 #endif
 extern gboolean draw_plot_cairo();
 extern void calcpa2_main();
+extern void calcpa2_skymon();
 extern void make_obj_list();
 #ifdef __GTK_STOCK_H__
 extern GtkWidget* gtkut_button_new_from_stock();
@@ -192,6 +193,20 @@ void pos_cell_data_func(GtkTreeViewColumn *col ,
       }
       else{
 	str=g_strdup_printf("%.2lf S",180-value);
+      }
+    }
+    else{
+      str=NULL;
+    }
+    break;
+
+  case COLUMN_OBJ_SECZ:
+    if(el>0){
+      if(1/sin(el/180*M_PI)<10){
+	str=g_strdup_printf("%.2lf",1/sin(el/180*M_PI));
+      }
+      else{
+	str=NULL;
       }
     }
     else{
@@ -622,6 +637,12 @@ void tree_update_azel_item(typHOE *hg,
 			 COLUMN_OBJ_ELMAX, hg->obj[i_list].c_elmax, -1);
     }
 
+    // SecZ
+    if(hg->show_secz){
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+			 COLUMN_OBJ_SECZ, hg->obj[i_list].c_el, -1);
+    }
+
     // Lock
 #ifdef USE_XMLRPC
     if(hg->obj[i_list].check_lock){
@@ -750,6 +771,12 @@ void tree_update_azel_item(typHOE *hg,
     if(hg->show_elmax){
       gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 			 COLUMN_OBJ_ELMAX, hg->obj[i_list].s_elmax, -1);
+    }
+
+    // SecZ
+    if(hg->show_secz){
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+			 COLUMN_OBJ_SECZ, hg->obj[i_list].s_el, -1);
     }
 
     // Mark
@@ -953,6 +980,7 @@ create_items_model (typHOE *hg)
                               G_TYPE_DOUBLE,  // el
 			      GDK_TYPE_PIXBUF,	// Icon
                               G_TYPE_DOUBLE,  // elmax
+                              G_TYPE_DOUBLE,  // secz
                               G_TYPE_DOUBLE,  // HA
 #ifdef USE_XMLRPC
                               G_TYPE_DOUBLE,  // SLEW
@@ -1851,9 +1879,17 @@ stddb_item (GtkWidget *widget, gpointer data)
     case STDDB_CALSPEC:
       copy_stacstd(hg,calspec,d_ra0,d_dec0);
       break;
+    case STDDB_HDSSTD:
+      copy_stacstd(hg,hdsstd,d_ra0,d_dec0);
+      break;
     }
 
-    calcpa2_main(hg);
+    if(hg->skymon_mode==SKYMON_CUR){
+      calcpa2_main(hg);
+    }
+    else if(hg->skymon_mode==SKYMON_SET){
+      calcpa2_skymon(hg);
+    }
 
     if(flagTree) std_make_tree(NULL, hg);
 
@@ -1864,7 +1900,6 @@ stddb_item (GtkWidget *widget, gpointer data)
     if(flagSkymon){
       draw_skymon(hg->skymon_dw,hg, FALSE);
     }
-
   }
 }
 
@@ -2212,8 +2247,8 @@ add_columns (typHOE *hg,
 
   /* disp column */
   renderer = gtk_cell_renderer_toggle_new ();
-  g_signal_connect (renderer, "toggled",
-		    G_CALLBACK (cell_toggled_check), hg);
+  my_signal_connect (renderer, "toggled",
+		     G_CALLBACK (cell_toggled_check), (gpointer)hg);
   g_object_set_data (G_OBJECT (renderer), "column", 
 		     GINT_TO_POINTER (COLUMN_OBJ_DISP));
   
@@ -2285,14 +2320,14 @@ add_columns (typHOE *hg,
   g_object_set (renderer,
                 "editable", TRUE,
                 NULL);
-  g_signal_connect (renderer, "edited",
-                    G_CALLBACK (cell_edited), hg);
-  g_signal_connect (renderer, "editing_started",
-                    G_CALLBACK (cell_editing), NULL);
-  g_signal_connect (renderer, "editing_canceled",
-                    G_CALLBACK (cell_canceled), NULL);
+  my_signal_connect (renderer, "edited",
+		     G_CALLBACK (cell_edited), hg);
+  my_signal_connect (renderer, "editing_started",
+		     G_CALLBACK (cell_editing), NULL);
+  my_signal_connect (renderer, "editing_canceled",
+		     G_CALLBACK (cell_canceled), NULL);
   g_object_set_data (G_OBJECT (renderer), "column", 
-  		     GINT_TO_POINTER (COLUMN_OBJ_NAME));
+		     GINT_TO_POINTER (COLUMN_OBJ_NAME));
   column=gtk_tree_view_column_new_with_attributes ("Name",
 						   renderer,
 						   "text", 
@@ -2367,6 +2402,24 @@ add_columns (typHOE *hg,
 					    GUINT_TO_POINTER(COLUMN_OBJ_ELMAX),
 					    NULL);
     gtk_tree_view_column_set_sort_column_id(column,COLUMN_OBJ_ELMAX);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+  }
+
+  /* SecZ column */
+  if(hg->show_secz){
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_OBJ_ELMAX));
+    column=gtk_tree_view_column_new_with_attributes ("SecZ",
+						     renderer,
+						     "text",
+						     COLUMN_OBJ_SECZ,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    pos_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_OBJ_SECZ),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_OBJ_SECZ);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
   }
 
@@ -2485,12 +2538,12 @@ add_columns (typHOE *hg,
     g_object_set (renderer,
 		  "editable", TRUE,
 		  NULL);
-    g_signal_connect (renderer, "edited",
-		      G_CALLBACK (cell_edited), hg);
-    g_signal_connect (renderer, "editing_started",
-		      G_CALLBACK (cell_editing), NULL);
-    g_signal_connect (renderer, "editing_canceled",
-		      G_CALLBACK (cell_canceled), NULL);
+    my_signal_connect (renderer, "edited",
+		       G_CALLBACK (cell_edited), hg);
+    my_signal_connect (renderer, "editing_started",
+		       G_CALLBACK (cell_editing), NULL);
+    my_signal_connect (renderer, "editing_canceled",
+		       G_CALLBACK (cell_canceled), NULL);
     g_object_set_data (G_OBJECT (renderer), "column", 
 		       GINT_TO_POINTER (COLUMN_OBJ_RA));
     column=gtk_tree_view_column_new_with_attributes ("RA",
@@ -2514,12 +2567,12 @@ add_columns (typHOE *hg,
     g_object_set (renderer,
 		  "editable", TRUE,
 		  NULL);
-    g_signal_connect (renderer, "edited",
-		      G_CALLBACK (cell_edited), hg);
-    g_signal_connect (renderer, "editing_started",
-		      G_CALLBACK (cell_editing), NULL);
-    g_signal_connect (renderer, "editing_canceled",
-		      G_CALLBACK (cell_canceled), NULL);
+    my_signal_connect (renderer, "edited",
+		       G_CALLBACK (cell_edited), hg);
+    my_signal_connect (renderer, "editing_started",
+		       G_CALLBACK (cell_editing), NULL);
+    my_signal_connect (renderer, "editing_canceled",
+		       G_CALLBACK (cell_canceled), NULL);
     g_object_set_data (G_OBJECT (renderer), "column", 
 		       GINT_TO_POINTER (COLUMN_OBJ_DEC));
     column=gtk_tree_view_column_new_with_attributes ("Dec",
@@ -2541,12 +2594,12 @@ add_columns (typHOE *hg,
     g_object_set (renderer,
 		  "editable", TRUE,
 		  NULL);
-    g_signal_connect (renderer, "edited",
-		      G_CALLBACK (cell_edited), hg);
-    g_signal_connect (renderer, "editing_started",
-		      G_CALLBACK (cell_editing), NULL);
-    g_signal_connect (renderer, "editing_canceled",
-		      G_CALLBACK (cell_canceled), NULL);
+    my_signal_connect (renderer, "edited",
+		       G_CALLBACK (cell_edited), hg);
+    my_signal_connect (renderer, "editing_started",
+		       G_CALLBACK (cell_editing), NULL);
+    my_signal_connect (renderer, "editing_canceled",
+		       G_CALLBACK (cell_canceled), NULL);
     g_object_set_data (G_OBJECT (renderer), "column", 
 		       GINT_TO_POINTER (COLUMN_OBJ_EPOCH));
     column=gtk_tree_view_column_new_with_attributes ("Epoch",
@@ -2568,12 +2621,12 @@ add_columns (typHOE *hg,
     g_object_set (renderer,
 		  "editable", TRUE,
 		  NULL);
-    g_signal_connect (renderer, "edited",
-		      G_CALLBACK (cell_edited), hg);
-    g_signal_connect (renderer, "editing_started",
-		      G_CALLBACK (cell_editing), NULL);
-    g_signal_connect (renderer, "editing_canceled",
-		      G_CALLBACK (cell_canceled), NULL);
+    my_signal_connect (renderer, "edited",
+		       G_CALLBACK (cell_edited), hg);
+    my_signal_connect (renderer, "editing_started",
+		       G_CALLBACK (cell_editing), NULL);
+    my_signal_connect (renderer, "editing_canceled",
+		       G_CALLBACK (cell_canceled), NULL);
     g_object_set_data (G_OBJECT (renderer), "column", 
 		       GINT_TO_POINTER (COLUMN_OBJ_NOTE));
     column=gtk_tree_view_column_new_with_attributes ("Note",
@@ -3161,8 +3214,8 @@ do_editable_cells (typHOE *hg)
     gtk_window_set_title (GTK_WINDOW (window), "Sky Monitor : Object List");
     gtk_window_set_default_size (GTK_WINDOW (window), hg->tree_width, hg->tree_height);
     gtk_container_set_border_width (GTK_CONTAINER (window), 5);
-    g_signal_connect (window, "destroy",
-		      G_CALLBACK (close_tree), (gpointer)hg);
+    my_signal_connect (window, "destroy",
+		       G_CALLBACK (close_tree), (gpointer)hg);
     
     hg->obj_note = gtk_notebook_new ();
     gtk_notebook_set_tab_pos (GTK_NOTEBOOK (hg->obj_note), GTK_POS_TOP);
@@ -3185,8 +3238,8 @@ do_editable_cells (typHOE *hg)
 #else
     button = gtk_button_new_with_label ("Quit");
 #endif
-    g_signal_connect (button, "clicked",
-		      G_CALLBACK (close_tree2), (gpointer)hg);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (close_tree2), (gpointer)hg);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
     gtk_widget_set_tooltip_text(button,
@@ -3224,8 +3277,8 @@ do_editable_cells (typHOE *hg)
 #else
     button = gtk_button_new_with_label ("Plot");
 #endif
-    g_signal_connect (button, "clicked",
-		      G_CALLBACK (plot2_item), (gpointer)hg);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (plot2_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
     
 #ifdef __GTK_STOCK_H__
@@ -3233,8 +3286,8 @@ do_editable_cells (typHOE *hg)
 #else
     button = gtk_button_new_with_label ("AD");
 #endif
-    g_signal_connect (button, "clicked",
-		      G_CALLBACK (adc_item), (gpointer)hg);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (adc_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
     
 #ifdef __GTK_STOCK_H__
@@ -3254,9 +3307,9 @@ do_editable_cells (typHOE *hg)
 #else
     button = gtk_button_new_with_label ("Add");
 #endif
-    g_signal_connect (button, "clicked",
-		      //	      G_CALLBACK (add_item), (gpointer)hg);
-		      G_CALLBACK (addobj_dialog), (gpointer)hg);
+    my_signal_connect (button, "clicked",
+		       //	      G_CALLBACK (add_item), (gpointer)hg);
+		       G_CALLBACK (addobj_dialog), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
     
 #ifdef __GTK_STOCK_H__
@@ -3264,7 +3317,7 @@ do_editable_cells (typHOE *hg)
 #else
     button = gtk_button_new_with_label ("Del");
 #endif
-    g_signal_connect (button, "clicked",
+    my_signal_connect (button, "clicked",
 		      G_CALLBACK (remove_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
@@ -3273,8 +3326,8 @@ do_editable_cells (typHOE *hg)
 #else
     button = gtk_button_new_with_label ("Up");
 #endif
-    g_signal_connect (button, "clicked",
-		      G_CALLBACK (up_item), (gpointer)hg);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (up_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
 #ifdef __GTK_STOCK_H__
@@ -3282,7 +3335,7 @@ do_editable_cells (typHOE *hg)
 #else
     button = gtk_button_new_with_label ("Down");
 #endif
-    g_signal_connect (button, "clicked",
+    my_signal_connect (button, "clicked",
 		      G_CALLBACK (down_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
@@ -3333,13 +3386,13 @@ do_editable_cells (typHOE *hg)
 #else
     button = gtk_button_new_with_label ("Refresh");
 #endif
-    g_signal_connect (button, "clicked",
-		      G_CALLBACK (refresh_item), (gpointer)hg);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (refresh_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
     
     
-    g_signal_connect (hg->tree, "cursor-changed",
-		      G_CALLBACK (focus_item), (gpointer)hg);
+    my_signal_connect (hg->tree, "cursor-changed",
+		       G_CALLBACK (focus_item), (gpointer)hg);
       
     
     hbox = gtk_hbox_new (FALSE, 4);
@@ -3496,6 +3549,11 @@ do_editable_cells (typHOE *hg)
 			 1, STDDB_CALSPEC, 2, TRUE, -1);
       if(hg->stddb_mode==STDDB_CALSPEC) iter_set=iter;
       
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "HDS efficiency",
+			 1, STDDB_HDSSTD, 2, TRUE, -1);
+      if(hg->stddb_mode==STDDB_HDSSTD) iter_set=iter;
+      
       combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
       gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
       g_object_unref(store);
@@ -3575,8 +3633,8 @@ do_editable_cells (typHOE *hg)
 #else
     button = gtk_button_new_with_label ("Quit");
 #endif
-    g_signal_connect (button, "clicked",
-		      G_CALLBACK (close_tree2), (gpointer)hg);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (close_tree2), (gpointer)hg);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
     gtk_widget_set_tooltip_text(button,
@@ -3606,7 +3664,7 @@ do_editable_cells (typHOE *hg)
     
     gtk_container_add (GTK_CONTAINER (sw), hg->stddb_tree);
     
-    g_signal_connect (hg->stddb_tree, "cursor-changed",
+    my_signal_connect (hg->stddb_tree, "cursor-changed",
 		      G_CALLBACK (std_focus_item), (gpointer)hg);
     
     /* some buttons */
@@ -3682,7 +3740,7 @@ do_editable_cells (typHOE *hg)
 #else
     button = gtk_button_new_with_label ("Quit");
 #endif
-    g_signal_connect (button, "clicked",
+    my_signal_connect (button, "clicked",
 		      G_CALLBACK (close_tree2), (gpointer)hg);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
@@ -3712,7 +3770,7 @@ do_editable_cells (typHOE *hg)
     
     gtk_container_add (GTK_CONTAINER (sw), hg->fcdb_tree);
     
-    g_signal_connect (hg->fcdb_tree, "cursor-changed",
+    my_signal_connect (hg->fcdb_tree, "cursor-changed",
 		      G_CALLBACK (fcdb_focus_item), (gpointer)hg);
 
     /* some buttons */
@@ -4114,6 +4172,13 @@ void stddb_set_label(typHOE *hg)
 			 hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
 			 hg->obj[hg->std_i].name,hg->std_i_max);
     break;
+
+  case STDDB_HDSSTD:
+    hg->stddb_label_text
+	=g_strdup_printf("HDS Efficiency Measument Standard for [%d-%d] %s (all %d objects)",
+			 hg->obj[hg->std_i].ope+1,hg->obj[hg->std_i].ope_i+1,
+			 hg->obj[hg->std_i].name,hg->std_i_max);
+    break;
   }
   gtk_label_set_text(GTK_LABEL(hg->stddb_label), hg->stddb_label_text);
 }
@@ -4246,8 +4311,8 @@ void stddb_dl(typHOE *hg)
   act.sa_handler=stddb_signal;
   sigemptyset(&act.sa_mask);
   act.sa_flags=0;
-  if(sigaction(SIGUSR1, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGUSR1).\n");
+  if(sigaction(SIGRTMIN, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGRTMIN).\n");
 #endif
   
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);

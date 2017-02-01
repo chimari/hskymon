@@ -2442,30 +2442,35 @@ void my_cairo_std2(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, gdouble 
 
   cairo_new_path(cr);
 
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.75);
-  cairo_arc(cr, x, y, 11, 0, 2*M_PI);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.8);
+  cairo_arc(cr, x, y, 7, 0, 2*M_PI);
   cairo_fill(cr);
-  
-  cairo_rectangle (cr, x-10, y-10, 20, 20);
-  cairo_fill(cr);
-  /*
-  cairo_move_to (cr, x-10, y-10);
-  cairo_line_to (cr, x-4.5, y-4.5);
-  cairo_move_to (cr, x+10, y-10);
-  cairo_line_to (cr, x+4.5, y-4.5);
-  cairo_move_to (cr, x+10, y+10);
-  cairo_line_to (cr, x+4.5, y+4.5);
-  cairo_move_to (cr, x-10, y+10);
-  cairo_line_to (cr, x-4.5, y+4.5);
-  cairo_set_line_width (cr, 4);
-  cairo_stroke (cr);
-  */
 
-  /*
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
-  cairo_arc(cr, x, y, 8, 0, 2*M_PI);
-  cairo_fill(cr);
-  */
+  cairo_move_to (cr, x-8, y-8);
+  cairo_line_to (cr, x-4, y-8);
+  cairo_move_to (cr, x-8, y-8);
+  cairo_line_to (cr, x-8, y-4);
+
+  cairo_move_to (cr, x+8, y-8);
+  cairo_line_to (cr, x+4, y-8);
+  cairo_move_to (cr, x+8, y-8);
+  cairo_line_to (cr, x+8, y-4);
+
+  cairo_move_to (cr, x+8, y+8);
+  cairo_line_to (cr, x+4, y+8);
+  cairo_move_to (cr, x+8, y+8);
+  cairo_line_to (cr, x+8, y+4);
+
+  cairo_move_to (cr, x-8, y+8);
+  cairo_line_to (cr, x-4, y+8);
+  cairo_move_to (cr, x-8, y+8);
+  cairo_line_to (cr, x-8, y+4);
+  cairo_set_line_width (cr, 5.5);
+  cairo_stroke (cr);
+  
+  //cairo_rectangle (cr, x-10, y-10, 20, 20);
+  //cairo_fill(cr);
+
   cairo_set_source_rgba(cr, 1.0, 0.25, 0.25, 1.0);
   cairo_move_to (cr, x-8, y-8);
   cairo_line_to (cr, x-4, y-8);
