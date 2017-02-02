@@ -11157,7 +11157,26 @@ gchar* WindowsVersion()
 	else
 	  windowsName = g_strdup("Windows Server 2012");
 	break;
+
+      case 3:
+	if(osInfo.wProductType == VER_NT_WORKSTATION)
+	  windowsName = g_strdup("Windows 8.1");
+	else
+	  windowsName = g_strdup("Windows Server 2012 R2");
+	break;
       }
+    break;
+
+  case 10:
+    switch (osInfo.dwMinorVersion)
+      {
+      case 0:
+	if(osInfo.wProductType == VER_NT_WORKSTATION)
+	  windowsName = g_strdup("Windows 10");
+	else
+	  windowsName = g_strdup("Windows Server 2016");
+	break;
+      }	
     break;
   }
 
