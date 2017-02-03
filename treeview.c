@@ -4302,6 +4302,8 @@ void stddb_dl(typHOE *hg)
 #endif
   
   gtk_widget_show_all(dialog);
+
+  gdk_flush();
   
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,

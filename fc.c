@@ -458,6 +458,8 @@ void fc_dl (typHOE *hg)
   
   gtk_widget_show_all(dialog);
 
+  gdk_flush();
+  
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
@@ -3785,6 +3787,8 @@ void fcdb_dl(typHOE *hg)
   
   gtk_widget_show_all(dialog);
   
+  gdk_flush();
+  
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
@@ -3912,6 +3916,8 @@ void addobj_dl(typHOE *hg)
 #endif
   
   gtk_widget_show_all(dialog);
+  
+  gdk_flush();
   
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
