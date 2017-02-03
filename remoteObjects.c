@@ -77,6 +77,7 @@ ro_init(typHOE *hg)
     ns_host = g_strdup(hg->ro_ns_host);
     ns_port = hg->ro_ns_port;
     use_default_auth = hg->ro_use_default_auth;
+
     /*
     ro_log = fopen(hg->ro_log, "a");
     if ((void *)ro_log == NULL){

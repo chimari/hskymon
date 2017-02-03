@@ -10629,6 +10629,7 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
   typHOE *hg;
   gint i;
   gboolean fl_load[MAX_ROPE];
+  gint ret;
 
   if(flagChildDialog){
     return;
@@ -10639,7 +10640,16 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  if(get_rope(hg, ROPE_ALL)<=0){
+  if((ret=get_rope(hg, ROPE_ALL))==-2){
+ #ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: Unconnected to the Telescope Status server.",
+		  NULL);
+#else
+      fprintf(stderr, "Error: No OPE files are opened in IntegGUI.\n");
+#endif
+  }
+  else if (ret<=0){
  #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: No OPE files are opend in IntegGUI.",

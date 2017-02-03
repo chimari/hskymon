@@ -185,6 +185,9 @@ int get_rope(typHOE *hg, int mode){
     xmlrpc_env rope_env;
     int len;
 
+    if(hg->telstat_error){
+      return(-2);
+    }
 
     rope_proxyP=NULL;
 
@@ -379,7 +382,7 @@ int get_telstat(typHOE *hg){
     if(!hg->stat_initflag){
       //fprintf(stderr, "initializing telstat\n");
       if(init_telstat(hg)==-1){
-        return(-1);
+	return(-1);
       }
     }
 
