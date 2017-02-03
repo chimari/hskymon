@@ -366,6 +366,7 @@ int init_telstat(typHOE *hg){
     }
 
     g_free(serviceName);
+    return(0);
 }
 
 
@@ -377,7 +378,9 @@ int get_telstat(typHOE *hg){
 
     if(!hg->stat_initflag){
       //fprintf(stderr, "initializing telstat\n");
-      init_telstat(hg);
+      if(init_telstat(hg)==-1){
+        return(-1);
+      }
     }
 
 

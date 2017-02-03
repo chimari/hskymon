@@ -43,7 +43,6 @@ extern gint tree_update_azel();
 extern int get_allsky();
 
 #ifdef USE_XMLRPC
-extern init_telstat();
 extern get_telstat();
 extern get_rope();
 #endif
@@ -7275,10 +7274,17 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->ro_use_default_auth = tmp_ro_use_default_auth;
 
 
-    if(hg->telstat_flag)
-      hg->telstat_timer=g_timeout_add(TELSTAT_INTERVAL, 
-				      (GSourceFunc)update_telstat,
-				      (gpointer)hg);
+    if(hg->telstat_flag){
+      if(update_telstat((gpointer)hg)){
+	hg->telstat_timer=g_timeout_add(TELSTAT_INTERVAL, 
+					(GSourceFunc)update_telstat,
+					(gpointer)hg);
+      }
+      else{
+	printf_log(hg,"[TelStat] cannot connect to the server %s",
+		   hg->ro_ns_host);
+      }
+    }
 
 #endif
 
@@ -7885,7 +7891,9 @@ gboolean update_telstat (gpointer gdata){
 
   hg=(typHOE *)gdata;
 
-  get_telstat(hg);
+  if(get_telstat(hg)==-1){
+    return(FALSE);
+  }
   
   draw_skymon_with_telstat_cairo(hg->skymon_dw,hg);
 
@@ -11391,9 +11399,15 @@ int main(int argc, char* argv[]){
   if(hg->telstat_flag){
     printf_log(hg,"[TelStat] starting to fetch telescope status from %s",
 	       hg->ro_ns_host);
-    hg->telstat_timer=g_timeout_add(TELSTAT_INTERVAL, 
-				    (GSourceFunc)update_telstat,
-				    (gpointer)hg);
+    if(update_telstat((gpointer)hg)){
+      hg->telstat_timer=g_timeout_add(TELSTAT_INTERVAL, 
+				      (GSourceFunc)update_telstat,
+				      (gpointer)hg);
+    }
+    else{
+      printf_log(hg,"[TelStat] cannot connect to the server %s",
+		 hg->ro_ns_host);
+    }
   }
 #endif
 
