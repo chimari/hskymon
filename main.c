@@ -7394,10 +7394,20 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->ro_use_default_auth =ro_useDefaultAuth;
 
 
-    if(hg->telstat_flag)
-      hg->telstat_timer=g_timeout_add(TELSTAT_INTERVAL, 
-				      (GSourceFunc)update_telstat,
+    if(hg->telstat_flag){
+      if(update_telstat((gpointer)hg)){
+	printf_log(hg,"[TelStat] connected to the server %s",
+		   hg->ro_ns_host);
+	//draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
+	hg->telstat_timer=g_timeout_add(TELSTAT_INTERVAL, 
+					(GSourceFunc)update_telstat,
 				      (gpointer)hg);
+      }
+      else{
+	printf_log(hg,"[TelStat] cannot connect to the server %s",
+		   hg->ro_ns_host);
+      }
+    }
 #endif
     InitDefCol(hg);
 
@@ -11400,6 +11410,9 @@ int main(int argc, char* argv[]){
     printf_log(hg,"[TelStat] starting to fetch telescope status from %s",
 	       hg->ro_ns_host);
     if(update_telstat((gpointer)hg)){
+      printf_log(hg,"[TelStat] connected to the server %s",
+		 hg->ro_ns_host);
+      draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
       hg->telstat_timer=g_timeout_add(TELSTAT_INTERVAL, 
 				      (GSourceFunc)update_telstat,
 				      (gpointer)hg);
