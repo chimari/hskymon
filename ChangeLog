@@ -3,6 +3,8 @@
 	            - Bug fix on standards' position calculation in SET mode.
 	            - Revised some all sky camera servers.
 	            - Change SIMBAD site to the USA mirror (harvard.edu)
+	            - Adjusted timeing of the progress bar timeout.
+	            - Removed GTK_WIDGET_REALIZE() in button_signal (skymon.c).
 
 2017.01.11 ver2.8.9 - Bug fix about tree_view_set_focus in FC + database query.
 	            - Added "NED" for database query.
