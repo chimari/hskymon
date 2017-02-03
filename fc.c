@@ -493,7 +493,7 @@ gboolean progress_timeout( gpointer data ){
   glong sz;
   gchar *tmp;
 
-  //if(GTK_WIDGET_REALIZED(hg->pbar)){
+  if(GTK_WIDGET_REALIZED(hg->pbar)){
 
     gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
 
@@ -517,10 +517,11 @@ gboolean progress_timeout( gpointer data ){
     g_free(tmp);
     
     return TRUE;
-    //}
-    //else{
+  }
+  else{
     //return FALSE;
-    //}
+    return TRUE;
+  }
 }
 
 
