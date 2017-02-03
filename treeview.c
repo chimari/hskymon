@@ -4283,10 +4283,6 @@ void stddb_dl(typHOE *hg)
   
   unlink(hg->std_file);
   
-  timer=g_timeout_add(100, 
-		      (GSourceFunc)progress_timeout,
-		      (gpointer)hg);
-  
   hg->plabel=gtk_label_new("Searching standards in SIMBAD ...");
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
@@ -4306,6 +4302,10 @@ void stddb_dl(typHOE *hg)
 #endif
   
   gtk_widget_show_all(dialog);
+  
+  timer=g_timeout_add(100, 
+		      (GSourceFunc)progress_timeout,
+		      (gpointer)hg);
   
 #ifndef USE_WIN32
   act.sa_handler=stddb_signal;

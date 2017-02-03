@@ -438,10 +438,6 @@ void fc_dl (typHOE *hg)
   
   unlink(hg->dss_file);
   
-  timer=g_timeout_add(100, 
-		      (GSourceFunc)progress_timeout,
-		      (gpointer)hg);
-  
   hg->plabel=gtk_label_new("Retrieving image from website ...");
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
@@ -461,7 +457,11 @@ void fc_dl (typHOE *hg)
 #endif
   
   gtk_widget_show_all(dialog);
-  
+
+  timer=g_timeout_add(100, 
+		      (GSourceFunc)progress_timeout,
+		      (gpointer)hg);
+
   //#ifdef USE_WIN32
   //while (my_main_iteration(FALSE));
   //#else
@@ -492,7 +492,6 @@ gboolean progress_timeout( gpointer data ){
   gchar *tmp;
 
   if(GTK_WIDGET_REALIZED(hg->pbar)){
-    //gdk_window_invalidate_rect(gtk_widget_get_window(hg->pbar),NULL,FALSE);
 
     gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
 
@@ -3758,10 +3757,6 @@ void fcdb_dl(typHOE *hg)
   
   unlink(hg->fcdb_file);
   
-  timer=g_timeout_add(100, 
-		      (GSourceFunc)progress_timeout,
-		      (gpointer)hg);
-  
   switch(hg->fcdb_type){
   case FCDB_TYPE_SIMBAD:
     hg->plabel=gtk_label_new("Searching objects in SIMBAD ...");
@@ -3789,6 +3784,10 @@ void fcdb_dl(typHOE *hg)
 #endif
   
   gtk_widget_show_all(dialog);
+  
+  timer=g_timeout_add(100, 
+		      (GSourceFunc)progress_timeout,
+		      (gpointer)hg);
   
 #ifndef USE_WIN32
   act.sa_handler=fcdb_signal;
@@ -3886,10 +3885,6 @@ void addobj_dl(typHOE *hg)
   
   unlink(hg->fcdb_file);
   
-  timer=g_timeout_add(100, 
-		      (GSourceFunc)progress_timeout,
-		      (gpointer)hg);
-  
   switch(hg->fcdb_type){
   case FCDB_TYPE_SIMBAD:
     hg->plabel=gtk_label_new("Searching objects in SIMBAD ...");
@@ -3917,6 +3912,10 @@ void addobj_dl(typHOE *hg)
 #endif
   
   gtk_widget_show_all(dialog);
+  
+  timer=g_timeout_add(100, 
+		      (GSourceFunc)progress_timeout,
+		      (gpointer)hg);
   
 #ifndef USE_WIN32
   act.sa_handler=fcdb_signal;

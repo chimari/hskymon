@@ -7401,7 +7401,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 	//draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
 	hg->telstat_timer=g_timeout_add(TELSTAT_INTERVAL, 
 					(GSourceFunc)update_telstat,
-				      (gpointer)hg);
+					(gpointer)hg);
       }
       else{
 	printf_log(hg,"[TelStat] cannot connect to the server %s",

@@ -151,16 +151,9 @@ void create_skymon_dialog(typHOE *hg)
   
   hg->skymon_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(hg->skymon_main), "Sky Monitor : Main");
-  //gtk_widget_set_usize(hg->skymon_main, SKYMON_SIZE, SKYMON_SIZE);
   
   my_signal_connect(hg->skymon_main, "destroy",
 		    do_quit,(gpointer)hg);
-  /*
-  my_signal_connect(hg->skymon_main,
-		    "destroy",
-		    close_skymon, 
-		    (gpointer)hg);
-  */
 
   gtk_widget_set_app_paintable(hg->skymon_main, TRUE);
   
@@ -596,6 +589,9 @@ void create_skymon_dialog(typHOE *hg)
 
   screen_changed(hg->skymon_dw,NULL,NULL);
 
+
+  gtk_widget_show_all(hg->skymon_main);
+
   my_signal_connect(hg->skymon_dw, 
 		    "expose-event", 
 		    expose_skymon,
@@ -605,10 +601,6 @@ void create_skymon_dialog(typHOE *hg)
 		    "button-press-event", 
 		    button_signal,
 		    (gpointer)hg);
-
-  
-
-  gtk_widget_show_all(hg->skymon_main);
 
   gdk_flush();
 
@@ -3834,7 +3826,8 @@ static gint button_signal(GtkWidget *widget,
 	  while (my_main_iteration(FALSE));
 	  gdk_flush();
 	}
-	if(GTK_WIDGET_REALIZED(hg->tree)){
+	//if(GTK_WIDGET_REALIZED(hg->tree)){
+	if(flagTree){
 	  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
 	  GtkTreePath *path;
 	  GtkTreeIter  iter;
