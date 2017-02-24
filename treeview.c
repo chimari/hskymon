@@ -4261,10 +4261,7 @@ void stddb_dl(typHOE *hg)
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
 
-  my_signal_connect(dialog,"destroy",
-		    cancel_stddb, 
-		    (gpointer)hg);
-  
+
 #ifdef USE_GTK2  
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
 #endif

@@ -2566,6 +2566,7 @@ void unchunk(gchar *dss_tmp){
    gchar *cpp;
    gchar *chunkptr, *endptr;
    long chunk_size;
+   gint i, read_size=0, crlf_size=0;
 
    if ( debug_flg ){
      fprintf(stderr, "Decoding chunked file \"%s\".\n", dss_tmp);fflush(stderr);
@@ -2579,7 +2580,17 @@ void unchunk(gchar *dss_tmp){
 
      if(fgets(cbuf,BUFFSIZE-1,fp_read)){
        cpp=cbuf;
-       cpp[strlen(cpp)]='\0';
+       
+       read_size=strlen(cpp);
+       for(i=read_size;i>=0;i--){
+	 if(isalnum(cpp[i])){
+	   crlf_size=read_size-i-1;
+	   break;
+	 }
+	 else{
+	   cpp[i]='\0';
+	 }
+       }
        chunkptr=g_strdup_printf("0x%s",cpp);
        chunk_size=strtol(chunkptr, &endptr, 0);
        g_free(chunkptr);
@@ -2592,7 +2603,7 @@ void unchunk(gchar *dss_tmp){
        }
 
 
-       if(fread(cbuf,1, chunk_size+2, fp_read)){
+       if(fread(cbuf,1, chunk_size+crlf_size, fp_read)){
 	 cpp=cbuf;
 	 fwrite( &cbuf , chunk_size , 1 , fp_write ); 
        }
