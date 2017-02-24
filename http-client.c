@@ -2596,7 +2596,7 @@ void unchunk(gchar *dss_tmp){
        g_free(chunkptr);
 	  
        if(chunk_size==0) break;
-       if(chunk_size>BUFFSIZE-2){
+       if(chunk_size>BUFFSIZE-crlf_size){
 	 fprintf(stderr, "!!! Buffer size overflow. Stopped to convert\"%s\".\n", dss_tmp);
 	 fflush(stderr);
 	 break;
