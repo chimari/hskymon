@@ -38,10 +38,8 @@ static void stddb_item ();
 static void fcdb_item ();
 static void adc_item ();
 void stddb_dl();
-#ifndef USE_WIN32
 void stddb_signal();
 static void cancel_stddb();
-#endif
 void clip_copy();
 
 static void addobj_dialog();
@@ -4262,6 +4260,10 @@ void stddb_dl(typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+
+  my_signal_connect(dialog,"destroy",
+		    cancel_stddb, 
+		    (gpointer)hg);
   
 #ifdef USE_GTK2  
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
@@ -4329,9 +4331,9 @@ void stddb_dl(typHOE *hg)
   flag_getSTD=FALSE;
 }
 
-#ifndef USE_WIN32
 static void cancel_stddb(GtkWidget *w, gpointer gdata)
 {
+#ifndef USE_WIN32
   typHOE *hg;
   pid_t child_pid=0;
 
@@ -4361,8 +4363,8 @@ void stddb_signal(int sig){
     int child_ret;
     child_pid=waitpid(stddb_pid, &child_ret,WNOHANG);
   } while((child_pid>0)||(child_pid!=-1));
-}
 #endif
+}
 
 
 void std_make_tree(GtkWidget *widget, gpointer gdata){

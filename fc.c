@@ -55,10 +55,9 @@ void fcdb_item2();
 static void fcdb_item();
 void fcdb_dl();
 void addobj_dl();
-#ifndef USE_WIN32
 void fcdb_signal();
 static void cancel_fcdb();
-#endif
+
 void fcdb_tree_update_azel_item();
 void fcdb_make_tree();
 void fcdb_clear_tree();
@@ -290,6 +289,10 @@ void fc_dl (typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+
+  my_signal_connect(dialog,"destroy",
+		    cancel_fc, 
+		    (gpointer)hg);
   
 #ifdef USE_GTK2  
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
@@ -3819,9 +3822,9 @@ static void close_fc_help(GtkWidget *w, GtkWidget *dialog)
   gtk_widget_destroy(dialog);
 }
 
-#ifndef USE_WIN32
 static void cancel_fcdb(GtkWidget *w, gpointer gdata)
 {
+#ifndef USE_WIN32
   typHOE *hg;
   pid_t child_pid=0;
 
@@ -3838,8 +3841,8 @@ static void cancel_fcdb(GtkWidget *w, gpointer gdata)
  
     fcdb_pid=0;
   }
-}
 #endif
+}
 
 void fcdb_dl(typHOE *hg)
 {
@@ -3864,6 +3867,10 @@ void fcdb_dl(typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+
+  my_signal_connect(dialog,"destroy",
+		    cancel_fcdb, 
+		    (gpointer)hg);
   
 #ifdef USE_GTK2  
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
@@ -3994,6 +4001,9 @@ void addobj_dl(typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+  my_signal_connect(dialog,"destroy",
+		    cancel_fcdb, 
+		    (gpointer)hg);
   
 #ifdef USE_GTK2  
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);

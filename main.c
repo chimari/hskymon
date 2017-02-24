@@ -3081,6 +3081,10 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : About This Program");
 
+  my_signal_connect(dialog,"destroy",
+		    close_child_dialog, 
+		    GTK_WIDGET(dialog));
+
 
   hbox = gtk_hbox_new(FALSE,2);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -3379,6 +3383,10 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Differential Images of All-Sky Camera");
+
+  my_signal_connect(dialog,"destroy",
+		    close_disp_para, 
+		    GTK_WIDGET(dialog));
 
   frame = gtk_frame_new ("Params for Making Differential Images");
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
@@ -3696,6 +3704,9 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Displaying All-Sky Camera Images");
 
+  my_signal_connect(dialog,"destroy",
+		    change_disp_para, 
+		    (gpointer)cdata);
 
   table = gtk_table_new(4,2,FALSE);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
@@ -3867,6 +3878,10 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Searching Stndards");
+
+  my_signal_connect(dialog,"destroy",
+		    close_disp_para, 
+		    GTK_WIDGET(dialog));
 
   frame = gtk_frame_new ("Sky Area");
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
@@ -4434,6 +4449,9 @@ void create_fcdb_para_dialog (typHOE *hg)
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for database query");
+
+  my_signal_connect(dialog, "destroy",
+		    close_disp_para,GTK_WIDGET(dialog));
 
   hbox = gtk_hbox_new(FALSE,2);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
@@ -5155,6 +5173,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Properties");
+
   my_signal_connect(dialog, "destroy",
 		    close_prop,GTK_WIDGET(dialog));
 
