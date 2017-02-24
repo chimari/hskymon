@@ -182,8 +182,15 @@
 #define FC_HOST_SDSS8 "skyservice.pha.jhu.edu"
 #define FC_PATH_SDSS8 "/DR8/ImgCutout/getjpeg.aspx?ra=%lf&dec=%lf&scale=%f&opt=&width=%d&height=%d&opt=%s%s&query=%s%s"
 #define SDSS_SCALE 0.39612
-#define FC_HOST_SDSS13 "skyservice.pha.jhu.edu"
-#define FC_PATH_SDSS13 "/DR13/ImgCutout/getjpeg.aspx?ra=%lf&dec=%lf&scale=%f&width=%d&height=%d&opt=%s%s&query=%s%s"
+#define FC_HOST_SDSS13 "skyserver.sdss.org"
+#define FC_PATH_SDSS13 "/dr13/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Chart.image&ra=%lf&dec=%lf&scale=%f&width=%d&height=%d&opt=%s%s&query=%s%s"
+#define FC_HOST_PANCOL "ps1images.stsci.edu"
+#define FC_PATH_PANCOL "/cgi-bin/ps1cutouts?pos=%lf+%+lf&filter=color&filetypes=stack&auxiliary=data&size=%d&output_size=1024&verbose=0&autoscale=99.500000&catlist="
+#define FC_PATH_PANG "/cgi-bin/ps1cutouts?pos=%lf+%+lf&filter=g&filetypes=stack&auxiliary=data&size=%d&output_size=1024&verbose=0&autoscale=99.500000&catlist="
+#define FC_PATH_PANR "/cgi-bin/ps1cutouts?pos=%lf+%+lf&filter=r&filetypes=stack&auxiliary=data&size=%d&output_size=1024&verbose=0&autoscale=99.500000&catlist="
+#define FC_PATH_PANI "/cgi-bin/ps1cutouts?pos=%lf+%+lf&filter=i&filetypes=stack&auxiliary=data&size=%d&output_size=1024&verbose=0&autoscale=99.500000&catlist="
+#define FC_PATH_PANZ "/cgi-bin/ps1cutouts?pos=%lf+%+lf&filter=z&filetypes=stack&auxiliary=data&size=%d&output_size=1024&verbose=0&autoscale=99.500000&catlist="
+#define FC_PATH_PANY "/cgi-bin/ps1cutouts?pos=%lf+%+lf&filter=y&filetypes=stack&auxiliary=data&size=%d&output_size=1024&verbose=0&autoscale=99.500000&catlist="
 
 
 // Finding Chart
@@ -220,7 +227,14 @@ enum{FC_STSCI_DSS1R,
      FC_SKYVIEW_RGB,
      FC_SEP3,
      FC_SDSS,
-     FC_SDSS13} ModeFC;
+     FC_SDSS13,
+     FC_SEP4,
+     FC_PANCOL,
+     FC_PANG,
+     FC_PANR,
+     FC_PANI,
+     FC_PANZ,
+     FC_PANY} ModeFC;
 
 #define FC_WIDTH 400
 #define FC_HEIGHT 400
@@ -480,7 +494,7 @@ enum{
 enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
 #endif
 
-#define BUFFSIZE 256
+#define BUFFSIZE 65535
 
 #define VEL_AZ_SUBARU 0.5  // [deg/sec]
 #define VEL_EL_SUBARU 0.5  // [deg/sec]

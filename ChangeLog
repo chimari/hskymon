@@ -1,3 +1,9 @@
+2017.02.23 ver2.8.11- Added PanSTARRS-1 (color/g/r/i/z/y) for Finding Chart.
+	            - Updated Finding Charts' URLs for SDSS(R13).
+	            - Changed HTTP ver 1.0 -> 1.1 for FCDB/STDDB (xml) access.
+	              Unchunk algorithm added for them and PanSTARRS (html)
+	              data transfers.
+
 2017.02.01 ver2.8.10- Changed standard object names in esostd.h to same ones
 	              used in each catalogs.
 	            - Bug fix on standards' position calculation in SET mode.

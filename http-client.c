@@ -56,6 +56,8 @@ static void cancel_allsky();
 #endif
 GdkPixbuf* diff_pixbuf();
 
+void unchunk();
+
 extern void printf_log();
 
 extern double get_julian_day_of_epoch();
@@ -71,7 +73,7 @@ gint allsky_repeat=0;
 #define BUF_LEN 65535             /* バッファのサイズ */
 #else
 //#define BUF_LEN 255             /* バッファのサイズ */
-#define BUF_LEN 1023             /* バッファのサイズ */
+#define BUF_LEN 65535             /* バッファのサイズ */
 #endif
 
 int debug_flg = 0;      /* -d オプションを付けると turn on する */
@@ -227,7 +229,7 @@ gint fd_write(gint fd, const gchar *buf, gint len)
 
 void write_to_server(int socket, char *p){
     if ( debug_flg ){
-        fprintf(stderr, "--> %s", p);fflush(stderr);
+        fprintf(stderr, "<-- %s", p);fflush(stderr);
     }
     
     fd_write(socket, p, strlen(p));
@@ -1253,6 +1255,9 @@ int http_c_fc(typHOE *hg){
   struct in_addr addr;
   int err;
   const char *cause=NULL;
+
+  gboolean chunked_flag=FALSE;
+
    
   /* ホストの情報 (IP アドレスなど) を取得 */
   memset(&hints, 0, sizeof(hints));
@@ -1467,6 +1472,19 @@ int http_c_fc(typHOE *hg){
 	    (hg->sdss_spec) ? "&SpecObjs=on" : "");
     break;
 
+
+  case FC_PANCOL:
+  case FC_PANG:
+  case FC_PANR:
+  case FC_PANI:
+  case FC_PANZ:
+  case FC_PANY:
+    sprintf(tmp,hg->dss_path,
+	    ln_hms_to_deg(&hobject_prec.ra),
+	    ln_dms_to_deg(&hobject_prec.dec),
+	    hg->dss_arcmin*240);
+    break;
+
   }
 
   sprintf(send_mesg, "GET %s HTTP/1.1\r\n", tmp);
@@ -1512,6 +1530,12 @@ int http_c_fc(typHOE *hg){
   case FC_SKYVIEW_WISE12:
   case FC_SKYVIEW_WISE22:
   case FC_SKYVIEW_RGB:
+  case FC_PANCOL:
+  case FC_PANG:
+  case FC_PANR:
+  case FC_PANI:
+  case FC_PANZ:
+  case FC_PANY:
     if((fp_write=fopen(hg->dss_tmp,"wb"))==NULL){
       fprintf(stderr," File Write Error  \"%s\" \n", hg->dss_tmp);
       return(HSKYMON_HTTP_ERROR_TEMPFILE);
@@ -1519,6 +1543,12 @@ int http_c_fc(typHOE *hg){
     
     while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
       // header lines
+      if(debug_flg){
+	fprintf(stderr,"--> Header: %s", buf);
+      }
+      if(NULL != (cp = strstr(buf, "Transfer-Encoding: chunked"))){
+	chunked_flag=TRUE;
+      }
     }
     while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
       {
@@ -1533,6 +1563,8 @@ int http_c_fc(typHOE *hg){
     g_print("Cannot Chmod Temporary File %s!  Please check!!!\n",hg->dss_tmp);
   }
 #endif
+
+    if(chunked_flag) unchunk(hg->dss_tmp);
     
     fp_read=fopen(hg->dss_tmp,"r");
     
@@ -1593,11 +1625,38 @@ int http_c_fc(typHOE *hg){
 	}
       }
       break;
+
+    case FC_PANCOL:
+    case FC_PANG:
+    case FC_PANR:
+    case FC_PANI:
+    case FC_PANZ:
+    case FC_PANY:
+      
+      while(!feof(fp_read)){
+	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
+	  cpp=cbuf;
+	  
+	  if(NULL != (cp = strstr(cpp, "<img src=\"//" FC_HOST_PANCOL))){
+	    cpp=cp+strlen("<img src=\"//" FC_HOST_PANCOL);
+	    
+	    if(NULL != (cp2 = strstr(cp, "\" width="))){
+	      cp3=g_strndup(cpp,strlen(cpp)-strlen(cp2));
+	    }
+	    
+	    break;
+	  }
+	}
+      }
+      break;
+
     }
     
     fclose(fp_read);
     
     close(command_socket);
+
+    chunked_flag=FALSE;
     
     /* サーバに接続 */
     if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
@@ -1620,6 +1679,12 @@ int http_c_fc(typHOE *hg){
       case FC_ESO_DSS2R:
       case FC_ESO_DSS2B:
       case FC_ESO_DSS2IR:
+      case FC_PANCOL:
+      case FC_PANG:
+      case FC_PANR:
+      case FC_PANI:
+      case FC_PANZ:
+      case FC_PANY:
 	sprintf(send_mesg, "GET %s HTTP/1.1\r\n", cp3);
 	break;
 
@@ -1671,6 +1736,12 @@ int http_c_fc(typHOE *hg){
 
       while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
 	// header lines
+	if(debug_flg){
+	  fprintf(stderr,"--> Header: %s", buf);
+	}
+	if(NULL != (cp = strstr(buf, "Transfer-Encoding: chunked"))){
+	  chunked_flag=TRUE;
+	}
       }
       while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
 	{
@@ -1696,7 +1767,10 @@ int http_c_fc(typHOE *hg){
     while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
       // header lines
       if(debug_flg){
-	fprintf(stderr," --> Header: %s", buf);
+	fprintf(stderr,"--> Header: %s", buf);
+      }
+      if(NULL != (cp = strstr(buf, "Transfer-Encoding: chunked"))){
+	chunked_flag=TRUE;
       }
     }
     while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
@@ -1713,6 +1787,8 @@ int http_c_fc(typHOE *hg){
     
     break;
   }
+
+  if(chunked_flag) unchunk(hg->dss_file);
 
 #ifndef USE_WIN32
     if((chmod(hg->dss_file,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
@@ -1780,6 +1856,9 @@ int http_c_std(typHOE *hg){
   struct addrinfo hints, *res;
   struct in_addr addr;
   int err;
+
+  gboolean chunked_flag=FALSE;
+  gchar *cp;
    
   /* ホストの情報 (IP アドレスなど) を取得 */
   memset(&hints, 0, sizeof(hints));
@@ -1819,7 +1898,7 @@ int http_c_std(typHOE *hg){
   freeaddrinfo(res);
 
   // HTTP/1.1 ではchunked対策が必要
-  sprintf(send_mesg, "GET %s HTTP/1.0\r\n", hg->std_path);
+  sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->std_path);
   write_to_server(command_socket, send_mesg);
 
   sprintf(send_mesg, "Accept: application/xml\r\n");
@@ -1844,6 +1923,12 @@ int http_c_std(typHOE *hg){
 
   while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
     // header lines
+    if(debug_flg){
+      fprintf(stderr,"--> Header: %s", buf);
+    }
+    if(NULL != (cp = strstr(buf, "Transfer-Encoding: chunked"))){
+      chunked_flag=TRUE;
+    }
   }
   while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
     {
@@ -1852,6 +1937,8 @@ int http_c_std(typHOE *hg){
   //fwrite( &buf , size , 1 , fp_write ); 
       
   fclose(fp_write);
+
+  if(chunked_flag) unchunk(hg->std_file);
 
 #ifndef USE_WIN32
     if((chmod(hg->std_file,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
@@ -1890,6 +1977,9 @@ int http_c_fcdb(typHOE *hg){
   struct addrinfo hints, *res;
   struct in_addr addr;
   int err;
+
+  gboolean chunked_flag=FALSE;
+  gchar *cp;
    
   /* ホストの情報 (IP アドレスなど) を取得 */
   memset(&hints, 0, sizeof(hints));
@@ -1929,7 +2019,7 @@ int http_c_fcdb(typHOE *hg){
   freeaddrinfo(res);
 
   // HTTP/1.1 ではchunked対策が必要
-  sprintf(send_mesg, "GET %s HTTP/1.0\r\n", hg->fcdb_path);
+  sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->fcdb_path);
   write_to_server(command_socket, send_mesg);
 
   sprintf(send_mesg, "Accept: application/xml\r\n");
@@ -1954,6 +2044,12 @@ int http_c_fcdb(typHOE *hg){
 
   while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
     // header lines
+    if(debug_flg){
+      fprintf(stderr,"--> Header: %s", buf);
+    }
+    if(NULL != (cp = strstr(buf, "Transfer-Encoding: chunked"))){
+      chunked_flag=TRUE;
+    }
   }
   while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
     {
@@ -1962,6 +2058,8 @@ int http_c_fcdb(typHOE *hg){
   //fwrite( &buf , size , 1 , fp_write ); 
       
   fclose(fp_write);
+
+  if(chunked_flag) unchunk(hg->fcdb_file);
 
 #ifndef USE_WIN32
     if((chmod(hg->fcdb_file,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
@@ -2461,3 +2559,55 @@ GdkPixbuf* diff_pixbuf(GdkPixbuf *pixbuf1, GdkPixbuf* pixbuf2,
 }
 
 
+void unchunk(gchar *dss_tmp){
+   FILE *fp_read, *fp_write;
+   gchar *unchunk_tmp;
+   static char cbuf[BUFFSIZE];
+   gchar *cpp;
+   gchar *chunkptr, *endptr;
+   long chunk_size;
+
+   if ( debug_flg ){
+     fprintf(stderr, "Decoding chunked file \"%s\".\n", dss_tmp);fflush(stderr);
+   }
+
+   fp_read=fopen(dss_tmp,"r");
+   unchunk_tmp=g_strconcat(dss_tmp,"_unchunked",NULL);
+   fp_write=fopen(unchunk_tmp,"w");
+
+   while(!feof(fp_read)){
+
+     if(fgets(cbuf,BUFFSIZE-1,fp_read)){
+       cpp=cbuf;
+       cpp[strlen(cpp)]='\0';
+       chunkptr=g_strdup_printf("0x%s",cpp);
+       chunk_size=strtol(chunkptr, &endptr, 0);
+       g_free(chunkptr);
+	  
+       if(chunk_size==0) break;
+       if(chunk_size>BUFFSIZE-2){
+	 fprintf(stderr, "!!! Buffer size overflow. Stopped to convert\"%s\".\n", dss_tmp);
+	 fflush(stderr);
+	 break;
+       }
+
+
+       if(fread(cbuf,1, chunk_size+2, fp_read)){
+	 cpp=cbuf;
+	 fwrite( &cbuf , chunk_size , 1 , fp_write ); 
+       }
+       else{
+	 break;
+       }
+     }
+   }
+
+   fclose(fp_read);
+   fclose(fp_write);
+
+   unlink(dss_tmp);
+
+   rename(unchunk_tmp,dss_tmp);
+
+   g_free(unchunk_tmp);
+ }

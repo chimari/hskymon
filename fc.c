@@ -423,6 +423,30 @@ void fc_dl (typHOE *hg)
     label=gtk_label_new("Retrieving SDSS (DR13/color) image from \"" FC_HOST_SDSS13 "\" ...");
     break;
     
+  case FC_PANCOL:
+    label=gtk_label_new("Retrieving PanSTARRS-1 (color) image from \"" FC_HOST_PANCOL "\" ...");
+    break;
+    
+  case FC_PANG:
+    label=gtk_label_new("Retrieving PanSTARRS-1 (g) image from \"" FC_HOST_PANCOL "\" ...");
+    break;
+    
+  case FC_PANR:
+    label=gtk_label_new("Retrieving PanSTARRS-1 (r) image from \"" FC_HOST_PANCOL "\" ...");
+    break;
+    
+  case FC_PANI:
+    label=gtk_label_new("Retrieving PanSTARRS-1 (i) image from \"" FC_HOST_PANCOL "\" ...");
+    break;
+    
+  case FC_PANZ:
+    label=gtk_label_new("Retrieving PanSTARRS-1 (z) image from \"" FC_HOST_PANCOL "\" ...");
+    break;
+    
+  case FC_PANY:
+    label=gtk_label_new("Retrieving PanSTARRS-1 (y) image from \"" FC_HOST_PANCOL "\" ...");
+    break;
+    
   }
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
@@ -774,6 +798,40 @@ void create_fc_dialog(typHOE *hg)
     gtk_list_store_set(store, &iter, 0, "SDSS DR13 (color)",
 		       1, FC_SDSS13, 2, TRUE, -1);
     if(hg->fc_mode==FC_SDSS13) iter_set=iter;
+
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter,
+			0, NULL, 1, FC_SEP4, 2, FALSE, -1);
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (color)",
+		       1, FC_PANCOL, 2, TRUE, -1);
+    if(hg->fc_mode==FC_PANCOL) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (g)",
+		       1, FC_PANG, 2, TRUE, -1);
+    if(hg->fc_mode==FC_PANG) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (r)",
+		       1, FC_PANR, 2, TRUE, -1);
+    if(hg->fc_mode==FC_PANR) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (i)",
+		       1, FC_PANI, 2, TRUE, -1);
+    if(hg->fc_mode==FC_PANI) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (z)",
+		       1, FC_PANZ, 2, TRUE, -1);
+    if(hg->fc_mode==FC_PANZ) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (y)",
+		       1, FC_PANY, 2, TRUE, -1);
+    if(hg->fc_mode==FC_PANY) iter_set=iter;
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     gtk_table_attach (GTK_TABLE(table), combo, 1, 2, 1, 2,
@@ -2492,6 +2550,36 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
       
+    case FC_PANCOL:
+      sprintf(tmp,"PanSTARRS-1 (color)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+      
+    case FC_PANG:
+      sprintf(tmp,"PanSTARRS-1 (g)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+      
+    case FC_PANR:
+      sprintf(tmp,"PanSTARRS-1 (r)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+      
+    case FC_PANI:
+      sprintf(tmp,"PanSTARRS-1 (i)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+      
+    case FC_PANZ:
+      sprintf(tmp,"PanSTARRS-1 (z)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+      
+    case FC_PANY:
+      sprintf(tmp,"PanSTARRS-1 (y)  %dx%d arcmin",
+	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+      
     default:
       sprintf(tmp,"%dx%d arcmin",
 	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
@@ -3479,6 +3567,51 @@ void set_fc_mode (typHOE *hg)
 			     G_DIR_SEPARATOR_S,
 			     FC_FILE_JPEG,NULL);
     break;
+
+  case FC_PANCOL:
+  case FC_PANG:
+  case FC_PANR:
+  case FC_PANI:
+  case FC_PANZ:
+  case FC_PANY:
+    if(hg->dss_tmp) g_free(hg->dss_tmp);
+    hg->dss_tmp=g_strconcat(hg->temp_dir,
+			    G_DIR_SEPARATOR_S,
+			    FC_FILE_HTML,NULL);
+    if(hg->dss_host) g_free(hg->dss_host);
+    hg->dss_host             =g_strdup(FC_HOST_PANCOL);
+    if(hg->dss_path) g_free(hg->dss_path);
+    switch(hg->fc_mode){
+    case FC_PANCOL:
+      hg->dss_path             =g_strdup(FC_PATH_PANCOL);
+      break;
+
+    case FC_PANG:
+      hg->dss_path             =g_strdup(FC_PATH_PANG);
+      break;
+ 
+    case FC_PANR:
+      hg->dss_path             =g_strdup(FC_PATH_PANR);
+      break;
+ 
+    case FC_PANI:
+      hg->dss_path             =g_strdup(FC_PATH_PANI);
+      break;
+ 
+    case FC_PANZ:
+      hg->dss_path             =g_strdup(FC_PATH_PANZ);
+      break;
+ 
+    case FC_PANY:
+      hg->dss_path             =g_strdup(FC_PATH_PANY);
+      break;
+    }
+    if(hg->dss_file) g_free(hg->dss_file);
+    hg->dss_file=g_strconcat(hg->temp_dir,
+			     G_DIR_SEPARATOR_S,
+			     FC_FILE_JPEG,NULL);
+    break;
+
   }
 }
 
