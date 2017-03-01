@@ -1479,6 +1479,10 @@ int http_c_fc(typHOE *hg){
   case FC_PANI:
   case FC_PANZ:
   case FC_PANY:
+    if(hg->dss_arcmin>PANSTARRS_MAX_ARCMIN){
+      gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			       (gdouble)(PANSTARRS_MAX_ARCMIN));
+    }
     sprintf(tmp,hg->dss_path,
 	    ln_hms_to_deg(&hobject_prec.ra),
 	    ln_dms_to_deg(&hobject_prec.dec),

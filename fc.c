@@ -3574,6 +3574,10 @@ void set_fc_mode (typHOE *hg)
   case FC_PANI:
   case FC_PANZ:
   case FC_PANY:
+    if(hg->dss_arcmin>PANSTARRS_MAX_ARCMIN){
+      gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			       (gdouble)(PANSTARRS_MAX_ARCMIN));
+    }
     if(hg->dss_tmp) g_free(hg->dss_tmp);
     hg->dss_tmp=g_strconcat(hg->temp_dir,
 			    G_DIR_SEPARATOR_S,

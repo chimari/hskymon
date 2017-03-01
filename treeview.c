@@ -35,6 +35,7 @@ void copy_stacstd();
 static void add_item();
 static void fc_item ();
 static void stddb_item ();
+static void search_item ();
 static void fcdb_item ();
 static void adc_item ();
 void stddb_dl();
@@ -45,6 +46,8 @@ void clip_copy();
 static void addobj_dialog();
 
 void raise_tree();
+
+void cc_search_text();
 
 #ifdef USE_XMLRPC
 GdkColor col_lock={0,0xFFFF,0xC000,0xC000};
@@ -1901,6 +1904,91 @@ stddb_item (GtkWidget *widget, gpointer data)
   }
 }
 
+static void search_item (GtkWidget *widget, gpointer data)
+{
+  gint i;
+  gchar *label_text;
+  typHOE *hg = (typHOE *)data;
+  gchar *up_text, *up_obj;
+
+  if(!hg->tree_search_text) return;
+
+  if(strlen(hg->tree_search_text)<1){
+    hg->tree_search_imax=0;
+    hg->tree_search_i=0;
+
+    gtk_label_set_text(GTK_LABEL(hg->tree_search_label),"      ");
+    return;
+  }
+
+  if(hg->tree_search_imax==0){
+    up_text=g_ascii_strup(hg->tree_search_text, -1);
+    for(i=0; i<hg->i_max; i++){
+      up_obj=g_ascii_strup(hg->obj[i].name, -1);
+      if(g_strstr_len(up_obj, -1, up_text)!=NULL){
+	hg->tree_search_iobj[hg->tree_search_imax]=i;
+	hg->tree_search_imax++;
+      }
+      else if(hg->obj[i].def){
+	  g_free(up_obj);
+	  up_obj=g_ascii_strup(hg->obj[i].def, -1);
+	  if(g_strstr_len(up_obj, -1, up_text)!=NULL){
+	    hg->tree_search_iobj[hg->tree_search_imax]=i;
+	    hg->tree_search_imax++;
+	}
+      } 
+      g_free(up_obj);
+    }
+    g_free(up_text);
+  }
+  else{
+    hg->tree_search_i++;
+    if(hg->tree_search_i>=hg->tree_search_imax) hg->tree_search_i=0;
+  }
+
+  if(flagTree){
+    if(hg->tree_search_imax!=0){
+      label_text=g_strdup_printf("%d/%d   ",
+				 hg->tree_search_i+1,
+				 hg->tree_search_imax);
+
+      {
+	gint i_list;
+	GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+	GtkTreePath *path;
+	GtkTreeIter  iter;
+
+	path=gtk_tree_path_new_first();
+	
+	for(i=0;i<hg->i_max;i++){
+	  gtk_tree_model_get_iter (model, &iter, path);
+	  gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i_list, -1);
+	  i_list--;
+
+	  if(i_list==hg->tree_search_iobj[hg->tree_search_i]){
+	    gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
+	    gtk_widget_grab_focus (hg->tree);
+	    gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->tree), path, NULL, FALSE);
+	    raise_tree();
+	    break;
+	  }
+	  else{
+	    gtk_tree_path_next(path);
+	  }
+	}
+	gtk_tree_path_free(path);
+      }
+    }
+    else{
+      label_text=g_strdup_printf("%d/%d   ",
+				 hg->tree_search_i,
+				 hg->tree_search_imax);
+    }
+    gtk_label_set_text(GTK_LABEL(hg->tree_search_label),label_text);
+    g_free(label_text);
+  }
+}
+
 static void fc_item (GtkWidget *widget, gpointer data)
 {
   typHOE *hg = (typHOE *)data;
@@ -3228,6 +3316,31 @@ do_editable_cells (typHOE *hg)
     hbox = gtk_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
+#else
+    button = gtk_button_new_with_label ("Find Object");
+#endif
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+    		       G_CALLBACK (search_item), (gpointer)hg);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,"Find Object");
+#endif
+
+    hg->tree_search_i=0;
+    hg->tree_search_imax=0;
+
+    entry = gtk_entry_new ();
+    gtk_box_pack_start(GTK_BOX(hbox), entry,FALSE, FALSE, 0);
+    gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+    my_entry_set_width_chars(GTK_ENTRY(entry),10);
+    my_signal_connect (entry, "changed", cc_search_text, (gpointer)hg);
+    my_signal_connect (entry, "activate", search_item, (gpointer)hg);
+
+    hg->tree_search_label = gtk_label_new ("     ");
+    gtk_box_pack_start(GTK_BOX(hbox),hg->tree_search_label,FALSE,FALSE,0);
+
     hg->tree_label= gtk_label_new (hg->tree_label_text);
     gtk_box_pack_start(GTK_BOX(hbox), hg->tree_label, TRUE, TRUE, 0);
     
@@ -4068,6 +4181,9 @@ void remake_tree(typHOE *hg)
   while (my_main_iteration(FALSE));
   gdk_flush();
   
+  hg->tree_search_i=0;
+  hg->tree_search_imax=0;
+
   for (i = 0; i < hg->i_max; i++){
     gtk_list_store_append (GTK_LIST_STORE(model), &iter);
       tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
@@ -4569,4 +4685,19 @@ static void addobj_dialog (GtkWidget *widget, gpointer gdata)
 void raise_tree(){
   gdk_window_deiconify(window->window);
   gdk_window_raise(window->window);
+}
+
+
+void cc_search_text (GtkWidget *widget, gpointer gdata)
+{
+  typHOE *hg;
+  hg=(typHOE *)gdata;
+
+  if(hg->tree_search_text) g_free(hg->tree_search_text);
+  hg->tree_search_text=g_strdup(gtk_entry_get_text(GTK_ENTRY(widget)));
+
+  hg->tree_search_i=0;
+  hg->tree_search_imax=0;
+
+  gtk_label_set_text(GTK_LABEL(hg->tree_search_label),"      ");
 }

@@ -236,6 +236,8 @@ enum{FC_STSCI_DSS1R,
      FC_PANZ,
      FC_PANY} ModeFC;
 
+#define PANSTARRS_MAX_ARCMIN 25
+
 #define FC_WIDTH 400
 #define FC_HEIGHT 400
 enum{ FC_OUTPUT_WINDOW, FC_OUTPUT_PDF, FC_OUTPUT_PRINT} FCOutput;
@@ -1390,6 +1392,11 @@ struct _typHOE{
   guint tree_height;
   gint tree_x;
   gint tree_y;
+  GtkWidget *tree_search_label;
+  gchar *tree_search_text;
+  guint tree_search_i;
+  guint tree_search_iobj[MAX_OBJECT];
+  guint tree_search_imax;
 
   gchar *www_com;
 
