@@ -48,6 +48,7 @@ static void addobj_dialog();
 void raise_tree();
 
 void cc_search_text();
+extern gchar *strip_spc();
 
 #ifdef USE_XMLRPC
 GdkColor col_lock={0,0xFFFF,0xC000,0xC000};
@@ -1909,7 +1910,7 @@ static void search_item (GtkWidget *widget, gpointer data)
   gint i;
   gchar *label_text;
   typHOE *hg = (typHOE *)data;
-  gchar *up_text, *up_obj;
+  gchar *up_text1, *up_text2, *up_obj1, *up_obj2;
 
   if(!hg->tree_search_text) return;
 
@@ -1922,24 +1923,30 @@ static void search_item (GtkWidget *widget, gpointer data)
   }
 
   if(hg->tree_search_imax==0){
-    up_text=g_ascii_strup(hg->tree_search_text, -1);
+    up_text1=g_ascii_strup(hg->tree_search_text, -1);
+    up_text2=strip_spc(up_text1);
+    g_free(up_text1);
     for(i=0; i<hg->i_max; i++){
-      up_obj=g_ascii_strup(hg->obj[i].name, -1);
-      if(g_strstr_len(up_obj, -1, up_text)!=NULL){
+      up_obj1=g_ascii_strup(hg->obj[i].name, -1);
+      up_obj2=strip_spc(up_obj1);
+      g_free(up_obj1);
+      if(g_strstr_len(up_obj2, -1, up_text2)!=NULL){
 	hg->tree_search_iobj[hg->tree_search_imax]=i;
 	hg->tree_search_imax++;
       }
       else if(hg->obj[i].def){
-	  g_free(up_obj);
-	  up_obj=g_ascii_strup(hg->obj[i].def, -1);
-	  if(g_strstr_len(up_obj, -1, up_text)!=NULL){
+	  g_free(up_obj2);
+	  up_obj1=g_ascii_strup(hg->obj[i].def, -1);
+	  up_obj2=strip_spc(up_obj1);
+	  g_free(up_obj1);
+	  if(g_strstr_len(up_obj2, -1, up_text2)!=NULL){
 	    hg->tree_search_iobj[hg->tree_search_imax]=i;
 	    hg->tree_search_imax++;
 	}
       } 
-      g_free(up_obj);
+      g_free(up_obj2);
     }
-    g_free(up_text);
+    g_free(up_text2);
   }
   else{
     hg->tree_search_i++;
@@ -4017,7 +4024,6 @@ gchar *make_tgt(gchar * obj_name){
     }
   }
 
-  //tgt_name[i_tgt]=(char)NULL;
   tgt_name[i_tgt]='\0';
   ret_name=g_strdup(tgt_name);
 
@@ -4701,3 +4707,25 @@ void cc_search_text (GtkWidget *widget, gpointer gdata)
 
   gtk_label_set_text(GTK_LABEL(hg->tree_search_label),"      ");
 }
+
+gchar *strip_spc(gchar * obj_name){
+  gchar tgt_name[BUFFSIZE], *ret_name;
+  gint  i_str=0,i;
+
+  strcpy(tgt_name,obj_name);
+  for(i=0;i<strlen(tgt_name);i++){
+    if((obj_name[i]!=0x20)
+       &&(obj_name[i]!=0x0A)
+       &&(obj_name[i]!=0x0D)
+       &&(obj_name[i]!=0x09)){
+      tgt_name[i_str]=obj_name[i];
+      i_str++;
+    }
+  }
+  tgt_name[i_str]='\0';
+  
+  ret_name=g_strdup(tgt_name);
+
+  return(ret_name);
+}
+

@@ -8049,7 +8049,6 @@ gchar *cut_spc(gchar * obj_name){
 	||(tgt_name[i_bak]==0x0A)
 	||(tgt_name[i_bak]==0x0D)
 	||(tgt_name[i_bak]==0x09)){
-    //tgt_name[i_bak]=(char)NULL;
     tgt_name[i_bak]='\0';
     i_bak--;
   }
@@ -8090,28 +8089,6 @@ gchar *make_filehead(const gchar *file_head, gchar * obj_name){
   return(ret_name);
 }
 
-/*
-gchar *make_tgt(gchar * obj_name){
-  gchar tgt_name[BUFFSIZE], *ret_name;
-  gint  i_obj,i_tgt;
-
-  strcpy(tgt_name,"TGT_");
-  i_tgt=strlen(tgt_name);
-
-  for(i_obj=0;i_obj<strlen(obj_name);i_obj++){
-    if(isalnum(obj_name[i_obj])){
-      tgt_name[i_tgt]=obj_name[i_obj];
-      i_tgt++;
-    }
-  }
-
-  //tgt_name[i_tgt]=(char)NULL;
-  tgt_name[i_tgt]='\0';
-  ret_name=g_strdup(tgt_name);
-
-  return(ret_name);
-}
-*/
 
 void ReadList(typHOE *hg, gint ope_max){
   FILE *fp;
@@ -8142,7 +8119,7 @@ void ReadList(typHOE *hg, gint ope_max){
       if(strlen(buf)<10) break;
       tmp_char=(char *)strtok(buf,",");
       if(hg->obj[i_list].name) g_free(hg->obj[i_list].name);
-      hg->obj[i_list].name=g_strdup(tmp_char);
+      //hg->obj[i_list].name=g_strdup(tmp_char);
       hg->obj[i_list].name=cut_spc(tmp_char);
 
       if(hg->obj[i_list].def) g_free(hg->obj[i_list].def);
@@ -8161,7 +8138,6 @@ void ReadList(typHOE *hg, gint ope_max){
       hg->obj[i_list].epoch=(gdouble)g_strtod(tmp_char,NULL);
       
       if(tmp_char=(char *)strtok(NULL,"\n")){
-	hg->obj[i_list].note=g_strdup(tmp_char);
 	hg->obj[i_list].note=cut_spc(tmp_char);
       }
       else{
@@ -9850,7 +9826,6 @@ void MergeList(typHOE *hg, gint ope_max){
       if(strlen(buf)<10) break;
       
       tmp_char=(char *)strtok(buf,",");
-      tmp_obj.name=g_strdup(tmp_char);
       tmp_obj.name=cut_spc(tmp_char);
       tmp_obj.def=NULL;
       
@@ -9876,7 +9851,6 @@ void MergeList(typHOE *hg, gint ope_max){
 	tmp_obj.epoch=(gdouble)g_strtod(tmp_char,NULL);
 	
 	if(tmp_char=(char *)strtok(NULL,"\n")){
-	  tmp_obj.note=g_strdup(tmp_char);
 	  tmp_obj.note=cut_spc(tmp_char);
 	}
 	else{
