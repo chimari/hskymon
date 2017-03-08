@@ -82,6 +82,10 @@
 #define QMALLOC(ptr, typ, nel) \
   {if (!(ptr = (typ *)malloc((size_t)(nel)*sizeof(typ))))      \
       exit(1);;}
+#elif defined(USE_OSX)
+#define QMALLOC(ptr, typ, nel) \
+  {if (!(ptr = (typ *)malloc((size_t)(nel)*sizeof(typ))))      \
+      exit(1);;}
 #else
 #define QMALLOC(ptr, typ, nel) \
   {if (!(ptr = (typ *)malloc((size_t)(nel)*sizeof(typ))))      \
