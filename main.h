@@ -50,6 +50,14 @@
 #define DEFAULT_RO_NAMSERVER "g2stat.sum.subaru.nao.ac.jp"
 #endif
 
+#ifdef SIGRTMIN
+#define SIGHSKYMON1 SIGRTMIN
+#define SIGHSKYMON2 SIGRTMIN+1
+#else
+#define SIGHSKYMON1 SIGUSR1
+#define SIGHSKYMON2 SIGUSR2
+#endif
+
 #define WWW_BROWSER "firefox"
 
 #ifdef USE_WIN32

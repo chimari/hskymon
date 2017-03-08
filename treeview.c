@@ -4434,8 +4434,8 @@ void stddb_dl(typHOE *hg)
   act.sa_handler=stddb_signal;
   sigemptyset(&act.sa_mask);
   act.sa_flags=0;
-  if(sigaction(SIGRTMIN, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGRTMIN).\n");
+  if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
 #endif
   
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);

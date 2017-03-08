@@ -495,8 +495,8 @@ void fc_dl (typHOE *hg)
   act.sa_handler=dss_signal;
   sigemptyset(&act.sa_mask);
   act.sa_flags=0;
-  if(sigaction(SIGRTMIN, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGRTMIN).\n");
+  if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
 #endif
   
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
@@ -1253,9 +1253,11 @@ void create_fc_dialog(typHOE *hg)
   hg->fc_ptn=0;
 
   // Drawing Area
+  ebox=gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(hbox), ebox, TRUE, TRUE, 0);
   hg->fc_dw = gtk_drawing_area_new();
   gtk_widget_set_size_request (hg->fc_dw, FC_WIDTH, FC_HEIGHT);
-  gtk_box_pack_start(GTK_BOX(hbox), hg->fc_dw, TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(ebox), hg->fc_dw);
   gtk_widget_set_app_paintable(hg->fc_dw, TRUE);
 
   screen_changed(hg->fc_dw,NULL,NULL);
@@ -1264,17 +1266,16 @@ void create_fc_dialog(typHOE *hg)
 		    "expose-event", 
 		    expose_draw_fc,
 		    (gpointer)hg);
-  my_signal_connect(hg->fc_dw,
+  my_signal_connect(ebox,
 		    "scroll-event", 
 		    resize_draw_fc,
 		    (gpointer)hg);
-  my_signal_connect(hg->fc_dw, 
+  my_signal_connect(ebox, 
 		    "button-press-event", 
 		    button_draw_fc,
 		    (gpointer)hg);
-  gtk_widget_set_events(hg->fc_dw, GDK_SCROLL_MASK |
-                      GDK_BUTTON_PRESS_MASK | 
-                      GDK_EXPOSURE_MASK);
+  gtk_widget_set_events(ebox, GDK_SCROLL_MASK |
+                      GDK_BUTTON_PRESS_MASK);
 
   gtk_widget_show(hg->fc_dw);
 
@@ -3935,8 +3936,8 @@ void fcdb_dl(typHOE *hg)
   act.sa_handler=fcdb_signal;
   sigemptyset(&act.sa_mask);
   act.sa_flags=0;
-  if(sigaction(SIGRTMIN, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGRTMIN).\n");
+  if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
 #endif
   
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
@@ -4065,8 +4066,8 @@ void addobj_dl(typHOE *hg)
   act.sa_handler=fcdb_signal;
   sigemptyset(&act.sa_mask);
   act.sa_flags=0;
-  if(sigaction(SIGRTMIN, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGRTMIN).\n");
+  if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
 #endif
   
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);

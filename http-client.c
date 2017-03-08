@@ -782,7 +782,7 @@ void allsky_read_data(typHOE *hg){
 #ifndef USE_WIN32
 void allsky_signal(int sig){
   pid_t child_pid=0;
-  allsky_debug_print("ALLSkySignal got SIGRTMIN+1\n");
+  allsky_debug_print("ALLSkySignal got SIGHSKYMON2\n");
 
   do{
     int child_ret;
@@ -834,10 +834,10 @@ int get_allsky(typHOE *hg){
   act.sa_handler=allsky_signal;
   sigemptyset(&act.sa_mask);
   act.sa_flags=0;
-  if(sigaction(SIGRTMIN+1, &act, NULL)==-1){
-    fprintf(stderr,"Error in sigaction (SIGRTMIN+1).\n");
+  if(sigaction(SIGHSKYMON2, &act, NULL)==-1){
+    fprintf(stderr,"Error in sigaction (SIGHSKYMON2).\n");
     if(hg->allsky_date) g_free(hg->allsky_date);
-    hg->allsky_date=g_strdup("Error: in sigaction (SIGRTMIN+1)");
+    hg->allsky_date=g_strdup("Error: in sigaction (SIGHSKYMON2)");
     
     flag_getting_allsky=FALSE;
     return(-1);
@@ -927,7 +927,7 @@ int get_allsky(typHOE *hg){
     fflush(stdout);
     fflush(stdin);
     fflush(stderr);
-    kill(getppid(), SIGRTMIN+1);  //calling allsky_signal
+    kill(getppid(), SIGHSKYMON2);  //calling allsky_signal
     _exit(1);
   }
 #endif
@@ -2111,7 +2111,7 @@ int get_dss(typHOE *hg){
   }
   else if(fc_pid ==0) {
     http_c_fc(hg);
-    kill(getppid(), SIGRTMIN);  //calling dss_signal
+    kill(getppid(), SIGHSKYMON1);  //calling dss_signal
     _exit(1);
   }
 #endif
@@ -2146,7 +2146,7 @@ int get_stddb(typHOE *hg){
   }
   else if(stddb_pid ==0) {
     http_c_std(hg);
-    kill(getppid(), SIGRTMIN);  //calling dss_signal
+    kill(getppid(), SIGHSKYMON1);  //calling dss_signal
     _exit(1);
   }
 #endif
@@ -2182,7 +2182,7 @@ int get_fcdb(typHOE *hg){
   }
   else if(fcdb_pid ==0) {
     http_c_fcdb(hg);
-    kill(getppid(), SIGRTMIN);  //calling dss_signal
+    kill(getppid(), SIGHSKYMON1);  //calling dss_signal
     _exit(1);
   }
 #endif
