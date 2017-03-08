@@ -37,7 +37,6 @@
 
 
 #include "votable.h"
-#include "main.h"
 
 void stddb_vo_parse();
 void fcdb_vo_parse();
