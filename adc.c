@@ -873,8 +873,8 @@ gboolean draw_adc_cairo(GtkWidget *widget,
 		      size,
 		      size);
   }
-  
   g_object_unref(G_OBJECT(pixmap_adc));
+  gtk_widget_show(widget);
 
   return TRUE;
 

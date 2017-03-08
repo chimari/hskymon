@@ -2007,6 +2007,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 		      0,0,0,0,
 		      width,
 		      height);
+    gtk_widget_show(widget);
   }
 #else
   gdk_window_set_back_pixmap(widget->window,
@@ -2019,6 +2020,8 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 		    0,0,0,0,
 		    width,
 		    height);
+
+  gtk_widget_show(widget);
 #endif
 
   if(hg->skymon_mode==SKYMON_LAST){
@@ -2085,7 +2088,7 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
 						-1);
     
 
-    if(hg->pixmap_skymon) 
+    if(hg->pixmap_skymon)
       gdk_draw_drawable(pixmap_skymon_with_telstat,
 			widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
 			hg->pixmap_skymon,
@@ -2170,6 +2173,8 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
 		      height);
 
   }
+
+  gtk_widget_show(widget);
 
   skymon_debug_print("Finishing draw_skymon_with_telstat_cairo\n");
   return TRUE;

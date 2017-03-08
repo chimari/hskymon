@@ -1262,10 +1262,14 @@ void create_fc_dialog(typHOE *hg)
 
   screen_changed(hg->fc_dw,NULL,NULL);
 
+  gtk_widget_set_events(hg->fc_dw, GDK_EXPOSURE_MASK);
   my_signal_connect(hg->fc_dw, 
 		    "expose-event", 
 		    expose_draw_fc,
 		    (gpointer)hg);
+
+  gtk_widget_set_events(ebox, GDK_SCROLL_MASK |
+                      GDK_BUTTON_PRESS_MASK);
   my_signal_connect(ebox,
 		    "scroll-event", 
 		    resize_draw_fc,
@@ -1274,8 +1278,6 @@ void create_fc_dialog(typHOE *hg)
 		    "button-press-event", 
 		    button_draw_fc,
 		    (gpointer)hg);
-  gtk_widget_set_events(ebox, GDK_SCROLL_MASK |
-                      GDK_BUTTON_PRESS_MASK);
 
   gtk_widget_show(hg->fc_dw);
 
@@ -3054,6 +3056,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 			height);
     }
     g_object_unref(G_OBJECT(pixmap_fc));
+    gtk_widget_show(widget);
   }
 
   return TRUE;

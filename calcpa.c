@@ -3173,6 +3173,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 		    height);
   
     g_object_unref(G_OBJECT(pixmap_skymon));
+    gtk_widget_show(widget);
   }
 
   return TRUE;
