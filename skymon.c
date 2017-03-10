@@ -59,7 +59,9 @@ void create_skymon_dialog();
 void close_skymon();
 
 void screen_changed();
-gboolean expose_skymon();
+void draw_skymon_pixmap();
+static gboolean configure_skymon();
+static gboolean expose_skymon();
 gboolean draw_skymon();
 gboolean draw_skymon_cairo();
 #ifdef USE_XMLRPC
@@ -590,18 +592,24 @@ void create_skymon_dialog(typHOE *hg)
   screen_changed(hg->skymon_dw,NULL,NULL);
 
 
-  gtk_widget_show_all(hg->skymon_main);
-
+  gtk_widget_set_events(hg->skymon_dw, GDK_STRUCTURE_MASK | GDK_EXPOSURE_MASK);
+  my_signal_connect(hg->skymon_dw, 
+		    "configure-event", 
+		    configure_skymon,
+		    (gpointer)hg);
   my_signal_connect(hg->skymon_dw, 
 		    "expose-event", 
 		    expose_skymon,
 		    (gpointer)hg);
 
+  gtk_widget_set_events(ebox, GDK_BUTTON_PRESS_MASK);
   my_signal_connect(ebox, 
 		    "button-press-event", 
 		    button_signal,
 		    (gpointer)hg);
 
+  gtk_widget_show_all(hg->skymon_main);
+  draw_skymon(hg->skymon_dw, hg, FALSE);
   gdk_flush();
 
   skymon_debug_print("Finishing create_skymon_dialog\n");
@@ -652,16 +660,50 @@ void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer userdata)
     gtk_widget_set_colormap(widget, colormap);
 }
 
-gboolean expose_skymon(GtkWidget *widget, 
+void draw_skymon_pixmap(GtkWidget *widget, typHOE *hg){
+  if(hg->pixmap_skymon){
+    gdk_window_set_back_pixmap(widget->window,
+			       hg->pixmap_skymon,
+			       FALSE);
+    
+    gdk_draw_drawable(widget->window,
+		      widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
+		      hg->pixmap_skymon,
+		      0,0,0,0,
+		      hg->skymon_dw->allocation.width,
+		      hg->skymon_dw->allocation.height);
+  }
+}
+
+
+static gboolean configure_skymon (GtkWidget *widget, 
+			   GdkEventConfigure *event, 
+			   gpointer data)
+{
+  if(!flagSkymon) return(TRUE);
+
+  typHOE *hg = (typHOE *)data;
+  if(!hg->pixmap_skymon) return(TRUE);
+
+  draw_skymon(widget, hg, FALSE);
+  draw_skymon_pixmap(widget, hg);
+
+  return(TRUE);
+}
+
+static gboolean expose_skymon(GtkWidget *widget, 
 		       GdkEventExpose *event, 
 		       gpointer userdata){
   typHOE *hg;
 
-  if(!flagSkymon) return (FALSE);
+  if(!flagSkymon) return (TRUE);
+  if(event->count!=0) return(TRUE);
 
   hg=(typHOE *)userdata;
+  if(!hg->pixmap_skymon) return (TRUE);
 
-  draw_skymon(widget, hg, FALSE);
+  draw_skymon_pixmap(widget, hg);
+  return (TRUE);
 }
 
 
@@ -691,6 +733,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
   gboolean as_flag=FALSE;
   double y_ul, y_bl, y_ur, y_br;
   cairo_status_t cr_stat;
+  GdkPixmap *pixmap_skymonbk;
 
   if(!flagSkymon) return (FALSE);
 
@@ -721,19 +764,15 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
     hg->win_r=hg->win_cy*0.9;
   }
   
-  if(hg->pixmap_skymon){
-    g_object_unref(G_OBJECT(hg->pixmap_skymon));
-  }
-
-  hg->pixmap_skymon = gdk_pixmap_new(widget->window,
-				     width,
-				     height,
-				     -1);
+  pixmap_skymonbk = gdk_pixmap_new(widget->window,
+				   width,
+				   height,
+				   -1);
 
 
   
   //cr = gdk_cairo_create(widget->window);
-  cr = gdk_cairo_create(hg->pixmap_skymon);
+  cr = gdk_cairo_create(pixmap_skymonbk);
 
   cr_stat=cairo_status(cr);
   if(cr_stat!=CAIRO_STATUS_SUCCESS){
@@ -1995,33 +2034,41 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 
   cairo_destroy(cr);
 
-#ifdef USE_XMLRPC
-  if(!hg->telstat_flag){
-    gdk_window_set_back_pixmap(widget->window,
-			       hg->pixmap_skymon,
-			       FALSE);
-  
-    gdk_draw_drawable(widget->window,
-		      widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-		      hg->pixmap_skymon,
-		      0,0,0,0,
-		      width,
-		      height);
-    gtk_widget_show(widget);
-  }
-#else
-  gdk_window_set_back_pixmap(widget->window,
-			     hg->pixmap_skymon,
-			     FALSE);
-  
-  gdk_draw_drawable(widget->window,
+  if(hg->pixmap_skymon) g_object_unref(G_OBJECT(hg->pixmap_skymon));
+  hg->pixmap_skymon = gdk_pixmap_new(widget->window,
+				     width,
+				     height,
+				     -1);
+  gdk_draw_drawable(hg->pixmap_skymon,
 		    widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-		    hg->pixmap_skymon,
+		    pixmap_skymonbk,
 		    0,0,0,0,
 		    width,
 		    height);
+#ifdef USE_XMLRPC
+  if(hg->pixmap_skymonbg) g_object_unref(G_OBJECT(hg->pixmap_skymonbg));
+  hg->pixmap_skymonbg = gdk_pixmap_new(widget->window,
+				       width,
+				       height,
+				       -1);
+  gdk_draw_drawable(hg->pixmap_skymonbg,
+		    widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
+		    pixmap_skymonbk,
+		    0,0,0,0,
+		    width,
+		    height);
+#endif
 
-  gtk_widget_show(widget);
+  g_object_unref(G_OBJECT(pixmap_skymonbk));
+  gtk_widget_show_all(widget);
+#ifdef USE_XMLRPC
+  if(!hg->telstat_flag){
+    draw_skymon_pixmap(widget,hg);
+    gtk_widget_queue_draw(widget);
+  }
+#else
+  draw_skymon_pixmap(widget,hg);
+  gtk_widget_queue_draw(widget);
 #endif
 
   if(hg->skymon_mode==SKYMON_LAST){
@@ -2088,10 +2135,10 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
 						-1);
     
 
-    if(hg->pixmap_skymon)
+    if(hg->pixmap_skymonbg)
       gdk_draw_drawable(pixmap_skymon_with_telstat,
 			widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-			hg->pixmap_skymon,
+			hg->pixmap_skymonbg,
 			0,0,0,0,
 			width,
 			height);
@@ -2146,12 +2193,18 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
 
     cairo_destroy(cr);
 
-
+    /*
     gdk_window_set_back_pixmap(widget->window,
 			       pixmap_skymon_with_telstat,
 			       FALSE);
-  
-    gdk_draw_drawable(widget->window,
+    */
+    if(hg->pixmap_skymon) g_object_unref(G_OBJECT(hg->pixmap_skymon));
+    hg->pixmap_skymon = gdk_pixmap_new(widget->window,
+				       width,
+				       height,
+				       -1);
+					  
+    gdk_draw_drawable(hg->pixmap_skymon,
 		      widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
 		      pixmap_skymon_with_telstat,
 		      0,0,0,0,
@@ -2161,20 +2214,29 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
     g_object_unref(G_OBJECT(pixmap_skymon_with_telstat));
   }
   else{
+    /*
     gdk_window_set_back_pixmap(widget->window,
 			       hg->pixmap_skymon,
 			       FALSE);
-  
-    gdk_draw_drawable(widget->window,
+    */
+
+    if(hg->pixmap_skymon) g_object_unref(G_OBJECT(hg->pixmap_skymon));
+    hg->pixmap_skymon = gdk_pixmap_new(widget->window,
+				       width,
+				       height,
+				       -1);
+    gdk_draw_drawable(hg->pixmap_skymon,
 		      widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-		      hg->pixmap_skymon,
+		      hg->pixmap_skymonbg,
 		      0,0,0,0,
 		      width,
 		      height);
 
   }
 
-  gtk_widget_show(widget);
+  gtk_widget_show_all(widget);
+  draw_skymon_pixmap(widget,hg);
+  gtk_widget_queue_draw(widget);
 
   skymon_debug_print("Finishing draw_skymon_with_telstat_cairo\n");
   return TRUE;

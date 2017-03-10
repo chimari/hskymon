@@ -1,3 +1,7 @@
+2017.03.07 ver2.8.13- Adjusted for MacOSX.
+	            - Revised expose-event callbacks for FC, Plot, AD,
+	              and SkyMon.
+
 2017.02.27 ver2.8.12- Set the maximum FOV (25arcmin=6000pix in web server) for
 	              PANSTARRS Finding Chart.
 	            - Added "Search Object" in the object tree, ignoring

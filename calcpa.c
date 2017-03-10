@@ -29,7 +29,10 @@ void close_plot();
 void create_plot_dialog();
 gboolean draw_plot_cairo();
 gboolean resize_plot_cairo();
-static void refresh_plot();
+void draw_plot_pixmap();
+static gboolean configure_plot();
+static gboolean expose_plot();
+static gboolean refresh_plot();
 void pdf_plot();
 static void do_plot_moon();
 gboolean update_plot();
@@ -450,21 +453,23 @@ void create_plot_dialog(typHOE *hg)
   // Drawing Area
   hg->plot_dw = gtk_drawing_area_new();
 
+  gtk_widget_set_events(hg->plot_dw, GDK_SCROLL_MASK |
+                        GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK);
+  
   my_signal_connect(hg->plot_dw, 
-		    "expose-event", 
-		    draw_plot_cairo,
-		    (gpointer)hg);
+  		    "configure-event", 
+  		    configure_plot,
+  		    (gpointer)hg);
 
+  my_signal_connect(hg->plot_dw, 
+  		    "expose-event", 
+  		    expose_plot,
+  		    (gpointer)hg);
+  
   my_signal_connect(hg->plot_dw, 
 		    "scroll-event", 
 		    resize_plot_cairo,
 		    (gpointer)hg);
-  gtk_widget_set_events(hg->plot_dw, GDK_SCROLL_MASK |
-			GDK_FOCUS_CHANGE_MASK | 
-                        GDK_BUTTON_MOTION_MASK | 
-                        GDK_BUTTON_RELEASE_MASK | 
-                        GDK_BUTTON_PRESS_MASK | 
-                        GDK_EXPOSURE_MASK);
 
   gtk_widget_set_size_request (hg->plot_dw, PLOT_WIDTH, PLOT_HEIGHT);
   gtk_box_pack_start(GTK_BOX(vbox), hg->plot_dw, TRUE, TRUE, 0);
@@ -482,12 +487,12 @@ void create_plot_dialog(typHOE *hg)
   gdk_window_deiconify(hg->plot_main->window);
   gdk_window_raise(hg->plot_main->window);
 
+  draw_plot_cairo(hg->plot_dw,(gpointer)hg);
   gdk_flush();
 }
 
 
 gboolean draw_plot_cairo(GtkWidget *widget, 
-			   GdkEventExpose *event, 
 			   gpointer userdata){
   cairo_t *cr;
   cairo_surface_t *surface;
@@ -495,7 +500,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
   cairo_text_extents_t extents;
   double x,y;
   gint i_list;
-  GdkPixmap *pixmap_skymon;
+  GdkPixmap *pixmap_plotbk;
   gint from_set, to_rise;
   double dx,dy,lx,ly;
   double y0,y1,ymin,ymax;
@@ -622,13 +627,13 @@ gboolean draw_plot_cairo(GtkWidget *widget,
     lx=width*0.8;
     ly=height*0.8;
 
-    pixmap_skymon = gdk_pixmap_new(widget->window,
+    pixmap_plotbk = gdk_pixmap_new(widget->window,
 				   width,
 				   height,
 				   -1);
   
     //cr = gdk_cairo_create(widget->window);
-    cr = gdk_cairo_create(pixmap_skymon);
+    cr = gdk_cairo_create(pixmap_plotbk);
   }
 
   /*
@@ -3163,35 +3168,91 @@ gboolean draw_plot_cairo(GtkWidget *widget,
   if(hg->plot_output!=PLOT_OUTPUT_PRINT){
     cairo_destroy(cr);
   }
-  
   if(hg->plot_output==PLOT_OUTPUT_WINDOW){
-    gdk_draw_drawable(widget->window,
+    if(hg->pixmap_plot) g_object_unref(G_OBJECT(hg->pixmap_plot));
+    hg->pixmap_plot = gdk_pixmap_new(widget->window,
+				     width,
+				     height,
+				     -1);
+    gdk_draw_drawable(hg->pixmap_plot,
 		      widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-		      pixmap_skymon,
+		      pixmap_plotbk,
 		      0,0,0,0,
 		      width,
-		    height);
+		      height);
   
-    g_object_unref(G_OBJECT(pixmap_skymon));
-    gtk_widget_show(widget);
+    g_object_unref(G_OBJECT(pixmap_plotbk));
+    gtk_widget_show_all(widget);
+    draw_plot_pixmap(widget,hg);
+    gtk_widget_queue_draw(widget);
   }
 
   return TRUE;
 }
 
 
-static void
+void draw_plot_pixmap(GtkWidget *widget, typHOE *hg){
+  gdk_window_set_back_pixmap(widget->window,
+			     hg->pixmap_plot,
+			     FALSE);
+      
+  gdk_draw_drawable(widget->window,
+		    widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
+		    hg->pixmap_plot,
+		    0,0,0,0,
+		    hg->plot_dw->allocation.width,
+		    hg->plot_dw->allocation.height);
+}
+
+static gboolean
+configure_plot (GtkWidget *widget, GdkEventConfigure *event, 
+	     gpointer data)
+{
+  if(!flagPlot) return(TRUE);
+
+  typHOE *hg = (typHOE *)data;
+  if(!hg->pixmap_plot) return(TRUE);
+
+  hg->plot_output=PLOT_OUTPUT_WINDOW;
+
+  if(flagPlot){
+    draw_plot_cairo(hg->plot_dw,(gpointer)hg);
+  }
+
+  return(TRUE);
+}
+
+static gboolean
+expose_plot (GtkWidget *widget, GdkEventExpose *event, 
+	     gpointer data)
+{
+  if(!flagPlot) return(TRUE);
+  if(event->count!=0) return(TRUE);
+
+  typHOE *hg = (typHOE *)data;
+  if(!hg->pixmap_plot) return(TRUE);
+
+  hg->plot_output=PLOT_OUTPUT_WINDOW;
+
+  //printf("Expose Plot Draw\n");
+
+  draw_plot_pixmap(hg->plot_dw,hg);
+
+  return(TRUE);
+}
+
+
+static gboolean
 refresh_plot (GtkWidget *widget, gpointer data)
 {
-  GtkTreeIter iter;
   typHOE *hg = (typHOE *)data;
 
   hg->plot_output=PLOT_OUTPUT_WINDOW;
 
   if(flagPlot){
-    draw_plot_cairo(hg->plot_dw,NULL,
-		    (gpointer)hg);
+    draw_plot_cairo(hg->plot_dw,(gpointer)hg);
   }
+  return(TRUE);
 }
 
 void pdf_plot (typHOE *hg)
@@ -3199,8 +3260,7 @@ void pdf_plot (typHOE *hg)
   hg->plot_output=PLOT_OUTPUT_PDF;
 
   if(flagPlot){
-    draw_plot_cairo(hg->plot_dw,NULL,
-		    (gpointer)hg);
+    draw_plot_cairo(hg->plot_dw,(gpointer)hg);
   }
 
   hg->plot_output=PLOT_OUTPUT_WINDOW;
@@ -3293,8 +3353,7 @@ gboolean resize_plot_cairo(GtkWidget *widget,
 
     }
       
-    draw_plot_cairo(hg->plot_dw,NULL,
-		    (gpointer)hg);
+    draw_plot_cairo(hg->plot_dw,(gpointer)hg);
   }
 
   return(TRUE);
@@ -3309,8 +3368,7 @@ static void do_plot_moon (GtkWidget *w,   gpointer gdata)
   hg->plot_moon=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
   
   if(flagPlot){
-    draw_plot_cairo(hg->plot_dw,NULL,
-		    (gpointer)hg);
+    draw_plot_cairo(hg->plot_dw,(gpointer)hg);
   }
 }
 
@@ -5099,8 +5157,7 @@ static void draw_page (GtkPrintOperation *operation,
   hg->context=context;
 
   if(flagPlot){
-    draw_plot_cairo(hg->plot_dw,NULL,
-		    (gpointer)hg);
+    draw_plot_cairo(hg->plot_dw,(gpointer)hg);
   }
 
   hg->plot_output=PLOT_OUTPUT_WINDOW;

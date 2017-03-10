@@ -7759,6 +7759,12 @@ void param_init(typHOE *hg){
   hg->pixbuf=NULL;
   hg->pixbuf2=NULL;
   hg->pixmap_skymon=NULL;
+#ifdef USE_XMLRPC
+  hg->pixmap_skymonbg=NULL;
+#endif
+  hg->pixmap_fc=NULL;
+  hg->pixmap_plot=NULL;
+  hg->pixmap_adc=NULL;
   hg->allsky_flag=FALSE;
   hg->allsky_diff_flag=TRUE;
   hg->allsky_diff_base=ALLSKY_DIFF_BASE;

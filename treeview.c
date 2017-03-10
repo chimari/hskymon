@@ -2132,13 +2132,11 @@ focus_item (GtkWidget *widget, gpointer data)
 #endif
 
   if(flagPlot){
-    draw_plot_cairo(hg->plot_dw,NULL,
-  	    (gpointer)hg);
+    draw_plot_cairo(hg->plot_dw,(gpointer)hg);
   }
 
   if(flagADC){
-    draw_adc_cairo(hg->adc_dw,NULL,
-		   (gpointer)hg);
+    draw_adc_cairo(hg->adc_dw,(gpointer)hg);
   }
 }
 

@@ -2,7 +2,7 @@
 #  include "config.h"
 #endif  
 
-#undef USE_OSX
+#define USE_OSX
 
 #undef ALLSKY_DEBUG
 #undef SKYMON_DEBUG
@@ -1512,6 +1512,12 @@ struct _typHOE{
   GdkPixbuf *pixbuf;
   GdkPixbuf *pixbuf2;
   GdkPixmap *pixmap_skymon;
+#ifdef USE_XMLRPC
+  GdkPixmap *pixmap_skymonbg;
+#endif
+  GdkPixmap *pixmap_fc;
+  GdkPixmap *pixmap_plot;
+  GdkPixmap *pixmap_adc;
   gboolean allsky_flag;
   gboolean allsky_diff_flag;
   gchar *allsky_name;
