@@ -2,7 +2,7 @@
 #  include "config.h"
 #endif  
 
-#define USE_OSX
+#undef USE_OSX
 
 #undef ALLSKY_DEBUG
 #undef SKYMON_DEBUG
