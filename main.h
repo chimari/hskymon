@@ -301,6 +301,19 @@ enum{ ADC_INST_IMR, ADC_INST_HDSAUTO, ADC_INST_HDSZENITH} ADC_Inst;
 
 #define HSC_SIZE 110
 
+// OpenSSL
+typedef enum {
+	SSL_NONE,
+	SSL_TUNNEL,
+	SSL_STARTTLS
+} SSLType;
+
+typedef enum {
+	SSL_CERT_NONE,
+	SSL_CERT_ACCEPT,
+	SSL_CERT_DENY
+} SSLCertRes;
+
 
 // Treeview
 enum
@@ -1007,6 +1020,9 @@ ALLSKY_AAT
 #define HSKYMON_HTTP_ERROR_SOCKET   -2
 #define HSKYMON_HTTP_ERROR_CONNECT  -3
 #define HSKYMON_HTTP_ERROR_TEMPFILE -4
+#ifdef USE_SSL
+#define HSKYMON_HTTP_ERROR_SSL -5
+#endif
 
 // Plot Mode
 enum{ PLOT_EL, PLOT_AZ, PLOT_AD, PLOT_ADPAEL, PLOT_MOONSEP,  PLOT_HDSPA} PlotMode;
@@ -1014,6 +1030,16 @@ enum{ PLOT_ALL_SINGLE, PLOT_ALL_SELECTED,PLOT_ALL_ALL} PlotAll;
 enum{ PLOT_OUTPUT_WINDOW, PLOT_OUTPUT_PDF, PLOT_OUTPUT_PRINT} PlotOutput;
 enum{ PLOT_CENTER_MIDNIGHT, PLOT_CENTER_CURRENT,PLOT_CENTER_MERIDIAN} PlotCenter;
 #define PLOT_INTERVAL 60*1000
+
+typedef struct _SSLpara SSLpara;
+struct _SSLpara{
+  guint mode;
+  gint cert_res;
+  gboolean cert_skip;
+  gboolean nonblock;
+  gchar *sub;
+  gchar *iss;
+};
 
 
 typedef struct _OBJpara OBJpara;
@@ -1639,6 +1665,8 @@ struct _typHOE{
   gint std_mag2;
   gchar *std_band;
   gchar *std_sptype2;
+
+  SSLpara ssl;
 };
 
 

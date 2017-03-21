@@ -24,6 +24,11 @@
 
 #include <libxml/HTMLparser.h>
 
+#ifdef USE_SSL
+#include<fcntl.h>
+#  include "ssl.h"
+#endif
+
 
 // From libghttp-1.0.9
 time_t http_date_to_time(const char *a_date);
@@ -40,9 +45,15 @@ void allsky_read_data();
 #ifdef USE_WIN32
 unsigned __stdcall http_c();
 unsigned __stdcall http_c_fc();
+#ifdef USE_SSL
+unsigned __stdcall http_c_fc_ssl();
+#endif
 #else
 int http_c();
 int http_c_fc();
+#ifdef USE_SSL
+int http_c_fc_ssl();
+#endif
 #endif
 int get_dss();
 int get_stddb();
@@ -57,6 +68,14 @@ static void cancel_allsky();
 GdkPixbuf* diff_pixbuf();
 
 void unchunk();
+
+#ifdef USE_SSL
+gint ssl_read();
+gint ssl_peek();
+gint ssl_gets();
+gint ssl_write();
+#endif
+
 
 extern void printf_log();
 
@@ -73,7 +92,7 @@ gint allsky_repeat=0;
 #define BUF_LEN 65535             /* バッファのサイズ */
 #else
 //#define BUF_LEN 255             /* バッファのサイズ */
-#define BUF_LEN 65535             /* バッファのサイズ */
+#define BUF_LEN 1023             /* バッファのサイズ */
 #endif
 
 int debug_flg = 0;      /* -d オプションを付けると turn on する */
@@ -155,7 +174,6 @@ gint fd_gets(gint fd, gchar *buf, gint len)
   return bp - buf;
 }
 
-
 /*--------------------------------------------------
  * ソケットから1行読み込む
  */
@@ -228,12 +246,22 @@ gint fd_write(gint fd, const gchar *buf, gint len)
  */
 
 void write_to_server(int socket, char *p){
-    if ( debug_flg ){
-        fprintf(stderr, "<-- %s", p);fflush(stderr);
-    }
-    
-    fd_write(socket, p, strlen(p));
+  if ( debug_flg ){
+    fprintf(stderr, "<-- %s", p);fflush(stderr);
+  }
+  
+  fd_write(socket, p, strlen(p));
 }
+
+#ifdef USE_SSL
+void write_to_SSLserver(SSL *ssl, char *p){
+  if ( debug_flg ){
+    fprintf(stderr, "[SSL] <-- %s", p);fflush(stderr);
+  }
+  
+  ssl_write(ssl, p, strlen(p));
+}
+#endif
 
 #ifdef USE_WIN32
 unsigned __stdcall http_c(LPVOID lpvPipe)
@@ -302,68 +330,8 @@ int http_c(typHOE *hg){
     freeaddrinfo(res);
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
-  
-  //  if(hg->allsky_date_path){ // Required Date path for URL
-  // //if(strlen(hg->allsky_date_path)>2){
-  //   allsky_debug_print("Child: downloading date-path %s ...\n",hg->allsky_date_path);
-    
-    // bin mode
-  // sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->allsky_date_path);
-  // write_to_server(command_socket, send_mesg);
-    
-  //sprintf(send_mesg, "Accept: */*\r\n");
-  //write_to_server(command_socket, send_mesg);
-    
-  //sprintf(send_mesg, "User-Agent: Mozilla/4.0\r\n");
-  //write_to_server(command_socket, send_mesg);
-    
-  //sprintf(send_mesg, "Host: %s\r\n", hg->allsky_host);
-  //write_to_server(command_socket, send_mesg);
-    
-  //sprintf(send_mesg, "Connection: close\r\n");
-  //write_to_server(command_socket, send_mesg);
-    
-  //sprintf(send_mesg, "\r\n");
-  //write_to_server(command_socket, send_mesg);
-    
-  //while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
-  //}
-  //while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
-  //  {
-  //	strncpy(date_tmp, buf, BUF_LEN);
-  //	g_strstrip(date_tmp);
-  //  }
-  //  img_tmp=g_strdup_printf(hg->allsky_path,date_tmp);
-    
-  //  close(command_socket);
-    
-  /* ソケット生成  */
-  //  if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
-  //    fprintf(stderr, "Failed to create a new socket.\n");
-  //    if(hg->allsky_date) g_free(hg->allsky_date);
-  //    hg->allsky_date=g_strdup("Error: Failed to create a new socket.");
-  //#ifdef USE_WIN32
-    //   flag_getting_allsky=FALSE;
-  //    _endthreadex(0);
-  //#endif
-  //    return(HSKYMON_HTTP_ERROR_SOCKET);
-  //  }
-  //  
-  //  /* サーバに接続 */
-  //  if( connect(command_socket, res->ai_addr, res->ai_addrlen) != 0){
-  //    fprintf(stderr, "Failed to connect to %s .\n", hg->allsky_host);
-  //    if(hg->allsky_date) g_free(hg->allsky_date);
-  //    hg->allsky_date=g_strdup("Error: Failed to connect.");
-  //#ifdef USE_WIN32
-  //    flag_getting_allsky=FALSE;
-  //    _endthreadex(0);
-  //#endif
-  //    return(HSKYMON_HTTP_ERROR_CONNECT);
-  //  }
-  //}
-  //else{
-    img_tmp=g_strdup(hg->allsky_path);
-  //}
+
+  img_tmp=g_strdup(hg->allsky_path);
   
   // AddrInfoの解放
   freeaddrinfo(res);
@@ -410,11 +378,10 @@ int http_c(typHOE *hg){
     }
     // header lines
   }
-  while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
-    {
-      fwrite( &buf , size , 1 , fp_write ); 
-    }
-  fwrite( &buf , size , 1 , fp_write ); 
+  do { //data read
+    size = read(command_socket, buf, BUF_LEN);
+    fwrite( &buf , size , 1 , fp_write ); 
+  }while(size>0);
   
   g_free(img_tmp);
 
@@ -1292,7 +1259,7 @@ int http_c_fc(typHOE *hg){
 #endif
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
-  
+
   // bin mode
   ra_0=hg->obj[hg->dss_i].ra;
   hobject.ra.hours=(gint)(ra_0/10000);
@@ -1554,11 +1521,10 @@ int http_c_fc(typHOE *hg){
 	chunked_flag=TRUE;
       }
     }
-    while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
-      {
-	fwrite( &buf , size , 1 , fp_write ); 
-      }
-    fwrite( &buf , size , 1 , fp_write ); 
+    do { // data read
+      size = read(command_socket, buf, BUF_LEN);
+      fwrite( &buf , size , 1 , fp_write ); 
+    }while(size>0);
 
     fclose(fp_write);
 
@@ -1674,9 +1640,7 @@ int http_c_fc(typHOE *hg){
 
     // AddrInfoの解放
     freeaddrinfo(res);
-    
-    
-    
+
     if(cp3){
       switch(hg->fc_mode){
       case FC_ESO_DSS1R:
@@ -1747,11 +1711,10 @@ int http_c_fc(typHOE *hg){
 	  chunked_flag=TRUE;
 	}
       }
-      while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
-	{
-	  fwrite( &buf , size , 1 , fp_write ); 
-	}
-      fwrite( &buf , size , 1 , fp_write ); 
+      do { // data read
+	size = read(command_socket, buf, BUF_LEN);
+	fwrite( &buf , size , 1 , fp_write ); 
+      }while(size>0);
       
       
       fclose(fp_write);
@@ -1777,11 +1740,10 @@ int http_c_fc(typHOE *hg){
 	chunked_flag=TRUE;
       }
     }
-    while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
-      {
-	fwrite( &buf , size , 1 , fp_write );
-      }
-    fwrite( &buf , size , 1 , fp_write ); 
+    do { // data read
+      size = read(command_socket, buf, BUF_LEN);
+      fwrite( &buf , size , 1 , fp_write ); 
+    }while(size>0);
     
     
     fclose(fp_write);
@@ -1810,6 +1772,637 @@ int http_c_fc(typHOE *hg){
   return 0;
 #endif
 }
+
+
+#ifdef USE_SSL
+#ifdef USE_WIN32
+unsigned __stdcall http_c_fc_ssl(LPVOID lpvPipe)
+{
+  typHOE *hg=(typHOE *) lpvPipe;
+#else
+int http_c_fc_ssl(typHOE *hg){
+#endif
+  int command_socket;           /* コマンド用ソケット */
+  int size;
+
+  char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
+  char buf[BUF_LEN+1];
+  
+  FILE *fp_write;
+  
+  gchar *tmp_file=NULL;
+
+  gdouble ra_0, dec_0;
+  gchar tmp[2048], tmp_scale[10];
+  gfloat sdss_scale=SDSS_SCALE;
+  gint xpix,ypix,i_bin;
+  //struct ln_hms ra_hms;
+  //struct ln_dms dec_dms;
+  static char cbuf[BUFFSIZE];
+  gchar *cp, *cpp, *cp2, *cp3=NULL;
+  FILE *fp_read;
+
+  struct lnh_equ_posn hobject;
+  struct ln_equ_posn object;
+  struct lnh_equ_posn hobject_prec;
+  struct ln_equ_posn object_prec;
+
+  struct addrinfo hints, *res;
+  struct in_addr addr;
+  int err;
+  const char *cause=NULL;
+
+  gboolean chunked_flag=FALSE;
+
+  SSL *ssl;
+  SSL_CTX *ctx;
+
+   
+  /* ホストの情報 (IP アドレスなど) を取得 */
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_family = AF_INET;
+
+  if ((err = getaddrinfo(hg->dss_host, "https", &hints, &res)) !=0){
+    fprintf(stderr, "Bad hostname [%s]\n", hg->dss_host);
+#ifdef USE_WIN32
+    gtk_main_quit();
+    _endthreadex(0);
+#endif
+    return(HSKYMON_HTTP_ERROR_GETHOST);
+  }
+
+  /* ソケット生成 */
+  if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
+    fprintf(stderr, "Failed to create a new socket.\n");
+#ifdef USE_WIN32
+    gtk_main_quit();
+    _endthreadex(0);
+#endif
+    return(HSKYMON_HTTP_ERROR_SOCKET);
+  }
+  
+  /* サーバに接続 */
+  if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
+    fprintf(stderr, "Failed to connect to %s .\n", hg->dss_host);
+#ifdef USE_WIN32
+    gtk_main_quit();
+    _endthreadex(0);
+#endif
+    return(HSKYMON_HTTP_ERROR_CONNECT);
+  }
+
+  SSL_load_error_strings();
+  SSL_library_init();
+
+  ctx = SSL_CTX_new(SSLv23_client_method());
+  ssl = SSL_new(ctx);
+  err = SSL_set_fd(ssl, command_socket);
+  if( SSL_connect(ssl) !=1) {
+    fprintf(stderr, "SSL connection failed.\n");
+#ifdef USE_WIN32
+    gtk_main_quit();
+    _endthreadex(0);
+#endif
+    return(HSKYMON_HTTP_ERROR_SSL);
+  }
+  
+  // bin mode
+  ra_0=hg->obj[hg->dss_i].ra;
+  hobject.ra.hours=(gint)(ra_0/10000);
+  ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
+  hobject.ra.minutes=(gint)(ra_0/100);
+  hobject.ra.seconds=ra_0-(gdouble)(hobject.ra.minutes)*100;
+ 
+  if(hg->obj[hg->dss_i].dec<0){
+    hobject.dec.neg=1;
+    dec_0=-hg->obj[hg->dss_i].dec;
+  }
+  else{
+    hobject.dec.neg=0;
+    dec_0=hg->obj[hg->dss_i].dec;
+  }
+  hobject.dec.degrees=(gint)(dec_0/10000);
+  dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
+  hobject.dec.minutes=(gint)(dec_0/100);
+  hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
+
+
+  ln_hequ_to_equ (&hobject, &object);
+  ln_get_equ_prec2 (&object, 
+		    get_julian_day_of_epoch(hg->obj[hg->dss_i].epoch),
+		    JD2000, &object_prec);
+  ln_equ_to_hequ (&object_prec, &hobject_prec);
+
+
+  switch(hg->fc_mode){
+  case FC_STSCI_DSS1R:
+  case FC_STSCI_DSS1B:
+  case FC_STSCI_DSS2R:
+  case FC_STSCI_DSS2B:
+  case FC_STSCI_DSS2IR:
+    sprintf(tmp,hg->dss_path,
+	    hg->dss_src,
+	    hobject_prec.ra.hours,hobject_prec.ra.minutes,
+	    hobject_prec.ra.seconds,
+	    (hobject_prec.dec.neg) ? "-" : "+", 
+	    hobject_prec.dec.degrees, hobject_prec.dec.minutes,
+	    hobject_prec.dec.seconds,
+	    hg->dss_arcmin,hg->dss_arcmin);
+    break;
+
+  case FC_ESO_DSS1R:
+  case FC_ESO_DSS2R:
+  case FC_ESO_DSS2B:
+  case FC_ESO_DSS2IR:
+    sprintf(tmp,hg->dss_path,
+	    hobject_prec.ra.hours,hobject_prec.ra.minutes,
+	    hobject_prec.ra.seconds,
+	    (hobject_prec.dec.neg) ? "-" : "+", 
+	    hobject_prec.dec.degrees, hobject_prec.dec.minutes,
+	    hobject_prec.dec.seconds,
+	    hg->dss_arcmin,hg->dss_arcmin,hg->dss_src);
+    break;
+
+  case FC_SKYVIEW_GALEXF:
+  case FC_SKYVIEW_GALEXN:
+  case FC_SKYVIEW_DSS1R:
+  case FC_SKYVIEW_DSS1B:
+  case FC_SKYVIEW_DSS2R:
+  case FC_SKYVIEW_DSS2B:
+  case FC_SKYVIEW_DSS2IR:
+  case FC_SKYVIEW_SDSSU:
+  case FC_SKYVIEW_SDSSG:
+  case FC_SKYVIEW_SDSSR:
+  case FC_SKYVIEW_SDSSI:
+  case FC_SKYVIEW_SDSSZ:
+  case FC_SKYVIEW_2MASSJ:
+  case FC_SKYVIEW_2MASSH:
+  case FC_SKYVIEW_2MASSK:
+  case FC_SKYVIEW_WISE34:
+  case FC_SKYVIEW_WISE46:
+  case FC_SKYVIEW_WISE12:
+  case FC_SKYVIEW_WISE22:
+    switch(hg->dss_scale){
+    case FC_SCALE_LOG:
+      sprintf(tmp_scale,"Log");
+      break;
+    case FC_SCALE_SQRT:
+      sprintf(tmp_scale,"Sqrt");
+      break;
+    case FC_SCALE_HISTEQ:
+      sprintf(tmp_scale,"HistEq");
+      break;
+    case FC_SCALE_LOGLOG:
+      sprintf(tmp_scale,"LogLog");
+      break;
+    default:
+      sprintf(tmp_scale,"Linear");
+    }
+    sprintf(tmp,hg->dss_path,
+	    hg->dss_src, hg->obj[hg->dss_i].epoch,
+	    tmp_scale,
+	    //	    (hg->dss_log) ? "Log" : "Linear",
+	    (hg->dss_invert) ? "&invert=on&" : "&",
+	    (gdouble)hg->dss_arcmin/60.,
+	    (gdouble)hg->dss_arcmin/60.,
+	    hg->dss_pix,
+	    ln_hms_to_deg(&hobject.ra),
+	    ln_dms_to_deg(&hobject.dec));
+    break;
+
+
+  case FC_SKYVIEW_RGB:
+    switch(hg->dss_scale_RGB[hg->i_RGB]){
+    case FC_SCALE_LOG:
+      sprintf(tmp_scale,"Log");
+      break;
+    case FC_SCALE_SQRT:
+      sprintf(tmp_scale,"Sqrt");
+      break;
+    case FC_SCALE_HISTEQ:
+      sprintf(tmp_scale,"HistEq");
+      break;
+    case FC_SCALE_LOGLOG:
+      sprintf(tmp_scale,"LogLog");
+      break;
+    default:
+      sprintf(tmp_scale,"Linear");
+    }
+    sprintf(tmp,hg->dss_path,
+	    hg->dss_src, hg->obj[hg->dss_i].epoch,
+	    tmp_scale,
+	    //(hg->dss_invert) ? "&invert=on&" : "&",
+	    (gdouble)hg->dss_arcmin/60.,
+	    (gdouble)hg->dss_arcmin/60.,
+	    hg->dss_pix,
+	    ln_hms_to_deg(&hobject.ra),
+	    ln_dms_to_deg(&hobject.dec));
+    break;
+
+  case FC_SDSS:
+    i_bin=1;
+    do{
+      sdss_scale=SDSS_SCALE*(gfloat)i_bin;
+      xpix=(gint)((gfloat)hg->dss_arcmin*60/sdss_scale);
+      ypix=(gint)((gfloat)hg->dss_arcmin*60/sdss_scale);
+      i_bin++;
+    }while((xpix>1000)||(ypix>1000));
+    sprintf(tmp,hg->dss_path,
+	    ln_hms_to_deg(&hobject_prec.ra),
+	    ln_dms_to_deg(&hobject_prec.dec),
+	    sdss_scale,
+	    xpix,
+	    ypix,
+	    (hg->sdss_photo) ? "P" : "",
+	    (hg->sdss_spec) ? "S" : "",
+	    (hg->sdss_photo) ? "&PhotoObjs=on" : "",
+	    (hg->sdss_spec) ? "&SpecObjs=on" : "");
+    break;
+
+  case FC_SDSS13:
+    /*  SDSS DR10 Server could not responce, when file size < 800??
+                                      2014/2/20
+    i_bin=1;
+    do{
+      sdss_scale=SDSS_SCALE/10.*(gfloat)i_bin;
+      xpix=(gint)((gfloat)hg->dss_arcmin*60/sdss_scale);
+      ypix=(gint)((gfloat)hg->dss_arcmin*60/sdss_scale);
+      i_bin++;
+    }while((xpix>1500)||(ypix>1500));
+    */
+    xpix=1500;
+    ypix=1500;
+    sdss_scale=((gfloat)hg->dss_arcmin*60.)/(gfloat)xpix;
+    sprintf(tmp,hg->dss_path,
+	    ln_hms_to_deg(&hobject_prec.ra),
+	    ln_dms_to_deg(&hobject_prec.dec),
+	    sdss_scale,
+	    xpix,
+	    ypix,
+	    (hg->sdss_photo) ? "P" : "",
+	    (hg->sdss_spec) ? "S" : "",
+	    (hg->sdss_photo) ? "&PhotoObjs=on" : "",
+	    (hg->sdss_spec) ? "&SpecObjs=on" : "");
+    break;
+
+
+  case FC_PANCOL:
+  case FC_PANG:
+  case FC_PANR:
+  case FC_PANI:
+  case FC_PANZ:
+  case FC_PANY:
+    if(hg->dss_arcmin>PANSTARRS_MAX_ARCMIN){
+      gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			       (gdouble)(PANSTARRS_MAX_ARCMIN));
+    }
+    sprintf(tmp,hg->dss_path,
+	    ln_hms_to_deg(&hobject_prec.ra),
+	    ln_dms_to_deg(&hobject_prec.dec),
+	    hg->dss_arcmin*240);
+    break;
+
+  }
+
+  sprintf(send_mesg, "GET %s HTTP/1.1\r\n", tmp);
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "Accept: image/gif, image/jpeg, image/png, */*\r\n");
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "User-Agent: Mozilla/5.0\r\n");
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "Host: %s\r\n", hg->dss_host);
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "Connection: close\r\n");
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "\r\n");
+  write_to_SSLserver(ssl, send_mesg);
+
+  switch(hg->fc_mode){
+  case FC_ESO_DSS1R:
+  case FC_ESO_DSS2R:
+  case FC_ESO_DSS2B:
+  case FC_ESO_DSS2IR:
+  case FC_SKYVIEW_GALEXF:
+  case FC_SKYVIEW_GALEXN:
+  case FC_SKYVIEW_DSS1R:
+  case FC_SKYVIEW_DSS1B:
+  case FC_SKYVIEW_DSS2R:
+  case FC_SKYVIEW_DSS2B:
+  case FC_SKYVIEW_DSS2IR:
+  case FC_SKYVIEW_SDSSU:
+  case FC_SKYVIEW_SDSSG:
+  case FC_SKYVIEW_SDSSR:
+  case FC_SKYVIEW_SDSSI:
+  case FC_SKYVIEW_SDSSZ:
+  case FC_SKYVIEW_2MASSJ:
+  case FC_SKYVIEW_2MASSH:
+  case FC_SKYVIEW_2MASSK:
+  case FC_SKYVIEW_WISE34:
+  case FC_SKYVIEW_WISE46:
+  case FC_SKYVIEW_WISE12:
+  case FC_SKYVIEW_WISE22:
+  case FC_SKYVIEW_RGB:
+  case FC_PANCOL:
+  case FC_PANG:
+  case FC_PANR:
+  case FC_PANI:
+  case FC_PANZ:
+  case FC_PANY:
+    if((fp_write=fopen(hg->dss_tmp,"wb"))==NULL){
+      fprintf(stderr," File Write Error  \"%s\" \n", hg->dss_tmp);
+      return(HSKYMON_HTTP_ERROR_TEMPFILE);
+    }
+    
+    while((size = ssl_gets(ssl, buf, BUF_LEN)) > 2 ){
+      // header lines
+      if(debug_flg){
+	fprintf(stderr,"[SSL] --> Header: %s", buf);
+      }
+      if(NULL != (cp = strstr(buf, "Transfer-Encoding: chunked"))){
+	chunked_flag=TRUE;
+      }
+    }
+    do{ // data read
+      size = SSL_read(ssl, buf, BUF_LEN);
+      fwrite( &buf , size , 1 , fp_write ); 
+    }while(size >0);
+    
+
+    fclose(fp_write);
+
+#ifndef USE_WIN32
+    if((chmod(hg->dss_tmp,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
+    g_print("Cannot Chmod Temporary File %s!  Please check!!!\n",hg->dss_tmp);
+  }
+#endif
+
+    if(chunked_flag) unchunk(hg->dss_tmp);
+    
+    fp_read=fopen(hg->dss_tmp,"r");
+    
+    switch(hg->fc_mode){
+    case FC_ESO_DSS1R:
+    case FC_ESO_DSS2R:
+    case FC_ESO_DSS2B:
+    case FC_ESO_DSS2IR:
+      while(!feof(fp_read)){
+	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
+	  cpp=cbuf;
+	  if(NULL != (cp = strstr(cpp, "<A HREF="))){
+	    cpp=cp+strlen("<A HREF=");
+	    
+	    if(NULL != (cp2 = strstr(cp, ">"))){
+	      cp3=g_strndup(cpp,strlen(cpp)-strlen(cp2));
+	    }
+	    
+	    break;
+	  }
+	}
+      }
+      break;
+
+    case FC_SKYVIEW_GALEXF:
+    case FC_SKYVIEW_GALEXN:
+    case FC_SKYVIEW_DSS1R:
+    case FC_SKYVIEW_DSS1B:
+    case FC_SKYVIEW_DSS2R:
+    case FC_SKYVIEW_DSS2B:
+    case FC_SKYVIEW_DSS2IR:
+    case FC_SKYVIEW_SDSSU:
+    case FC_SKYVIEW_SDSSG:
+    case FC_SKYVIEW_SDSSR:
+    case FC_SKYVIEW_SDSSI:
+    case FC_SKYVIEW_SDSSZ:
+    case FC_SKYVIEW_2MASSJ:
+    case FC_SKYVIEW_2MASSH:
+    case FC_SKYVIEW_2MASSK:
+    case FC_SKYVIEW_WISE34:
+    case FC_SKYVIEW_WISE46:
+    case FC_SKYVIEW_WISE12:
+    case FC_SKYVIEW_WISE22:
+    case FC_SKYVIEW_RGB:
+      while(!feof(fp_read)){
+	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
+	  cpp=cbuf;
+	  
+	  if(NULL != (cp = strstr(cpp, "x['_output']='../.."))){
+	    cpp=cp+strlen("x['_output']='../..");
+	    
+	    if(NULL != (cp2 = strstr(cp, "'"))){
+	      cp3=g_strndup(cpp,strlen(cpp)-2);
+	    }
+	    
+	    break;
+	  }
+	}
+      }
+      break;
+
+    case FC_PANCOL:
+    case FC_PANG:
+    case FC_PANR:
+    case FC_PANI:
+    case FC_PANZ:
+    case FC_PANY:
+      
+      while(!feof(fp_read)){
+	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
+	  cpp=cbuf;
+	  
+	  if(NULL != (cp = strstr(cpp, "<img src=\"//" FC_HOST_PANCOL))){
+	    cpp=cp+strlen("<img src=\"//" FC_HOST_PANCOL);
+	    
+	    if(NULL != (cp2 = strstr(cp, "\" width="))){
+	      cp3=g_strndup(cpp,strlen(cpp)-strlen(cp2));
+	    }
+	    
+	    break;
+	  }
+	}
+      }
+      break;
+
+    }
+    
+    fclose(fp_read);
+    
+    SSL_shutdown(ssl);
+    SSL_free(ssl);
+    SSL_CTX_free(ctx);
+    ERR_free_strings();
+    close(command_socket);
+
+    chunked_flag=FALSE;
+    
+    /* サーバに接続 */
+    if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
+      fprintf(stderr, "Failed to create a new socket.\n");
+      return(HSKYMON_HTTP_ERROR_SOCKET);
+    }
+    if( connect(command_socket, res->ai_addr, res->ai_addrlen) != 0){
+      fprintf(stderr, "Failed to connect to %s .\n", hg->dss_host);
+      return(HSKYMON_HTTP_ERROR_CONNECT);
+    }
+
+    // AddrInfoの解放
+    freeaddrinfo(res);
+
+    SSL_load_error_strings();
+    SSL_library_init();
+
+    ctx = SSL_CTX_new(SSLv23_client_method());
+    ssl = SSL_new(ctx);
+    err = SSL_set_fd(ssl, command_socket);
+    if( SSL_connect(ssl) !=1) {
+      fprintf(stderr, "SSL connection failed.\n");
+#ifdef USE_WIN32
+      gtk_main_quit();
+      _endthreadex(0);
+#endif
+      return(HSKYMON_HTTP_ERROR_SSL);
+    }
+    
+    if(cp3){
+      switch(hg->fc_mode){
+      case FC_ESO_DSS1R:
+      case FC_ESO_DSS2R:
+      case FC_ESO_DSS2B:
+      case FC_ESO_DSS2IR:
+      case FC_PANCOL:
+      case FC_PANG:
+      case FC_PANR:
+      case FC_PANI:
+      case FC_PANZ:
+      case FC_PANY:
+	sprintf(send_mesg, "GET %s HTTP/1.1\r\n", cp3);
+	break;
+
+      case FC_SKYVIEW_GALEXF:
+      case FC_SKYVIEW_GALEXN:
+      case FC_SKYVIEW_DSS1R:
+      case FC_SKYVIEW_DSS1B:
+      case FC_SKYVIEW_DSS2R:
+      case FC_SKYVIEW_DSS2B:
+      case FC_SKYVIEW_DSS2IR:
+      case FC_SKYVIEW_SDSSU:
+      case FC_SKYVIEW_SDSSG:
+      case FC_SKYVIEW_SDSSR:
+      case FC_SKYVIEW_SDSSI:
+      case FC_SKYVIEW_SDSSZ:
+      case FC_SKYVIEW_2MASSJ:
+      case FC_SKYVIEW_2MASSH:
+      case FC_SKYVIEW_2MASSK:
+      case FC_SKYVIEW_WISE34:
+      case FC_SKYVIEW_WISE46:
+      case FC_SKYVIEW_WISE12:
+      case FC_SKYVIEW_WISE22:
+      case FC_SKYVIEW_RGB:
+	sprintf(send_mesg, "GET %s.jpg HTTP/1.1\r\n", cp3);
+	break;
+      }
+      
+      write_to_SSLserver(ssl, send_mesg);
+      
+      sprintf(send_mesg, "Accept: image/gif, image/jpeg, image/png, */*\r\n");
+      write_to_SSLserver(ssl, send_mesg);
+      
+      sprintf(send_mesg, "User-Agent: Mozilla/5.0\r\n");
+      write_to_SSLserver(ssl, send_mesg);
+
+      sprintf(send_mesg, "Host: %s\r\n", hg->dss_host);
+      write_to_SSLserver(ssl, send_mesg);
+
+      sprintf(send_mesg, "Connection: close\r\n");
+      write_to_SSLserver(ssl, send_mesg);
+
+      sprintf(send_mesg, "\r\n");
+      write_to_SSLserver(ssl, send_mesg);
+  
+      if((fp_write=fopen(hg->dss_file,"wb"))==NULL){
+	fprintf(stderr," File Write Error  \"%s\" \n", hg->dss_file);
+	return(HSKYMON_HTTP_ERROR_TEMPFILE);
+      }
+
+      while((size = ssl_gets(ssl, buf,BUF_LEN)) > 2 ){
+	// header lines
+	if(debug_flg){
+	  fprintf(stderr,"[SSL] --> Header: %s", buf);
+	}
+	if(NULL != (cp = strstr(buf, "Transfer-Encoding: chunked"))){
+	  chunked_flag=TRUE;
+	}
+      }
+      do{ // data read
+	size = SSL_read(ssl, buf, BUF_LEN);
+	fwrite( &buf , size , 1 , fp_write ); 
+      }while(size >0);
+      
+      fclose(fp_write);
+    }
+      
+    break;
+
+  default:
+    if ( debug_flg ){
+      fprintf(stderr," File Writing...  \"%s\" \n", hg->dss_file);
+    }
+    if((fp_write=fopen(hg->dss_file,"wb"))==NULL){
+      fprintf(stderr," File Write Error  \"%s\" \n", hg->dss_file);
+      return(HSKYMON_HTTP_ERROR_TEMPFILE);
+    }
+    
+    while((size = ssl_gets(ssl, buf,BUF_LEN)) > 2 ){
+      // header lines
+      if(debug_flg){
+	fprintf(stderr,"--> Header: %s", buf);
+      }
+      if(NULL != (cp = strstr(buf, "Transfer-Encoding: chunked"))){
+	chunked_flag=TRUE;
+      }
+    }
+    do{ // data read
+      size = SSL_read(ssl, buf, BUF_LEN);
+      fwrite( &buf , size , 1 , fp_write ); 
+    }while(size >0);
+    
+    fclose(fp_write);
+    if ( debug_flg ){
+      fprintf(stderr," Done.\n");
+    }
+    
+    break;
+  }
+  
+  if(chunked_flag) unchunk(hg->dss_file);
+
+#ifndef USE_WIN32
+  if((chmod(hg->dss_file,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
+    g_print("Cannot Chmod Temporary File %s!  Please check!!!\n",hg->dss_file);
+  }
+#endif
+  
+  SSL_shutdown(ssl);
+  SSL_free(ssl);
+  SSL_CTX_free(ctx);
+  ERR_free_strings();
+  
+#ifdef USE_WIN32
+  closesocket(command_socket);
+  gtk_main_quit();
+  _endthreadex(0);
+#else
+  close(command_socket);
+
+  return 0;
+#endif
+}
+#endif  //USE_SSL
 
 char* getLine(int fd)
 {
@@ -1934,11 +2527,10 @@ int http_c_std(typHOE *hg){
       chunked_flag=TRUE;
     }
   }
-  while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
-    {
-      fwrite( &buf , size , 1 , fp_write ); 
-    }
-  //fwrite( &buf , size , 1 , fp_write ); 
+  do { // data read
+    size = read(command_socket, buf, BUF_LEN);
+    fwrite( &buf , size , 1 , fp_write ); 
+  }while(size>0);
       
   fclose(fp_write);
 
@@ -2055,11 +2647,10 @@ int http_c_fcdb(typHOE *hg){
       chunked_flag=TRUE;
     }
   }
-  while((size = fd_gets(command_socket,buf,BUF_LEN)) > 0 )
-    {
-      fwrite( &buf , size , 1 , fp_write ); 
-    }
-  //fwrite( &buf , size , 1 , fp_write ); 
+  do { // data read
+    size = read(command_socket, buf, BUF_LEN);
+    fwrite( &buf , size , 1 , fp_write ); 
+  }while(size>0);
       
   fclose(fp_write);
 
@@ -2110,7 +2701,16 @@ int get_dss(typHOE *hg){
     fprintf(stderr,"fork error\n");
   }
   else if(fc_pid ==0) {
+#ifdef USE_SSL
+    if((hg->fc_mode<FC_SKYVIEW_GALEXF)||(hg->fc_mode>FC_SKYVIEW_RGB)){
+      http_c_fc(hg);
+    }
+    else{
+      http_c_fc_ssl(hg);
+    }
+#else
     http_c_fc(hg);
+#endif
     kill(getppid(), SIGHSKYMON1);  //calling dss_signal
     _exit(1);
   }
@@ -2626,3 +3226,115 @@ void unchunk(gchar *dss_tmp){
 
    g_free(unchunk_tmp);
  }
+
+
+#ifdef USE_SSL
+ gint ssl_gets(SSL *ssl, gchar *buf, gint len)
+{
+  gchar *newline, *bp = buf;
+  gint n;
+  gint i;
+  
+  if (--len < 1)
+    return -1;
+  do {
+    if ((n = ssl_peek(ssl, bp, len)) <= 0)
+	return -1;
+    if ((newline = memchr(bp, '\n', n)) != NULL)
+      n = newline - bp + 1;
+    if ((n = ssl_read(ssl, bp, n)) < 0)
+      return -1;
+    bp += n;
+    len -= n;
+  } while (!newline && len);
+  
+  *bp = '\0';
+  return bp - buf;
+}
+#endif
+
+#ifdef USE_SSL
+ gint ssl_read(SSL *ssl, gchar *buf, gint len)
+{
+	gint err, ret;
+
+	if (SSL_pending(ssl) == 0) {
+		if (fd_check_io(SSL_get_rfd(ssl), G_IO_IN) < 0)
+			return -1;
+	}
+
+	ret = SSL_read(ssl, buf, len);
+
+	switch ((err = SSL_get_error(ssl, ret))) {
+	case SSL_ERROR_NONE:
+		return ret;
+	case SSL_ERROR_WANT_READ:
+	case SSL_ERROR_WANT_WRITE:
+		errno = EAGAIN;
+		return -1;
+	case SSL_ERROR_ZERO_RETURN:
+		return 0;
+	default:
+		g_warning("SSL_read() returned error %d, ret = %d\n", err, ret);
+		if (ret == 0)
+			return 0;
+		return -1;
+	}
+}
+#endif
+
+/* peek at the socket data without actually reading it */
+#ifdef USE_SSL
+gint ssl_peek(SSL *ssl, gchar *buf, gint len)
+{
+	gint err, ret;
+
+	if (SSL_pending(ssl) == 0) {
+		if (fd_check_io(SSL_get_rfd(ssl), G_IO_IN) < 0)
+			return -1;
+	}
+
+	ret = SSL_peek(ssl, buf, len);
+
+	switch ((err = SSL_get_error(ssl, ret))) {
+	case SSL_ERROR_NONE:
+		return ret;
+	case SSL_ERROR_WANT_READ:
+	case SSL_ERROR_WANT_WRITE:
+		errno = EAGAIN;
+		return -1;
+	case SSL_ERROR_ZERO_RETURN:
+		return 0;
+	case SSL_ERROR_SYSCALL:
+	  // End of file
+	  //printf("SSL_ERROR_SYSCALL ret=%d  %d\n",ret,(gint)strlen(buf));
+	        return 0;
+	default:
+		g_warning("SSL_peek() returned error %d, ret = %d\n", err, ret);
+		if (ret == 0)
+			return 0;
+		return -1;
+	}
+}
+#endif
+
+#ifdef USE_SSL
+gint ssl_write(SSL *ssl, const gchar *buf, gint len)
+{
+	gint ret;
+
+	ret = SSL_write(ssl, buf, len);
+
+	switch (SSL_get_error(ssl, ret)) {
+	case SSL_ERROR_NONE:
+		return ret;
+	case SSL_ERROR_WANT_READ:
+	case SSL_ERROR_WANT_WRITE:
+		errno = EAGAIN;
+		return -1;
+	default:
+		return -1;
+	}
+}
+#endif
+

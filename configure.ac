@@ -4,10 +4,10 @@ PACKAGE=hskymon
 
 dnl version number
 MAJOR_VERSION=2
-MINOR_VERSION=8
-MICRO_VERSION=13
+MINOR_VERSION=9
+MICRO_VERSION=0
 BUILD_REVISION=0
-EXTRA_VERSION=-20170307
+EXTRA_VERSION=-20170320
 VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION$EXTRA_VERSION
 
 dnl set $target
@@ -62,6 +62,7 @@ WINSOCK_LIBS=""
 localedir='${prefix}/${DATADIRNAME}/locale'
 fi
 AC_SUBST(localedir)
+AC_DEFINE(USE_SSL,[], [Use SSL for HTTPS])
 AC_SUBST(WINMM_LIBS)
 AC_SUBST(WINSOCK_LIBS)
 
@@ -129,6 +130,44 @@ else
 	DISABLE_DEPRECATED=""
 fi
 AC_SUBST(DISABLE_DEPRECATED)
+
+
+dnl Check for OpenSSL
+AC_ARG_ENABLE(ssl,
+	[  --disable-ssl           Disable SSL support using OpenSSL],
+	[ac_cv_enable_ssl=$enableval], [ac_cv_enable_ssl=yes])
+AC_MSG_CHECKING([whether to use OpenSSL])
+if test $ac_cv_enable_ssl = yes; then
+	AC_MSG_RESULT(yes)
+	dnl First check with pkg-config
+	PKG_CHECK_MODULES(OPENSSL, openssl, [:], [:])
+	if test "x$OPENSSL_LIBS" != "x"; then
+		CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
+		LIBS="$LIBS $OPENSSL_LIBS"
+		AC_MSG_CHECKING([if openssl is available])
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(USE_SSL, 1, Define if you use OpenSSL to support SSL.)
+	else
+		dnl If pkg-config fails, run compile/link test.
+		AC_MSG_CHECKING([if openssl is available])
+		ac_save_LIBS="$LIBS"
+		if test x"${use_win32}" = "xyes"; then
+			LIBS="$LIBS -lssl32 -leay32"
+		else
+			LIBS="$LIBS -lssl -lcrypto"
+		fi
+		AC_TRY_LINK([
+#include <openssl/opensslv.h>
+],		[ return OPENSSL_VERSION_NUMBER; ],
+		[ AC_MSG_RESULT(yes)
+		  AC_DEFINE(USE_SSL, 1, Define if you use OpenSSL to support SSL.) ],
+		[ AC_MSG_RESULT(no)
+		  LIBS="$ac_save_LIBS"
+		  ac_cv_enable_ssl=no ])
+	fi
+else
+	AC_MSG_RESULT(no)
+fi
 
 
 

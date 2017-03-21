@@ -112,6 +112,9 @@
 /* Use Gtk+2.x instead of Gtk+1.2 */
 #undef USE_GTK2
 
+/* Define if you use OpenSSL to support SSL. */
+#undef USE_SSL
+
 /* Make for Win32 */
 #undef USE_WIN32
 

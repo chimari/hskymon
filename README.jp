@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 2.8.13    2017/03/07
+#                                  ver 2.9.0     2017/03/20
 #                               Copyright (C) 2003-17 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #########################################################################
@@ -33,6 +33,10 @@ X Window Systemが稼働しているUNIX環境。もしくは、MS Windows環境でも利
 コンパイルするためにはGtk+が必要(Windows版はMinGW + Gtk-devを使用)です。
 Gtk+についてはcairoグラフィックライブラリを使用しているため、最低限
 ver2.8以降が必要、推奨はver2.10以降となります。
+libxml2とopensslも必要となります。
+
+Subaru Gen2と接続し、望遠鏡のステータスをとる場合(Gen2 summitネットワーク内
+のみで有効)はxmlrpc-cの開発環境が必要となります。
 
 その他には特別なライブラリは必要としません。
 

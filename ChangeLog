@@ -1,3 +1,7 @@
+2017.03.20 ver2.9.0 - Added SSL (OpenSSL) for https access, because SkyView
+	              (by NASA) is now shifting to https based system.
+	            - Improved EOF treatment for HTTP/HTTPS data download.
+
 2017.03.07 ver2.8.13- Adjusted for MacOSX.
 	            - Revised expose-event callbacks for FC, Plot, AD,
 	              and SkyMon.

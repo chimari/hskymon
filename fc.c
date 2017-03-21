@@ -537,7 +537,16 @@ gboolean progress_timeout( gpointer data ){
       tmp=g_strdup_printf("Downloaded %ld bytes",sz);
     }
     else{
-      tmp=g_strdup_printf("Waiting for WWW responce ...");
+#ifdef USE_SSL      
+      if((hg->fc_mode<FC_SKYVIEW_GALEXF)||(hg->fc_mode>FC_SKYVIEW_RGB)){
+	tmp=g_strdup_printf("Waiting for HTTP responce ...");
+      }
+      else{
+	tmp=g_strdup_printf("Waiting for HTTPS responce ...");
+      }
+#else
+      tmp=g_strdup_printf("Waiting for HTTP responce ...");
+#endif
     }
     gtk_label_set_text(GTK_LABEL(hg->plabel), tmp);
     g_free(tmp);

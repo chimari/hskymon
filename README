@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 2.8.13   2017/03/07
+#                                  ver 2.9.0    2017/03/20
 #                               Copyright (C) 2003-17 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #########################################################################
@@ -35,6 +35,7 @@ MS Windows (Win2000 or later).
 To compile this program from its source code, you need to install
 Gtk+ development tools (for Windows, I used MinGW + Gtk-dev).
 Gtk+2.8 (or later) is required (my recommendation is ver2.10 or later).
+libxml2 and openssl is also required to build the program.
 
 In order to get telescope status, hskymon requires xmlrpc-c library.
 But, Windows version does not support this function.

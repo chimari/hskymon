@@ -3139,11 +3139,16 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gtk_box_pack_start(GTK_BOX(vbox), label,FALSE, FALSE, 0);
 
   g_snprintf(buf, sizeof(buf),
-	     "Compiled-in features : XmlRPC=%s", 
+	     "Compiled-in features : XmlRPC=%s, OpenSSL=%s", 
 #ifdef USE_XMLRPC
-	         "ON");
+	     "ON",
 #else
-                 "OFF");
+	     "OFF",
+#endif
+#ifdef USE_SSL
+	     "ON");
+#else
+             "OFF");
 #endif
   label = gtk_label_new (buf);
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
