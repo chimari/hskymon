@@ -62,7 +62,6 @@ WINSOCK_LIBS=""
 localedir='${prefix}/${DATADIRNAME}/locale'
 fi
 AC_SUBST(localedir)
-AC_DEFINE(USE_SSL,[], [Use SSL for HTTPS])
 AC_SUBST(WINMM_LIBS)
 AC_SUBST(WINSOCK_LIBS)
 
@@ -148,22 +147,7 @@ if test $ac_cv_enable_ssl = yes; then
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(USE_SSL, 1, Define if you use OpenSSL to support SSL.)
 	else
-		dnl If pkg-config fails, run compile/link test.
-		AC_MSG_CHECKING([if openssl is available])
-		ac_save_LIBS="$LIBS"
-		if test x"${use_win32}" = "xyes"; then
-			LIBS="$LIBS -lssl32 -leay32"
-		else
-			LIBS="$LIBS -lssl -lcrypto"
-		fi
-		AC_TRY_LINK([
-#include <openssl/opensslv.h>
-],		[ return OPENSSL_VERSION_NUMBER; ],
-		[ AC_MSG_RESULT(yes)
-		  AC_DEFINE(USE_SSL, 1, Define if you use OpenSSL to support SSL.) ],
-		[ AC_MSG_RESULT(no)
-		  LIBS="$ac_save_LIBS"
-		  ac_cv_enable_ssl=no ])
+                AC_MSG_ERROR([OpenSSL is required. Configure with --disable-ssl if you do not need HTTPS access.])
 	fi
 else
 	AC_MSG_RESULT(no)

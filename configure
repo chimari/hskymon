@@ -13002,9 +13002,6 @@ localedir='${prefix}/${DATADIRNAME}/locale'
 fi
 
 
-$as_echo "#define USE_SSL /**/" >>confdefs.h
-
-
 
 
 # Check whether --enable-glibtest was given.
@@ -14081,41 +14078,7 @@ $as_echo "yes" >&6; }
 $as_echo "#define USE_SSL 1" >>confdefs.h
 
 	else
-				{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if openssl is available" >&5
-$as_echo_n "checking if openssl is available... " >&6; }
-		ac_save_LIBS="$LIBS"
-		if test x"${use_win32}" = "xyes"; then
-			LIBS="$LIBS -lssl32 -leay32"
-		else
-			LIBS="$LIBS -lssl -lcrypto"
-		fi
-		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <openssl/opensslv.h>
-
-int
-main ()
-{
- return OPENSSL_VERSION_NUMBER;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
-$as_echo "#define USE_SSL 1" >>confdefs.h
-
-else
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-		  LIBS="$ac_save_LIBS"
-		  ac_cv_enable_ssl=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
+                as_fn_error $? "OpenSSL is required. Configure with --disable-ssl if you do not need HTTPS access." "$LINENO" 5
 	fi
 else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
