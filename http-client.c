@@ -107,11 +107,6 @@ static gint fd_check_io(gint fd, GIOCondition cond)
 	struct timeval timeout;
 	fd_set fds;
 	guint io_timeout=60;
-	//SockInfo *sock;
-
-	//sock = sock_find_from_fd(fd);
-	//if (sock && !SOCK_IS_CHECK_IO(sock->flags))
-	//	return 0;
 
 	timeout.tv_sec  = io_timeout;
 	timeout.tv_usec = 0;
@@ -379,7 +374,7 @@ int http_c(typHOE *hg){
     // header lines
   }
   do { //data read
-    size = read(command_socket, buf, BUF_LEN);
+    size = recv(command_socket, buf, BUF_LEN, 0);
     fwrite( &buf , size , 1 , fp_write ); 
   }while(size>0);
   
@@ -1522,7 +1517,7 @@ int http_c_fc(typHOE *hg){
       }
     }
     do { // data read
-      size = read(command_socket, buf, BUF_LEN);
+      size = recv(command_socket, buf, BUF_LEN, 0);
       fwrite( &buf , size , 1 , fp_write ); 
     }while(size>0);
 
@@ -1712,7 +1707,7 @@ int http_c_fc(typHOE *hg){
 	}
       }
       do { // data read
-	size = read(command_socket, buf, BUF_LEN);
+	size = recv(command_socket, buf, BUF_LEN, 0);
 	fwrite( &buf , size , 1 , fp_write ); 
       }while(size>0);
       
@@ -1741,7 +1736,7 @@ int http_c_fc(typHOE *hg){
       }
     }
     do { // data read
-      size = read(command_socket, buf, BUF_LEN);
+      size = recv(command_socket, buf, BUF_LEN, 0);
       fwrite( &buf , size , 1 , fp_write ); 
     }while(size>0);
     
@@ -2527,8 +2522,8 @@ int http_c_std(typHOE *hg){
       chunked_flag=TRUE;
     }
   }
-  do { // data read
-    size = read(command_socket, buf, BUF_LEN);
+  do{  // data read
+    size = recv(command_socket,buf,BUF_LEN, 0);  
     fwrite( &buf , size , 1 , fp_write ); 
   }while(size>0);
       
@@ -2647,8 +2642,8 @@ int http_c_fcdb(typHOE *hg){
       chunked_flag=TRUE;
     }
   }
-  do { // data read
-    size = read(command_socket, buf, BUF_LEN);
+  do{ // data read
+    size = recv(command_socket,buf,BUF_LEN, 0);
     fwrite( &buf , size , 1 , fp_write ); 
   }while(size>0);
       
@@ -2680,9 +2675,22 @@ int get_dss(typHOE *hg){
   unsigned int dwThreadID;
   HANDLE hThread;
   
+#ifdef USE_SSL
+  if((hg->fc_mode<FC_SKYVIEW_GALEXF)||(hg->fc_mode>FC_SKYVIEW_RGB)){
+    hThread = (HANDLE)_beginthreadex(NULL,0,
+				     http_c_fc,
+				     (LPVOID)hg, 0, &dwThreadID);
+  }
+  else{
+    hThread = (HANDLE)_beginthreadex(NULL,0,
+				     http_c_fc_ssl,
+				     (LPVOID)hg, 0, &dwThreadID);
+  }
+#else
   hThread = (HANDLE)_beginthreadex(NULL,0,
 				   http_c_fc,
 				   (LPVOID)hg, 0, &dwThreadID);
+#endif
   if (hThread == NULL) {
     dwErrorNumber = GetLastError();
     fprintf(stderr,"_beginthreadex() error(%ld).\n", dwErrorNumber);
