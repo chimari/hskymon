@@ -286,8 +286,6 @@ void ChildTerm(int dummy)
 #endif // USE_WIN32
 
 
-
-
 GtkWidget *make_menu(typHOE *hg){
   GtkWidget *menu_bar;
   GtkWidget *menu_item;
