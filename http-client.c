@@ -1355,8 +1355,8 @@ int http_c_fc(typHOE *hg){
 	    (gdouble)hg->dss_arcmin/60.,
 	    (gdouble)hg->dss_arcmin/60.,
 	    hg->dss_pix,
-	    ln_hms_to_deg(&hobject.ra),
-	    ln_dms_to_deg(&hobject.dec));
+	    ln_hms_to_deg(&hobject_prec.ra),
+	    ln_dms_to_deg(&hobject_prec.dec));
     break;
 
 
@@ -1384,8 +1384,8 @@ int http_c_fc(typHOE *hg){
 	    (gdouble)hg->dss_arcmin/60.,
 	    (gdouble)hg->dss_arcmin/60.,
 	    hg->dss_pix,
-	    ln_hms_to_deg(&hobject.ra),
-	    ln_dms_to_deg(&hobject.dec));
+	    ln_hms_to_deg(&hobject_prec.ra),
+	    ln_dms_to_deg(&hobject_prec.dec));
     break;
 
   case FC_SDSS:
@@ -1962,8 +1962,8 @@ int http_c_fc_ssl(typHOE *hg){
 	    (gdouble)hg->dss_arcmin/60.,
 	    (gdouble)hg->dss_arcmin/60.,
 	    hg->dss_pix,
-	    ln_hms_to_deg(&hobject.ra),
-	    ln_dms_to_deg(&hobject.dec));
+	    ln_hms_to_deg(&hobject_prec.ra),
+	    ln_dms_to_deg(&hobject_prec.dec));
     break;
 
 
@@ -1991,8 +1991,8 @@ int http_c_fc_ssl(typHOE *hg){
 	    (gdouble)hg->dss_arcmin/60.,
 	    (gdouble)hg->dss_arcmin/60.,
 	    hg->dss_pix,
-	    ln_hms_to_deg(&hobject.ra),
-	    ln_dms_to_deg(&hobject.dec));
+	    ln_hms_to_deg(&hobject_prec.ra),
+	    ln_dms_to_deg(&hobject_prec.dec));
     break;
 
   case FC_SDSS:

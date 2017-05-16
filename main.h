@@ -76,6 +76,7 @@
 #define SSLOC_URL "http://simbad.harvard.edu/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&output.max=%d&OutputMode=LIST"
 #define STD_SIMBAD_URL "http://simbad.harvard.edu/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=HTML"
 #define FCDB_NED_URL "http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES"
+#define FCDB_SDSS_URL "http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?id=%s"
 #elif defined(USE_OSX)
 #define DSS_URL "open http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick\\&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf\\&SURVEY=Digitized+Sky+Survey"
 #define SIMBAD_URL "open http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none\\&CooEpoch=2000\\&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf\\&submit=submit%%20query\\&Radius.unit=arcmin\\&CooEqui=2000\\&CooFrame=FK5\\&Radius=2\\&output.format=HTML"
@@ -92,6 +93,7 @@
 #define SSLOC_URL "open http://simbad.harvard.edu/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s\\&submit=submit%%20query\\&output.max=%d\\&OutputMode=LIST"
 #define STD_SIMBAD_URL "open http://simbad.harvard.edu/simbad/sim-id?Ident=%s\\&NbIdent=1\\&Radius=2\\&Radius.unit=arcmin\\&submit=submit+id\\&output.format=HTML"
 #define FCDB_NED_URL "open http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s\\&extend=no\\&hconst=73\\&omegam=0.27\\&omegav=0.73\\&corr_z=1\\&out_csys=Equatorial\\&out_equinox=J2000.0\\&obj_sort=RA+or+Longitude\\&of=pre_text\\&zv_breaker=30000.0\\&list_limit=5\\&img_stamp=YES"
+#define FCDB_SDSS_URL "open http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?id=%s"
 #else
 #define DSS_URL "\"http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey\""
 #define SIMBAD_URL "\"http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none&CooEpoch=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML\""
@@ -108,6 +110,7 @@
 #define SSLOC_URL "\"http://simbad.harvard.edu/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&output.max=%d&OutputMode=LIST\""
 #define STD_SIMBAD_URL "\"http://simbad.harvard.edu/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=HTML\""
 #define FCDB_NED_URL "\"http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES\""
+#define FCDB_SDSS_URL "\"http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?id=%s\""
 #endif
 
 #ifdef USE_WIN32
@@ -135,6 +138,16 @@
 
 #define FCDB_HOST_NED "ned.ipac.caltech.edu"
 #define FCDB_NED_PATH "/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=%.2lf&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY%sout_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=0&img_stamp=YES&of=xml_main"
+
+#define FCDB_HOST_GSC "gsss.stsci.edu"
+#define FCDB_GSC_PATH "/webservices/vo/ConeSearch.aspx?RA=%lf&DEC=%+lf&SR=%lf&MAX_OBJ=500&FORMAT=VOTABLE"
+
+#define FCDB_HOST_PS1 "gsss.stsci.edu"
+#define FCDB_PS1_PATH  "/webservices/vo/CatalogSearch.aspx?CAT=PS1V3OBJECTS&RA=%lf&DEC=%+lf&SR=%lf&MINDET=%d&MAXOBJ=500"
+
+#define FCDB_HOST_SDSS "gsss.stsci.edu"
+#define FCDB_SDSS_PATH "/webservices/vo/CatalogSearch.aspx?CAT=SDSS&RA=%lf&DEC=%+lf&SR=%lf&MAXOBJ=500"
+
 
 #define ADDOBJ_SIMBAD_PATH "/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=VOTABLE"
 #define ADDOBJ_NED_PATH "/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES&of=xml_main"
@@ -400,7 +413,10 @@ enum
 enum
 {
   FCDB_TYPE_SIMBAD,
-  FCDB_TYPE_NED
+  FCDB_TYPE_NED,
+  FCDB_TYPE_GSC,
+  FCDB_TYPE_PS1,
+  FCDB_TYPE_SDSS
 };
 
 enum
@@ -1512,6 +1528,16 @@ struct _typHOE{
   gint fcdb_ned_otype;
   gboolean fcdb_auto;
   gboolean fcdb_ned_ref;
+  gboolean fcdb_gsc_fil;
+  gint fcdb_gsc_mag;
+  gint fcdb_gsc_diam;
+  gboolean fcdb_ps1_fil;
+  gint fcdb_ps1_mag;
+  gint fcdb_ps1_diam;
+  gint fcdb_ps1_mindet;
+  gint fcdb_sdss_mag;
+  gint fcdb_sdss_diam;
+  gboolean fcdb_sdss_fil;
 
   gint addobj_type;
   gchar *addobj_name;
@@ -1701,6 +1727,14 @@ typedef struct{
   GtkWidget *dialog;
   gint mode;
 }confProp;
+
+// Struct for Callback
+typedef struct{
+  GtkWidget *dialog;
+  gint mode;
+  GSList *fcdb_group;
+  gint fcdb_type;
+}confPropFCDB;
 
 
 #define is_num_char(c) ((c>='0' && c<='9')||(c==' ')||(c=='\t')||(c=='.')||(c=='+')||(c=='-')||(c=='\n'))

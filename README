@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 2.9.0    2017/03/20
+#                                  ver 2.9.1    2017/05/16
 #                               Copyright (C) 2003-17 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #########################################################################
@@ -141,3 +141,28 @@ The following fromat text files are also avairable for data inputs.
            ....................................
 
 
+*** Copyright
+   The code in this distribution is Copyright 2003-2017 by Akito Tajitsu.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+   In addition, as a special exception, A.Tajitsu gives permission to link 
+   this code of this program with the OpenSSL library (or with modified
+   versions of OpenSSL that use the same license as OpenSSL), and distribute
+   linked combinations including the two. You must obey the GNU General 
+   Public License in all respects for all of the code used other than OpenSSL.
+   If you modify this file, you may extend this exception to your version of 
+   the file, but you are not obligated to do so. If you do not wish to do so,
+   delete this exception statement from your version.

@@ -1082,6 +1082,425 @@ void fcdb_ned_vo_parse(typHOE *hg) {
 }
 
 
+void fcdb_gsc_vo_parse(typHOE *hg) {
+  xmlTextReaderPtr reader;
+  list_field *vfield_move;
+  list_tabledata *vtabledata_move;
+  VOTable votable;
+  int nbFields, process_column;
+  int *columns;
+  reader = Init_VO_Parser(hg->fcdb_file,&votable);
+  int i_list=0;
+  struct ln_hms hms;
+  struct ln_dms dms;
+
+  printf_log(hg,"[FCDB] pursing XML.");
+
+  Extract_Att_VO_Table(reader,&votable);
+
+  Extract_VO_Fields(reader,&votable,&nbFields,&columns);
+  for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
+    if(xmlStrcmp(vfield_move->name,"hstID") == 0) 
+      columns[0] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"ra") == 0)
+      columns[1] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"dec") == 0) 
+      columns[2] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"UMag") == 0) 
+      columns[3] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"BMag") == 0) 
+      columns[4] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"VMag") == 0) 
+      columns[5] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Mag") == 0) 
+      columns[6] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"IMag") == 0) 
+      columns[7] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"JMag") == 0) 
+      columns[8] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"HMag") == 0) 
+      columns[9] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"KMag") == 0) 
+      columns[10] = vfield_move->position;
+ }
+
+
+ Extract_VO_TableData(reader,&votable, nbFields, columns);
+ for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+   if(i_list==MAX_FCDB) break;
+
+   if (vtabledata_move->colomn == columns[0]){
+     if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+     hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
+     if((!hg->fcdb_gsc_fil)||(hg->fcdb[i_list].r<=hg->fcdb_gsc_mag)){
+       i_list++;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[1]){
+     hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
+     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
+     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
+       + (gdouble)hms.minutes*100. + hms.seconds;
+   }
+   else if (vtabledata_move->colomn == columns[2]){
+     hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
+     ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
+     if(dms.neg==1){ 
+       hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
+	 - (gdouble)dms.minutes*100. - dms.seconds;
+     }
+     else{
+       hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
+	 + (gdouble)dms.minutes*100. + dms.seconds;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[3]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].u=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].u=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[4]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].b=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].b=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[5]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].v=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].v=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[6]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].r=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].r=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[7]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].i=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].i=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[8]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].j=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].j=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[9]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].h=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].h=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[10]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].k=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].k=+100;
+     }
+   }
+  }
+  hg->fcdb_i_max=i_list;
+
+  if (Free_VO_Parser(reader,&votable,&columns) == 1)
+    fprintf(stderr,"memory problem\n");
+
+  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    hg->fcdb[i_list].epoch=2000.00;
+    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
+				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+    hg->fcdb[i_list].pmra=0;
+    hg->fcdb[i_list].pmdec=0;
+    hg->fcdb[i_list].pm=FALSE;
+  }
+}
+
+
+void fcdb_ps1_vo_parse(typHOE *hg) {
+  xmlTextReaderPtr reader;
+  list_field *vfield_move;
+  list_tabledata *vtabledata_move;
+  VOTable votable;
+  int nbFields, process_column;
+  int *columns;
+  reader = Init_VO_Parser(hg->fcdb_file,&votable);
+  int i_list=0;
+  struct ln_hms hms;
+  struct ln_dms dms;
+
+  printf_log(hg,"[FCDB] pursing XML.");
+
+  Extract_Att_VO_Table(reader,&votable);
+
+  Extract_VO_Fields(reader,&votable,&nbFields,&columns);
+  for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
+    if(xmlStrcmp(vfield_move->name,"objName") == 0) 
+      columns[0] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"RAmean") == 0)
+      columns[1] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"DECmean") == 0) 
+      columns[2] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"nDetections") == 0) 
+      columns[3] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"gMeanPSFMag") == 0) 
+      columns[4] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"rMeanPSFMag") == 0) 
+      columns[5] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"iMeanPSFMag") == 0) 
+      columns[6] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"zMeanPSFMag") == 0) 
+      columns[7] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"yMeanPSFMag") == 0) 
+      columns[8] = vfield_move->position;
+ }
+
+
+ Extract_VO_TableData(reader,&votable, nbFields, columns);
+ for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+   if(i_list==MAX_FCDB) break;
+
+   if (vtabledata_move->colomn == columns[0]){
+     if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+     hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
+     if((!hg->fcdb_ps1_fil)||(hg->fcdb[i_list].r<=hg->fcdb_ps1_mag)){
+       i_list++;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[1]){
+     hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
+     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
+     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
+       + (gdouble)hms.minutes*100. + hms.seconds;
+   }
+   else if (vtabledata_move->colomn == columns[2]){
+     hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
+     ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
+     if(dms.neg==1){ 
+       hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
+	 - (gdouble)dms.minutes*100. - dms.seconds;
+     }
+     else{
+       hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
+	 + (gdouble)dms.minutes*100. + dms.seconds;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[3]){  //ndetections
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].ref=atoi(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].ref=0;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[4]){ //g-band
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].v=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].v<-900) hg->fcdb[i_list].v=+100;
+     }
+     else{
+       hg->fcdb[i_list].v=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[5]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].r=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].r<-900) hg->fcdb[i_list].r=+100;
+     }
+     else{
+       hg->fcdb[i_list].r=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[6]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].i=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].i<-900) hg->fcdb[i_list].i=+100;
+     }
+     else{
+       hg->fcdb[i_list].i=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[7]){ //z-band
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].j=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].j<-900) hg->fcdb[i_list].j=+100;
+     }
+     else{
+       hg->fcdb[i_list].j=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[8]){ //y-band
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].h=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].h<-900) hg->fcdb[i_list].h=+100;
+     }
+     else{
+       hg->fcdb[i_list].h=+100;
+     }
+   }
+  }
+  hg->fcdb_i_max=i_list;
+
+  if (Free_VO_Parser(reader,&votable,&columns) == 1)
+    fprintf(stderr,"memory problem\n");
+
+  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    hg->fcdb[i_list].epoch=2000.00;
+    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
+				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+    hg->fcdb[i_list].pmra=0;
+    hg->fcdb[i_list].pmdec=0;
+    hg->fcdb[i_list].pm=FALSE;
+  }
+}
+
+
+void fcdb_sdss_vo_parse(typHOE *hg) {
+  xmlTextReaderPtr reader;
+  list_field *vfield_move;
+  list_tabledata *vtabledata_move;
+  VOTable votable;
+  int nbFields, process_column;
+  int *columns;
+  reader = Init_VO_Parser(hg->fcdb_file,&votable);
+  int i_list=0;
+  struct ln_hms hms;
+  struct ln_dms dms;
+
+  printf_log(hg,"[FCDB] pursing XML.");
+
+  Extract_Att_VO_Table(reader,&votable);
+
+  Extract_VO_Fields(reader,&votable,&nbFields,&columns);
+  for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
+    if(xmlStrcmp(vfield_move->name,"objID") == 0) 
+      columns[0] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"RA") == 0)
+      columns[1] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"DEC") == 0) 
+      columns[2] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"u") == 0) 
+      columns[3] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"g") == 0) 
+      columns[4] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"r") == 0) 
+      columns[5] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"i") == 0) 
+      columns[6] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"z") == 0) 
+      columns[7] = vfield_move->position;
+ }
+
+
+ Extract_VO_TableData(reader,&votable, nbFields, columns);
+ for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+   if(i_list==MAX_FCDB) break;
+
+   if (vtabledata_move->colomn == columns[0]){
+     if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+     hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
+     if((!hg->fcdb_sdss_fil)||(hg->fcdb[i_list].r<=hg->fcdb_sdss_mag)){
+       i_list++;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[1]){
+     hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
+     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
+     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
+       + (gdouble)hms.minutes*100. + hms.seconds;
+   }
+   else if (vtabledata_move->colomn == columns[2]){
+     hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
+     ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
+     if(dms.neg==1){ 
+       hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
+	 - (gdouble)dms.minutes*100. - dms.seconds;
+     }
+     else{
+       hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
+	 + (gdouble)dms.minutes*100. + dms.seconds;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[3]){ // u
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].u=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].u<-900) hg->fcdb[i_list].u=+100;
+     }
+     else{
+       hg->fcdb[i_list].u=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[4]){ // g
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].v=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].v<-900) hg->fcdb[i_list].v=+100;
+     }
+     else{
+       hg->fcdb[i_list].v=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[5]){  // r
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].r=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].r<-900) hg->fcdb[i_list].r=+100;
+     }
+     else{
+       hg->fcdb[i_list].r=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[6]){  // i
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].i=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].i<-900) hg->fcdb[i_list].i=+100;
+     }
+     else{
+       hg->fcdb[i_list].i=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[7]){  // z
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].j=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].j<-900) hg->fcdb[i_list].j=+100;
+     }
+     else{
+       hg->fcdb[i_list].j=+100;
+     }
+   }
+  }
+  hg->fcdb_i_max=i_list;
+
+  if (Free_VO_Parser(reader,&votable,&columns) == 1)
+    fprintf(stderr,"memory problem\n");
+
+  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    hg->fcdb[i_list].epoch=2000.00;
+    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
+				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+    hg->fcdb[i_list].pmra=0;
+    hg->fcdb[i_list].pmdec=0;
+    hg->fcdb[i_list].pm=FALSE;
+  }
+}
+
+
 void addobj_vo_parse(typHOE *hg) {
   xmlTextReaderPtr reader;
   list_field *vfield_move;

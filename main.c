@@ -84,7 +84,6 @@ void PresetAllSky();
 void SetAllSkyPreset();
 void set_allsky_param_from_preset();
 void RadioPresetAllSky();
-void RadioFCDB();
 void SetObsPreset();
 void PresetObs();
 void SetAllSkyObs();
@@ -125,6 +124,7 @@ void default_prop();
 void close_prop();
 void default_disp_para();
 void change_disp_para();
+void change_fcdb_para();
 void close_disp_para();
 void create_diff_para_dialog();
 void create_disp_para_dialog();
@@ -2100,21 +2100,6 @@ void RadioPresetAllSky (GtkWidget *widget,  gpointer * gdata)
 }
 
 
-
-void RadioFCDB (GtkWidget *widget,  gpointer * gdata)
-{
-  typHOE *hg;
-
-  hg=(typHOE *)gdata;
-
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))){
-    hg->fcdb_type_tmp=FCDB_TYPE_SIMBAD;
-  }
-  else{
-    hg->fcdb_type_tmp=FCDB_TYPE_NED;
-  }
-     
-}
 
 void RadioPresetObs (GtkWidget *widget,  gpointer * gdata)
 {
@@ -4420,11 +4405,13 @@ static void fcdb_para_item (GtkWidget *widget, gpointer data)
 void create_fcdb_para_dialog (typHOE *hg)
 {
   GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
-    *spinner, *combo, *table, *check;
+    *spinner, *combo, *table, *check, *r1, *r2, *r3, *r4, *r5;
   GtkAdjustment *adj;
-  gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, tmp_ned_ref;
-  confProp *cdata;
-  GSList *fcdb_group=NULL; 
+  gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, 
+    tmp_gsc_mag, tmp_gsc_diam, tmp_ps1_mag, tmp_ps1_diam, tmp_ps1_mindet, 
+    tmp_sdss_mag, tmp_sdss_diam;
+  gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_sdss_fil;
+  confPropFCDB *cdata;
   gboolean rebuild_flag=FALSE;
 
   if(flagChildDialog){
@@ -4434,7 +4421,7 @@ void create_fcdb_para_dialog (typHOE *hg)
     flagChildDialog=TRUE;
   }
 
-  cdata=g_malloc0(sizeof(confProp));
+  cdata=g_malloc0(sizeof(confPropFCDB));
   cdata->mode=0;
 
   tmp_band=hg->fcdb_band;
@@ -4442,8 +4429,18 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_otype=hg->fcdb_otype;
   tmp_ned_diam=hg->fcdb_ned_diam;
   tmp_ned_otype=hg->fcdb_ned_otype;
-  hg->fcdb_type_tmp=hg->fcdb_type;
+  //hg->fcdb_type_tmp=hg->fcdb_type;
   tmp_ned_ref=hg->fcdb_ned_ref;
+  tmp_gsc_fil=hg->fcdb_gsc_fil;
+  tmp_gsc_mag=hg->fcdb_gsc_mag;
+  tmp_gsc_diam=hg->fcdb_gsc_diam;
+  tmp_ps1_fil=hg->fcdb_ps1_fil;
+  tmp_ps1_mag=hg->fcdb_ps1_mag;
+  tmp_ps1_diam=hg->fcdb_ps1_diam;
+  tmp_ps1_mindet=hg->fcdb_ps1_mindet;
+  tmp_sdss_fil=hg->fcdb_sdss_fil;
+  tmp_sdss_mag=hg->fcdb_sdss_mag;
+  tmp_sdss_diam=hg->fcdb_sdss_diam;
 
   while (my_main_iteration(FALSE));
   gdk_flush();
@@ -4461,19 +4458,38 @@ void create_fcdb_para_dialog (typHOE *hg)
 		     hbox,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
-  button = gtk_radio_button_new_with_label (fcdb_group, "SIMBAD");
-  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-  fcdb_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (button));
+  r1 = gtk_radio_button_new_with_label_from_widget (NULL, "SIMBAD");
+  gtk_box_pack_start(GTK_BOX(hbox), r1, FALSE, FALSE, 0);
   if(hg->fcdb_type==FCDB_TYPE_SIMBAD)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
-  my_signal_connect (button, "toggled", RadioFCDB, (gpointer)hg);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r1), TRUE);
+  //my_signal_connect (button, "toggled", RadioFCDB, (gpointer)hg);
 
-  button = gtk_radio_button_new_with_label (fcdb_group, "NED");
-  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-  gtk_widget_show (button);
+  r2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "NED");
+  gtk_box_pack_start(GTK_BOX(hbox), r2, FALSE, FALSE, 0);
+  gtk_widget_show (r2);
   if(hg->fcdb_type==FCDB_TYPE_NED)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),
-				 TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r2),TRUE);
+
+  r3 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "GSC 2.3");
+  gtk_box_pack_start(GTK_BOX(hbox), r3, FALSE, FALSE, 0);
+  gtk_widget_show (r3);
+  if(hg->fcdb_type==FCDB_TYPE_GSC)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r3),TRUE);
+
+  r4 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "PanSTARRS-1");
+  gtk_box_pack_start(GTK_BOX(hbox), r4, FALSE, FALSE, 0);
+  gtk_widget_show (r4);
+  if(hg->fcdb_type==FCDB_TYPE_PS1)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r4),TRUE);
+
+  r5 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "SDSS");
+  gtk_box_pack_start(GTK_BOX(hbox), r5, FALSE, FALSE, 0);
+  gtk_widget_show (r5);
+  if(hg->fcdb_type==FCDB_TYPE_SDSS)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r5),TRUE);
+
+  cdata->fcdb_group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(r1));
+  cdata->fcdb_type=hg->fcdb_type;
 
 
   frame = gtk_frame_new ("SIMBAD query parameters");
@@ -4767,6 +4783,218 @@ void create_fcdb_para_dialog (typHOE *hg)
 			       hg->fcdb_ned_ref);
 
 
+  frame = gtk_frame_new ("GSC 2.3 query parameters");
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+
+  table = gtk_table_new(2,2,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (frame), table);
+
+  label = gtk_label_new ("Max Search Diameter ");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_gsc_diam,
+					    20, 120, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_gsc_diam);
+
+  label = gtk_label_new ("[arcsec]"); 
+ gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+
+  check = gtk_check_button_new_with_label("Mag. filter");
+  gtk_table_attach(GTK_TABLE(table), check, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_gsc_fil);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       hg->fcdb_gsc_fil);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  label = gtk_label_new ("R < ");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_gsc_mag,
+					    12, 22, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_gsc_mag);
+
+
+  frame = gtk_frame_new ("PanSTARRS-1 query parameters");
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+
+  table = gtk_table_new(2,3,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (frame), table);
+
+  label = gtk_label_new ("Max Search Diameter ");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_ps1_diam,
+					    20, 120, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_ps1_diam);
+
+  label = gtk_label_new ("[arcsec]"); 
+ gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+
+  check = gtk_check_button_new_with_label("Mag. filter");
+  gtk_table_attach(GTK_TABLE(table), check, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_ps1_fil);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       hg->fcdb_ps1_fil);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  label = gtk_label_new ("r < ");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_ps1_mag,
+					    12, 22, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_ps1_mag);
+
+  label = gtk_label_new ("Minimum nDetections");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_ps1_mindet,
+					    1, 25, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 2, 3,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_ps1_mindet);
+
+
+  frame = gtk_frame_new ("SDSS query parameters");
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+
+  table = gtk_table_new(2,2,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (frame), table);
+
+  label = gtk_label_new ("Max Search Diameter ");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_sdss_diam,
+					    20, 120, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_sdss_diam);
+
+  label = gtk_label_new ("[arcsec]"); 
+ gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+
+  check = gtk_check_button_new_with_label("Mag. filter");
+  gtk_table_attach(GTK_TABLE(table), check, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_sdss_fil);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       hg->fcdb_sdss_fil);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  label = gtk_label_new ("r < ");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_sdss_mag,
+					    12, 26, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_sdss_mag);
+
+
+
 #ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
 #else
@@ -4797,7 +5025,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
-		    change_disp_para, 
+		    change_fcdb_para, 
 		    (gpointer)cdata);
 
   gtk_widget_show_all(dialog);
@@ -4810,9 +5038,19 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_otype = tmp_otype;
       hg->fcdb_ned_diam = tmp_ned_diam;
       hg->fcdb_ned_otype = tmp_ned_otype;
-      if(hg->fcdb_type!=hg->fcdb_type_tmp) rebuild_flag=TRUE;
-      hg->fcdb_type  = hg->fcdb_type_tmp;
+      if(hg->fcdb_type!=cdata->fcdb_type) rebuild_flag=TRUE;
+      hg->fcdb_type  = cdata->fcdb_type;
       hg->fcdb_ned_ref  = tmp_ned_ref;
+      hg->fcdb_gsc_fil  = tmp_gsc_fil;
+      hg->fcdb_gsc_mag  = tmp_gsc_mag;
+      hg->fcdb_gsc_diam  = tmp_gsc_diam;
+      hg->fcdb_ps1_fil  = tmp_ps1_fil;
+      hg->fcdb_ps1_mag  = tmp_ps1_mag;
+      hg->fcdb_ps1_diam  = tmp_ps1_diam;
+      hg->fcdb_ps1_mindet  = tmp_ps1_mindet;
+      hg->fcdb_sdss_fil  = tmp_sdss_fil;
+      hg->fcdb_sdss_mag  = tmp_sdss_mag;
+      hg->fcdb_sdss_diam  = tmp_sdss_diam;
     }
     else{
       hg->fcdb_band  = FCDB_BAND_NOP;
@@ -4823,6 +5061,16 @@ void create_fcdb_para_dialog (typHOE *hg)
       if(hg->fcdb_type!=FCDB_TYPE_SIMBAD) rebuild_flag=TRUE;
       hg->fcdb_type  = FCDB_TYPE_SIMBAD;
       hg->fcdb_ned_ref = FALSE;
+      hg->fcdb_gsc_fil = TRUE;
+      hg->fcdb_gsc_mag = 19;
+      hg->fcdb_gsc_diam = 90;
+      hg->fcdb_ps1_fil = TRUE;
+      hg->fcdb_ps1_mag = 19;
+      hg->fcdb_ps1_diam = 90;
+      hg->fcdb_ps1_mindet = 2;
+      hg->fcdb_sdss_fil = TRUE;
+      hg->fcdb_sdss_mag = 19;
+      hg->fcdb_sdss_diam = 90;
     }
 
     if(flagFC){
@@ -4830,6 +5078,12 @@ void create_fcdb_para_dialog (typHOE *hg)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SIMBAD");
       else if(hg->fcdb_type==FCDB_TYPE_NED)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"NED");
+      else if(hg->fcdb_type==FCDB_TYPE_GSC)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"GSC 2.3");
+      else if(hg->fcdb_type==FCDB_TYPE_PS1)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"PanSTARRS-1");
+      else if(hg->fcdb_type==FCDB_TYPE_SDSS)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SDSS");
     }
 
     if((rebuild_flag)&&(flagTree)) rebuild_tree(hg);
@@ -7671,6 +7925,32 @@ void change_disp_para(GtkWidget *w, gpointer gdata)
   cdata=(confProp *)gdata;
 
   cdata->mode=1;
+
+  gtk_main_quit();
+  gtk_widget_destroy(GTK_WIDGET(cdata->dialog));
+  flagChildDialog=FALSE;
+}
+
+void change_fcdb_para(GtkWidget *w, gpointer gdata)
+{ 
+  confPropFCDB *cdata;
+
+  cdata=(confPropFCDB *)gdata;
+
+  cdata->mode=1;
+
+  {
+    GtkWidget *w;
+    gint i;
+    
+    for(i = 0; i < g_slist_length(cdata->fcdb_group); i++){
+      w = g_slist_nth_data(cdata->fcdb_group, i);
+      if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w))){
+	cdata->fcdb_type  = g_slist_length(cdata->fcdb_group) -1 - i;
+	break;
+      }
+    }
+  }
  
   gtk_main_quit();
   gtk_widget_destroy(GTK_WIDGET(cdata->dialog));
@@ -7870,6 +8150,16 @@ void param_init(typHOE *hg){
   hg->fcdb_ned_otype=FCDB_NED_OTYPE_ALL;
   hg->fcdb_auto=FALSE;
   hg->fcdb_ned_ref=FALSE;
+  hg->fcdb_gsc_fil=TRUE;
+  hg->fcdb_gsc_mag=19;
+  hg->fcdb_gsc_diam=90;
+  hg->fcdb_ps1_fil=TRUE;
+  hg->fcdb_ps1_mag=19;
+  hg->fcdb_ps1_diam=90;
+  hg->fcdb_ps1_mindet=2;
+  hg->fcdb_sdss_fil=TRUE;
+  hg->fcdb_sdss_mag=19;
+  hg->fcdb_sdss_diam=90;
 
   hg->adc_inst=ADC_INST_IMR;
   hg->adc_flip=FALSE;
