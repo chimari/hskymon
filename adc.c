@@ -368,7 +368,7 @@ void create_adc_dialog(typHOE *hg)
 
   // Drawing Area
   hg->adc_dw = gtk_drawing_area_new();
-  gtk_widget_set_size_request (hg->adc_dw, ADC_WIDTH, ADC_HEIGHT);
+  gtk_widget_set_size_request (hg->adc_dw, hg->sz_adc, hg->sz_adc);
   gtk_box_pack_start(GTK_BOX(vbox), hg->adc_dw, TRUE, TRUE, 0);
   gtk_widget_set_app_paintable(hg->adc_dw, TRUE);
   gtk_widget_show(hg->adc_dw);

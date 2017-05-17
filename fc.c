@@ -98,6 +98,7 @@ extern void fcdb_ned_vo_parse();
 extern void fcdb_gsc_vo_parse();
 extern void fcdb_ps1_vo_parse();
 extern void fcdb_sdss_vo_parse();
+extern void fcdb_usno_vo_parse();
 extern void addobj_vo_parse();
 extern double get_julian_day_of_epoch();
 
@@ -1139,6 +1140,9 @@ void create_fc_dialog(typHOE *hg)
   else if(hg->fcdb_type==FCDB_TYPE_SDSS){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "SDSS");
   }
+  else if(hg->fcdb_type==FCDB_TYPE_USNO){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "USNO-B");
+  }
   gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_frame), 3);
 
@@ -1279,7 +1283,7 @@ void create_fc_dialog(typHOE *hg)
   ebox=gtk_event_box_new();
   gtk_box_pack_start(GTK_BOX(hbox), ebox, TRUE, TRUE, 0);
   hg->fc_dw = gtk_drawing_area_new();
-  gtk_widget_set_size_request (hg->fc_dw, FC_WIDTH, FC_HEIGHT);
+  gtk_widget_set_size_request (hg->fc_dw, hg->sz_fc, hg->sz_fc);
   gtk_container_add(GTK_CONTAINER(ebox), hg->fc_dw);
   gtk_widget_set_app_paintable(hg->fc_dw, TRUE);
 
@@ -1665,8 +1669,8 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
   //printf("Drawing!\n");
 
   if(hg->fc_output==FC_OUTPUT_PDF){
-    width= PLOT_HEIGHT;
-    height= PLOT_HEIGHT;
+    width= hg->sz_plot;
+    height= hg->sz_plot;
     scale=(gdouble)(hg->skymon_objsz)/(gdouble)(SKYMON_DEF_OBJSZ);
 
     surface = cairo_pdf_surface_create(hg->filename_pdf, width, height);
@@ -1678,7 +1682,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
     width =  (gint)gtk_print_context_get_width(hg->context);
     height =  (gint)gtk_print_context_get_height(hg->context);
 #ifdef USE_WIN32
-    scale=(gdouble)width/PLOT_HEIGHT
+    scale=(gdouble)width/(gint)(hg->sz_plot*1.5)
       *(gdouble)(hg->skymon_objsz)/(gdouble)(SKYMON_DEF_OBJSZ);
 #else
     scale=(gdouble)(hg->skymon_objsz)/(gdouble)(SKYMON_DEF_OBJSZ);
@@ -1902,6 +1906,13 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
       else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+
+      cairo_set_line_width (cr, 1.5*scale);
+      cairo_arc(cr,0,0,
+		((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*IRCS_TTGS_ARCMIN,
+		0,M_PI*2);
+      cairo_stroke(cr);
+
       cairo_set_line_width (cr, 3.0*scale);
 
       cairo_rectangle(cr,
@@ -1921,6 +1932,15 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
       cairo_text_extents (cr,tmp, &extents);
       cairo_move_to(cr,-extents.width/2,
 		    -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_Y_ARCSEC/60.)/2.-5*scale);
+      cairo_show_text(cr, tmp);
+
+      cairo_set_font_size (cr, 9.0*scale);
+	
+      sprintf(tmp,"Tip-Tilt Guide Star w/LGS (%darcmin)",IRCS_TTGS_ARCMIN/2);
+      cairo_text_extents (cr,tmp, &extents);
+      cairo_move_to(cr,
+		    -extents.width/2,
+		    -IRCS_TTGS_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
       cairo_show_text(cr, tmp);
 
       break;
@@ -3968,6 +3988,10 @@ void fcdb_dl(typHOE *hg)
   case FCDB_TYPE_SDSS:
     label=gtk_label_new("Searching objects in SDSS ...");
     break;
+
+  case FCDB_TYPE_USNO:
+    label=gtk_label_new("Searching objects in USNO-B ...");
+    break;
  }
 
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
@@ -4003,6 +4027,10 @@ void fcdb_dl(typHOE *hg)
 
   case FCDB_TYPE_SDSS:
     hg->plabel=gtk_label_new("Searching objects in SDSS ...");
+    break;
+
+  case FCDB_TYPE_USNO:
+    hg->plabel=gtk_label_new("Searching objects in USNO-B ...");
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
@@ -4146,6 +4174,11 @@ void addobj_dl(typHOE *hg)
   case FCDB_TYPE_SDSS:
     hg->plabel=gtk_label_new("Searching objects in SDSS ...");
     break;
+
+  case FCDB_TYPE_USNO:
+    hg->plabel=gtk_label_new("Searching objects in USNO-B ...");
+    break;
+
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
@@ -4529,6 +4562,31 @@ void fcdb_item2 (typHOE *hg)
     fcdb_sdss_vo_parse(hg);
 
     break;
+
+  case FCDB_TYPE_USNO:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_USNO);
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_USNO_PATH,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  (double)hg->fcdb_usno_diam/60./60.);
+
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+
+    fcdb_dl(hg);
+
+    fcdb_usno_vo_parse(hg);
+
+    break;
   }
 
   if(flagTree) fcdb_make_tree(NULL, hg);
@@ -4661,6 +4719,16 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       COLUMN_FCDB_R, hg->fcdb[i_list].r,  // r
 		       COLUMN_FCDB_I, hg->fcdb[i_list].i,  // i
 		       COLUMN_FCDB_J, hg->fcdb[i_list].j,  // z
+		       -1);
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_USNO){
+    // B1 R1 B2 R2 I2
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_V, hg->fcdb[i_list].v,  // B1
+		       COLUMN_FCDB_R, hg->fcdb[i_list].r,  // R1
+		       COLUMN_FCDB_I, hg->fcdb[i_list].i,  // B2
+		       COLUMN_FCDB_J, hg->fcdb[i_list].j,  // R2
+		       COLUMN_FCDB_H, hg->fcdb[i_list].h,  // I1
 		       -1);
   }
 }

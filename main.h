@@ -148,6 +148,8 @@
 #define FCDB_HOST_SDSS "gsss.stsci.edu"
 #define FCDB_SDSS_PATH "/webservices/vo/CatalogSearch.aspx?CAT=SDSS&RA=%lf&DEC=%+lf&SR=%lf&MAXOBJ=500"
 
+#define FCDB_HOST_USNO "www.nofs.navy.mil"
+#define FCDB_USNO_PATH "/cgi-bin/vo_cone.cgi?CAT=USNO-B1&RA=%lf&DEC=%+lf&SR=%lf&VERB=1"
 
 #define ADDOBJ_SIMBAD_PATH "/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=VOTABLE"
 #define ADDOBJ_NED_PATH "/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES&of=xml_main"
@@ -259,14 +261,12 @@ enum{FC_STSCI_DSS1R,
 
 #define PANSTARRS_MAX_ARCMIN 25
 
-#define FC_WIDTH 400
-#define FC_HEIGHT 400
+#define FC_WINSIZE 400
 enum{ FC_OUTPUT_WINDOW, FC_OUTPUT_PDF, FC_OUTPUT_PRINT} FCOutput;
 enum{ FC_INST_HDS, FC_INST_HDSAUTO, FC_INST_HDSZENITH, FC_INST_NONE, FC_INST_IRCS, FC_INST_COMICS, FC_INST_FOCAS, FC_INST_MOIRCS, FC_INST_FMOS, FC_INST_SPCAM, FC_INST_HSCDET,FC_INST_HSCA, FC_INST_NO_SELECT} FCInst;
 enum{ FC_SCALE_LINEAR, FC_SCALE_LOG, FC_SCALE_SQRT, FC_SCALE_HISTEQ, FC_SCALE_LOGLOG} FCScale;
 
-#define ADC_WIDTH 400
-#define ADC_HEIGHT 400
+#define ADC_WINSIZE 400
 #define ADC_SLIT_WIDTH 0.4
 #define ADC_SIZE 5.0
 #define ADC_SEEING 0.6
@@ -297,6 +297,7 @@ enum{ ADC_INST_IMR, ADC_INST_HDSAUTO, ADC_INST_HDSZENITH} ADC_Inst;
 #define IRCS_X_ARCSEC 54.
 #define IRCS_Y_ARCSEC 54.
 #define IRCS_SIZE 3
+#define IRCS_TTGS_ARCMIN 2
 
 #define COMICS_X_ARCSEC 30.
 #define COMICS_Y_ARCSEC 40.
@@ -416,7 +417,8 @@ enum
   FCDB_TYPE_NED,
   FCDB_TYPE_GSC,
   FCDB_TYPE_PS1,
-  FCDB_TYPE_SDSS
+  FCDB_TYPE_SDSS,
+  FCDB_TYPE_USNO
 };
 
 enum
@@ -487,7 +489,7 @@ enum{
 #endif
 
 #ifdef USE_SKYMON
-#define SKYMON_SIZE 500
+#define SKYMON_WINSIZE 500
 #ifdef USE_WIN32
 #define SKYMON_FONT "arial 10"
 #else
@@ -497,8 +499,7 @@ enum{
 
 #define DEF_SIZE_EDGE 4
 
-#define PLOT_WIDTH 600
-#define PLOT_HEIGHT 400
+#define PLOT_WINSIZE 400
 
 #define PLOT_WIDTH_MM 160
 #define PLOT_HEIGHT_MM 160
@@ -1276,6 +1277,11 @@ struct _typHOE{
   gchar *temp_dir;
   gchar *home_dir;
 
+  gint sz_skymon;
+  gint sz_plot;
+  gint sz_fc;
+  gint sz_adc;
+
   GtkWidget *w_top;
   GtkWidget *w_box;
   GtkWidget *all_note;
@@ -1538,6 +1544,9 @@ struct _typHOE{
   gint fcdb_sdss_mag;
   gint fcdb_sdss_diam;
   gboolean fcdb_sdss_fil;
+  gint fcdb_usno_mag;
+  gint fcdb_usno_diam;
+  gboolean fcdb_usno_fil;
 
   gint addobj_type;
   gchar *addobj_name;

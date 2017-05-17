@@ -471,7 +471,7 @@ void create_plot_dialog(typHOE *hg)
 		    resize_plot_cairo,
 		    (gpointer)hg);
 
-  gtk_widget_set_size_request (hg->plot_dw, PLOT_WIDTH, PLOT_HEIGHT);
+  gtk_widget_set_size_request (hg->plot_dw, (gint)(hg->sz_plot*1.5), hg->sz_plot);
   gtk_box_pack_start(GTK_BOX(vbox), hg->plot_dw, TRUE, TRUE, 0);
   gtk_widget_set_app_paintable(hg->plot_dw, TRUE);
   gtk_widget_show(hg->plot_dw);
@@ -583,8 +583,8 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 
 
   if(hg->plot_output==PLOT_OUTPUT_PDF){
-    width= PLOT_WIDTH;
-    height= PLOT_HEIGHT;
+    width= (gint)(hg->sz_plot*1.5);
+    height= hg->sz_plot;
     scale=1.0;
 
     dx=width*0.1;
@@ -601,7 +601,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
     height =  (gint)(gtk_print_context_get_height(hg->context)*0.5);
 
 #ifdef USE_WIN32
-    scale=(gdouble)width/PLOT_WIDTH;
+    scale=(gdouble)width/(gdouble)(hg->sz_plot*1.5);
 #else
     scale=1.0;
 #endif

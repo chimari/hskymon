@@ -3586,6 +3586,87 @@ fcdb_add_columns (typHOE *hg,
     gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_J);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
   }
+  else if(hg->fcdb_type==FCDB_TYPE_USNO){
+    /* B1 */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_V));
+    column=gtk_tree_view_column_new_with_attributes ("B1",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_V,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_double_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_V),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_V);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+    
+    /* R1 */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_R));
+    column=gtk_tree_view_column_new_with_attributes ("R1",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_R,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_double_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_R),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_R);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+    
+    /* B2 */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_I));
+    column=gtk_tree_view_column_new_with_attributes ("B2",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_I,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_double_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_I),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_I);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+    /* R2 */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_J));
+    column=gtk_tree_view_column_new_with_attributes ("R2",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_J,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_double_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_J),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_J);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+    
+    /* I2 */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_H));
+    column=gtk_tree_view_column_new_with_attributes ("I2",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_H,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_double_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_H),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_H);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+  }
 
 }
 
@@ -4423,7 +4504,8 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
 
 
   if((hg->fcdb_tree_focus>=0)&&(hg->fcdb_tree_focus<hg->fcdb_i_max)){
-    if((hg->fcdb_type==FCDB_TYPE_GSC)||(hg->fcdb_type==FCDB_TYPE_PS1)||(hg->fcdb_type==FCDB_TYPE_SDSS)){
+    if((hg->fcdb_type==FCDB_TYPE_GSC)||(hg->fcdb_type==FCDB_TYPE_PS1)
+       ||(hg->fcdb_type==FCDB_TYPE_SDSS)||(hg->fcdb_type==FCDB_TYPE_USNO)){
       tgt=make_ttgs(hg->obj[hg->fcdb_i].name);
     }
     else{
@@ -4448,12 +4530,20 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
 	new_dec=(gdouble)dms.degrees*10000.
 	  + (gdouble)dms.minutes*100. + dms.seconds;
       }
-      sprintf(tmp,"PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
-	      tgt,hg->fcdb[hg->fcdb_tree_focus].name,
-	      new_ra,new_dec,2000.00);
+      if(hg->fcdb_type==FCDB_TYPE_USNO){
+	sprintf(tmp,"PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+		tgt,hg->obj[hg->fcdb_i].name,
+		new_ra,new_dec,2000.00);
+      }
+      else{
+	sprintf(tmp,"PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+		tgt,hg->fcdb[hg->fcdb_tree_focus].name,
+		new_ra,new_dec,2000.00);
+      }
     }
     else{
-      if((hg->fcdb_type==FCDB_TYPE_GSC)||(hg->fcdb_type==FCDB_TYPE_PS1)||(hg->fcdb_type==FCDB_TYPE_SDSS)){
+      if((hg->fcdb_type==FCDB_TYPE_GSC)||(hg->fcdb_type==FCDB_TYPE_PS1)
+	 ||(hg->fcdb_type==FCDB_TYPE_SDSS)||(hg->fcdb_type==FCDB_TYPE_USNO)){
 	sprintf(tmp,"%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
 		tgt,hg->obj[hg->fcdb_i].name,
 		hg->fcdb[hg->fcdb_tree_focus].ra,

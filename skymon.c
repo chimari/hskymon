@@ -583,7 +583,7 @@ void create_skymon_dialog(typHOE *hg)
   ebox=gtk_event_box_new();
   gtk_box_pack_start(GTK_BOX(vbox), ebox, TRUE, TRUE, 0);
   hg->skymon_dw = gtk_drawing_area_new();
-  gtk_widget_set_size_request (hg->skymon_dw, SKYMON_SIZE, SKYMON_SIZE);
+  gtk_widget_set_size_request (hg->skymon_dw, hg->sz_skymon, hg->sz_skymon);
   //gtk_box_pack_start(GTK_BOX(vbox), hg->skymon_dw, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(ebox), hg->skymon_dw);
   gtk_widget_set_app_paintable(hg->skymon_dw, TRUE);

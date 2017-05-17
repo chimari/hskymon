@@ -1,6 +1,9 @@
-2017.05.16 ver2.9.1 - Added GSC 2.3/PanSTARRS-1/SDSS for database query in FC.
-	              This can be used for IRCS Tip-Tilt GS selection.
+2017.05.16 ver2.9.1 - Added GSC 2.3/PanSTARRS-1/SDSS/USNO-B for database
+	              query in FC.
+	              These can be used for IRCS Tip-Tilt GS selection.
 	              Search default is r (or R) < 19 and d < 90".
+	            - Added window size setup (Main/Plot/FC/ADC) in
+	              properties.
 
 2017.03.20 ver2.9.0 - Added SSL (OpenSSL) for https access, because SkyView
 	              (by NASA) is now shifting to https based system.

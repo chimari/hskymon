@@ -4405,12 +4405,12 @@ static void fcdb_para_item (GtkWidget *widget, gpointer data)
 void create_fcdb_para_dialog (typHOE *hg)
 {
   GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
-    *spinner, *combo, *table, *check, *r1, *r2, *r3, *r4, *r5;
+    *spinner, *combo, *table, *check, *r1, *r2, *r3, *r4, *r5, *r6;
   GtkAdjustment *adj;
   gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, 
     tmp_gsc_mag, tmp_gsc_diam, tmp_ps1_mag, tmp_ps1_diam, tmp_ps1_mindet, 
-    tmp_sdss_mag, tmp_sdss_diam;
-  gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_sdss_fil;
+    tmp_sdss_mag, tmp_sdss_diam, tmp_usno_mag, tmp_usno_diam;
+  gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_sdss_fil, tmp_usno_fil;
   confPropFCDB *cdata;
   gboolean rebuild_flag=FALSE;
 
@@ -4441,6 +4441,9 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_sdss_fil=hg->fcdb_sdss_fil;
   tmp_sdss_mag=hg->fcdb_sdss_mag;
   tmp_sdss_diam=hg->fcdb_sdss_diam;
+  tmp_usno_fil=hg->fcdb_usno_fil;
+  tmp_usno_mag=hg->fcdb_usno_mag;
+  tmp_usno_diam=hg->fcdb_usno_diam;
 
   while (my_main_iteration(FALSE));
   gdk_flush();
@@ -4487,6 +4490,12 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_widget_show (r5);
   if(hg->fcdb_type==FCDB_TYPE_SDSS)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r5),TRUE);
+
+  r6 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "USNO-B");
+  gtk_box_pack_start(GTK_BOX(hbox), r6, FALSE, FALSE, 0);
+  gtk_widget_show (r6);
+  if(hg->fcdb_type==FCDB_TYPE_USNO)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r6),TRUE);
 
   cdata->fcdb_group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(r1));
   cdata->fcdb_type=hg->fcdb_type;
@@ -4994,6 +5003,71 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_sdss_mag);
 
 
+  frame = gtk_frame_new ("USNO-B query parameters");
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+
+  table = gtk_table_new(2,2,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (frame), table);
+
+  label = gtk_label_new ("Max Search Diameter ");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_usno_diam,
+					    20, 120, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_usno_diam);
+
+  label = gtk_label_new ("[arcsec]"); 
+ gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+
+  check = gtk_check_button_new_with_label("Mag. filter");
+  gtk_table_attach(GTK_TABLE(table), check, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_usno_fil);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       hg->fcdb_usno_fil);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  label = gtk_label_new ("R < ");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_usno_mag,
+					    12, 22, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_usno_mag);
+
+
 
 #ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
@@ -5051,6 +5125,9 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_sdss_fil  = tmp_sdss_fil;
       hg->fcdb_sdss_mag  = tmp_sdss_mag;
       hg->fcdb_sdss_diam  = tmp_sdss_diam;
+      hg->fcdb_usno_fil  = tmp_usno_fil;
+      hg->fcdb_usno_mag  = tmp_usno_mag;
+      hg->fcdb_usno_diam  = tmp_usno_diam;
     }
     else{
       hg->fcdb_band  = FCDB_BAND_NOP;
@@ -5071,6 +5148,9 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_sdss_fil = TRUE;
       hg->fcdb_sdss_mag = 19;
       hg->fcdb_sdss_diam = 90;
+      hg->fcdb_usno_fil = TRUE;
+      hg->fcdb_usno_mag = 19;
+      hg->fcdb_usno_diam = 90;
     }
 
     if(flagFC){
@@ -5084,6 +5164,8 @@ void create_fcdb_para_dialog (typHOE *hg)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"PanSTARRS-1");
       else if(hg->fcdb_type==FCDB_TYPE_SDSS)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SDSS");
+      else if(hg->fcdb_type==FCDB_TYPE_USNO)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"USNO-B");
     }
 
     if((rebuild_flag)&&(flagTree)) rebuild_tree(hg);
@@ -5299,6 +5381,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   guint tmp_wave0;
   guint tmp_pres;
   gint  tmp_temp;
+  gint  tmp_sz_skymon, tmp_sz_plot, tmp_sz_fc, tmp_sz_adc;
   gint  tmp_fc_mode_def;
   gint  tmp_fc_mode_RGB[3];
   gint  tmp_dss_scale_RGB[3];
@@ -5364,6 +5447,10 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   tmp_wave0        =hg->wave0;  
   tmp_pres         =hg->pres;
   tmp_temp         =hg->temp;
+  tmp_sz_skymon    =hg->sz_skymon;
+  tmp_sz_plot      =hg->sz_plot;
+  tmp_sz_fc        =hg->sz_fc;
+  tmp_sz_adc       =hg->sz_adc;
   tmp_fc_mode_def  =hg->fc_mode_def;
   tmp_fc_mode_RGB[0]  =hg->fc_mode_RGB[0];
   tmp_fc_mode_RGB[1]  =hg->fc_mode_RGB[1];
@@ -7456,6 +7543,108 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   label = gtk_label_new ("Color/Font");
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
+
+  note_vbox = gtk_vbox_new(FALSE,2);
+
+  // Window Size.
+  frame = gtk_frame_new ("Size in pixel");
+  gtk_box_pack_start(GTK_BOX(note_vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+  
+  table1 = gtk_table_new(4,2,FALSE);
+  gtk_container_add (GTK_CONTAINER (frame), table1);
+  gtk_container_set_border_width (GTK_CONTAINER (table1), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table1), 5);
+  gtk_table_set_col_spacings (GTK_TABLE (table1), 5);
+  
+  
+  // Main
+  label = gtk_label_new ("Main");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table1), label, 0, 1, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->sz_skymon,
+					    SKYMON_WINSIZE, SKYMON_WINSIZE*2, 
+					    20.0,20.0,0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
+  my_signal_connect (adj, "value_changed",
+		     cc_get_adj,
+		     &tmp_sz_skymon);
+
+
+  // Plot
+  label = gtk_label_new ("     Plot");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table1), label, 2, 3, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->sz_plot,
+					    PLOT_WINSIZE, PLOT_WINSIZE*2, 
+					    20.0,20.0,0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_table_attach(GTK_TABLE(table1), spinner, 3, 4, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
+  my_signal_connect (adj, "value_changed",
+		     cc_get_adj,
+		     &tmp_sz_plot);
+  
+  
+  // FC
+  label = gtk_label_new ("Finding Chart");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table1), label, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->sz_fc,
+					    FC_WINSIZE, FC_WINSIZE*2, 
+					    20.0,20.0,0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 1, 2,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
+  my_signal_connect (adj, "value_changed",
+		     cc_get_adj,
+		     &tmp_sz_fc);
+
+
+  // ADC
+  label = gtk_label_new ("     Atmospheric Dispersion");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table1), label, 2, 3, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->sz_adc,
+					    ADC_WINSIZE, ADC_WINSIZE*2, 
+					    20.0,20.0,0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_table_attach(GTK_TABLE(table1), spinner, 3, 4, 1, 2,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
+  my_signal_connect (adj, "value_changed",
+		     cc_get_adj,
+		     &tmp_sz_adc);
+
+  label = gtk_label_new ("Window");
+  gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
+
   
 
 
@@ -7521,6 +7710,10 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->wave0  	            =tmp_wave0;        
     hg->pres		    =tmp_pres;         
     hg->temp		    =tmp_temp;        
+    hg->sz_skymon	    =tmp_sz_skymon;        
+    hg->sz_plot	            =tmp_sz_plot;        
+    hg->sz_fc	            =tmp_sz_fc;        
+    hg->sz_adc	            =tmp_sz_adc;        
     hg->fc_mode_def         =tmp_fc_mode_def;
     hg->fc_mode_RGB[0]      =tmp_fc_mode_RGB[0];
     hg->fc_mode_RGB[1]      =tmp_fc_mode_RGB[1];
@@ -8160,6 +8353,9 @@ void param_init(typHOE *hg){
   hg->fcdb_sdss_fil=TRUE;
   hg->fcdb_sdss_mag=19;
   hg->fcdb_sdss_diam=90;
+  hg->fcdb_usno_fil=TRUE;
+  hg->fcdb_usno_mag=19;
+  hg->fcdb_usno_diam=90;
 
   hg->adc_inst=ADC_INST_IMR;
   hg->adc_flip=FALSE;
@@ -10334,6 +10530,12 @@ void WriteConf(typHOE *hg){
   xmms_cfg_write_string(cfgfile, "Version", "Minor", MINOR_VERSION);
   xmms_cfg_write_string(cfgfile, "Version", "Micro", MICRO_VERSION);
 
+  // Window Size
+  xmms_cfg_write_int(cfgfile, "Size", "Skymon", hg->sz_skymon);
+  xmms_cfg_write_int(cfgfile, "Size", "Plot", hg->sz_plot);
+  xmms_cfg_write_int(cfgfile, "Size", "FC", hg->sz_fc);
+  xmms_cfg_write_int(cfgfile, "Size", "ADC", hg->sz_adc);
+
   // PC 
   if(hg->www_com) 
     xmms_cfg_write_string(cfgfile, "PC", "Browser", hg->www_com);
@@ -10501,6 +10703,24 @@ void ReadConf(typHOE *hg)
       flag_prec=FALSE;
     }
     
+
+    // Window Size
+    if(xmms_cfg_read_int  (cfgfile, "Size", "Skymon",  &i_buf))
+      hg->sz_skymon=i_buf;
+    else
+      hg->sz_skymon=SKYMON_WINSIZE;
+    if(xmms_cfg_read_int  (cfgfile, "Size", "Plot",  &i_buf))
+      hg->sz_plot=i_buf;
+    else
+      hg->sz_plot=PLOT_WINSIZE;
+    if(xmms_cfg_read_int  (cfgfile, "Size", "FC",  &i_buf))
+      hg->sz_fc=i_buf;
+    else
+      hg->sz_fc=FC_WINSIZE;
+    if(xmms_cfg_read_int  (cfgfile, "Size", "ADC",  &i_buf))
+      hg->sz_adc=i_buf;
+    else
+      hg->sz_adc=ADC_WINSIZE;
 
     // PC 
     if(xmms_cfg_read_string(cfgfile, "PC", "Browser", &c_buf)) 
