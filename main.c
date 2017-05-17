@@ -8185,6 +8185,11 @@ void param_init(typHOE *hg){
   hg->i_max=0;
   hg->ope_max=0;
 
+  hg->sz_skymon=SKYMON_WINSIZE;
+  hg->sz_plot  =  PLOT_WINSIZE;
+  hg->sz_fc    =    FC_WINSIZE;
+  hg->sz_adc   =   ADC_WINSIZE;
+
   hg->fp_log=NULL;
 
   hg->prop_id=g_strdup("o00000");
