@@ -1,3 +1,9 @@
+2017.05.17 ver2.9.2 - Added "Add" button in FCDB/Standard treeview panels
+	              to add a selected object into the object tree.
+	            - Added "File/Export to/OPE Def." and "Text List" in
+	              main menu to save the current object list into an OPE
+	              definition or a CSV text file.
+
 2017.05.16 ver2.9.1 - Added GSC 2.3/PanSTARRS-1/SDSS/USNO-B for database
 	              query in FC.
 	              These can be used for IRCS Tip-Tilt GS selection.

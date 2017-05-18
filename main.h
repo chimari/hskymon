@@ -1308,6 +1308,7 @@ struct _typHOE{
   gchar *filename_ope;
   gchar *filename_prm;
   gchar *filename_pdf;
+  gchar *filename_txt;
   gchar *filehead;
 
 #ifdef USE_XMLRPC

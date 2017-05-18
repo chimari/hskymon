@@ -34,6 +34,8 @@ void make_fcdb_tgt();
 gchar *make_simbad_id();
 void copy_stacstd();
 static void add_item();
+static void add_item_fcdb();
+static void add_item_std();
 static void fc_item ();
 static void stddb_item ();
 static void search_item ();
@@ -1088,8 +1090,7 @@ static void add_item (typHOE *hg)
 {
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
-  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->tree));
-  gint i,i_list,i_use;
+  gint i,i_list;
   OBJpara tmp_obj;
 
   if(hg->i_max>=MAX_OBJECT) return;
@@ -1131,6 +1132,174 @@ static void add_item (typHOE *hg)
   
   remake_tree(hg);
 }
+
+void add_item_fcdb(GtkWidget *w, gpointer gdata){
+  typHOE *hg;
+  gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
+  struct ln_hms hms;
+  struct ln_dms dms;
+  OBJpara tmp_obj;
+  gint i, i_list;
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+
+  hg=(typHOE *)gdata;
+  model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+
+  if(hg->i_max>=MAX_OBJECT) return;
+  if((hg->fcdb_tree_focus<0)||(hg->fcdb_tree_focus>=hg->fcdb_i_max)) return;
+
+  i=hg->i_max;
+
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_GSC:
+  case FCDB_TYPE_PS1:
+  case FCDB_TYPE_SDSS:
+  case FCDB_TYPE_USNO:
+    tmp_obj.def=make_ttgs(hg->obj[hg->fcdb_i].name,hg->obj[hg->fcdb_i].def);
+    tmp_obj.name=g_strconcat(hg->obj[hg->fcdb_i].name," TTGS",NULL);
+    tmp_obj.note=g_strconcat("added via FC (",hg->obj[hg->fcdb_i].name,")",NULL);
+    break;
+    
+  default:
+    tmp_obj.def=make_tgt(hg->fcdb[hg->fcdb_tree_focus].name);
+    tmp_obj.name=g_strdup(hg->fcdb[hg->fcdb_tree_focus].name);
+    tmp_obj.note=g_strconcat("added via FC (",hg->obj[hg->fcdb_i].name,")",NULL);
+    break;
+  }
+  
+  if(hg->fcdb[hg->fcdb_tree_focus].pm){ // Proper Motion
+    yrs=current_yrs(hg);
+    new_d_ra=hg->fcdb[hg->fcdb_tree_focus].d_ra+
+      hg->fcdb[hg->fcdb_tree_focus].pmra/1000/60/60*yrs;
+    new_d_dec=hg->fcdb[hg->fcdb_tree_focus].d_dec+
+      hg->fcdb[hg->fcdb_tree_focus].pmdec/1000/60/60*yrs;
+    
+    ln_deg_to_hms(new_d_ra, &hms);
+    new_ra=(gdouble)hms.hours*10000.
+      + (gdouble)hms.minutes*100. + hms.seconds;
+    ln_deg_to_dms(new_d_dec, &dms);
+    if(dms.neg==1){ 
+      new_dec=-(gdouble)dms.degrees*10000.
+	- (gdouble)dms.minutes*100. - dms.seconds;
+    }
+    else{
+      new_dec=(gdouble)dms.degrees*10000.
+	+ (gdouble)dms.minutes*100. + dms.seconds;
+    }
+    
+    tmp_obj.ra=new_ra;
+    tmp_obj.dec=new_dec;
+    tmp_obj.epoch=2000.0;
+  }
+  else{  // No Proper Motion
+    tmp_obj.ra=hg->fcdb[hg->fcdb_tree_focus].ra;
+    tmp_obj.dec=hg->fcdb[hg->fcdb_tree_focus].dec;
+    tmp_obj.epoch=hg->fcdb[hg->fcdb_tree_focus].epoch;
+  }
+
+  for(i_list=hg->i_max;i_list>i;i_list--){
+    hg->obj[i_list]=hg->obj[i_list-1];
+  }
+  
+  hg->i_max++;
+  
+  for(i_list=0;i_list<hg->i_max;i_list++){
+    hg->obj[i_list].check_sm=FALSE;
+  }
+  
+  hg->obj[i]=tmp_obj;
+  hg->obj[i].check_disp=TRUE;
+  hg->obj[i].check_sm=TRUE;
+  hg->obj[i].check_used=FALSE;
+  
+  hg->obj[i].ope=MAX_ROPE-1;
+  hg->obj[i].ope_i=-1;
+  if(hg->obj[i].ope<0) hg->obj[i].ope=0;
+  
+  gtk_list_store_append (GTK_LIST_STORE (model), &iter);
+  tree_update_azel_item(hg, model, iter, i);
+  
+  remake_tree(hg);
+}
+
+void add_item_std(GtkWidget *w, gpointer gdata){
+  typHOE *hg;
+  gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
+  struct ln_hms hms;
+  struct ln_dms dms;
+  OBJpara tmp_obj;
+  gint i, i_list;
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+
+  hg=(typHOE *)gdata;
+  model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+
+  if(hg->i_max>=MAX_OBJECT) return;
+  if((hg->stddb_tree_focus<0)||(hg->stddb_tree_focus>=hg->std_i_max)) return;
+
+  i=hg->i_max;
+
+  tmp_obj.def=make_tgt(hg->std[hg->stddb_tree_focus].name);
+  tmp_obj.name=g_strdup(hg->std[hg->stddb_tree_focus].name);
+  tmp_obj.note=g_strdup("standard");
+  
+  if(hg->std[hg->stddb_tree_focus].pm){ // Proper Motion
+    yrs=current_yrs(hg);
+    new_d_ra=hg->std[hg->stddb_tree_focus].d_ra+
+      hg->std[hg->stddb_tree_focus].pmra/1000/60/60*yrs;
+    new_d_dec=hg->std[hg->stddb_tree_focus].d_dec+
+      hg->std[hg->stddb_tree_focus].pmdec/1000/60/60*yrs;
+    
+    ln_deg_to_hms(new_d_ra, &hms);
+    new_ra=(gdouble)hms.hours*10000.
+      + (gdouble)hms.minutes*100. + hms.seconds;
+    ln_deg_to_dms(new_d_dec, &dms);
+    if(dms.neg==1){ 
+      new_dec=-(gdouble)dms.degrees*10000.
+	- (gdouble)dms.minutes*100. - dms.seconds;
+    }
+    else{
+      new_dec=(gdouble)dms.degrees*10000.
+	+ (gdouble)dms.minutes*100. + dms.seconds;
+    }
+    
+    tmp_obj.ra=new_ra;
+    tmp_obj.dec=new_dec;
+    tmp_obj.epoch=2000.0;
+  }
+  else{  // No Proper Motion
+    tmp_obj.ra=hg->std[hg->stddb_tree_focus].ra;
+    tmp_obj.dec=hg->std[hg->stddb_tree_focus].dec;
+    tmp_obj.epoch=hg->std[hg->stddb_tree_focus].epoch;
+  }
+
+  for(i_list=hg->i_max;i_list>i;i_list--){
+    hg->obj[i_list]=hg->obj[i_list-1];
+  }
+  
+  hg->i_max++;
+  
+  for(i_list=0;i_list<hg->i_max;i_list++){
+    hg->obj[i_list].check_sm=FALSE;
+  }
+  
+  hg->obj[i]=tmp_obj;
+  hg->obj[i].check_disp=TRUE;
+  hg->obj[i].check_sm=TRUE;
+  hg->obj[i].check_used=FALSE;
+  
+  hg->obj[i].ope=MAX_ROPE-1;
+  hg->obj[i].ope_i=-1;
+  if(hg->obj[i].ope<0) hg->obj[i].ope=0;
+  
+  gtk_list_store_append (GTK_LIST_STORE (model), &iter);
+  tree_update_azel_item(hg, model, iter, i);
+  
+  remake_tree(hg);
+}
+
 
 static void
 remove_item (GtkWidget *widget, gpointer data)
@@ -4191,6 +4360,18 @@ do_editable_cells (typHOE *hg)
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (std_simbad), (gpointer)hg);
     
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_ADD);
+#else
+    button = gtk_button_new_with_label ("Add");
+#endif
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (add_item_std), (gpointer)hg);
+    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,"to Object List");
+#endif
+
     label= gtk_label_new ("    ");
     gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
     
@@ -4288,9 +4469,10 @@ do_editable_cells (typHOE *hg)
     hbox = gtk_hbox_new (FALSE, 4);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
     
-    if((hg->fcdb_type==FCDB_TYPE_SIMBAD)||(hg->fcdb_type==FCDB_TYPE_NED)
-       ||(hg->fcdb_type==FCDB_TYPE_SDSS)){
-   
+    switch(hg->fcdb_type){
+    case FCDB_TYPE_SIMBAD:
+    case FCDB_TYPE_NED:
+    case FCDB_TYPE_SDSS:
 #ifdef __GTK_STOCK_H__
       button=gtkut_button_new_from_stock("Browse",GTK_STOCK_FIND);
 #else
@@ -4300,9 +4482,26 @@ do_editable_cells (typHOE *hg)
       my_signal_connect (button, "clicked",
 			 G_CALLBACK (fcdb_simbad), (gpointer)hg);
     
-      label= gtk_label_new ("    ");
-      gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+      break;
+
+    default:
+      break;
     }
+
+#ifdef __GTK_STOCK_H__
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_ADD);
+#else
+    button = gtk_button_new_with_label ("Add");
+#endif
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (add_item_fcdb), (gpointer)hg);
+    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,"to Object List");
+#endif
+
+    label= gtk_label_new ("    ");
+    gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
 #ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock("OPE Def.",GTK_STOCK_EDIT);
@@ -4427,22 +4626,16 @@ gchar *make_tgt(gchar * obj_name){
   return(ret_name);
 }
 
-gchar *make_ttgs(gchar * obj_name){
-  gchar tgt_name[BUFFSIZE], *ret_name;
+gchar *make_ttgs(gchar * obj_name, gchar * obj_tgt){
+  gchar *ret_name;
   gint  i_obj,i_tgt;
 
-  strcpy(tgt_name,"TTGS_");
-  i_tgt=strlen(tgt_name);
-
-  for(i_obj=0;i_obj<strlen(obj_name);i_obj++){
-    if(isalnum(obj_name[i_obj])){
-      tgt_name[i_tgt]=obj_name[i_obj];
-      i_tgt++;
-    }
+  if(!obj_tgt){
+    ret_name=g_strconcat(make_tgt(obj_name),"_TT",NULL);
   }
-
-  tgt_name[i_tgt]='\0';
-  ret_name=g_strdup(tgt_name);
+  else{
+    ret_name=g_strconcat(obj_tgt,"_TT",NULL);
+  }
 
   return(ret_name);
 }
@@ -4504,13 +4697,19 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
 
 
   if((hg->fcdb_tree_focus>=0)&&(hg->fcdb_tree_focus<hg->fcdb_i_max)){
-    if((hg->fcdb_type==FCDB_TYPE_GSC)||(hg->fcdb_type==FCDB_TYPE_PS1)
-       ||(hg->fcdb_type==FCDB_TYPE_SDSS)||(hg->fcdb_type==FCDB_TYPE_USNO)){
-      tgt=make_ttgs(hg->obj[hg->fcdb_i].name);
-    }
-    else{
+    switch(hg->fcdb_type){
+    case FCDB_TYPE_GSC:
+    case FCDB_TYPE_PS1:
+    case FCDB_TYPE_SDSS:
+    case FCDB_TYPE_USNO:
+      tgt=make_ttgs(hg->obj[hg->fcdb_i].name,hg->obj[hg->fcdb_i].def);
+      break;
+
+    default:
       tgt=make_tgt(hg->fcdb[hg->fcdb_tree_focus].name);
+      break;
     }
+
     if(hg->fcdb[hg->fcdb_tree_focus].pm){
       yrs=current_yrs(hg);
       new_d_ra=hg->fcdb[hg->fcdb_tree_focus].d_ra+
@@ -4530,32 +4729,43 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
 	new_dec=(gdouble)dms.degrees*10000.
 	  + (gdouble)dms.minutes*100. + dms.seconds;
       }
-      if(hg->fcdb_type==FCDB_TYPE_USNO){
-	sprintf(tmp,"PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+      switch(hg->fcdb_type){
+      case FCDB_TYPE_GSC:
+      case FCDB_TYPE_PS1:
+      case FCDB_TYPE_SDSS:
+      case FCDB_TYPE_USNO:
+	sprintf(tmp,"PM%s=OBJECT=\"%s TTGS\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
 		tgt,hg->obj[hg->fcdb_i].name,
 		new_ra,new_dec,2000.00);
-      }
-      else{
+	break;
+
+      default:
 	sprintf(tmp,"PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
 		tgt,hg->fcdb[hg->fcdb_tree_focus].name,
 		new_ra,new_dec,2000.00);
+	break;
       }
     }
     else{
-      if((hg->fcdb_type==FCDB_TYPE_GSC)||(hg->fcdb_type==FCDB_TYPE_PS1)
-	 ||(hg->fcdb_type==FCDB_TYPE_SDSS)||(hg->fcdb_type==FCDB_TYPE_USNO)){
-	sprintf(tmp,"%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+      switch(hg->fcdb_type){
+      case FCDB_TYPE_GSC:
+      case FCDB_TYPE_PS1:
+      case FCDB_TYPE_SDSS:
+      case FCDB_TYPE_USNO:
+	sprintf(tmp,"%s=OBJECT=\"%s TTGS\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
 		tgt,hg->obj[hg->fcdb_i].name,
 		hg->fcdb[hg->fcdb_tree_focus].ra,
 		hg->fcdb[hg->fcdb_tree_focus].dec,
 		hg->fcdb[hg->fcdb_tree_focus].epoch);
-      }
-      else{
+	break;
+	
+      default:
 	sprintf(tmp,"%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
 		tgt,hg->fcdb[hg->fcdb_tree_focus].name,
 		hg->fcdb[hg->fcdb_tree_focus].ra,
 		hg->fcdb[hg->fcdb_tree_focus].dec,
 		hg->fcdb[hg->fcdb_tree_focus].epoch);
+	break;
       }
     }
     g_free(tgt);

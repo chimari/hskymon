@@ -1907,11 +1907,22 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
       else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
 
-      cairo_set_line_width (cr, 1.5*scale);
-      cairo_arc(cr,0,0,
-		((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*IRCS_TTGS_ARCMIN,
-		0,M_PI*2);
-      cairo_stroke(cr);
+      if(hg->dss_draw_slit){
+	cairo_set_line_width (cr, 1.5*scale);
+	cairo_arc(cr,0,0,
+		  ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*IRCS_TTGS_ARCMIN,
+		  0,M_PI*2);
+	cairo_stroke(cr);
+
+	cairo_set_font_size (cr, 9.0*scale);
+	
+	sprintf(tmp,"Tip-Tilt Guide Star w/LGS (%darcmin)",IRCS_TTGS_ARCMIN/2);
+	cairo_text_extents (cr,tmp, &extents);
+	cairo_move_to(cr,
+		      -extents.width/2,
+		      -IRCS_TTGS_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
+	cairo_show_text(cr, tmp);
+      }
 
       cairo_set_line_width (cr, 3.0*scale);
 
@@ -1932,15 +1943,6 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
       cairo_text_extents (cr,tmp, &extents);
       cairo_move_to(cr,-extents.width/2,
 		    -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_Y_ARCSEC/60.)/2.-5*scale);
-      cairo_show_text(cr, tmp);
-
-      cairo_set_font_size (cr, 9.0*scale);
-	
-      sprintf(tmp,"Tip-Tilt Guide Star w/LGS (%darcmin)",IRCS_TTGS_ARCMIN/2);
-      cairo_text_extents (cr,tmp, &extents);
-      cairo_move_to(cr,
-		    -extents.width/2,
-		    -IRCS_TTGS_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
       cairo_show_text(cr, tmp);
 
       break;

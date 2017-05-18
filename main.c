@@ -39,6 +39,7 @@ extern void make_tree();
 extern void remake_tree();
 extern void rebuild_tree();
 extern gint tree_update_azel();
+extern gchar* make_tgt();
 
 extern int get_allsky();
 
@@ -60,6 +61,8 @@ extern gboolean flagFC;
 #ifndef USE_WIN32
 void ChildTerm();
 #endif // USE_WIN32
+
+gboolean is_separator();
 
 GtkWidget *make_menu();
 
@@ -106,6 +109,8 @@ void do_upload();
 void do_merge_prm();
 void do_merge();
 void do_save_pdf();
+void do_save_OpeDef();
+void do_save_TextList();
 void do_save_fc_pdf();
 void show_version();
 static void show_help();
@@ -198,7 +203,8 @@ gchar* get_win_temp();
 
 void get_font_family_size();
 
-gboolean is_separator();
+void Export_OpeDef();
+void Export_TextList();
 
 gboolean flagProp=FALSE;
 gboolean flagChildDialog=FALSE;
@@ -459,6 +465,49 @@ GtkWidget *make_menu(typHOE *hg){
     my_signal_connect (popup_button, "activate",do_merge,(gpointer)hg);
     
     popup_button =gtk_menu_item_new_with_label ("CSV List");
+    gtk_widget_show (popup_button);
+    gtk_container_add (GTK_CONTAINER (menu), popup_button);
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
+  }
+
+  bar =gtk_menu_item_new();
+  gtk_widget_show (bar);
+  gtk_container_add (GTK_CONTAINER (menu), bar);
+
+  {
+    GtkWidget *new_menu; 
+    GtkWidget *popup_button;
+    GtkWidget *bar;
+   
+    new_menu = gtk_menu_new();
+    gtk_widget_show (new_menu);
+    
+  //File/Export/OPE Def.
+#ifdef __GTK_STOCK_H__
+    image=gtk_image_new_from_stock (GTK_STOCK_SAVE, GTK_ICON_SIZE_MENU);
+    popup_button =gtk_image_menu_item_new_with_label ("OPE Def.");
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#else
+    popup_button =gtk_menu_item_new_with_label ("OPE Def.");
+#endif
+    gtk_widget_show (popup_button);
+    gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
+    my_signal_connect (popup_button, "activate",do_save_OpeDef,(gpointer)hg);
+    
+    
+    //File/Export/Text List.
+#ifdef __GTK_STOCK_H__
+    image=gtk_image_new_from_stock (GTK_STOCK_SAVE, GTK_ICON_SIZE_MENU);
+    popup_button =gtk_image_menu_item_new_with_label ("Text List");
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#else
+    popup_button =gtk_menu_item_new_with_label ("Text List");
+#endif
+    gtk_widget_show (popup_button);
+    gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
+    my_signal_connect (popup_button, "activate",do_save_TextList,(gpointer)hg);
+    
+    popup_button =gtk_menu_item_new_with_label ("Export to");
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (menu), popup_button);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
@@ -3215,7 +3264,7 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   gtk_widget_show(pixmap);
   //g_object_unref(pixmap);
 
-  label = gtk_label_new ("  Hide objects not used in GetObject in OPE files");
+  label = gtk_label_new ("  Hide objects not used in GetObject|GetStandard|AO188_OFFSET_RADEC in OPE files");
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 1, 2,
 		    GTK_FILL,GTK_SHRINK,0,0);
@@ -5258,6 +5307,150 @@ void do_save_pdf (GtkWidget *widget, gpointer gdata)
 
   //flagChildDialog=FALSE;
   
+}
+
+
+void do_save_OpeDef (GtkWidget *widget, gpointer gdata)
+{
+  GtkWidget *fdialog;
+  typHOE *hg;
+
+  hg=(typHOE *)gdata;
+
+  // Win構築は重いので先にExposeイベント等をすべて処理してから
+  while (my_main_iteration(FALSE));
+  gdk_flush();
+
+  fdialog = gtk_file_chooser_dialog_new("HOE : Ope Def File to be Saved",
+					NULL,
+					GTK_FILE_CHOOSER_ACTION_SAVE,
+					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+					NULL);
+  
+  gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
+  if(!hg->filename_txt)
+    hg->filename_txt=g_strconcat("hskymon_OpeDef" "." LIST3_EXTENSION,NULL);
+
+  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (fdialog), 
+				       to_utf8(g_path_get_dirname(hg->filename_txt)));
+  gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (fdialog), 
+				     to_utf8(g_path_get_basename(hg->filename_txt)));
+
+  my_file_chooser_add_filter(fdialog,"TXT File","*." LIST3_EXTENSION,NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*", NULL);
+
+  gtk_widget_show_all(fdialog);
+
+
+  if (gtk_dialog_run(GTK_DIALOG(fdialog)) == GTK_RESPONSE_ACCEPT) {
+    char *fname;
+    gchar *dest_file;
+    FILE *fp_test;
+    
+    fname = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog)));
+    gtk_widget_destroy(fdialog);
+
+    dest_file=to_locale(fname);
+
+    if((fp_test=fopen(dest_file,"w"))!=NULL){
+      fclose(fp_test);
+
+      if(hg->filename_txt) g_free(hg->filename_txt);
+      hg->filename_txt=g_strdup(dest_file);
+      
+      Export_OpeDef(hg);
+    }
+    else{
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: File cannot be opened.",
+		    " ",
+		    fname,
+		    NULL);
+#else
+      g_print ("Cannot Open %s\n",
+	       fname);
+#endif
+    }
+    
+    g_free(dest_file);
+    g_free(fname);
+  } else {
+    gtk_widget_destroy(fdialog);
+  }
+}
+
+
+void do_save_TextList (GtkWidget *widget, gpointer gdata)
+{
+  GtkWidget *fdialog;
+  typHOE *hg;
+
+  hg=(typHOE *)gdata;
+
+  // Win構築は重いので先にExposeイベント等をすべて処理してから
+  while (my_main_iteration(FALSE));
+  gdk_flush();
+
+  fdialog = gtk_file_chooser_dialog_new("HOE : Ope Def File to be Saved",
+					NULL,
+					GTK_FILE_CHOOSER_ACTION_SAVE,
+					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+					NULL);
+  
+  gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
+  if(!hg->filename_txt)
+    hg->filename_txt=g_strconcat("hskymon_ObjList" "." LIST3_EXTENSION,NULL);
+
+  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (fdialog), 
+				       to_utf8(g_path_get_dirname(hg->filename_txt)));
+  gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (fdialog), 
+				     to_utf8(g_path_get_basename(hg->filename_txt)));
+
+  my_file_chooser_add_filter(fdialog,"TXT File","*." LIST3_EXTENSION,NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*", NULL);
+
+  gtk_widget_show_all(fdialog);
+
+
+  if (gtk_dialog_run(GTK_DIALOG(fdialog)) == GTK_RESPONSE_ACCEPT) {
+    char *fname;
+    gchar *dest_file;
+    FILE *fp_test;
+    
+    fname = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog)));
+    gtk_widget_destroy(fdialog);
+
+    dest_file=to_locale(fname);
+
+    if((fp_test=fopen(dest_file,"w"))!=NULL){
+      fclose(fp_test);
+
+      if(hg->filename_txt) g_free(hg->filename_txt);
+      hg->filename_txt=g_strdup(dest_file);
+      
+      Export_TextList(hg);
+    }
+    else{
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: File cannot be opened.",
+		    " ",
+		    fname,
+		    NULL);
+#else
+      g_print ("Cannot Open %s\n",
+	       fname);
+#endif
+    }
+    
+    g_free(dest_file);
+    g_free(fname);
+  } else {
+    gtk_widget_destroy(fdialog);
+  }
 }
 
 
@@ -10114,6 +10307,41 @@ void CheckTargetDefOPE(typHOE *hg){
 	      arg=g_strndup(cp,strcspn(cp," \r\n"));
 
 	      for(i_list=0;i_list<hg->i_max;i_list++){
+		gchar *ep;
+		ep=hg->obj[i_list].def+strlen(hg->obj[i_list].def)
+		  -strlen("_TT");
+		if(g_ascii_strncasecmp(ep,"_TT",strlen("_TT"))!=0){
+		  ep=hg->obj[i_list].def+strlen(hg->obj[i_list].def)
+		    -strlen("_TT")-1;
+		  if(g_ascii_strncasecmp(ep,"_TT",strlen("_TT"))!=0){
+		    if(g_ascii_strcasecmp(arg,
+					  hg->obj[i_list].def)==0){
+		      hg->obj[i_list].check_disp=TRUE;
+		      hg->obj[i_list].check_used=TRUE;
+		      hg->obj[i_list].check_std=FALSE;
+		      break;
+		    }
+		  }
+		}
+	      }
+	    }
+	  }while(cp);
+	}   
+	else if(g_ascii_strncasecmp(BUF,"AO188_OFFSET_RADEC",
+				    strlen("AO188_OFFSET_RADEC"))==0){
+
+	  cpp=BUF+strlen("AO188_OFFSET_RADEC");
+
+	  do{
+	    if(NULL != (cp = strstr(cpp, " $"))){
+	      cpp=cp+strlen(" $");
+	      cp+=strlen(" $");
+
+	      
+	      if(arg) g_free(arg);
+	      arg=g_strndup(cp,strcspn(cp," \r\n"));
+
+	      for(i_list=0;i_list<hg->i_max;i_list++){
 		if(g_ascii_strcasecmp(arg,
 				      hg->obj[i_list].def)==0){
 		  hg->obj[i_list].check_disp=TRUE;
@@ -11908,6 +12136,76 @@ void get_font_family_size(typHOE *hg)
   pango_font_description_free(fontdc);
 }
 
+
+void Export_OpeDef(typHOE *hg){
+  FILE *fp;
+  int i_list;
+
+  if(hg->i_max<=0) return;
+
+  if((fp=fopen(hg->filename_txt,"w"))==NULL){
+    fprintf(stderr," File Write Error  \"%s\" \n", hg->filename_txt);
+    exit(1);
+  }
+
+  for(i_list=0;i_list<hg->i_max;i_list++){
+    if(!hg->obj[i_list].def) hg->obj[i_list].def=make_tgt(hg->obj[i_list].name);
+
+    fprintf(fp,"%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf\n",
+	    hg->obj[i_list].def,
+	    hg->obj[i_list].name,
+	    hg->obj[i_list].ra,
+	    hg->obj[i_list].dec,
+	    hg->obj[i_list].epoch);
+  }
+  
+  fclose(fp);
+}
+
+void Export_TextList(typHOE *hg){
+  FILE *fp;
+  int i_list;
+  int max_len=0;
+  gchar *text_form1, *text_form2;
+
+  if(hg->i_max<=0) return;
+
+  if((fp=fopen(hg->filename_txt,"w"))==NULL){
+    fprintf(stderr," File Write Error  \"%s\" \n", hg->filename_txt);
+    exit(1);
+  }
+
+  for(i_list=0;i_list<hg->i_max;i_list++){
+    if(strlen(hg->obj[i_list].name)>max_len) max_len=strlen(hg->obj[i_list].name);
+  }
+  text_form1=g_strdup_printf("%%%ds, %%09.2lf, %%+010.2lf, %%7.2lf, %%s",max_len);
+  text_form2=g_strdup_printf("%%%ds, %%09.2lf, %%+010.2lf, %%7.2lf",max_len);
+
+  for(i_list=0;i_list<hg->i_max;i_list++){
+    if(hg->obj[i_list].note){
+      fprintf(fp,text_form1,
+	      hg->obj[i_list].name,
+	      hg->obj[i_list].ra,
+	      hg->obj[i_list].dec,
+	      hg->obj[i_list].epoch,
+	      hg->obj[i_list].note);
+      fprintf(fp,"\n");
+    }
+    else{
+      fprintf(fp,text_form2,
+	      hg->obj[i_list].name,
+	      hg->obj[i_list].ra,
+	      hg->obj[i_list].dec,
+	      hg->obj[i_list].epoch);
+      fprintf(fp,"\n");
+    }
+  }
+
+  g_free(text_form1);
+  g_free(text_form2);
+  
+  fclose(fp);
+}
 
 
 int main(int argc, char* argv[]){
