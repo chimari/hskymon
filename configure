@@ -12986,7 +12986,9 @@ os_osx=no
 case "$target" in
 *-darwin*)
 	os_osx=yes
-	CFLAGS="$CFLAGS -no-cpp-precomp -fno-common"
+
+$as_echo "#define USE_OSX /**/" >>confdefs.h
+
 	;;
 esac
 
@@ -13642,8 +13644,8 @@ fi
 
 $as_echo "#define USE_GTKMACINTEGRATION /**/" >>confdefs.h
 
-    GTKMAC_CFLAGS="`pkg-config gtk-mac-ntegration-gtk2 --cflags`"
-    GTKMAC_CFLAGS="`pkg-config gtk-mac-ntegration-gtk2 --libs`"
+    GTKMAC_CFLAGS="`pkg-config gtk-mac-integration-gtk2 --cflags`"
+    GTKMAC_CFLAGS="`pkg-config gtk-mac-integration-gtk2 --libs`"
  else
     GTKMAC_CFALGS=""
     GTKMAC_LIBS=""

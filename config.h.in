@@ -115,6 +115,9 @@
 /* With gtkmacintegration */
 #undef USE_GTKMACINTEGRATION
 
+/* Use Mac OS X */
+#undef USE_OSX
+
 /* Define if you use OpenSSL to support SSL. */
 #undef USE_SSL
 

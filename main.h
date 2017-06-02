@@ -8,7 +8,7 @@
 #  include "config.h"
 #endif  
 
-#undef USE_OSX
+//#undef USE_OSX
 
 #undef ALLSKY_DEBUG
 #undef SKYMON_DEBUG

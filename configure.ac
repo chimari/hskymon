@@ -48,7 +48,8 @@ os_osx=no
 case "$target" in
 *-darwin*)
 	os_osx=yes
-	CFLAGS="$CFLAGS -no-cpp-precomp -fno-common"
+        AC_DEFINE([USE_OSX],[],[Use Mac OS X])
+dnl	CFLAGS="$CFLAGS -no-cpp-precomp -fno-common"
 	;;
 esac
 
@@ -87,8 +88,8 @@ dnl GtkMACIntegration
  if test x"${with_gtkmac}" = "xyes"; then
  if test "$os_osx" == yes; then
  AC_DEFINE([USE_GTKMACINTEGRATION],[],[With gtkmacintegration])
-    GTKMAC_CFLAGS="`pkg-config gtk-mac-ntegration-gtk2 --cflags`"
-    GTKMAC_CFLAGS="`pkg-config gtk-mac-ntegration-gtk2 --libs`"
+    GTKMAC_CFLAGS="`pkg-config gtk-mac-integration-gtk2 --cflags`"
+    GTKMAC_CFLAGS="`pkg-config gtk-mac-integration-gtk2 --libs`"
  else
     GTKMAC_CFALGS=""
     GTKMAC_LIBS=""
