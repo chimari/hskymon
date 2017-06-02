@@ -89,7 +89,7 @@ dnl GtkMACIntegration
  if test "$os_osx" == yes; then
  AC_DEFINE([USE_GTKMACINTEGRATION],[],[With gtkmacintegration])
     GTKMAC_CFLAGS="`pkg-config gtk-mac-integration-gtk2 --cflags`"
-    GTKMAC_CFLAGS="`pkg-config gtk-mac-integration-gtk2 --libs`"
+    GTKMAC_LIBS="`pkg-config gtk-mac-integration-gtk2 --libs`"
  else
     GTKMAC_CFALGS=""
     GTKMAC_LIBS=""
