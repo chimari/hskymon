@@ -43,6 +43,15 @@ AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([pwd.h sys/utsname.h])
 
+os_osx=no
+
+case "$target" in
+*-darwin*)
+	os_osx=yes
+	CFLAGS="$CFLAGS -no-cpp-precomp -fno-common"
+	LIBSYLPH_CFLAGS="$LIBSYLPH_CFLAGS -xobjective-c"
+	;;
+esac
 
 dnl Win32
 AC_ARG_WITH(win32,
@@ -69,6 +78,16 @@ dnl Gtk+
 AM_PATH_GLIB_2_0(2.8.0,, AC_MSG_ERROR([glib-2.x is required]), gthread gobject)
 AM_PATH_GTK_2_0(2.8.0,, AC_MSG_ERROR([gtk+-2.x is required]), gthread gobject)
 AC_DEFINE([USE_GTK2],[],[Use Gtk+2.x instead of Gtk+1.2])
+
+if test "$os_osx" == yes; then
+	AC_CHECK_LIB(gtkmacintegration, gtkosx_application_ready, [ ac_have_gtkmacintegration=yes ], [ ac_have_gtkmacintegration=no ])
+	AC_MSG_CHECKING([if gtkmacintegration is available])
+	AC_MSG_RESULT($ac_have_gtkmacintegration)
+	if test "$ac_have_gtkmacintegration" = yes; then
+		GTK_LIBS="$GTK_LIBS -lgtkmacintegration"
+		AC_DEFINE(USE_GTKMACINTEGRATION, 1, Define if you use gtkmacintegration library.)
+	fi
+fi
 
 dnl  XMLRPC
  AC_ARG_WITH(xmlrpc,

@@ -16,6 +16,10 @@
 #include <glib.h>
 #include<gtk/gtk.h>
 
+#ifdef GTKOSXAPPLICATION
+#include <gtkmacintegration/gtkosxapplication.h>
+#endif
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<sys/stat.h>
