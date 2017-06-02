@@ -1,5 +1,6 @@
 //    hskymon  from HDS OPE file Editor
 //          New SkyMonitor for Subaru Gen2
+//      main.c  --- main program
 //
 //                                       2003.10.23  A.Tajitsu
 
@@ -40,6 +41,7 @@ extern void remake_tree();
 extern void rebuild_tree();
 extern gint tree_update_azel();
 extern gchar* make_tgt();
+extern void addobj_dialog();
 
 extern int get_allsky();
 
@@ -66,6 +68,7 @@ gboolean is_separator();
 
 GtkWidget *make_menu();
 
+static void AddObj();
 static void close_child_dialog();
 static void fs_set_opeext();
 static void fs_set_list1ext();
@@ -130,6 +133,7 @@ void close_prop();
 void default_disp_para();
 void change_disp_para();
 void change_fcdb_para();
+void radio_fcdb();
 void close_disp_para();
 void create_diff_para_dialog();
 void create_disp_para_dialog();
@@ -156,6 +160,7 @@ gboolean ObjOverlap();
 void MergeListOPE();
 void MergeListPRM();
 void MergeListPRM2();
+gboolean check_ttgs();
 void CheckTargetDefOPE();
 gint CheckTargetDefOPE2();
 void MergeList();
@@ -536,10 +541,10 @@ GtkWidget *make_menu(typHOE *hg){
   //// List
 #ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_JUSTIFY_FILL, GTK_ICON_SIZE_MENU);
-  menu_item =gtk_image_menu_item_new_with_label ("List");
+  menu_item =gtk_image_menu_item_new_with_label ("Object");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
 #else
-  menu_item =gtk_menu_item_new_with_label ("List");
+  menu_item =gtk_menu_item_new_with_label ("Object");
 #endif
   gtk_widget_show (menu_item);
 #ifdef USE_GTK2
@@ -562,6 +567,18 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",make_tree,(gpointer)hg);
+
+ 
+#ifdef __GTK_STOCK_H__
+  image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
+  popup_button =gtk_image_menu_item_new_with_label ("Add");
+  gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#else
+  popup_button =gtk_menu_item_new_with_label ("Add");
+#endif
+  gtk_widget_show (popup_button);
+  gtk_container_add (GTK_CONTAINER (menu), popup_button);
+  my_signal_connect (popup_button, "activate",AddObj,(gpointer)hg);
 #endif
 
   //// Update
@@ -767,6 +784,12 @@ GtkWidget *make_menu(typHOE *hg){
 
   gtk_widget_show_all(menu_bar);
   return(menu_bar);
+}
+
+static void AddObj(GtkWidget *widget, gpointer gdata){
+
+  make_tree(widget, gdata);
+  addobj_dialog(widget, gdata);
 }
 
 static void close_child_dialog(GtkWidget *w, GtkWidget *dialog)
@@ -4454,12 +4477,14 @@ static void fcdb_para_item (GtkWidget *widget, gpointer data)
 void create_fcdb_para_dialog (typHOE *hg)
 {
   GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
-    *spinner, *combo, *table, *check, *r1, *r2, *r3, *r4, *r5, *r6;
+    *spinner, *combo, *table, *check, *r1, *r2, *r3, *r4, *r5, *r6, *r7;
   GtkAdjustment *adj;
   gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, 
     tmp_gsc_mag, tmp_gsc_diam, tmp_ps1_mag, tmp_ps1_diam, tmp_ps1_mindet, 
-    tmp_sdss_mag, tmp_sdss_diam, tmp_usno_mag, tmp_usno_diam;
-  gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_sdss_fil, tmp_usno_fil;
+    tmp_sdss_mag, tmp_sdss_diam, tmp_usno_mag, tmp_usno_diam,
+    tmp_gaia_mag, tmp_gaia_diam;
+  gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_sdss_fil, tmp_usno_fil,
+    tmp_gaia_fil;
   confPropFCDB *cdata;
   gboolean rebuild_flag=FALSE;
 
@@ -4493,6 +4518,9 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_usno_fil=hg->fcdb_usno_fil;
   tmp_usno_mag=hg->fcdb_usno_mag;
   tmp_usno_diam=hg->fcdb_usno_diam;
+  tmp_gaia_fil=hg->fcdb_gaia_fil;
+  tmp_gaia_mag=hg->fcdb_gaia_mag;
+  tmp_gaia_diam=hg->fcdb_gaia_diam;
 
   while (my_main_iteration(FALSE));
   gdk_flush();
@@ -4512,54 +4540,61 @@ void create_fcdb_para_dialog (typHOE *hg)
 
   r1 = gtk_radio_button_new_with_label_from_widget (NULL, "SIMBAD");
   gtk_box_pack_start(GTK_BOX(hbox), r1, FALSE, FALSE, 0);
-  if(hg->fcdb_type==FCDB_TYPE_SIMBAD)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r1), TRUE);
-  //my_signal_connect (button, "toggled", RadioFCDB, (gpointer)hg);
+  my_signal_connect (r1, "toggled", radio_fcdb, (gpointer)hg);
 
   r2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "NED");
   gtk_box_pack_start(GTK_BOX(hbox), r2, FALSE, FALSE, 0);
   gtk_widget_show (r2);
-  if(hg->fcdb_type==FCDB_TYPE_NED)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r2),TRUE);
+  my_signal_connect (r2, "toggled", radio_fcdb, (gpointer)hg);
 
-  r3 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "GSC 2.3");
+  r3 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "GSC");
   gtk_box_pack_start(GTK_BOX(hbox), r3, FALSE, FALSE, 0);
   gtk_widget_show (r3);
-  if(hg->fcdb_type==FCDB_TYPE_GSC)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r3),TRUE);
+  my_signal_connect (r3, "toggled", radio_fcdb, (gpointer)hg);
 
-  r4 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "PanSTARRS-1");
+  r4 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "PanSTARRS");
   gtk_box_pack_start(GTK_BOX(hbox), r4, FALSE, FALSE, 0);
   gtk_widget_show (r4);
-  if(hg->fcdb_type==FCDB_TYPE_PS1)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r4),TRUE);
+  my_signal_connect (r4, "toggled", radio_fcdb, (gpointer)hg);
 
   r5 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "SDSS");
   gtk_box_pack_start(GTK_BOX(hbox), r5, FALSE, FALSE, 0);
   gtk_widget_show (r5);
-  if(hg->fcdb_type==FCDB_TYPE_SDSS)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r5),TRUE);
+  my_signal_connect (r5, "toggled", radio_fcdb, (gpointer)hg);
 
   r6 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "USNO-B");
   gtk_box_pack_start(GTK_BOX(hbox), r6, FALSE, FALSE, 0);
   gtk_widget_show (r6);
-  if(hg->fcdb_type==FCDB_TYPE_USNO)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r6),TRUE);
+  my_signal_connect (r6, "toggled", radio_fcdb, (gpointer)hg);
+
+  r7 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "GAIA");
+  gtk_box_pack_start(GTK_BOX(hbox), r7, FALSE, FALSE, 0);
+  gtk_widget_show (r7);
+  my_signal_connect (r7, "toggled", radio_fcdb, (gpointer)hg);
 
   cdata->fcdb_group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(r1));
   cdata->fcdb_type=hg->fcdb_type;
 
 
-  frame = gtk_frame_new ("SIMBAD query parameters");
+  frame = gtk_frame_new ("Query parameters");
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
 		     frame,FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  hg->query_note = gtk_notebook_new ();
+  gtk_notebook_set_tab_pos (GTK_NOTEBOOK (hg->query_note), GTK_POS_TOP);
+  gtk_notebook_set_scrollable (GTK_NOTEBOOK (hg->query_note), TRUE);
+  gtk_container_add (GTK_CONTAINER (frame), hg->query_note);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("SIMBAD");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
   table = gtk_table_new(2,2,FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-  gtk_container_add (GTK_CONTAINER (frame), table);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
 
   label = gtk_label_new ("Magnitude");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
@@ -4734,16 +4769,16 @@ void create_fcdb_para_dialog (typHOE *hg)
 		       &tmp_otype);
   }
 
-  frame = gtk_frame_new ("NED query parameters");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-		     frame,FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("NED");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
   table = gtk_table_new(2,3,FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-  gtk_container_add (GTK_CONTAINER (frame), table);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
 
   label = gtk_label_new ("Max Search Diameter");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
@@ -4841,16 +4876,15 @@ void create_fcdb_para_dialog (typHOE *hg)
 			       hg->fcdb_ned_ref);
 
 
-  frame = gtk_frame_new ("GSC 2.3 query parameters");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-		     frame,FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+  vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("GSC 2.3");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
   table = gtk_table_new(2,2,FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-  gtk_container_add (GTK_CONTAINER (frame), table);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
 
   label = gtk_label_new ("Max Search Diameter ");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
@@ -4863,7 +4897,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_gsc_diam,
-					    20, 120, 1, 1, 0);
+					    20, 120, 10, 10, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -4906,16 +4940,15 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_gsc_mag);
 
 
-  frame = gtk_frame_new ("PanSTARRS-1 query parameters");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-		     frame,FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+  vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("PanSTARRS-1");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
   table = gtk_table_new(2,3,FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-  gtk_container_add (GTK_CONTAINER (frame), table);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
 
   label = gtk_label_new ("Max Search Diameter ");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
@@ -4928,7 +4961,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_ps1_diam,
-					    20, 120, 1, 1, 0);
+					    20, 120, 10, 10, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -4987,16 +5020,15 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_ps1_mindet);
 
 
-  frame = gtk_frame_new ("SDSS query parameters");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-		     frame,FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+  vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("SDSS DR13");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
   table = gtk_table_new(2,2,FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-  gtk_container_add (GTK_CONTAINER (frame), table);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
 
   label = gtk_label_new ("Max Search Diameter ");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
@@ -5009,7 +5041,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_sdss_diam,
-					    20, 120, 1, 1, 0);
+					    20, 120, 10, 10, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -5052,16 +5084,15 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_sdss_mag);
 
 
-  frame = gtk_frame_new ("USNO-B query parameters");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-		     frame,FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+  vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("USNO-B");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
   table = gtk_table_new(2,2,FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-  gtk_container_add (GTK_CONTAINER (frame), table);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
 
   label = gtk_label_new ("Max Search Diameter ");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
@@ -5074,7 +5105,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_usno_diam,
-					    20, 120, 1, 1, 0);
+					    20, 120, 10, 10, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -5117,6 +5148,68 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_usno_mag);
 
 
+  vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("GAIA DR1");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
+
+  table = gtk_table_new(2,2,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
+
+  label = gtk_label_new ("Max Search Diameter ");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_gaia_diam,
+					    20, 120, 10, 10, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_gaia_diam);
+
+  label = gtk_label_new ("[arcsec]"); 
+ gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+
+  check = gtk_check_button_new_with_label("Mag. filter");
+  gtk_table_attach(GTK_TABLE(table), check, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_gaia_fil);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       hg->fcdb_gaia_fil);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  label = gtk_label_new ("G (0.33 - 1.0um) < ");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_gaia_mag,
+					    12, 22, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_gaia_mag);
 
 #ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
@@ -5152,6 +5245,22 @@ void create_fcdb_para_dialog (typHOE *hg)
 		    (gpointer)cdata);
 
   gtk_widget_show_all(dialog);
+
+  if(hg->fcdb_type==FCDB_TYPE_SIMBAD)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r1), TRUE);
+  if(hg->fcdb_type==FCDB_TYPE_NED)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r2),TRUE);
+  if(hg->fcdb_type==FCDB_TYPE_GSC)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r3),TRUE);
+  if(hg->fcdb_type==FCDB_TYPE_PS1)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r4),TRUE);
+  if(hg->fcdb_type==FCDB_TYPE_SDSS)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r5),TRUE);
+  if(hg->fcdb_type==FCDB_TYPE_USNO)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r6),TRUE);
+  if(hg->fcdb_type==FCDB_TYPE_GAIA)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r7),TRUE);
+
   gtk_main();
 
   if(cdata->mode!=0){
@@ -5177,6 +5286,9 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_usno_fil  = tmp_usno_fil;
       hg->fcdb_usno_mag  = tmp_usno_mag;
       hg->fcdb_usno_diam  = tmp_usno_diam;
+      hg->fcdb_gaia_fil  = tmp_gaia_fil;
+      hg->fcdb_gaia_mag  = tmp_gaia_mag;
+      hg->fcdb_gaia_diam  = tmp_gaia_diam;
     }
     else{
       hg->fcdb_band  = FCDB_BAND_NOP;
@@ -5200,6 +5312,9 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_usno_fil = TRUE;
       hg->fcdb_usno_mag = 19;
       hg->fcdb_usno_diam = 90;
+      hg->fcdb_gaia_fil = TRUE;
+      hg->fcdb_gaia_mag = 19;
+      hg->fcdb_gaia_diam = 90;
     }
 
     if(flagFC){
@@ -5212,9 +5327,11 @@ void create_fcdb_para_dialog (typHOE *hg)
       else if(hg->fcdb_type==FCDB_TYPE_PS1)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"PanSTARRS-1");
       else if(hg->fcdb_type==FCDB_TYPE_SDSS)
-	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SDSS");
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SDSS DR13");
       else if(hg->fcdb_type==FCDB_TYPE_USNO)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"USNO-B");
+      else if(hg->fcdb_type==FCDB_TYPE_GAIA)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"GAIA DR1");
     }
 
     if((rebuild_flag)&&(flagTree)) rebuild_tree(hg);
@@ -5596,7 +5713,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gboolean tmp_allsky_pixbuf_flag0;
   gboolean tmp_show_def,tmp_show_elmax,tmp_show_secz,tmp_show_ha,tmp_show_ad,
     tmp_show_ang,tmp_show_hpa,tmp_show_moon,
-    tmp_show_ra,tmp_show_dec,tmp_show_epoch,tmp_show_note;
+    tmp_show_ra,tmp_show_dec,tmp_show_equinox,tmp_show_note;
 #ifdef USE_XMLRPC
   gboolean tmp_show_rt;
   gchar *tmp_ro_ns_host;
@@ -5685,7 +5802,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   tmp_show_moon    =hg->show_moon;
   tmp_show_ra      =hg->show_ra;
   tmp_show_dec     =hg->show_dec;
-  tmp_show_epoch   =hg->show_epoch;
+  tmp_show_equinox   =hg->show_equinox;
   tmp_show_note    =hg->show_note;
 
 #ifdef USE_XMLRPC
@@ -6965,13 +7082,13 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     cc_get_toggle,
 		     &tmp_show_dec);
 
-  check = gtk_check_button_new_with_label("Epoch");
+  check = gtk_check_button_new_with_label("Equinox");
   gtk_table_attach(GTK_TABLE(table1), check, 3, 4, 2, 3,
 		   GTK_FILL,GTK_SHRINK,0,0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_epoch);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_equinox);
   my_signal_connect (check, "toggled",
 		     cc_get_toggle,
-		     &tmp_show_epoch);
+		     &tmp_show_equinox);
 
   check = gtk_check_button_new_with_label("Note");
   gtk_table_attach(GTK_TABLE(table1), check, 0, 1, 3, 4,
@@ -7959,7 +8076,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->show_moon  = tmp_show_moon;
     hg->show_ra	  = tmp_show_ra;
     hg->show_dec  = tmp_show_dec;
-    hg->show_epoch= tmp_show_epoch;
+    hg->show_equinox= tmp_show_equinox;
     hg->show_note = tmp_show_note;
 
 #ifdef USE_XMLRPC
@@ -8080,7 +8197,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->show_moon = FALSE;
     hg->show_ra	  = TRUE;
     hg->show_dec  = TRUE;
-    hg->show_epoch= TRUE;
+    hg->show_equinox= TRUE;
     hg->show_note = TRUE;
 
 #ifdef USE_XMLRPC
@@ -8343,6 +8460,30 @@ void change_fcdb_para(GtkWidget *w, gpointer gdata)
   flagChildDialog=FALSE;
 }
 
+void radio_fcdb(GtkWidget *button, gpointer gdata)
+{ 
+  typHOE *hg;
+  confPropFCDB *cdata;
+  GSList *group=NULL;
+
+  hg=(typHOE *)gdata;
+
+  group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (button));
+
+  {
+    GtkWidget *w;
+    gint i;
+    
+    for(i = 0; i < g_slist_length(group); i++){
+      w = g_slist_nth_data(group, i);
+      if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w))){
+	gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->query_note),g_slist_length(group)-1-i);
+	break;
+      }
+    }
+  }
+}
+
 void close_disp_para(GtkWidget *w, GtkWidget *dialog)
 {
   //gdk_pointer_ungrab(GDK_CURRENT_TIME);
@@ -8377,6 +8518,7 @@ void param_init(typHOE *hg){
 
   hg->i_max=0;
   hg->ope_max=0;
+  hg->add_max=0;
 
   hg->sz_skymon=SKYMON_WINSIZE;
   hg->sz_plot  =  PLOT_WINSIZE;
@@ -8409,6 +8551,7 @@ void param_init(typHOE *hg){
     hg->obj[i].check_lock=FALSE;
     hg->obj[i].check_used=TRUE;
     hg->obj[i].check_std=FALSE;
+    hg->obj[i].type=OBJTYPE_OBJ;
 
     hg->obj[i].x=-1;
     hg->obj[i].y=-1;
@@ -8554,6 +8697,9 @@ void param_init(typHOE *hg){
   hg->fcdb_usno_fil=TRUE;
   hg->fcdb_usno_mag=19;
   hg->fcdb_usno_diam=90;
+  hg->fcdb_gaia_fil=TRUE;
+  hg->fcdb_gaia_mag=19;
+  hg->fcdb_gaia_diam=90;
 
   hg->adc_inst=ADC_INST_IMR;
   hg->adc_flip=FALSE;
@@ -8604,8 +8750,6 @@ void param_init(typHOE *hg){
 
 void do_update_azel(GtkWidget *widget, gpointer gdata){
   typHOE *hg;
-  int i_list;
-  gchar tmp[64];
 
   if(!flag_make_obj_list)  return;
 
@@ -8624,8 +8768,6 @@ void do_update_azel(GtkWidget *widget, gpointer gdata){
 
 gboolean update_azel2 (gpointer gdata){
   typHOE *hg;
-  int i_list;
-  gchar tmp[64];
 
   if(!flag_make_obj_list)  return(TRUE);
 
@@ -8715,10 +8857,6 @@ gboolean update_allsky (gpointer gdata){
 
 
 void update_c_label (typHOE *hg){
-  gchar tmp[64];
-  time_t t;
-  struct tm *tmpt;
-
   if(!flag_make_obj_list)  return;
 
 #ifdef USE_SKYMON
@@ -8827,8 +8965,8 @@ void ReadList(typHOE *hg, gint ope_max){
       hg->obj[i_list].dec=(gdouble)g_strtod(tmp_char,NULL);
       
       tmp_char=(char *)strtok(NULL,",");
-      if(!is_number(tmp_char,i_list+1,"Epoch")) break;
-      hg->obj[i_list].epoch=(gdouble)g_strtod(tmp_char,NULL);
+      if(!is_number(tmp_char,i_list+1,"Equinox")) break;
+      hg->obj[i_list].equinox=(gdouble)g_strtod(tmp_char,NULL);
       
       if(tmp_char=(char *)strtok(NULL,"\n")){
 	hg->obj[i_list].note=cut_spc(tmp_char);
@@ -8844,6 +8982,7 @@ void ReadList(typHOE *hg, gint ope_max){
       hg->obj[i_list].check_std=FALSE;
       hg->obj[i_list].ope=hg->ope_max;
       hg->obj[i_list].ope_i=i_list;
+      hg->obj[i_list].type=OBJTYPE_OBJ;
 
       i_list++;
     }
@@ -8873,7 +9012,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
   gchar *BUF=NULL, *buf0=NULL, *buf_strip=NULL;
   gboolean escape=FALSE;
   gchar *cp=NULL, *cp2=NULL, *cp3=NULL, *cpp=NULL;
-  gboolean ok_obj, ok_ra, ok_dec, ok_epoch;
+  gboolean ok_obj, ok_ra, ok_dec, ok_equinox;
   gchar *win_title;
   gchar *prmname=NULL,*prmname_full=NULL;
   gint prm_place;
@@ -8949,7 +9088,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  ok_obj=FALSE;
 	  ok_ra=FALSE;
 	  ok_dec=FALSE;
-	  ok_epoch=FALSE;
+	  ok_equinox=FALSE;
 	  
 	  if(buf_strip) g_free(buf_strip);
 	  buf_strip=g_strstrip(strdup(buf));
@@ -9042,7 +9181,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	    }while(cp);
 	  }
 	  
-	  // EPOCH
+	  // EQUINOX
 	  if(ok_obj&&ok_ra&&ok_dec){
 	    cpp=BUF;
 	    do{
@@ -9051,12 +9190,12 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
 		  cp++;
-		  ok_epoch=TRUE;
+		  ok_equinox=TRUE;
 		  cp+=strlen("EQUINOX=");
 		  if(cp3) g_free(cp3);
 		  cp3=g_strndup(cp,strcspn(cp," \n"));
 		  
-		  hg->obj[i_list].epoch=(gdouble)g_strtod(cp3,NULL);
+		  hg->obj[i_list].equinox=(gdouble)g_strtod(cp3,NULL);
 		  break;
 		}
 	      }
@@ -9073,14 +9212,19 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  hg->obj[i_list].check_std=FALSE;
 	  hg->obj[i_list].ope=hg->ope_max;
 	  hg->obj[i_list].ope_i=i_list;
-	  
-	  if(ok_obj && ok_ra && ok_dec && ok_epoch){
+  
+	  if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	    if(!ObjOverlap(hg,i_list)){
+	      //hg->obj[i_list].note=NULL;
 	      if(hg->obj[i_list].note) g_free(hg->obj[i_list].note);
-	      hg->obj[i_list].note=NULL;
+	      hg->obj[i_list].note=g_path_get_basename(hg->filename_ope);
 	      
 	      if(hg->obj[i_list].def) g_free(hg->obj[i_list].def);
 	      hg->obj[i_list].def=g_strstrip(g_strndup(buf,strcspn(buf," =\n")));
+	      
+	      if(check_ttgs(hg->obj[i_list].def)) hg->obj[i_list].type=OBJTYPE_TTGS;
+	      else hg->obj[i_list].type=OBJTYPE_OBJ;
+
 	      
 	      i_list++;
 	      hg->i_max=i_list;
@@ -9322,7 +9466,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
   gchar *BUF=NULL, *buf0=NULL;
   gboolean escape=FALSE;
   gchar *cp=NULL, *cp2=NULL, *cp3=NULL, *cpp=NULL;
-  gboolean ok_obj, ok_ra, ok_dec, ok_epoch,name_flag;
+  gboolean ok_obj, ok_ra, ok_dec, ok_equinox,name_flag;
   gchar *win_title;
   gchar *prmname=NULL,*prmname_full=NULL;
   gint prm_place;
@@ -9401,7 +9545,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  ok_obj=FALSE;
 	  ok_ra=FALSE;
 	  ok_dec=FALSE;
-	  ok_epoch=FALSE;
+	  ok_equinox=FALSE;
 	  
 	  // OBJECT
 	  cpp=BUF;
@@ -9429,29 +9573,6 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	      }
 	    }
 	  }while(cp);
-
-	  /*
-	  if(ok_obj){
-	    name_flag=FALSE;
-	    for(i_comp=0;i_comp<hg->i_max;i_comp++){
-	      if(strcmp(tmp_name,hg->obj[i_comp].name)==0){
-		name_flag=TRUE;
-		break;
-	      }
-	    }
-
-	    if(name_flag){
-	      ok_obj=FALSE;
-	    }
-	    else{
-	      if(hg->obj[i_list].name) g_free(hg->obj[i_list].name);
-	      hg->obj[i_list].name=g_strdup(tmp_name);
-	    }
-	  }
-
-	  if(tmp_name) g_free(tmp_name);
-	  tmp_name=NULL;
-	  */
 
 	  // RA
 	  if(ok_obj){
@@ -9496,7 +9617,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	    }while(cp);
 	  }
 	  
-	  // EPOCH
+	  // EQUINOX
 	  if(ok_obj&&ok_ra&&ok_dec){
 	    cpp=BUF;
 	    do{
@@ -9505,12 +9626,12 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
 		  cp++;
-		  ok_epoch=TRUE;
+		  ok_equinox=TRUE;
 		  cp+=strlen("EQUINOX=");
 		  if(cp3) g_free(cp3);
 		  cp3=g_strndup(cp,strcspn(cp," \n"));
 		  
-		  hg->obj[i_list].epoch=(gdouble)g_strtod(cp3,NULL);
+		  hg->obj[i_list].equinox=(gdouble)g_strtod(cp3,NULL);
 		  break;
 		}
 	      }
@@ -9528,13 +9649,17 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  hg->obj[i_list].ope=hg->ope_max;
 	  hg->obj[i_list].ope_i=i_list-ope_zero-1;
 	  
-	  if(ok_obj && ok_ra && ok_dec && ok_epoch){
+	  if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	    if(!ObjOverlap(hg,i_list)){
 	      if(hg->obj[i_list].note) g_free(hg->obj[i_list].note);
-	      hg->obj[i_list].note=NULL;
+	      //hg->obj[i_list].note=NULL;
+	      hg->obj[i_list].note=g_path_get_basename(hg->filename_ope);
 	      
 	      if(hg->obj[i_list].def) g_free(hg->obj[i_list].def);
 	      hg->obj[i_list].def=g_strstrip(g_strndup(buf,strcspn(buf," =\n")));
+
+	      if(check_ttgs(hg->obj[i_list].def)) hg->obj[i_list].type=OBJTYPE_TTGS;
+	      else hg->obj[i_list].type=OBJTYPE_OBJ;
 	      
 	      i_list++;
 	      
@@ -9776,9 +9901,9 @@ void MergeListPRM(typHOE *hg){
   gchar *BUF=NULL, *buf0=NULL;
   gboolean escape=FALSE;
   gchar *cp=NULL, *cp2=NULL, *cp3=NULL, *cpp=NULL;
-  gboolean ok_obj, ok_ra, ok_dec, ok_epoch;
+  gboolean ok_obj, ok_ra, ok_dec, ok_equinox;
   gchar *tmp_name=NULL, *tmp_def=NULL;
-  gdouble tmp_ra, tmp_dec, tmp_epoch;
+  gdouble tmp_ra, tmp_dec, tmp_equinox;
   gboolean newdef;
   gint i0;
   
@@ -9811,7 +9936,7 @@ void MergeListPRM(typHOE *hg){
 	ok_obj=FALSE;
 	ok_ra=FALSE;
 	ok_dec=FALSE;
-	ok_epoch=FALSE;
+	ok_equinox=FALSE;
 	
 	
 	// OBJECT
@@ -9885,7 +10010,7 @@ void MergeListPRM(typHOE *hg){
 	  }while(cp);
 	}
 	
-	// EPOCH
+	// EQUINOX
 	if(ok_obj&&ok_ra&&ok_dec){
 	  cpp=BUF;
 	  do{
@@ -9894,19 +10019,19 @@ void MergeListPRM(typHOE *hg){
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
 		cp++;
-		ok_epoch=TRUE;
+		ok_equinox=TRUE;
 		cp+=strlen("EQUINOX=");
 		if(cp3) g_free(cp3);
 		cp3=g_strndup(cp,strcspn(cp," \n"));
 		
-		tmp_epoch=(gdouble)g_strtod(cp3,NULL);
+		tmp_equinox=(gdouble)g_strtod(cp3,NULL);
 		break;
 	      }
 	    }
 	  }while(cp);
 	}
 	
-	if(ok_obj && ok_ra && ok_dec && ok_epoch){
+	if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	  newdef=TRUE;
 
 	  if(tmp_def) g_free(tmp_def);
@@ -9928,7 +10053,7 @@ void MergeListPRM(typHOE *hg){
 
 	    hg->obj[hg->i_max].ra=tmp_ra;
 	    hg->obj[hg->i_max].dec=tmp_dec;
-	    hg->obj[hg->i_max].epoch=tmp_epoch;
+	    hg->obj[hg->i_max].equinox=tmp_equinox;
 
 	    if(hg->obj[hg->i_max].note) g_free(hg->obj[hg->i_max].note);
 	    hg->obj[hg->i_max].note=NULL;
@@ -9940,6 +10065,7 @@ void MergeListPRM(typHOE *hg){
 	    hg->obj[hg->i_max].check_std=TRUE;
 	    hg->obj[hg->i_max].ope=MAX_ROPE-1;
 	    hg->obj[hg->i_max].ope_i=hg->i_max-i0;
+	    hg->obj[hg->i_max].type=OBJTYPE_OBJ;
 
 	    hg->i_max++;
 	    if(hg->i_max==MAX_OBJECT-1){
@@ -9977,9 +10103,9 @@ void MergeListPRM2(typHOE *hg){
   gchar *BUF=NULL, *buf0=NULL;
   gboolean escape=FALSE;
   gchar *cp=NULL, *cp2=NULL, *cp3=NULL, *cpp=NULL;
-  gboolean ok_obj, ok_ra, ok_dec, ok_epoch;
+  gboolean ok_obj, ok_ra, ok_dec, ok_equinox;
   gchar *tmp_name=NULL, *tmp_def=NULL;
-  gdouble tmp_ra, tmp_dec, tmp_epoch;
+  gdouble tmp_ra, tmp_dec, tmp_equinox;
   gboolean newdef;
   gint ret_check_def;
   gint i0;
@@ -10011,7 +10137,7 @@ void MergeListPRM2(typHOE *hg){
 	ok_obj=FALSE;
 	ok_ra=FALSE;
 	ok_dec=FALSE;
-	ok_epoch=FALSE;
+	ok_equinox=FALSE;
 	
 	
 	// OBJECT
@@ -10085,7 +10211,7 @@ void MergeListPRM2(typHOE *hg){
 	  }while(cp);
 	}
 	
-	// EPOCH
+	// EQUINOX
 	if(ok_obj&&ok_ra&&ok_dec){
 	  cpp=BUF;
 	  do{
@@ -10094,19 +10220,19 @@ void MergeListPRM2(typHOE *hg){
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
 		cp++;
-		ok_epoch=TRUE;
+		ok_equinox=TRUE;
 		cp+=strlen("EQUINOX=");
 		if(cp3) g_free(cp3);
 		cp3=g_strndup(cp,strcspn(cp," \n"));
 		
-		tmp_epoch=(gdouble)g_strtod(cp3,NULL);
+		tmp_equinox=(gdouble)g_strtod(cp3,NULL);
 		break;
 	      }
 	    }
 	  }while(cp);
 	}
 	
-	if(ok_obj && ok_ra && ok_dec && ok_epoch){
+	if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	  newdef=TRUE;
 
 	  if(tmp_def) g_free(tmp_def);
@@ -10131,7 +10257,7 @@ void MergeListPRM2(typHOE *hg){
 		
 		hg->obj[hg->i_max].ra=tmp_ra;
 		hg->obj[hg->i_max].dec=tmp_dec;
-		hg->obj[hg->i_max].epoch=tmp_epoch;
+		hg->obj[hg->i_max].equinox=tmp_equinox;
 		
 		if(hg->obj[hg->i_max].note) g_free(hg->obj[hg->i_max].note);
 		hg->obj[hg->i_max].note=NULL;
@@ -10148,6 +10274,7 @@ void MergeListPRM2(typHOE *hg){
 		}
 		hg->obj[hg->i_max].ope=MAX_ROPE-1;
 		hg->obj[hg->i_max].ope_i=hg->i_max-i0;
+		hg->obj[hg->i_max].type=OBJTYPE_OBJ;
 
 		hg->i_max++;
 		if(hg->i_max==MAX_OBJECT-1){
@@ -10179,7 +10306,23 @@ void MergeListPRM2(typHOE *hg){
 }
 
 
+gboolean check_ttgs(gchar *def){
+  gchar *ep;
+  ep=def+strlen(def)-strlen("_TT");
 
+  if(g_ascii_strncasecmp(ep,"_TT",strlen("_TT"))==0){
+    return(TRUE);
+  }
+
+  ep=def+strlen(def)-strlen("_TT")-1;
+  if(g_ascii_strncasecmp(ep,"_TT",strlen("_TT"))==0){
+    if(isdigit(def[strlen(def)-1])){
+      return(TRUE);
+    }
+  }
+
+  return(FALSE);
+}
 
 void CheckTargetDefOPE(typHOE *hg){
   FILE *fp;
@@ -10307,20 +10450,11 @@ void CheckTargetDefOPE(typHOE *hg){
 	      arg=g_strndup(cp,strcspn(cp," \r\n"));
 
 	      for(i_list=0;i_list<hg->i_max;i_list++){
-		gchar *ep;
-		ep=hg->obj[i_list].def+strlen(hg->obj[i_list].def)
-		  -strlen("_TT");
-		if(g_ascii_strncasecmp(ep,"_TT",strlen("_TT"))!=0){
-		  ep=hg->obj[i_list].def+strlen(hg->obj[i_list].def)
-		    -strlen("_TT")-1;
-		  if(g_ascii_strncasecmp(ep,"_TT",strlen("_TT"))!=0){
-		    if(g_ascii_strcasecmp(arg,
-					  hg->obj[i_list].def)==0){
-		      hg->obj[i_list].check_disp=TRUE;
-		      hg->obj[i_list].check_used=TRUE;
-		      hg->obj[i_list].check_std=FALSE;
-		      break;
-		    }
+		if(!check_ttgs(hg->obj[i_list].def)){
+		  if(g_ascii_strcasecmp(arg, hg->obj[i_list].def)==0){
+		    hg->obj[i_list].check_disp=TRUE;
+		    hg->obj[i_list].check_used=TRUE;
+		    hg->obj[i_list].check_std=FALSE;
 		  }
 		}
 	      }
@@ -10575,8 +10709,8 @@ void MergeList(typHOE *hg, gint ope_max){
 	tmp_obj.dec=(gdouble)g_strtod(tmp_char,NULL);
       
 	tmp_char=(char *)strtok(NULL,",");
-	if(!is_number(tmp_char,hg->i_max-i_base+1,"Epoch")) break;
-	tmp_obj.epoch=(gdouble)g_strtod(tmp_char,NULL);
+	if(!is_number(tmp_char,hg->i_max-i_base+1,"Equinox")) break;
+	tmp_obj.equinox=(gdouble)g_strtod(tmp_char,NULL);
 	
 	if(tmp_char=(char *)strtok(NULL,"\n")){
 	  tmp_obj.note=cut_spc(tmp_char);
@@ -10592,6 +10726,7 @@ void MergeList(typHOE *hg, gint ope_max){
 	tmp_obj.check_std=FALSE;
 	tmp_obj.ope=hg->ope_max;
 	tmp_obj.ope_i=i_list-i_base;
+	tmp_obj.type=OBJTYPE_OBJ;
 
   
 	hg->obj[hg->i_max]=tmp_obj;
@@ -10843,7 +10978,7 @@ void WriteConf(typHOE *hg){
   xmms_cfg_write_boolean(cfgfile, "Show", "Moon",hg->show_moon);
   xmms_cfg_write_boolean(cfgfile, "Show", "RA",hg->show_ra);
   xmms_cfg_write_boolean(cfgfile, "Show", "Dec",hg->show_dec);
-  xmms_cfg_write_boolean(cfgfile, "Show", "Epoch",hg->show_epoch);
+  xmms_cfg_write_boolean(cfgfile, "Show", "Equinox",hg->show_equinox);
   xmms_cfg_write_boolean(cfgfile, "Show", "Note",hg->show_note);
 
 #ifdef USE_XMLRPC
@@ -11196,10 +11331,10 @@ void ReadConf(typHOE *hg)
       hg->show_dec =b_buf;
     else
       hg->show_dec =TRUE;
-    if(xmms_cfg_read_boolean(cfgfile, "Show", "Epoch", &b_buf))
-      hg->show_epoch =b_buf;
+    if(xmms_cfg_read_boolean(cfgfile, "Show", "Equinox", &b_buf))
+      hg->show_equinox =b_buf;
     else
-      hg->show_epoch =TRUE;
+      hg->show_equinox =TRUE;
     if(xmms_cfg_read_boolean(cfgfile, "Show", "Note", &b_buf))
       hg->show_note =b_buf;
     else
@@ -11324,7 +11459,7 @@ void ReadConf(typHOE *hg)
     hg->show_moon=FALSE;
     hg->show_ra=TRUE;
     hg->show_dec=TRUE;
-    hg->show_epoch=TRUE;
+    hg->show_equinox=TRUE;
     hg->show_note=TRUE;
 
 #ifdef USE_XMLRPC
@@ -12156,7 +12291,7 @@ void Export_OpeDef(typHOE *hg){
 	    hg->obj[i_list].name,
 	    hg->obj[i_list].ra,
 	    hg->obj[i_list].dec,
-	    hg->obj[i_list].epoch);
+	    hg->obj[i_list].equinox);
   }
   
   fclose(fp);
@@ -12187,7 +12322,7 @@ void Export_TextList(typHOE *hg){
 	      hg->obj[i_list].name,
 	      hg->obj[i_list].ra,
 	      hg->obj[i_list].dec,
-	      hg->obj[i_list].epoch,
+	      hg->obj[i_list].equinox,
 	      hg->obj[i_list].note);
       fprintf(fp,"\n");
     }
@@ -12196,7 +12331,7 @@ void Export_TextList(typHOE *hg){
 	      hg->obj[i_list].name,
 	      hg->obj[i_list].ra,
 	      hg->obj[i_list].dec,
-	      hg->obj[i_list].epoch);
+	      hg->obj[i_list].equinox);
       fprintf(fp,"\n");
     }
   }

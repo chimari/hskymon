@@ -1,3 +1,9 @@
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      votable.h  --- imported from libVOTable
+//   
+//                                           2012.10.22  A.Tajitsu
+
 /* libVOTable - VOTABLE parser 
  Copyright (C) 2005  Malapert Jean-christophe - TERAPIX - IAP/CNRS
 

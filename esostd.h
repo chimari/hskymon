@@ -1,3 +1,11 @@
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      esostd.h  --- Standard Stars VOTable data
+//           ESO Opt/UV Stds,  IRAF 1dstds spec16/50,  HST CALSPEC,
+//               and HDS efficiency measument stds
+//   
+//                                           2012.10.22  A.Tajitsu
+
 typedef struct _stacSTDpara stacSTDpara;
 struct _stacSTDpara{
   gchar *name;

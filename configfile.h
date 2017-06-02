@@ -1,11 +1,8 @@
-//  MaCoPiX = Mascot Construnctive Pilot for X
-//                                (ActX / Gtk+ Evolution)
-//    A unified desktop mascot program
-//    for UNIX / X Window System with Gdk Environment
-//
-//  configfile.h  : Save Data Access for MaCoPiX
-//                                copyright K.Chimari 2002
-//       (diverting from original program of XMMS)
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      configfile.h  --- Save/Load resource file, imported from XMMS
+//   
+//                                           2012.10.22  A.Tajitsu
 //
 //       XMMS - Cross-platform multimedia player
 //       Copyright (C) 1998-1999  Peter Alm, Mikael Alm, Olle Hallnas, 

@@ -1,3 +1,9 @@
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      main.h  --- Main header file
+//   
+//                                           2012.10.22  A.Tajitsu
+
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif  
@@ -62,7 +68,7 @@
 
 #ifdef USE_WIN32
 #define DSS_URL "http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey"
-#define SIMBAD_URL "http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none&CooEpoch=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML"
+#define SIMBAD_URL "http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none&CooEquinox=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML"
 #define DR8_URL "http://skyserver.sdss3.org/dr8/en/tools/quicklook/quickobj.asp?ra=%d:%d:%.2lf&dec=%s%d:%d:%.2lf"
 #define DR13_URL "http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?ra=%lf&dec=%s%lf"
 #define NED_URL "http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=2.0&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES"
@@ -79,7 +85,7 @@
 #define FCDB_SDSS_URL "http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?id=%s"
 #elif defined(USE_OSX)
 #define DSS_URL "open http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick\\&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf\\&SURVEY=Digitized+Sky+Survey"
-#define SIMBAD_URL "open http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none\\&CooEpoch=2000\\&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf\\&submit=submit%%20query\\&Radius.unit=arcmin\\&CooEqui=2000\\&CooFrame=FK5\\&Radius=2\\&output.format=HTML"
+#define SIMBAD_URL "open http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none\\&CooEquinox=2000\\&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf\\&submit=submit%%20query\\&Radius.unit=arcmin\\&CooEqui=2000\\&CooFrame=FK5\\&Radius=2\\&output.format=HTML"
 #define DR8_URL "open http://skyserver.sdss3.org/dr8/en/tools/quicklook/quickobj.asp?ra=%d:%d:%.2lf\\&dec=%s%d:%d:%.2lf"
 #define DR13_URL "open http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?ra=%lf\\&dec=%s%lf"
 #define NED_URL "open http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search\\&in_csys=Equatorial\\&in_equinox=J2000.0\\&lon=%d%%3A%d%%3A%.2lf\\&lat=%s%d%%3A%d%%3A%.2lf\\&radius=2.0\\&hconst=73\\&omegam=0.27\\&omegav=0.73\\&corr_z=1\\&z_constraint=Unconstrained\\&z_value1=\\&z_value2=\\&z_unit=z\\&ot_include=ANY\\&nmp_op=ANY\\&out_csys=Equatorial\\&out_equinox=J2000.0\\&obj_sort=Distance+to+search+center\\&of=pre_text\\&zv_breaker=30000.0\\&list_limit=5\\&img_stamp=YES"
@@ -96,7 +102,7 @@
 #define FCDB_SDSS_URL "open http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?id=%s"
 #else
 #define DSS_URL "\"http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey\""
-#define SIMBAD_URL "\"http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none&CooEpoch=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML\""
+#define SIMBAD_URL "\"http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none&CooEquinox=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML\""
 #define DR8_URL "\"http://skyserver.sdss3.org/dr8/en/tools/quicklook/quickobj.asp?ra=%d:%d:%.2lf&dec=%s%d:%d:%.2lf\""
 #define DR13_URL "\"http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?ra=%lf&dec=%s%lf\""
 #define NED_URL "\"http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=2.0&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES\""
@@ -150,6 +156,10 @@
 
 #define FCDB_HOST_USNO "www.nofs.navy.mil"
 #define FCDB_USNO_PATH "/cgi-bin/vo_cone.cgi?CAT=USNO-B1&RA=%lf&DEC=%+lf&SR=%lf&VERB=1"
+
+#define FCDB_HOST_GAIA "vizier.nao.ac.jp"
+#define FCDB_GAIA_PATH "/viz-bin/votable?-source=I/337/gaia&-c=%lf%%20%+lf&-c.u=deg&-c.r=%lf&-c.geom=r&-out.max=500&-out.form=VOTable"
+
 
 #define ADDOBJ_SIMBAD_PATH "/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=VOTABLE"
 #define ADDOBJ_NED_PATH "/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES&of=xml_main"
@@ -259,6 +269,7 @@ enum{FC_STSCI_DSS1R,
      FC_PANZ,
      FC_PANY} ModeFC;
 
+
 #define PANSTARRS_MAX_ARCMIN 25
 
 #define FC_WINSIZE 400
@@ -315,6 +326,15 @@ enum{ ADC_INST_IMR, ADC_INST_HDSAUTO, ADC_INST_HDSZENITH} ADC_Inst;
 
 #define HSC_SIZE 110
 
+// Object Type
+enum{OBJTYPE_OBJ,
+     OBJTYPE_STD,
+     OBJTYPE_TTGS} ObjType; 
+
+#define ADDTYPE_OBJ   -1
+#define ADDTYPE_STD   -2
+#define ADDTYPE_TTGS  -3
+
 // OpenSSL
 typedef enum {
 	SSL_NONE,
@@ -355,7 +375,7 @@ enum
   COLUMN_OBJ_MOON,
   COLUMN_OBJ_RA,
   COLUMN_OBJ_DEC,
-  COLUMN_OBJ_EPOCH,
+  COLUMN_OBJ_EQUINOX,
   //COLUMN_OBJ_SETUP
   COLUMN_OBJ_NOTE,
   NUM_OBJ_COLUMNS
@@ -407,6 +427,7 @@ enum
   COLUMN_FCDB_NEDMAG,
   COLUMN_FCDB_NEDZ,
   COLUMN_FCDB_REF,
+  COLUMN_FCDB_PLX,
   NUM_COLUMN_FCDB
 };
 
@@ -418,7 +439,8 @@ enum
   FCDB_TYPE_GSC,
   FCDB_TYPE_PS1,
   FCDB_TYPE_SDSS,
-  FCDB_TYPE_USNO
+  FCDB_TYPE_USNO,
+  FCDB_TYPE_GAIA
 };
 
 enum
@@ -1065,7 +1087,7 @@ struct _OBJpara{
   gchar *def;
   gdouble ra;
   gdouble dec;
-  gdouble epoch;
+  gdouble equinox;
 
   /*
   GtkWidget *w_az;
@@ -1113,6 +1135,8 @@ struct _OBJpara{
 
   gdouble x;
   gdouble y;
+
+  gint type;
 };
 
 typedef struct _STDpara STDpara;
@@ -1125,7 +1149,7 @@ struct _STDpara{
   gdouble pmra;
   gdouble pmdec;
   gboolean pm;
-  gdouble epoch;
+  gdouble equinox;
   gchar *sp;
   gdouble sep;
   gdouble rot;
@@ -1167,13 +1191,14 @@ struct _FCDBpara{
   gdouble pmra;
   gdouble pmdec;
   gboolean pm;
-  gdouble epoch;
+  gdouble equinox;
   gchar *otype;
   gchar *sp;
   gdouble sep;
   gchar *nedmag;
   gdouble nedvel;
   gdouble nedz;
+  gdouble plx;
   gdouble u;
   gdouble b;
   gdouble v;
@@ -1367,7 +1392,7 @@ struct _typHOE{
   gboolean show_moon;
   gboolean show_ra;
   gboolean show_dec;
-  gboolean show_epoch;
+  gboolean show_equinox;
   gboolean show_note;
 
 
@@ -1440,6 +1465,7 @@ struct _typHOE{
   typPlanet pluto;
 
   GtkWidget *obj_note;
+  GtkWidget *query_note;
   GtkWidget *tree;
   GtkWidget *tree_label;
   gchar *tree_label_text;
@@ -1548,6 +1574,9 @@ struct _typHOE{
   gint fcdb_usno_mag;
   gint fcdb_usno_diam;
   gboolean fcdb_usno_fil;
+  gint fcdb_gaia_mag;
+  gint fcdb_gaia_diam;
+  gboolean fcdb_gaia_fil;
 
   gint addobj_type;
   gchar *addobj_name;
@@ -1680,6 +1709,7 @@ struct _typHOE{
   gchar *filename_log;
 
   gint ope_max;
+  gint add_max;
   GdkColor *col[MAX_ROPE];
   GdkColor *col_edge;
   gint alpha_edge;

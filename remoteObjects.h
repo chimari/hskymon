@@ -1,3 +1,9 @@
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      remoteObjects.h  --- communication w/Gen2
+//   
+//                                           2012.10.22  A.Tajitsu
+
 /*
  * remoteObjects.h -- remoteObjects wrapper for XML-RPC transport
  *

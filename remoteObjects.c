@@ -1,3 +1,9 @@
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      remoteObjects.c  --- Gen2 communication capability
+//   
+//                                           2012.10.22  A.Tajitsu
+
 /*
  * remoteObjects.c -- remoteObjects wrapper for XML-RPC transport
  *
@@ -70,7 +76,6 @@ ro_init(typHOE *hg)
 {
     char *configfile;
     FILE *in_f;
-    char buf[1024];
     char *line, *param, *value, *lasts, *tmp;
 
     if(ns_host) g_free(ns_host);
@@ -78,17 +83,6 @@ ro_init(typHOE *hg)
     ns_port = hg->ro_ns_port;
     use_default_auth = hg->ro_use_default_auth;
 
-    /*
-    ro_log = fopen(hg->ro_log, "a");
-    if ((void *)ro_log == NULL){
-      fprintf(stderr, "Error opening log file '%s': errno=%d\n",
-	      value, errno);
-      return 1;
-    }
-    if ((void *)ro_log == NULL){
-        ro_log = stderr;
-    }
-    */
     ro_log = stderr;
     return 0;
 }

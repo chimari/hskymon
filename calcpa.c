@@ -1,3 +1,9 @@
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      calcpa.c  --- calculation and plot for celecial targets
+//   
+//                                           2017.6.1  A.Tajitsu
+
 #include"main.h"
 #include<math.h>
 #include<stdio.h>
@@ -5,9 +11,6 @@
 #include<string.h>
 #include<ctype.h>
 #include <cairo-pdf.h>
-
-
-#define BUFFER_SIZE 1024
 
 
 
@@ -53,7 +56,7 @@ gdouble hdspa_deg();
 void do_print();
 static void draw_page();
 
-double get_julian_day_of_epoch();
+double get_julian_day_of_equinox();
 gdouble deg_sep();
 
 void calc_moon_topocen();
@@ -521,8 +524,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 
   //#### input ####### 
   
-  char buf[BUFFER_SIZE];
-  char tmp[BUFFER_SIZE];
+  char *tmp;
   double a0s;
   int ia0h,ia0m;
   double d0s;
@@ -664,16 +666,17 @@ gboolean draw_plot_cairo(GtkWidget *widget,
   cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_NORMAL);
 
-  sprintf(tmp,"\"%s\"  RA=%09.2f Dec=%+010.2f Epoch=%7.2f",
-	  hg->obj[hg->plot_i].name,
-	  hg->obj[hg->plot_i].ra,
-	  hg->obj[hg->plot_i].dec,
-	  hg->obj[hg->plot_i].epoch);
+  tmp=g_strdup_printf("\"%s\"  RA=%09.2f Dec=%+010.2f Equinox=%7.2f",
+		      hg->obj[hg->plot_i].name,
+		      hg->obj[hg->plot_i].ra,
+		      hg->obj[hg->plot_i].dec,
+		      hg->obj[hg->plot_i].equinox);
   cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
   cairo_set_font_size (cr, 12.0*scale);
   cairo_text_extents (cr, tmp, &extents);
   cairo_move_to(cr,width/2-extents.width/2,+extents.height);
   cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
 
   /* draw a rectangle */
  
@@ -1115,7 +1118,8 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 			      CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 0.8);
       cairo_set_font_size (cr, 14.0*scale);
-      sprintf(tmp,"AD[\"] (%d-%dA)", hg->wave1,hg->wave0);
+
+      tmp=g_strdup_printf("AD[\"] (%d-%dA)", hg->wave1,hg->wave0);
       cairo_text_extents (cr, tmp, &extents);
 
       x = dx-extents.width/2-x0-(dx-x0);
@@ -1123,6 +1127,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_move_to(cr, x, y);
 
       cairo_show_text(cr, tmp);
+      if(tmp) g_free(tmp);
       cairo_restore (cr);
 
 
@@ -1819,12 +1824,13 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  cairo_rectangle(cr,  dx, dy, x,ly);
 	  cairo_fill(cr);
 	  
-	  sprintf(tmp,"%d:%02d",
-		  hg->sun.s_set.hours,hg->sun.s_set.minutes);
+	  tmp=g_strdup_printf("%d:%02d",
+			      hg->sun.s_set.hours,hg->sun.s_set.minutes);
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
 	  cairo_text_extents (cr, tmp, &extents);
 	  cairo_move_to(cr, dx+x, dy+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
+	  if(tmp) g_free(tmp);
 	}
 	
 	if( (sun_rise-24.)>ihst0 ){  //  ihst0=2  sun_rise=28 ihst1=6
@@ -1845,8 +1851,8 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	}
 
 	if( x > 0 ){
-	  sprintf(tmp,"%d:%02d",
-		  hg->sun.s_rise.hours,hg->sun.s_rise.minutes);
+	  tmp=g_strdup_printf("%d:%02d",
+			      hg->sun.s_rise.hours,hg->sun.s_rise.minutes);
 	  cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
 	  cairo_rectangle(cr,  dx+lx-x, dy, x,ly);
 	  cairo_fill(cr);
@@ -1855,6 +1861,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  cairo_text_extents (cr, tmp, &extents);
 	  cairo_move_to(cr, dx+lx-x-extents.width, dy+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
+	  if(tmp) g_free(tmp);
 	}
       }
 
@@ -1876,12 +1883,13 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  cairo_rectangle(cr,  dx, dy, x,ly);
 	  cairo_fill(cr);
 	  
-	  sprintf(tmp,"%d:%02d",
-		  hg->atw18.s_set.hours,hg->atw18.s_set.minutes);
+	  tmp=g_strdup_printf("%d:%02d",
+			      hg->atw18.s_set.hours,hg->atw18.s_set.minutes);
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
 	  cairo_text_extents (cr, tmp, &extents);
 	  cairo_move_to(cr, dx+x, dy+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
+	  if(tmp) g_free(tmp);
 	}
 	
 	if( (atw_rise-24.)>ihst0 ){  //  ihst0=2  sun_rise=28 ihst1=6
@@ -1902,8 +1910,8 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	}
 
 	if( x > 0 ){
-	  sprintf(tmp,"%d:%02d",
-		  hg->atw18.s_rise.hours,hg->atw18.s_rise.minutes);
+	  tmp=g_strdup_printf("%d:%02d",
+			      hg->atw18.s_rise.hours,hg->atw18.s_rise.minutes);
 	  cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
 	  cairo_rectangle(cr,  dx+lx-x, dy, x,ly);
 	  cairo_fill(cr);
@@ -1912,14 +1920,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  cairo_text_extents (cr, tmp, &extents);
 	  cairo_move_to(cr, dx+lx-x-extents.width, dy+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
+	  if(tmp) g_free(tmp);
 	}
       }
-      //else{
-      //	cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
-      //	cairo_text_extents (cr, tmp, &extents);
-      //	cairo_move_to(cr, dx+lx-extents.width, dy+extents.height+5);
-      //	cairo_show_text(cr, tmp);
-      //}
     }
     else{
       sun_set=(gfloat)hg->sun.c_set.hours+(gfloat)hg->sun.c_set.minutes/60.;
@@ -1937,12 +1940,13 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  cairo_rectangle(cr,  dx, dy, x,ly);
 	  cairo_fill(cr);
 	  
-	  sprintf(tmp,"%d:%02d",
-		  hg->sun.c_set.hours,hg->sun.c_set.minutes);
+	  tmp=g_strdup_printf("%d:%02d",
+			      hg->sun.c_set.hours,hg->sun.c_set.minutes);
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
 	  cairo_text_extents (cr, tmp, &extents);
 	  cairo_move_to(cr, dx+x, dy+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
+	  if(tmp) g_free(tmp);
 	}
 	
 	if( (sun_rise-24.)>ihst0 ){  //  ihst0=2  sun_rise=28 ihst1=6
@@ -1963,8 +1967,8 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	}
 
 	if( x > 0 ){
-	  sprintf(tmp,"%d:%02d",
-		  hg->sun.c_rise.hours,hg->sun.c_rise.minutes);
+	  tmp=g_strdup_printf("%d:%02d",
+			      hg->sun.c_rise.hours,hg->sun.c_rise.minutes);
 	  cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
 	  cairo_rectangle(cr,  dx+lx-x, dy, x,ly);
 	  cairo_fill(cr);
@@ -1973,6 +1977,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  cairo_text_extents (cr, tmp, &extents);
 	  cairo_move_to(cr, dx+lx-x-extents.width, dy+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
+	  if(tmp) g_free(tmp);
 	}
       }
 
@@ -1994,12 +1999,13 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  cairo_rectangle(cr,  dx, dy, x,ly);
 	  cairo_fill(cr);
 	  
-	  sprintf(tmp,"%d:%02d",
-		  hg->atw18.c_set.hours,hg->atw18.c_set.minutes);
+	  tmp=g_strdup_printf("%d:%02d",
+			      hg->atw18.c_set.hours,hg->atw18.c_set.minutes);
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
 	  cairo_text_extents (cr, tmp, &extents);
 	  cairo_move_to(cr, dx+x, dy+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
+	  if(tmp) g_free(tmp);
 	}
 	
 	if( (atw_rise-24.)>ihst0 ){  //  ihst0=2  sun_rise=28 ihst1=6
@@ -2020,8 +2026,8 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	}
 
 	if( x > 0 ){
-	  sprintf(tmp,"%d:%02d",
-		  hg->atw18.c_rise.hours,hg->atw18.c_rise.minutes);
+	  tmp=g_strdup_printf("%d:%02d",
+			      hg->atw18.c_rise.hours,hg->atw18.c_rise.minutes);
 	  cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
 	  cairo_rectangle(cr,  dx+lx-x, dy, x,ly);
 	  cairo_fill(cr);
@@ -2030,6 +2036,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  cairo_text_extents (cr, tmp, &extents);
 	  cairo_move_to(cr, dx+lx-x-extents.width, dy+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
+	  if(tmp) g_free(tmp);
 	}
       }
 
@@ -2133,10 +2140,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 
     do{
       if(time_label>=24){
-	sprintf(tmp,"%d",time_label-24);
+	tmp=g_strdup_printf("%d",time_label-24);
       }
       else{
-	sprintf(tmp,"%d",time_label);
+	tmp=g_strdup_printf("%d",time_label);
       }
 
       if((gfloat)time_label>=ihst0){
@@ -2146,6 +2153,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	cairo_move_to(cr, x, y);
 	cairo_show_text(cr, tmp);
       }
+      if(tmp) g_free(tmp);
       
       time_label+=d_time_label;
     }while(time_label <= (gint)ihst1);
@@ -2184,11 +2192,12 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_font_size (cr, 12.0*scale);
-      sprintf(tmp,"(%4d/%2d/%2d)",iyear,month,iday);
+      tmp=g_strdup_printf("(%4d/%2d/%2d)",iyear,month,iday);
       cairo_text_extents (cr, tmp, &extents);
       x = dx;
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, tmp);
+      if(tmp) g_free(tmp);
       
       iyear1=iyear;
       month1=month;
@@ -2196,11 +2205,12 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 
       if(ihst1>24.){
 	add_day(hg, &iyear1, &month1, &iday1, +1);
-	sprintf(tmp,"(%4d/%2d/%2d)",iyear1,month1,iday1);
+	tmp=g_strdup_printf("(%4d/%2d/%2d)",iyear1,month1,iday1);
 	cairo_text_extents (cr, tmp, &extents);
 	x = dx+lx-extents.width;
 	cairo_move_to(cr, x, y);
 	cairo_show_text(cr, tmp);
+	if(tmp) g_free(tmp);
       }
     }
       
@@ -2224,19 +2234,20 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
       if(hour>=24){
-	sprintf(tmp,"%d:%02d",hour-24,min);
+	tmp=g_strdup_printf("%d:%02d",hour-24,min);
       }
       else if(hour<0){
-	sprintf(tmp,"%d:%02d",hour+24,min);
+	tmp=g_strdup_printf("%d:%02d",hour+24,min);
       }
       else{
-	sprintf(tmp,"%d:%02d",hour,min);
+	tmp=g_strdup_printf("%d:%02d",hour,min);
       }
       cairo_text_extents (cr, tmp, &extents);
       x += -extents.width/2;
       y = dy -5*scale;
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, tmp);
+      if(tmp) g_free(tmp);
 
       if(hg->plot_mode==PLOT_AZ){
 	gdouble vaz;
@@ -2252,12 +2263,13 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  x -= -extents.width/2;
 	  y -= extents.height+2;
 	  
-	  sprintf(tmp,"%+.2fdeg/min",vaz);
+	  tmp=g_strdup_printf("%+.2fdeg/min",vaz);
 	  cairo_text_extents (cr, tmp, &extents);
 	  x += -extents.width/2;
 	  cairo_move_to(cr, x, y);
 	  cairo_set_source_rgba(cr, 0.2, 0.4, 0.2, 1.0);
 	  cairo_show_text(cr, tmp);
+	  if(tmp) g_free(tmp);
 	}
       }
       else if( (hg->plot_mode==PLOT_AD) || (hg->plot_mode==PLOT_ADPAEL) ){
@@ -2274,12 +2286,13 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  x -= -extents.width/2;
 	  y -= extents.height+2;
 	  
-	  sprintf(tmp,"%+.3fdeg/min",vpa);
+	  tmp=g_strdup_printf("%+.3fdeg/min",vpa);
 	  cairo_text_extents (cr, tmp, &extents);
 	  x += -extents.width/2;
 	  cairo_move_to(cr, x, y);
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 0.8, 1.0);
 	  cairo_show_text(cr, tmp);
+	  if(tmp) g_free(tmp);
 	}
       }
       else if( hg->plot_mode==PLOT_MOONSEP ){
@@ -2296,12 +2309,13 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  x -= -extents.width/2;
 	  y -= extents.height+2;
 	  
-	  sprintf(tmp,"%.1fdeg",sep);
+	  tmp=g_strdup_printf("%.1fdeg",sep);
 	  cairo_text_extents (cr, tmp, &extents);
 	  x += -extents.width/2;
 	  cairo_move_to(cr, x, y);
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 0.8, 1.0);
 	  cairo_show_text(cr, tmp);
+	  if(tmp) g_free(tmp);
 	}
       }
       else if( hg->plot_mode==PLOT_HDSPA ){
@@ -2318,12 +2332,13 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  x -= -extents.width/2;
 	  y -= extents.height+2;
 	  
-	  sprintf(tmp,"%+.3fdeg/min",vpa);
+	  tmp=g_strdup_printf("%+.3fdeg/min",vpa);
 	  cairo_text_extents (cr, tmp, &extents);
 	  x += -extents.width/2;
 	  cairo_move_to(cr, x, y);
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 0.8, 1.0);
 	  cairo_show_text(cr, tmp);
+	  if(tmp) g_free(tmp);
 	}
       }
     }
@@ -2505,7 +2520,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       
       JD = ln_get_julian_local_date(&zonedate);
 
-      ln_get_equ_prec2 (&oequ, get_julian_day_of_epoch(hg->obj[i_list].epoch),
+      ln_get_equ_prec2 (&oequ, get_julian_day_of_equinox(hg->obj[i_list].equinox),
 			JD, &oequ_prec);
       ln_get_object_rst (JD, &observer, &oequ_prec, &orst);
       ln_get_date (orst.transit, &odate);
@@ -2658,12 +2673,12 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	      cairo_set_font_size (cr, 9.0*scale);
 	      
 	      if(oequ_prec.dec>hg->obs_latitude){
-		sprintf(tmp,"North(%.2f)",
-			90.0-fabs(oequ_prec.dec-hg->obs_latitude));
+		tmp=g_strdup_printf("North(%.2f)",
+				    90.0-fabs(oequ_prec.dec-hg->obs_latitude));
 	      }
 	      else{
-		sprintf(tmp,"South(%.2f)",
-			90.0-fabs(oequ_prec.dec-hg->obs_latitude));
+		tmp=g_strdup_printf("South(%.2f)",
+				    90.0-fabs(oequ_prec.dec-hg->obs_latitude));
 	      }
 	      cairo_set_source_rgba(cr, 0.2, 0.4, 0.2, 1.0);
 
@@ -2672,6 +2687,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	      cairo_rel_move_to(cr,-extents.width/2.,-5*scale);
 	      cairo_reset_clip(cr);
 	      cairo_show_text(cr,tmp);
+	      if(tmp) g_free(tmp);
 
 	      cairo_move_to(cr,dx+lx*(x_tr-(gdouble)ihst0)/(ihst1-ihst0),
 			    dy+ly*y_tr/90.);
@@ -2689,7 +2705,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	      cairo_set_font_size (cr, 9.0*scale);
 	    }
 
-	    sprintf(tmp,"%s",hg->obj[i_list].name);
+	    tmp=g_strdup_printf("%s",hg->obj[i_list].name);
 
 	    cairo_text_extents (cr, tmp, &extents);
 	    cairo_save(cr);
@@ -2697,6 +2713,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	    cairo_rel_move_to(cr,5.*scale,+extents.height/2.);
 	    cairo_reset_clip(cr);
 	    cairo_show_text(cr,tmp);
+	    if(tmp) g_free(tmp);
 	    cairo_restore(cr);
 	  }
 	}
@@ -2869,19 +2886,20 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	      cairo_set_source_rgba(cr, 0.2, 0.4, 0.2, 1.0);
 
 	      if(oequ_prec.dec>hg->obs_latitude){
-		sprintf(tmp,"North(%.2f)",
-			90.0-fabs(oequ_prec.dec-hg->obs_latitude));
+		tmp=g_strdup_printf("North(%.2f)",
+				    90.0-fabs(oequ_prec.dec-hg->obs_latitude));
 	      }
 	      else{
-		sprintf(tmp,"South(%.2f)",
-			90.0-fabs(oequ_prec.dec-hg->obs_latitude));
+		tmp=g_strdup_printf("South(%.2f)",
+				    90.0-fabs(oequ_prec.dec-hg->obs_latitude));
 	      }
-
+	      
 	      cairo_text_extents (cr, tmp, &extents);
 	      cairo_save(cr);
 	      cairo_rel_move_to(cr,-extents.width/2.,-5.*scale);
 	      cairo_reset_clip(cr);
 	      cairo_show_text(cr,tmp);
+	      if(tmp) g_free(tmp);
 	      cairo_restore(cr);
 	    }
 	  }
@@ -2979,12 +2997,12 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	      cairo_set_source_rgba(cr, 0.2, 0.4, 0.2, 1.0);
 
 	      if(oequ_prec.dec>hg->obs_latitude){
-		sprintf(tmp,"North(%.2f)",
-			90.0-fabs(oequ_prec.dec-hg->obs_latitude));
+		tmp=g_strdup_printf("North(%.2f)",
+				    90.0-fabs(oequ_prec.dec-hg->obs_latitude));
 	      }
 	      else{
-		sprintf(tmp,"South(%.2f)",
-			90.0-fabs(oequ_prec.dec-hg->obs_latitude));
+		tmp=g_strdup_printf("South(%.2f)",
+				    90.0-fabs(oequ_prec.dec-hg->obs_latitude));
 	      }
 
 	      cairo_text_extents (cr, tmp, &extents);
@@ -2992,6 +3010,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	      cairo_rel_move_to(cr,-extents.width/2.,-5.*scale);
 	      cairo_reset_clip(cr);
 	      cairo_show_text(cr,tmp);
+	      if(tmp) g_free(tmp);
 	      cairo_restore(cr);
 	    }
 	  }
@@ -3447,8 +3466,6 @@ void calcpa2_main(typHOE* hg){
 
   //#### input ####### 
   
-  char buf[BUFFER_SIZE];
-  char tmp[BUFFER_SIZE];
   double a0s;
   int ia0h,ia0m;
   double d0s;
@@ -3519,7 +3536,7 @@ void calcpa2_main(typHOE* hg){
       - (double)(hobject.dec.minutes*100);
 
     ln_hequ_to_equ (&hobject, &object);
-    ln_get_equ_prec2 (&object, get_julian_day_of_epoch(hg->obj[i_list].epoch),
+    ln_get_equ_prec2 (&object, get_julian_day_of_equinox(hg->obj[i_list].equinox),
 		      JD, &object_prec);
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     ln_get_hrz_from_equ (&object_prec, &observer, JD, &hrz);
@@ -3710,7 +3727,7 @@ void calcpa2_main(typHOE* hg){
       - (double)(hobject.dec.minutes*100);
 
     ln_hequ_to_equ (&hobject, &object);
-    ln_get_equ_prec2 (&object, get_julian_day_of_epoch(hg->std[i_list].epoch),
+    ln_get_equ_prec2 (&object, get_julian_day_of_equinox(hg->std[i_list].equinox),
 		      JD, &object_prec);
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     ln_get_hrz_from_equ (&object_prec, &observer, JD, &hrz);
@@ -3962,8 +3979,6 @@ void calcpa2_skymon(typHOE* hg){
 
   //#### input ####### 
   
-  char buf[BUFFER_SIZE];
-  char tmp[BUFFER_SIZE];
   double a0s;
   int ia0h,ia0m;
   double d0s;
@@ -4034,7 +4049,7 @@ void calcpa2_skymon(typHOE* hg){
       - (double)(hobject.dec.minutes*100);
 
     ln_hequ_to_equ (&hobject, &object);
-    ln_get_equ_prec2 (&object, get_julian_day_of_epoch(hg->obj[i_list].epoch),
+    ln_get_equ_prec2 (&object, get_julian_day_of_equinox(hg->obj[i_list].equinox),
 		      JD, &object_prec);
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     ln_get_hrz_from_equ (&object_prec, &observer, JD, &hrz);
@@ -4186,7 +4201,7 @@ void calcpa2_skymon(typHOE* hg){
       - (double)(hobject.dec.minutes*100);
 
     ln_hequ_to_equ (&hobject, &object);
-    ln_get_equ_prec2 (&object, get_julian_day_of_epoch(hg->std[i_list].epoch),
+    ln_get_equ_prec2 (&object, get_julian_day_of_equinox(hg->std[i_list].equinox),
 		      JD, &object_prec);
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     ln_get_hrz_from_equ (&object_prec, &observer, JD, &hrz);
@@ -5091,7 +5106,7 @@ gfloat get_meridian_hour(typHOE *hg){
   oequ.dec=d0;
   
   JD = ln_get_julian_local_date(&zonedate);
-  ln_get_equ_prec2 (&oequ, get_julian_day_of_epoch(hg->obj[hg->plot_i].epoch),
+  ln_get_equ_prec2 (&oequ, get_julian_day_of_equinox(hg->obj[hg->plot_i].equinox),
 		    JD, &oequ_prec);
   ln_get_object_rst (JD, &observer, &oequ_prec, &orst);
   ln_get_date (orst.transit, &odate);
@@ -5164,10 +5179,10 @@ static void draw_page (GtkPrintOperation *operation,
   hg->context=NULL;
 }
 
-gdouble get_julian_day_of_epoch(gdouble epoch){
+gdouble get_julian_day_of_equinox(gdouble equinox){
   gdouble diff_y;
 
-  diff_y=epoch-2000.0;
+  diff_y=equinox-2000.0;
 
   return(JD2000 + diff_y*365.25);
 }

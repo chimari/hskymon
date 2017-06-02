@@ -1,4 +1,5 @@
-//    HSkymon
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
 //      fc.c  --- Finding Chart
 //   
 //                                           2010.3.15  A.Tajitsu
@@ -99,8 +100,9 @@ extern void fcdb_gsc_vo_parse();
 extern void fcdb_ps1_vo_parse();
 extern void fcdb_sdss_vo_parse();
 extern void fcdb_usno_vo_parse();
+extern void fcdb_gaia_vo_parse();
 extern void addobj_vo_parse();
-extern double get_julian_day_of_epoch();
+extern double get_julian_day_of_equinox();
 
 extern gchar *make_simbad_id();
 
@@ -234,7 +236,6 @@ void fc_item2 (typHOE *hg)
 void fc_dl (typHOE *hg)
 {
   GtkTreeIter iter;
-  gchar tmp[2048];
   GtkWidget *dialog, *vbox, *label, *button;
 #ifndef USE_WIN32
   static struct sigaction act;
@@ -1132,16 +1133,19 @@ void create_fc_dialog(typHOE *hg)
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "NED");
   }
   else if(hg->fcdb_type==FCDB_TYPE_GSC){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "GSC");
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "GSC 2.3");
   }
   else if(hg->fcdb_type==FCDB_TYPE_PS1){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "PanSTARRS1");
   }
   else if(hg->fcdb_type==FCDB_TYPE_SDSS){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "SDSS");
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "SDSS DR13");
   }
   else if(hg->fcdb_type==FCDB_TYPE_USNO){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "USNO-B");
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_GAIA){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "GAIA DR1");
   }
   gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_frame), 3);
@@ -1653,7 +1657,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
   gfloat r_w,r_h, r;
 
   gdouble ra_0, dec_0;
-  gchar tmp[2048];
+  gchar *tmp;
   GdkPixbuf *pixbuf_flip=NULL;
   gfloat x_ccd, y_ccd, gap_ccd;
   //struct ln_hms ra_hms;
@@ -1745,34 +1749,37 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
     cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_BOLD);
-    sprintf(tmp,"Error : Failed to load the image for the finding chart!");
+    tmp=g_strdup("Error : Failed to load the image for the finding chart!");
     cairo_text_extents (cr,tmp, &extents);
     l_h=extents.height;
     cairo_move_to(cr,width/2-extents.width/2,
 		  height/2-l_h*1.5);
     cairo_show_text(cr, tmp);
-
+    if(tmp) g_free(tmp);
  
     cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, 10.0*scale);
-    sprintf(tmp,"The position might be out of the surveyed area.");
+    tmp=g_strdup("The position might be out of the surveyed area.");
     cairo_text_extents (cr,tmp, &extents);
     cairo_move_to(cr,width/2-extents.width/2,
 		  height/2+l_h*1.5);
     cairo_show_text(cr, tmp);
+    if(tmp) g_free(tmp);
     
-    sprintf(tmp,"or");
+    tmp=g_strdup("or");
     cairo_text_extents (cr,tmp, &extents);
     cairo_move_to(cr,width/2-extents.width/2,
 		  height/2+l_h*3);
     cairo_show_text(cr, tmp);
+    if(tmp) g_free(tmp);
     
-    sprintf(tmp,"An HTTP error might be occured in the server side.");
+    tmp=g_strdup("An HTTP error might be occured in the server side.");
     cairo_text_extents (cr,tmp, &extents);
     cairo_move_to(cr,width/2-extents.width/2,
 		  height/2+l_h*4.5);
     cairo_show_text(cr, tmp);
+    if(tmp) g_free(tmp);
   }
   else{
     width_file = gdk_pixbuf_get_width(pixbuf_fc);
@@ -1916,12 +1923,13 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
 	cairo_set_font_size (cr, 9.0*scale);
 	
-	sprintf(tmp,"Tip-Tilt Guide Star w/LGS (%darcmin)",IRCS_TTGS_ARCMIN/2);
+	tmp=g_strdup_printf("Tip-Tilt Guide Star w/LGS (%darcmin)",IRCS_TTGS_ARCMIN/2);
 	cairo_text_extents (cr,tmp, &extents);
 	cairo_move_to(cr,
 		      -extents.width/2,
 		      -IRCS_TTGS_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
 	cairo_show_text(cr, tmp);
+	if(tmp) g_free(tmp);
       }
 
       cairo_set_line_width (cr, 3.0*scale);
@@ -1939,11 +1947,12 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_font_size (cr, 9.0*scale);
 
-      sprintf(tmp,"IRCS FOV (%dx%darcsec)",(gint)IRCS_X_ARCSEC, (gint)IRCS_Y_ARCSEC);
+      tmp=g_strdup_printf("IRCS FOV (%dx%darcsec)",(gint)IRCS_X_ARCSEC, (gint)IRCS_Y_ARCSEC);
       cairo_text_extents (cr,tmp, &extents);
       cairo_move_to(cr,-extents.width/2,
 		    -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_Y_ARCSEC/60.)/2.-5*scale);
       cairo_show_text(cr, tmp);
+      if(tmp) g_free(tmp);
 
       break;
 
@@ -1968,11 +1977,12 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_font_size (cr, 9.0*scale);
 
-      sprintf(tmp,"COMICS FOV (%dx%darcsec)",(gint)COMICS_X_ARCSEC, (gint)COMICS_Y_ARCSEC);
+      tmp=g_strdup_printf("COMICS FOV (%dx%darcsec)",(gint)COMICS_X_ARCSEC, (gint)COMICS_Y_ARCSEC);
       cairo_text_extents (cr,tmp, &extents);
       cairo_move_to(cr,-extents.width/2,
 		    -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_Y_ARCSEC/60.)/2.-5*scale);
       cairo_show_text(cr, tmp);
+      if(tmp) g_free(tmp);
 
       break;
 
@@ -1995,12 +2005,13 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_font_size (cr, 9.0*scale);
 	
-      sprintf(tmp,"FOCAS FOV (%darcmin)",FOCAS_R_ARCMIN);
+      tmp=g_strdup_printf("FOCAS FOV (%darcmin)",FOCAS_R_ARCMIN);
       cairo_text_extents (cr,tmp, &extents);
       cairo_move_to(cr,
 		    -extents.width/2,
 		    -FOCAS_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
       cairo_show_text(cr, tmp);
+      if(tmp) g_free(tmp);
 
       if(hg->dss_draw_slit){
 	cairo_new_path(cr);
@@ -2060,11 +2071,12 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_font_size (cr, 9.0*scale);
 
-      sprintf(tmp,"MOIRCS FOV (%dx%darcmin)",(gint)MOIRCS_X_ARCMIN, (gint)MOIRCS_Y_ARCMIN);
+      tmp=g_strdup_printf("MOIRCS FOV (%dx%darcmin)",(gint)MOIRCS_X_ARCMIN, (gint)MOIRCS_Y_ARCMIN);
       cairo_text_extents (cr,tmp, &extents);
       cairo_move_to(cr,-extents.width/2,
 		    -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.-5*scale);
       cairo_show_text(cr, tmp);
+      if(tmp) g_free(tmp);
 
       if(hg->dss_draw_slit){
 	cairo_new_path(cr);
@@ -2165,11 +2177,12 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_font_size (cr, 9.0*scale);
 
-      sprintf(tmp,"Suprime-Cam FOV (%dx%darcmin)",SPCAM_X_ARCMIN, SPCAM_Y_ARCMIN);
+      tmp=g_strdup_printf("Suprime-Cam FOV (%dx%darcmin)",SPCAM_X_ARCMIN, SPCAM_Y_ARCMIN);
       cairo_text_extents (cr,tmp, &extents);
       cairo_move_to(cr,-extents.width/2,
 		    -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SPCAM_Y_ARCMIN)/2.-5*scale);
       cairo_show_text(cr, tmp);
+      if(tmp) g_free(tmp);
 
       if(hg->dss_draw_slit){
 	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.3);
@@ -2287,12 +2300,13 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
       cairo_set_font_size (cr, 9.0*scale);
 	
       if(!hg->dss_draw_slit){
-	sprintf(tmp,"HSC FOV (%darcmin)",HSC_R_ARCMIN);
+	tmp=g_strdup_printf("HSC FOV (%darcmin)",HSC_R_ARCMIN);
 	cairo_text_extents (cr,tmp, &extents);
 	cairo_move_to(cr,
 		      -extents.width/2,
 		      -HSC_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
 	cairo_show_text(cr, tmp);
+	if(tmp) g_free(tmp);
       }
       else{
 	gint i_chip;
@@ -2376,17 +2390,18 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
 	  cairo_set_font_size (cr, 600*pscale);
 	  if(hg->fc_inst==FC_INST_HSCDET){
-	    sprintf(tmp,"%d",hsc_param[i_chip].det_id);
+	    tmp=g_strdup_printf("%d",hsc_param[i_chip].det_id);
 	  }
 	  else{
 	    
-	    sprintf(tmp,"%02d",hsc_param[i_chip].hsca);
+	    tmp=g_strdup_printf("%02d",hsc_param[i_chip].hsca);
 	  }
 	  cairo_show_text(cr,tmp);
+	  if(tmp) g_free(tmp);
 
 	  if(hsc_param[i_chip].hsca==35){
 	    cairo_set_font_size (cr, 1600*pscale);
-	    sprintf(tmp,"BEES%d",hsc_param[i_chip].bees);
+	    tmp=g_strdup_printf("BEES%d",hsc_param[i_chip].bees);
 	    cairo_text_extents (cr,tmp, &extents);
 	  
 	    if(hsc_param[i_chip].bees==0){
@@ -2396,6 +2411,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	      cairo_move_to(cr, x_0-4224*pscale+2048*pscale*0.5, y_0-2048*pscale*0.2);
 	    }
 	    cairo_show_text(cr,tmp);
+	    if(tmp) g_free(tmp);
 	  }
 
 	  cairo_stroke(cr);
@@ -2422,12 +2438,13 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_font_size (cr, 9.0*scale);
 	
-      sprintf(tmp,"FMOS FOV (%darcmin)",FMOS_R_ARCMIN);
+      tmp=g_strdup_printf("FMOS FOV (%darcmin)",FMOS_R_ARCMIN);
       cairo_text_extents (cr,tmp, &extents);
       cairo_move_to(cr,
 		    -extents.width/2,
 		    -FMOS_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
       cairo_show_text(cr, tmp);
+      if(tmp) g_free(tmp);
 
       break;
     }
@@ -2464,15 +2481,16 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 			  CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, 11.0*scale);
     cairo_move_to(cr,5*scale,(gdouble)height_file*r-5*scale);
-    sprintf(tmp,"RA=%02d:%02d:%05.2lf  Dec=%s%02d:%02d:%05.2lf (%.1lf)",
-	    hobject.ra.hours,hobject.ra.minutes,
-	    hobject.ra.seconds,
-	    (hobject.dec.neg) ? "-" : "+", 
-	    hobject.dec.degrees, hobject.dec.minutes,
-	    hobject.dec.seconds,
-	    hg->obj[hg->dss_i].epoch);
+    tmp=g_strdup_printf("RA=%02d:%02d:%05.2lf  Dec=%s%02d:%02d:%05.2lf (%.1lf)",
+			hobject.ra.hours,hobject.ra.minutes,
+			hobject.ra.seconds,
+			(hobject.dec.neg) ? "-" : "+", 
+			hobject.dec.degrees, hobject.dec.minutes,
+			hobject.dec.seconds,
+			hg->obj[hg->dss_i].equinox);
     cairo_text_extents (cr, tmp, &extents);
     cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
 
     cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_BOLD);
@@ -2487,163 +2505,164 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
     cairo_set_font_size (cr, 10.0*scale);
     switch(hg->fc_mode_get){
     case FC_SKYVIEW_GALEXF:
-      sprintf(tmp,"GALEX (Far UV)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("GALEX (Far UV)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_GALEXN:
-      sprintf(tmp,"GALEX (Near UV)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("GALEX (Near UV)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_STSCI_DSS1R:
     case FC_ESO_DSS1R:
     case FC_SKYVIEW_DSS1R:
-      sprintf(tmp,"DSS1 (Red)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("DSS1 (Red)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_STSCI_DSS1B:
     case FC_SKYVIEW_DSS1B:
-      sprintf(tmp,"DSS1 (Blue)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("DSS1 (Blue)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_STSCI_DSS2R:
     case FC_ESO_DSS2R:
     case FC_SKYVIEW_DSS2R:
-      sprintf(tmp,"DSS2 (Red)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("DSS2 (Red)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_STSCI_DSS2B:
     case FC_ESO_DSS2B:
     case FC_SKYVIEW_DSS2B:
-      sprintf(tmp,"DSS2 (Blue)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("DSS2 (Blue)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_STSCI_DSS2IR:
     case FC_ESO_DSS2IR:
     case FC_SKYVIEW_DSS2IR:
-      sprintf(tmp,"DSS2 (IR)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("DSS2 (IR)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
-
+      
     case FC_SKYVIEW_SDSSU:
-      sprintf(tmp,"SDSS (u)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("SDSS (u)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_SDSSG:
-      sprintf(tmp,"SDSS (g)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("SDSS (g)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_SDSSR:
-      sprintf(tmp,"SDSS (r)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("SDSS (r)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_SDSSI:
-      sprintf(tmp,"SDSS (i)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("SDSS (i)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_SDSSZ:
-      sprintf(tmp,"SDSS (z)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("SDSS (z)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_2MASSJ:
-      sprintf(tmp,"2MASS (J)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("2MASS (J)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_2MASSH:
-      sprintf(tmp,"2MASS (H)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("2MASS (H)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_2MASSK:
-      sprintf(tmp,"2MASS (K)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("2MASS (K)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_WISE34:
-      sprintf(tmp,"WISE (3.4um)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("WISE (3.4um)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_WISE46:
-      sprintf(tmp,"WISE (4.6um)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("WISE (4.6um)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_WISE12:
-      sprintf(tmp,"WISE (12um)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("WISE (12um)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_WISE22:
-      sprintf(tmp,"WISE (22um)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("WISE (22um)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SKYVIEW_RGB:
-      sprintf(tmp,"SkyView RGB composite  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("SkyView RGB composite  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
     case FC_SDSS:
-      sprintf(tmp,"SDSS DR7 (color)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("SDSS DR7 (color)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
       
     case FC_SDSS13:
-      sprintf(tmp,"SDSS DR13 (color)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("SDSS DR13 (color)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
       
     case FC_PANCOL:
-      sprintf(tmp,"PanSTARRS-1 (color)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("PanSTARRS-1 (color)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
       
     case FC_PANG:
-      sprintf(tmp,"PanSTARRS-1 (g)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("PanSTARRS-1 (g)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
       
     case FC_PANR:
-      sprintf(tmp,"PanSTARRS-1 (r)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("PanSTARRS-1 (r)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
       
     case FC_PANI:
-      sprintf(tmp,"PanSTARRS-1 (i)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("PanSTARRS-1 (i)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
       
     case FC_PANZ:
-      sprintf(tmp,"PanSTARRS-1 (z)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("PanSTARRS-1 (z)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
       
     case FC_PANY:
-      sprintf(tmp,"PanSTARRS-1 (y)  %dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("PanSTARRS-1 (y)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
       
     default:
-      sprintf(tmp,"%dx%d arcmin",
-	      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      tmp=g_strdup_printf("%dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
     }
     cairo_text_extents (cr, tmp, &extents);
     cairo_move_to(cr,
 		  (gdouble)width_file*r-extents.width-5*scale,
 		  extents.height+5*scale);
     cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
 
     if(hg->fc_mode_get==FC_SKYVIEW_RGB){
       gint y0;
@@ -2760,12 +2779,12 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
       cairo_set_font_size (cr, 14.0*scale);
       if((xsec>60.) && (ysec>60.)){
-	sprintf(tmp,"x%d : %.2lfx%.2lf arcmin",hg->fc_mag,
-		xsec/60.,
-		ysec/60.);
+	tmp=g_strdup_printf("x%d : %.2lfx%.2lf arcmin",hg->fc_mag,
+			    xsec/60.,
+			    ysec/60.);
       }
       else{
-	sprintf(tmp,"x%d : %.1lfx%.1lf arcsec",hg->fc_mag,xsec,ysec);
+	tmp=g_strdup_printf("x%d : %.1lfx%.1lf arcsec",hg->fc_mag,xsec,ysec);
       }
       cairo_text_extents (cr, tmp, &extents);
       cairo_translate(cr,
@@ -2775,6 +2794,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 		    -extents.width-wh_small*0.02,
 		    -wh_small*0.02);
       cairo_show_text(cr,tmp);
+      if(tmp) g_free(tmp);
 
       cairo_translate(cr,
 		      -width/(gdouble)hg->fc_mag,
@@ -3058,10 +3078,10 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	/((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)*60.0;
 
       if(distance > 300){
-	sprintf(tmp,"%.2lf'",distance/60.0);
+	tmp=g_strdup_printf("%.2lf'",distance/60.0);
       }
       else{
-	sprintf(tmp,"%.2lf\"",distance);
+	tmp=g_strdup_printf("%.2lf\"",distance);
       }
       cairo_text_extents (cr, tmp, &extents);
 
@@ -3073,6 +3093,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
       
       cairo_move_to(cr,-extents.width/2.,-extents.height*0.8);
       cairo_show_text(cr,tmp);
+      if(tmp) g_free(tmp);
     }
 
     cairo_restore(cr);
@@ -3945,7 +3966,6 @@ static void cancel_fcdb(GtkWidget *w, gpointer gdata)
 void fcdb_dl(typHOE *hg)
 {
   GtkTreeIter iter;
-  gchar tmp[2048];
   GtkWidget *dialog, *vbox, *label, *button;
 #ifndef USE_WIN32
   static struct sigaction act;
@@ -3994,6 +4014,10 @@ void fcdb_dl(typHOE *hg)
   case FCDB_TYPE_USNO:
     label=gtk_label_new("Searching objects in USNO-B ...");
     break;
+
+  case FCDB_TYPE_GAIA:
+    label=gtk_label_new("Searching objects in GAIA ...");
+    break;
  }
 
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
@@ -4033,6 +4057,10 @@ void fcdb_dl(typHOE *hg)
 
   case FCDB_TYPE_USNO:
     hg->plabel=gtk_label_new("Searching objects in USNO-B ...");
+    break;
+
+  case FCDB_TYPE_GAIA:
+    hg->plabel=gtk_label_new("Searching objects in GAIA ...");
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
@@ -4181,6 +4209,10 @@ void addobj_dl(typHOE *hg)
     hg->plabel=gtk_label_new("Searching objects in USNO-B ...");
     break;
 
+  case FCDB_TYPE_GAIA:
+    hg->plabel=gtk_label_new("Searching objects in GAIA ...");
+    break;
+
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
@@ -4277,7 +4309,7 @@ void addobj_dl(typHOE *hg)
 void fcdb_item2 (typHOE *hg)
 {
   gdouble ra_0, dec_0, d_ra0, d_dec0;
-  gchar tmp[2048], *mag_str, *otype_str;
+  gchar *mag_str, *otype_str;
   struct lnh_equ_posn hobject;
   struct ln_equ_posn object;
   struct ln_equ_posn object_prec;
@@ -4307,7 +4339,7 @@ void fcdb_item2 (typHOE *hg)
 
   ln_hequ_to_equ (&hobject, &object);
   ln_get_equ_prec2 (&object, 
-		    get_julian_day_of_epoch(hg->obj[hg->fcdb_i].epoch),
+		    get_julian_day_of_equinox(hg->obj[hg->fcdb_i].equinox),
 		    JD2000, &object_prec);
 
   switch(hg->fcdb_type){
@@ -4589,6 +4621,31 @@ void fcdb_item2 (typHOE *hg)
     fcdb_usno_vo_parse(hg);
 
     break;
+
+  case FCDB_TYPE_GAIA:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_GAIA);
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_GAIA_PATH,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  (double)hg->fcdb_gaia_diam/60./60.);
+
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+
+    fcdb_dl(hg);
+
+    fcdb_gaia_vo_parse(hg);
+
+    break;
   }
 
   if(flagTree) fcdb_make_tree(NULL, hg);
@@ -4627,7 +4684,6 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 				GtkTreeIter iter, 
 				gint i_list)
 {
-  gchar tmp[24];
   gint i;
   gdouble s_rt=-1;
 
@@ -4731,6 +4787,13 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       COLUMN_FCDB_I, hg->fcdb[i_list].i,  // B2
 		       COLUMN_FCDB_J, hg->fcdb[i_list].j,  // R2
 		       COLUMN_FCDB_H, hg->fcdb[i_list].h,  // I1
+		       -1);
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_GAIA){
+    // g
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_V, hg->fcdb[i_list].v,  // g
+		       COLUMN_FCDB_PLX, hg->fcdb[i_list].plx,  // Parallax
 		       -1);
   }
 }
@@ -4882,115 +4945,117 @@ GdkPixbuf* rgb_pixbuf(GdkPixbuf *pixbufR, GdkPixbuf* pixbufG,
 
 
 gchar *rgb_source_txt(typHOE *hg, gint i){
-  gchar *ret_name, tmp[BUFFSIZE], tmp2[BUFFSIZE];
+  gchar *ret_name, *tmp, *tmp2;
   const gchar *col_name[3]={"R: ", "G: ", "B: "};
   gint  i_obj,i_tgt;
 
   switch(hg->fc_mode_RGB[i]){
   case -1:
-    sprintf(tmp,"(average of R & B)");
+    tmp=g_strdup("(average of R & B)");
     break;
     
   case FC_SKYVIEW_GALEXF:
-    sprintf(tmp,"GALEX (Far UV)");
+    tmp=g_strdup("GALEX (Far UV)");
     break;
     
   case FC_SKYVIEW_GALEXN:
-    sprintf(tmp,"GALEX (Near UV)");
+    tmp=g_strdup("GALEX (Near UV)");
     break;
     
   case FC_SKYVIEW_DSS1R:
-    sprintf(tmp,"DSS1 (Red)");
+    tmp=g_strdup("DSS1 (Red)");
     break;
     
   case FC_SKYVIEW_DSS1B:
-    sprintf(tmp,"DSS1 (Blue)");
+    tmp=g_strdup("DSS1 (Blue)");
     break;
     
   case FC_SKYVIEW_DSS2R:
-    sprintf(tmp,"DSS2 (Red)");
+    tmp=g_strdup("DSS2 (Red)");
     break;
     
   case FC_SKYVIEW_DSS2B:
-    sprintf(tmp,"DSS2 (Blue)");
+    tmp=g_strdup("DSS2 (Blue)");
     break;
     
   case FC_SKYVIEW_DSS2IR:
-    sprintf(tmp,"DSS2 (IR)");
+    tmp=g_strdup("DSS2 (IR)");
     break;
     
   case FC_SKYVIEW_SDSSU:
-    sprintf(tmp,"SDSS (u)");
+    tmp=g_strdup("SDSS (u)");
     break;
     
   case FC_SKYVIEW_SDSSG:
-    sprintf(tmp,"SDSS (g)");
+    tmp=g_strdup("SDSS (g)");
     break;
     
   case FC_SKYVIEW_SDSSR:
-    sprintf(tmp,"SDSS (r)");
+    tmp=g_strdup("SDSS (r)");
     break;
     
   case FC_SKYVIEW_SDSSI:
-    sprintf(tmp,"SDSS (i)");
+    tmp=g_strdup("SDSS (i)");
     break;
     
   case FC_SKYVIEW_SDSSZ:
-    sprintf(tmp,"SDSS (z)");
+    tmp=g_strdup("SDSS (z)");
     break;
     
   case FC_SKYVIEW_2MASSJ:
-    sprintf(tmp,"2MASS (J)");
+    tmp=g_strdup("2MASS (J)");
     break;
     
   case FC_SKYVIEW_2MASSH:
-    sprintf(tmp,"2MASS (H)");
+    tmp=g_strdup("2MASS (H)");
     break;
     
   case FC_SKYVIEW_2MASSK:
-    sprintf(tmp,"2MASS (K)");
+    tmp=g_strdup("2MASS (K)");
     break;
     
   case FC_SKYVIEW_WISE34:
-    sprintf(tmp,"WISE (3.4um)");
+    tmp=g_strdup("WISE (3.4um)");
     break;
     
   case FC_SKYVIEW_WISE46:
-    sprintf(tmp,"WISE (4.6um)");
+    tmp=g_strdup("WISE (4.6um)");
     break;
     
   case FC_SKYVIEW_WISE12:
-    sprintf(tmp,"WISE (12um)");
+    tmp=g_strdup("WISE (12um)");
     break;
     
   case FC_SKYVIEW_WISE22:
-    sprintf(tmp,"WISE (22um)");
+    tmp=g_strdup("WISE (22um)");
     break;
   }
 
   switch(hg->dss_scale_RGB[i]){
   case FC_SCALE_LINEAR:
-    sprintf(tmp2," : Linear");
+    tmp2=g_strdup(" : Linear");
     break;
     
   case FC_SCALE_LOG:
-    sprintf(tmp2," : Log");
+    tmp2=g_strdup(" : Log");
     break;
     
   case FC_SCALE_SQRT:
-    sprintf(tmp2," : Sqrt");
+    tmp2=g_strdup(" : Sqrt");
     break;
     
   case FC_SCALE_HISTEQ:
-    sprintf(tmp2," : HistEq");
+    tmp2=g_strdup(" : HistEq");
     break;
     
   case FC_SCALE_LOGLOG:
-    sprintf(tmp2," : LogLog");
+    tmp2=g_strdup(" : LogLog");
     break;
   }
 
   ret_name=g_strconcat(col_name[i], tmp, tmp2, NULL);
+  g_free(tmp);
+  g_free(tmp2);
 
   return(ret_name);
 }

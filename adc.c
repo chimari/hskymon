@@ -1,4 +1,5 @@
-//    HSkymon
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
 //      adc.c  --- Atmospheric Dispersion Chart
 //   
 //                                           2012.10.22  A.Tajitsu
@@ -465,7 +466,7 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
   int width, height;
 
   gdouble ra_0, dec_0;
-  gchar tmp[2048];
+  gchar *tmp;
   gfloat x_ccd, y_ccd, gap_ccd;
   //struct ln_hms ra_hms;
   //struct ln_dms dec_dms;
@@ -537,10 +538,11 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
   cairo_set_font_size (cr, (gdouble)hg->skymon_objsz);
   cairo_set_source_rgba(cr, 1.0, 0.4, 0.0, 1.0);
   cairo_move_to(cr, size/2+hg->adc_slit_width/scale/2.+5.,5.);
-  sprintf(tmp,"%.2lf\" Slit",hg->adc_slit_width);
+  tmp=g_strdup_printf("%.2lf\" Slit",hg->adc_slit_width);
   cairo_text_extents (cr,tmp, &extents);
   cairo_rel_move_to(cr,0, extents.height);
   cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
 
 
   // Direction
@@ -637,13 +639,14 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
     cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, (gdouble)hg->skymon_objsz*1.1);
-    sprintf(tmp,"%.1lfx%.1lf arcsec",size*scale,size*scale);
+    tmp=g_strdup_printf("%.1lfx%.1lf arcsec",size*scale,size*scale);
     
     cairo_text_extents (cr, tmp, &extents);
     cairo_move_to(cr,
 		  size-extents.width-5,
 		  extents.height+5);
     cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
 
     cairo_translate (cr, size-5, extents.height+5);
 
@@ -674,21 +677,23 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
     cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_NORMAL);
 
-    sprintf(tmp,"%02d/%02d/%04d",month,day,year);
+    tmp=g_strdup_printf("%02d/%02d/%04d",month,day,year);
     cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
     cairo_set_font_size (cr, (gdouble)hg->skymon_objsz*1.1);
     cairo_text_extents (cr, tmp, &extents);
     cairo_move_to(cr,-extents.width,+extents.height+5);
     cairo_show_text(cr, tmp);
+    if(tmp) g_free(tmp);
 
     cairo_translate (cr, 0, extents.height+5);
 
-    sprintf(tmp,"%s=%02d:%02d",hg->obs_tzname,hour,min);
+    tmp=g_strdup_printf("%s=%02d:%02d",hg->obs_tzname,hour,min);
     cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
     cairo_set_font_size (cr, (gdouble)hg->skymon_objsz*1.1);
     cairo_text_extents (cr, tmp, &extents);
     cairo_move_to(cr,-extents.width,+extents.height+5);
     cairo_show_text(cr, tmp);
+    if(tmp) g_free(tmp);
 
     cairo_restore(cr);
   }
@@ -719,15 +724,16 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
 			  CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, (gdouble)hg->skymon_objsz*1.1);
     cairo_move_to(cr,5,size-5);
-    sprintf(tmp,"RA=%02d:%02d:%05.2lf  Dec=%s%02d:%02d:%05.2lf (%.1lf)",
-	    hobject.ra.hours,hobject.ra.minutes,
-	    hobject.ra.seconds,
-	    (hobject.dec.neg) ? "-" : "+", 
-	    hobject.dec.degrees, hobject.dec.minutes,
-	    hobject.dec.seconds,
-	    hg->obj[hg->plot_i].epoch);
+    tmp=g_strdup_printf("RA=%02d:%02d:%05.2lf  Dec=%s%02d:%02d:%05.2lf (%.1lf)",
+			hobject.ra.hours,hobject.ra.minutes,
+			hobject.ra.seconds,
+			(hobject.dec.neg) ? "-" : "+", 
+			hobject.dec.degrees, hobject.dec.minutes,
+			hobject.dec.seconds,
+			hg->obj[hg->plot_i].equinox);
     cairo_text_extents (cr, tmp, &extents);
     cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
 
     cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_BOLD);
@@ -761,11 +767,12 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
 			    CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, (gdouble)hg->skymon_objsz*1.1);
     cairo_rotate (cr,M_PI/2.);
-    sprintf(tmp,"Zenith = %.0lf", z_pa);
+    tmp=g_strdup_printf("Zenith = %.0lf", z_pa);
     cairo_text_extents (cr, tmp, &extents);
     cairo_move_to(cr, +size/2.-extents.height-extents.width-5,
 		  -extents.height/2.);
     cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
 
     cairo_restore(cr);
   }
@@ -805,8 +812,9 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
     cairo_set_font_size (cr, (gdouble)hg->skymon_objsz);
     cairo_move_to(cr, (hg->adc_seeing/2./sqrt(2.0))/scale+5,
 		  (hg->adc_seeing/2./sqrt(2.0))/scale+5);
-    sprintf(tmp,"Guide Star (%dA)",hg->wave0);
+    tmp=g_strdup_printf("Guide Star (%dA)",hg->wave0);
     cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
     
     cairo_restore(cr);
   }
@@ -836,19 +844,21 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
     cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, (gdouble)hg->skymon_objsz);
-    sprintf(tmp,"Target (%dA)",hg->wave1);
+    tmp=g_strdup_printf("Target (%dA)",hg->wave1);
     cairo_text_extents (cr, tmp, &extents);
     cairo_move_to(cr, -(hg->adc_seeing/2./sqrt(2.0))/scale-5
 		  -extents.width,
 		  (hg->adc_seeing/2./sqrt(2.0))/scale+5-ad/scale);
     cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
 
     cairo_move_to(cr, -(hg->adc_seeing/2./sqrt(2.0))/scale-5
 		  -extents.width,
 		  (hg->adc_seeing/2./sqrt(2.0))/scale+5-ad/scale
 		  -extents.height-2);
-    sprintf(tmp,"d = %.2lf\"",fabs(ad));
+    tmp=g_strdup_printf("d = %.2lf\"",fabs(ad));
     cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
 
     cairo_restore(cr);
   }
@@ -863,10 +873,11 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
 			    CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, (gdouble)hg->skymon_objsz*2);
     cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
-    sprintf(tmp,"Object is below the horizon!!");
+    tmp=g_strdup_printf("Object is below the horizon!!");
     cairo_text_extents (cr, tmp, &extents);
     cairo_move_to(cr,-extents.width/2., -extents.height/2.);
     cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
 
     cairo_restore(cr);
   }
@@ -878,25 +889,27 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
 			    CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, (gdouble)hg->skymon_objsz*1.5);
     cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
-    sprintf(tmp,"Object is too close to the horizon!!");
+    tmp=g_strdup_printf("Object is too close to the horizon!!");
     cairo_text_extents (cr, tmp, &extents);
     cairo_move_to(cr,-extents.width/2., -extents.height/2.);
     cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
 
     cairo_restore(cr);
   }
   else if(fabs(ad)>hg->adc_size/2.){
 
     cairo_translate(cr,size/2.,size/2.);
-
+    
     cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, (gdouble)hg->skymon_objsz*1.5);
     cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
-    sprintf(tmp,"Atmopheric Dispersion (%.1lf\") is out of range!!",fabs(ad));
+    tmp=g_strdup_printf("Atmopheric Dispersion (%.1lf\") is out of range!!",fabs(ad));
     cairo_text_extents (cr, tmp, &extents);
     cairo_move_to(cr,-extents.width/2., -extents.height/2.);
     cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
 
     cairo_restore(cr);
   }

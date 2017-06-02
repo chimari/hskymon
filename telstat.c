@@ -1,3 +1,8 @@
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      telstat.c  --- Telescope Status communication with Gen2
+//   
+//                                           2012.10.22  A.Tajitsu
 
 #include"main.h"    
 #include"version.h"

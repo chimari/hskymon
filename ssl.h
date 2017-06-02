@@ -1,14 +1,8 @@
-//  MaCoPiX = Mascot Construnctive Pilot for X
-//                                (ActX / Gtk+ Evolution)
-//
-//
-//      ssl.h  
-//      Heade for SSL (OpenSSL) management
-//          originated from Libsylph 2.4.0 (see blow)
-//
-//                            Copyright 2002-2007  K.Chimari
-//                                     http://rosegray.sakura.ne.jp/
-//
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      ssl.h  --- ssl access via OpenSSL, imported from libSylph
+//   
+//                                           2012.10.22  A.Tajitsu
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by

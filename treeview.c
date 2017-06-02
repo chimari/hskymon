@@ -1,3 +1,9 @@
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      treeview.c  --- Object List window
+//   
+//                                           2012.10.22  A.Tajitsu
+
 #include "main.h"
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +52,7 @@ void stddb_signal();
 static void cancel_stddb();
 void clip_copy();
 
-static void addobj_dialog();
+void addobj_dialog();
 
 void raise_tree();
 
@@ -102,7 +108,7 @@ extern gboolean draw_fc_cairo();
 
 extern gfloat get_meridian_hour();
 
-extern double get_julian_day_of_epoch();
+extern double get_julian_day_of_equinox();
 
 extern gboolean is_separator();
 
@@ -316,9 +322,16 @@ void name_cell_data_func(GtkTreeViewColumn *col ,
   gtk_tree_model_get (model, iter, COLUMN_OBJ_NUMBER, &i, -1);
   i--;
 
-  g_object_set(renderer,
-	       "foreground-gdk", hg->col[hg->obj[i].ope],
-	       NULL);
+  if((hg->obj[i].ope<0)||(hg->obj[i].ope>=MAX_ROPE)){
+    g_object_set(renderer,
+		 "foreground-gdk", hg->col[MAX_ROPE-1],
+		 NULL);
+  }
+  else{
+    g_object_set(renderer,
+		 "foreground-gdk", hg->col[hg->obj[i].ope],
+		 NULL);
+  }
 
 #ifdef USE_XMLRPC
   if(hg->obj[i].check_lock)
@@ -391,7 +404,7 @@ void double_cell_data_func(GtkTreeViewColumn *col ,
     str=g_strdup_printf("%+010.2lf",value);
     break;
 
-  case COLUMN_OBJ_EPOCH:
+  case COLUMN_OBJ_EQUINOX:
     str=g_strdup_printf("%7.2lf",value);
     break;
   }
@@ -508,6 +521,11 @@ void fcdb_double_cell_data_func(GtkTreeViewColumn *col ,
     if(value<-99) str=g_strdup_printf("---");
     else str=g_strdup_printf("%.6lf",value);
     break;
+
+  case COLUMN_FCDB_PLX:
+    if(value<0) str=g_strdup_printf("---");
+    else str=g_strdup_printf("%.2lf",value);
+    break;
   }
 
   g_object_set(renderer, "text", str, NULL);
@@ -562,8 +580,20 @@ void tree_update_azel_item(typHOE *hg,
 		      hg->obj[i_list].name,
 		      -1);
 
-  if(hg->obj[i_list].ope_i<0){
-    sprintf(tmp,"add");
+  if(hg->obj[i_list].ope<0){
+    switch(hg->obj[i_list].ope){
+    case ADDTYPE_STD:
+      sprintf(tmp,"Std");
+      break;
+
+    case ADDTYPE_TTGS:
+      sprintf(tmp,"TTGS");
+      break;
+
+    default:
+      sprintf(tmp,"add");
+      break;
+    }
   }
   else if(hg->obj[i_list].ope==MAX_ROPE-1){
     sprintf(tmp," p-%3d",hg->obj[i_list].ope_i+1);
@@ -595,10 +625,10 @@ void tree_update_azel_item(typHOE *hg,
 		       COLUMN_OBJ_DEC, hg->obj[i_list].dec, -1);
   }
 
-  // EPOCH
-  if(hg->show_epoch){
+  // EQUINOX
+  if(hg->show_equinox){
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
-		       COLUMN_OBJ_EPOCH, hg->obj[i_list].epoch, -1);
+		       COLUMN_OBJ_EQUINOX, hg->obj[i_list].equinox, -1);
   }
   
   // NOTE
@@ -996,7 +1026,7 @@ create_items_model (typHOE *hg)
                               G_TYPE_DOUBLE,  // Moon
                               G_TYPE_DOUBLE,  // ra
 			      G_TYPE_DOUBLE,  // dec
-                              G_TYPE_DOUBLE,  // epoch
+                              G_TYPE_DOUBLE,  // equinox
 			      G_TYPE_STRING);  // NOTE
 
   //gtk_list_store_set_column_types (GTK_LIST_STORE (model), 1, 
@@ -1073,8 +1103,8 @@ fcdb_create_items_model (typHOE *hg)
 			      G_TYPE_DOUBLE,  // K
 			      G_TYPE_STRING,  // NED mag
 			      G_TYPE_DOUBLE,  // NED z
-			      G_TYPE_INT);    // References or ndetections
-    
+			      G_TYPE_INT,     // References or ndetections
+			      G_TYPE_DOUBLE); // Parallax
 
   for (i = 0; i < hg->fcdb_i_max; i++){
     gtk_list_store_append (model, &iter);
@@ -1105,8 +1135,9 @@ static void add_item (typHOE *hg)
   
   tmp_obj.ra=hg->addobj_ra;
   tmp_obj.dec=hg->addobj_dec;
-  tmp_obj.epoch=2000.0;
+  tmp_obj.equinox=2000.0;
   tmp_obj.note=NULL;
+  tmp_obj.note=g_strconcat("added via dialog",NULL);
   
   for(i_list=hg->i_max;i_list>i;i_list--){
     hg->obj[i_list]=hg->obj[i_list-1];
@@ -1122,10 +1153,13 @@ static void add_item (typHOE *hg)
   hg->obj[i].check_disp=TRUE;
   hg->obj[i].check_sm=TRUE;
   
-  hg->obj[i].ope=MAX_ROPE-1;
-  //hg->obj[i].ope=-1;
-  hg->obj[i].ope_i=-1;
-  if(hg->obj[i].ope<0) hg->obj[i].ope=0;
+  //hg->obj[i].ope=MAX_ROPE-1;
+  //hg->obj[i].ope_i=-1;
+  //if(hg->obj[i].ope<0) hg->obj[i].ope=0;
+  hg->obj[i].ope=ADDTYPE_OBJ;
+  hg->obj[i].ope_i=hg->add_max;
+  hg->add_max++;
+
   
   gtk_list_store_append (GTK_LIST_STORE (model), &iter);
   tree_update_azel_item(hg, model, iter, i);
@@ -1156,15 +1190,20 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   case FCDB_TYPE_PS1:
   case FCDB_TYPE_SDSS:
   case FCDB_TYPE_USNO:
+  case FCDB_TYPE_GAIA:
     tmp_obj.def=make_ttgs(hg->obj[hg->fcdb_i].name,hg->obj[hg->fcdb_i].def);
     tmp_obj.name=g_strconcat(hg->obj[hg->fcdb_i].name," TTGS",NULL);
     tmp_obj.note=g_strconcat("added via FC (",hg->obj[hg->fcdb_i].name,")",NULL);
+    tmp_obj.type=OBJTYPE_TTGS;
+    tmp_obj.ope=ADDTYPE_TTGS;
     break;
     
   default:
     tmp_obj.def=make_tgt(hg->fcdb[hg->fcdb_tree_focus].name);
     tmp_obj.name=g_strdup(hg->fcdb[hg->fcdb_tree_focus].name);
     tmp_obj.note=g_strconcat("added via FC (",hg->obj[hg->fcdb_i].name,")",NULL);
+    tmp_obj.type=OBJTYPE_OBJ;
+    tmp_obj.ope=ADDTYPE_OBJ;
     break;
   }
   
@@ -1190,12 +1229,12 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
     
     tmp_obj.ra=new_ra;
     tmp_obj.dec=new_dec;
-    tmp_obj.epoch=2000.0;
+    tmp_obj.equinox=2000.0;
   }
   else{  // No Proper Motion
     tmp_obj.ra=hg->fcdb[hg->fcdb_tree_focus].ra;
     tmp_obj.dec=hg->fcdb[hg->fcdb_tree_focus].dec;
-    tmp_obj.epoch=hg->fcdb[hg->fcdb_tree_focus].epoch;
+    tmp_obj.equinox=hg->fcdb[hg->fcdb_tree_focus].equinox;
   }
 
   for(i_list=hg->i_max;i_list>i;i_list--){
@@ -1213,9 +1252,10 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   hg->obj[i].check_sm=TRUE;
   hg->obj[i].check_used=FALSE;
   
-  hg->obj[i].ope=MAX_ROPE-1;
-  hg->obj[i].ope_i=-1;
-  if(hg->obj[i].ope<0) hg->obj[i].ope=0;
+  //hg->obj[i].ope_i=-1;
+  //if(hg->obj[i].ope<0) hg->obj[i].ope=0;
+  hg->obj[i].ope_i=hg->add_max;
+  hg->add_max++;
   
   gtk_list_store_append (GTK_LIST_STORE (model), &iter);
   tree_update_azel_item(hg, model, iter, i);
@@ -1244,6 +1284,7 @@ void add_item_std(GtkWidget *w, gpointer gdata){
   tmp_obj.def=make_tgt(hg->std[hg->stddb_tree_focus].name);
   tmp_obj.name=g_strdup(hg->std[hg->stddb_tree_focus].name);
   tmp_obj.note=g_strdup("standard");
+  tmp_obj.type=OBJTYPE_STD;
   
   if(hg->std[hg->stddb_tree_focus].pm){ // Proper Motion
     yrs=current_yrs(hg);
@@ -1267,12 +1308,12 @@ void add_item_std(GtkWidget *w, gpointer gdata){
     
     tmp_obj.ra=new_ra;
     tmp_obj.dec=new_dec;
-    tmp_obj.epoch=2000.0;
+    tmp_obj.equinox=2000.0;
   }
   else{  // No Proper Motion
     tmp_obj.ra=hg->std[hg->stddb_tree_focus].ra;
     tmp_obj.dec=hg->std[hg->stddb_tree_focus].dec;
-    tmp_obj.epoch=hg->std[hg->stddb_tree_focus].epoch;
+    tmp_obj.equinox=hg->std[hg->stddb_tree_focus].equinox;
   }
 
   for(i_list=hg->i_max;i_list>i;i_list--){
@@ -1290,9 +1331,11 @@ void add_item_std(GtkWidget *w, gpointer gdata){
   hg->obj[i].check_sm=TRUE;
   hg->obj[i].check_used=FALSE;
   
-  hg->obj[i].ope=MAX_ROPE-1;
-  hg->obj[i].ope_i=-1;
-  if(hg->obj[i].ope<0) hg->obj[i].ope=0;
+  //hg->obj[i].ope_i=-1;
+  //if(hg->obj[i].ope<0) hg->obj[i].ope=0;
+  hg->obj[i].ope=ADDTYPE_STD;
+  hg->obj[i].ope_i=hg->add_max;
+  hg->add_max++;
   
   gtk_list_store_append (GTK_LIST_STORE (model), &iter);
   tree_update_azel_item(hg, model, iter, i);
@@ -1365,7 +1408,7 @@ dss_item (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
   gdouble ra_0, dec_0;
-  gchar tmp[2048];
+  gchar *tmp;
 #ifndef USE_WIN32
   gchar *cmdline;
 #endif
@@ -1384,15 +1427,15 @@ dss_item (GtkWidget *widget, gpointer data)
     gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
     i--;
 
-    if((int)hg->obj[i].epoch!=2000){
+    if((int)hg->obj[i].equinox!=2000){
 #ifdef GTK_MSG
       popup_message(POPUP_TIMEOUT*2,
-		    "Error: Object Epoch should be J2000",
+		    "Error: Object Equinox should be J2000",
 		    " ",
 		    "       for DSS Quick View.",
 		    NULL);
 #else
-      fprint(stderr, "Error: Object Epoch should be J2000 for DSS Quick View.");
+      fprint(stderr, "Error: Object Equinox should be J2000 for DSS Quick View.");
 #endif
 
       return;
@@ -1417,10 +1460,10 @@ dss_item (GtkWidget *widget, gpointer data)
     dec_dms.minutes=(gint)(dec_0/100);
     dec_dms.seconds=dec_0-(gfloat)(dec_dms.minutes)*100;
 
-    sprintf(tmp,DSS_URL,
-	    ra_hms.hours,ra_hms.minutes,ra_hms.seconds,
-	    (dec_dms.neg) ? "-" : "+", 
-	    dec_dms.degrees, dec_dms.minutes,dec_dms.seconds);
+    tmp=g_strdup_printf(DSS_URL,
+			ra_hms.hours,ra_hms.minutes,ra_hms.seconds,
+			(dec_dms.neg) ? "-" : "+", 
+			dec_dms.degrees, dec_dms.minutes,dec_dms.seconds);
 
 #ifdef USE_WIN32
     ShellExecute(NULL, 
@@ -1439,6 +1482,7 @@ dss_item (GtkWidget *widget, gpointer data)
     ext_play(cmdline);
     g_free(cmdline);
 #endif
+    if(tmp) g_free(tmp);
 
     gtk_tree_path_free (path);
   }
@@ -1449,7 +1493,7 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
   gdouble ra_0, dec_0;
-  gchar tmp[2048];
+  gchar *tmp;
 #ifndef USE_WIN32
   gchar *cmdline;
 #endif
@@ -1492,170 +1536,170 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 
     ln_hequ_to_equ (&hobject, &object);
     ln_get_equ_prec2 (&object, 
-		      get_julian_day_of_epoch(hg->obj[i].epoch),
+		      get_julian_day_of_equinox(hg->obj[i].equinox),
 		      JD2000, &object_prec);
     ln_equ_to_hequ (&object_prec, &hobject_prec);
 
     switch(hg->wwwdb_mode){
     case WWWDB_SIMBAD:
-      sprintf(tmp,SIMBAD_URL,
-	    hobject_prec.ra.hours,hobject_prec.ra.minutes,
-	    hobject_prec.ra.seconds,
-	    (hobject_prec.dec.neg) ? "-" : "+", 
-	    hobject_prec.dec.degrees, hobject_prec.dec.minutes,
-	    hobject_prec.dec.seconds);
+      tmp=g_strdup_printf(SIMBAD_URL,
+			  hobject_prec.ra.hours,hobject_prec.ra.minutes,
+			  hobject_prec.ra.seconds,
+			  (hobject_prec.dec.neg) ? "-" : "+", 
+			  hobject_prec.dec.degrees, hobject_prec.dec.minutes,
+			  hobject_prec.dec.seconds);
       break;
 
     case WWWDB_NED:
-      sprintf(tmp,NED_URL,
-	    hobject_prec.ra.hours,hobject_prec.ra.minutes,
-	    hobject_prec.ra.seconds,
-	    (hobject_prec.dec.neg) ? "-" : "+", 
-	    hobject_prec.dec.degrees, hobject_prec.dec.minutes,
-	    hobject_prec.dec.seconds);
+      tmp=g_strdup_printf(NED_URL,
+			  hobject_prec.ra.hours,hobject_prec.ra.minutes,
+			  hobject_prec.ra.seconds,
+			  (hobject_prec.dec.neg) ? "-" : "+", 
+			  hobject_prec.dec.degrees, hobject_prec.dec.minutes,
+			  hobject_prec.dec.seconds);
       break;
 
     case WWWDB_DR8:
-      sprintf(tmp,DR8_URL,
-	    hobject_prec.ra.hours,hobject_prec.ra.minutes,
-	    hobject_prec.ra.seconds,
-	    (hobject_prec.dec.neg) ? "-" : "+", 
-	    hobject_prec.dec.degrees, hobject_prec.dec.minutes,
-	    hobject_prec.dec.seconds);
+      tmp=g_strdup_printf(DR8_URL,
+			  hobject_prec.ra.hours,hobject_prec.ra.minutes,
+			  hobject_prec.ra.seconds,
+			  (hobject_prec.dec.neg) ? "-" : "+", 
+			  hobject_prec.dec.degrees, hobject_prec.dec.minutes,
+			  hobject_prec.dec.seconds);
       break;
 
     case WWWDB_DR13:
-      sprintf(tmp,DR13_URL,
-	      ln_hms_to_deg(&hobject_prec.ra),
-	      (hobject_prec.dec.neg) ? "-" : "+", 
-	      fabs(ln_dms_to_deg(&hobject_prec.dec)));
+      tmp=g_strdup_printf(DR13_URL,
+			  ln_hms_to_deg(&hobject_prec.ra),
+			  (hobject_prec.dec.neg) ? "-" : "+", 
+			  fabs(ln_dms_to_deg(&hobject_prec.dec)));
       break;
 
     case WWWDB_MAST:
-      sprintf(tmp,MAST_URL,
-	      ln_hms_to_deg(&hobject_prec.ra),
-	      (hobject_prec.dec.neg) ? "%2D" : "%2B", 
-	      fabs(ln_dms_to_deg(&hobject_prec.dec)));
+      tmp=g_strdup_printf(MAST_URL,
+			  ln_hms_to_deg(&hobject_prec.ra),
+			  (hobject_prec.dec.neg) ? "%2D" : "%2B", 
+			  fabs(ln_dms_to_deg(&hobject_prec.dec)));
       break;
 
     case WWWDB_MASTP:
-      sprintf(tmp,MASTP_URL,
-	      ln_hms_to_deg(&hobject_prec.ra),
-	      (hobject_prec.dec.neg) ? "%2D" : "%2B", 
-	      fabs(ln_dms_to_deg(&hobject_prec.dec)));
+      tmp=g_strdup_printf(MASTP_URL,
+			  ln_hms_to_deg(&hobject_prec.ra),
+			  (hobject_prec.dec.neg) ? "%2D" : "%2B", 
+			  fabs(ln_dms_to_deg(&hobject_prec.dec)));
       break;
 
     case WWWDB_IRSA:
-      sprintf(tmp,IRSA_URL,
-	    hobject_prec.ra.hours,hobject_prec.ra.minutes,
-	    hobject_prec.ra.seconds,
-	    (hobject_prec.dec.neg) ? "-" : "+", 
-	    hobject_prec.dec.degrees, hobject_prec.dec.minutes,
-	    hobject_prec.dec.seconds);
+      tmp=g_strdup_printf(IRSA_URL,
+			  hobject_prec.ra.hours,hobject_prec.ra.minutes,
+			  hobject_prec.ra.seconds,
+			  (hobject_prec.dec.neg) ? "-" : "+", 
+			  hobject_prec.dec.degrees, hobject_prec.dec.minutes,
+			  hobject_prec.dec.seconds);
       break;
 
     case WWWDB_SPITZER:
-      sprintf(tmp,SPITZER_URL,
-	      ln_hms_to_deg(&hobject_prec.ra),
-	      ln_dms_to_deg(&hobject_prec.dec));
+      tmp=g_strdup_printf(SPITZER_URL,
+			  ln_hms_to_deg(&hobject_prec.ra),
+			  ln_dms_to_deg(&hobject_prec.dec));
       break;
-
+      
     case WWWDB_CASIS:
-      sprintf(tmp,CASIS_URL,
-	      ln_hms_to_deg(&hobject_prec.ra),
-	      ln_dms_to_deg(&hobject_prec.dec));
+      tmp=g_strdup_printf(CASIS_URL,
+			  ln_hms_to_deg(&hobject_prec.ra),
+			  ln_dms_to_deg(&hobject_prec.dec));
       break; 
     case WWWDB_SSLOC:
       if((ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra)<0){
-	sprintf(tmp,SSLOC_URL,
-		hg->std_cat,
-		ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra+360,
-		"%7c",
-		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
-		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
-		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
-		hg->std_sptype2,MAX_STD);
+	tmp=g_strdup_printf(SSLOC_URL,
+			    hg->std_cat,
+			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra+360,
+			    "%7c",
+			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
+			    ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+			    ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+			    hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
+			    hg->std_sptype2,MAX_STD);
       }
       else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
-	sprintf(tmp,SSLOC_URL,
-		hg->std_cat,
-		ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
-		"%7c",
-		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
-		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
-		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
-		hg->std_sptype2,MAX_STD);
+	tmp=g_strdup_printf(SSLOC_URL,
+			    hg->std_cat,
+			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
+			    "%7c",
+			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
+			    ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+			    ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+			    hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
+			    hg->std_sptype2,MAX_STD);
       }
       else{
-	sprintf(tmp,SSLOC_URL,
-		hg->std_cat,
-		ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
-		"%26",
-		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
-		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
-		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
-		hg->std_sptype2,MAX_STD);
+	tmp=g_strdup_printf(SSLOC_URL,
+			    hg->std_cat,
+			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
+			    "%26",
+			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
+			    ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+			    ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+			    hg->std_band,hg->std_mag1,hg->std_band,hg->std_mag2,
+			    hg->std_sptype2,MAX_STD);
       }
       break;
     case WWWDB_RAPID:
       if((ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra)<0){
-	sprintf(tmp,RAPID_URL,
-		ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra+360,
-		"%7c",
-		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
-		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
-		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_vsini,hg->std_vmag,hg->std_sptype,MAX_STD);
+	tmp=g_strdup_printf(RAPID_URL,
+			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra+360,
+			    "%7c",
+			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
+			    ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+			    ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+			    hg->std_vsini,hg->std_vmag,hg->std_sptype,MAX_STD);
       }
       else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
-	sprintf(tmp,RAPID_URL,
-		ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
-		"%7c",
-		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
-		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
-		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_vsini,hg->std_vmag,hg->std_sptype,MAX_STD);
+	tmp=g_strdup_printf(RAPID_URL,
+			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
+			    "%7c",
+			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
+			    ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+			    ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+			    hg->std_vsini,hg->std_vmag,hg->std_sptype,MAX_STD);
       }
       else{
-	sprintf(tmp,RAPID_URL,
-		ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
-		"%26",
-		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
-		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
-		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_vsini,hg->std_vmag,hg->std_sptype,MAX_STD);
+	tmp=g_strdup_printf(RAPID_URL,
+			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
+			    "%26",
+			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
+			    ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+			    ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+			    hg->std_vsini,hg->std_vmag,hg->std_sptype,MAX_STD);
       }
       break;
     case WWWDB_MIRSTD:
      if((ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra)<0){
-	sprintf(tmp,MIRSTD_URL,
-		ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra+360,
-		"%7c",
-		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
-		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
-		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_iras12,hg->std_iras25,MAX_STD);
+	tmp=g_strdup_printf(MIRSTD_URL,
+			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra+360,
+			    "%7c",
+			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
+			    ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+			    ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+			    hg->std_iras12,hg->std_iras25,MAX_STD);
       }
       else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
-	sprintf(tmp,MIRSTD_URL,
-		ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
-		"%7c",
-		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
-		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
-		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_iras12,hg->std_iras25,MAX_STD);
+	tmp=g_strdup_printf(MIRSTD_URL,
+			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
+			    "%7c",
+			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
+			    ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+			    ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+			    hg->std_iras12,hg->std_iras25,MAX_STD);
       }
       else{
-	sprintf(tmp,MIRSTD_URL,
-		ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
-		"%26",
-		ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
-		ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
-		ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
-		hg->std_iras12,hg->std_iras25,MAX_STD);
+	tmp=g_strdup_printf(MIRSTD_URL,
+			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
+			    "%26",
+			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
+			    ln_dms_to_deg(&hobject_prec.dec)-(gdouble)hg->std_ddec,
+			    ln_dms_to_deg(&hobject_prec.dec)+(gdouble)hg->std_ddec,
+			    hg->std_iras12,hg->std_iras25,MAX_STD);
       }
       break;
     }
@@ -1677,6 +1721,7 @@ wwwdb_item (GtkWidget *widget, gpointer data)
     ext_play(cmdline);
     g_free(cmdline);
 #endif
+    if(tmp) g_free(tmp);
     
     gtk_tree_path_free (path);
   }
@@ -1841,7 +1886,7 @@ void copy_stacstd(typHOE *hg, const stacSTDpara *stacstd,
     if(hg->std[i_list].q100) g_free(hg->std[i_list].q100);
     hg->std[i_list].q100=g_strdup(stacstd[i_list].q100);
     
-    hg->std[i_list].epoch=2000.00;
+    hg->std[i_list].equinox=2000.00;
     hg->std[i_list].sep=deg_sep(d_ra0,d_dec0,
 				hg->std[i_list].d_ra,hg->std[i_list].d_dec);
   }
@@ -1862,7 +1907,6 @@ stddb_item (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
   gdouble ra_0, dec_0, d_ra0, d_dec0;
-  gchar tmp[2048];
 #ifndef USE_WIN32
   gchar *cmdline;
 #endif
@@ -1910,7 +1954,7 @@ stddb_item (GtkWidget *widget, gpointer data)
 
     ln_hequ_to_equ (&hobject, &object);
     ln_get_equ_prec2 (&object, 
-		      get_julian_day_of_epoch(hg->obj[i].epoch),
+		      get_julian_day_of_equinox(hg->obj[i].equinox),
 		      JD2000, &object_prec);
     ln_equ_to_hequ (&object_prec, &hobject_prec);
 
@@ -2395,7 +2439,6 @@ cell_edited (GtkCellRendererText *cell,
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
   gint column = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (cell), "column"));
-  gchar tmp[128];
 
   gtk_tree_model_get_iter (model, &iter, path);
 
@@ -2450,7 +2493,7 @@ cell_edited (GtkCellRendererText *cell,
       }
       break;
 
-    case COLUMN_OBJ_EPOCH:
+    case COLUMN_OBJ_EQUINOX:
       {
         gint i;
         gchar *old_text;
@@ -2458,9 +2501,9 @@ cell_edited (GtkCellRendererText *cell,
         gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
 	i--;
 
-	hg->obj[i].epoch=(gdouble)g_strtod(new_text,NULL);	
+	hg->obj[i].equinox=(gdouble)g_strtod(new_text,NULL);	
         gtk_list_store_set (GTK_LIST_STORE (model), &iter, column,
-                            hg->obj[i].epoch, -1);
+                            hg->obj[i].equinox, -1);
 	calcpa2_main(hg);
       }
       break;
@@ -2854,8 +2897,8 @@ add_columns (typHOE *hg,
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
   }
 
-  /* EPOCH column */
-  if(hg->show_epoch){
+  /* EQUINOX column */
+  if(hg->show_equinox){
     renderer = gtk_cell_renderer_text_new ();
     g_object_set (renderer,
 		  "editable", TRUE,
@@ -2867,15 +2910,15 @@ add_columns (typHOE *hg,
     my_signal_connect (renderer, "editing_canceled",
 		       G_CALLBACK (cell_canceled), NULL);
     g_object_set_data (G_OBJECT (renderer), "column", 
-		       GINT_TO_POINTER (COLUMN_OBJ_EPOCH));
-    column=gtk_tree_view_column_new_with_attributes ("Epoch",
+		       GINT_TO_POINTER (COLUMN_OBJ_EQUINOX));
+    column=gtk_tree_view_column_new_with_attributes ("Eq.",
 						     renderer,
 						     "text",
-						     COLUMN_OBJ_EPOCH,
+						     COLUMN_OBJ_EQUINOX,
 						     NULL);
     gtk_tree_view_column_set_cell_data_func(column, renderer,
 					    double_cell_data_func,
-					    GUINT_TO_POINTER(COLUMN_OBJ_EPOCH),
+					    GUINT_TO_POINTER(COLUMN_OBJ_EQUINOX),
 					    NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
   }
@@ -2900,6 +2943,10 @@ add_columns (typHOE *hg,
 						     "text",
 						     COLUMN_OBJ_NOTE,
 						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    name_cell_data_func,
+					    (gpointer)hg,
+					    NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
   }
 
@@ -3836,6 +3883,40 @@ fcdb_add_columns (typHOE *hg,
     gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_H);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
   }
+  else if(hg->fcdb_type==FCDB_TYPE_GAIA){
+    /* g */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_V));
+    column=gtk_tree_view_column_new_with_attributes ("G",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_V,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_double_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_V),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_V);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+    /* Parallax */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_V));
+    column=gtk_tree_view_column_new_with_attributes ("Plx",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_PLX,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_double_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_PLX),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_PLX);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+  }
+
 
 }
 
@@ -3854,7 +3935,6 @@ do_editable_cells (typHOE *hg)
   GtkWidget *combo;
   GtkWidget *check;
   GtkWidget *entry;
-  gchar tmp[12];
   GtkWidget *all_note, *note_vbox;
 
   while (my_main_iteration(FALSE));
@@ -4642,7 +4722,7 @@ gchar *make_ttgs(gchar * obj_name, gchar * obj_tgt){
 
 void make_std_tgt(GtkWidget *w, gpointer gdata){
   typHOE *hg;
-  gchar tmp[1024], *tgt;
+  gchar *tmp, *tgt;
   gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
   struct ln_hms hms;
   struct ln_dms dms;
@@ -4671,24 +4751,25 @@ void make_std_tgt(GtkWidget *w, gpointer gdata){
 	new_dec=(gdouble)dms.degrees*10000.
 	  + (gdouble)dms.minutes*100. + dms.seconds;
       }
-      sprintf(tmp,"PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
-	      tgt,hg->std[hg->stddb_tree_focus].name,
-	      new_ra,new_dec,2000.00);
+      tmp=g_strdup_printf("PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+			  tgt,hg->std[hg->stddb_tree_focus].name,
+			  new_ra,new_dec,2000.00);
     }
     else{
-      sprintf(tmp,"%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
-	      tgt,hg->std[hg->stddb_tree_focus].name,
-	      hg->std[hg->stddb_tree_focus].ra,hg->std[hg->stddb_tree_focus].dec,
-	      hg->std[hg->stddb_tree_focus].epoch);
+      tmp=g_strdup_printf("%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+			  tgt,hg->std[hg->stddb_tree_focus].name,
+			  hg->std[hg->stddb_tree_focus].ra,hg->std[hg->stddb_tree_focus].dec,
+			  hg->std[hg->stddb_tree_focus].equinox);
     }
     g_free(tgt);
     gtk_entry_set_text(GTK_ENTRY(hg->std_tgt),tmp);
+    if(tmp) g_free(tmp);
   }
 }
 
 void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
   typHOE *hg;
-  gchar tmp[1024], *tgt;
+  gchar *tmp, *tgt;
   gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
   struct ln_hms hms;
   struct ln_dms dms;
@@ -4702,6 +4783,7 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
     case FCDB_TYPE_PS1:
     case FCDB_TYPE_SDSS:
     case FCDB_TYPE_USNO:
+    case FCDB_TYPE_GAIA:
       tgt=make_ttgs(hg->obj[hg->fcdb_i].name,hg->obj[hg->fcdb_i].def);
       break;
 
@@ -4734,15 +4816,16 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
       case FCDB_TYPE_PS1:
       case FCDB_TYPE_SDSS:
       case FCDB_TYPE_USNO:
-	sprintf(tmp,"PM%s=OBJECT=\"%s TTGS\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
-		tgt,hg->obj[hg->fcdb_i].name,
-		new_ra,new_dec,2000.00);
+      case FCDB_TYPE_GAIA:
+	tmp=g_strdup_printf("PM%s=OBJECT=\"%s TTGS\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+			    tgt,hg->obj[hg->fcdb_i].name,
+			    new_ra,new_dec,2000.00);
 	break;
 
       default:
-	sprintf(tmp,"PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
-		tgt,hg->fcdb[hg->fcdb_tree_focus].name,
-		new_ra,new_dec,2000.00);
+	tmp=g_strdup_printf("PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+			    tgt,hg->fcdb[hg->fcdb_tree_focus].name,
+			    new_ra,new_dec,2000.00);
 	break;
       }
     }
@@ -4752,24 +4835,26 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
       case FCDB_TYPE_PS1:
       case FCDB_TYPE_SDSS:
       case FCDB_TYPE_USNO:
-	sprintf(tmp,"%s=OBJECT=\"%s TTGS\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
-		tgt,hg->obj[hg->fcdb_i].name,
-		hg->fcdb[hg->fcdb_tree_focus].ra,
-		hg->fcdb[hg->fcdb_tree_focus].dec,
-		hg->fcdb[hg->fcdb_tree_focus].epoch);
+      case FCDB_TYPE_GAIA:
+	tmp=g_strdup_printf("%s=OBJECT=\"%s TTGS\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+			    tgt,hg->obj[hg->fcdb_i].name,
+			    hg->fcdb[hg->fcdb_tree_focus].ra,
+			    hg->fcdb[hg->fcdb_tree_focus].dec,
+			    hg->fcdb[hg->fcdb_tree_focus].equinox);
 	break;
 	
       default:
-	sprintf(tmp,"%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
-		tgt,hg->fcdb[hg->fcdb_tree_focus].name,
-		hg->fcdb[hg->fcdb_tree_focus].ra,
-		hg->fcdb[hg->fcdb_tree_focus].dec,
-		hg->fcdb[hg->fcdb_tree_focus].epoch);
+	tmp=g_strdup_printf("%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
+			    tgt,hg->fcdb[hg->fcdb_tree_focus].name,
+			    hg->fcdb[hg->fcdb_tree_focus].ra,
+			    hg->fcdb[hg->fcdb_tree_focus].dec,
+			    hg->fcdb[hg->fcdb_tree_focus].equinox);
 	break;
       }
     }
     g_free(tgt);
     gtk_entry_set_text(GTK_ENTRY(hg->fcdb_tgt),tmp);
+    if(tmp) g_free(tmp);
   }
 }
 
@@ -4983,7 +5068,6 @@ cell_toggled_check (GtkCellRendererText *cell,
 void stddb_dl(typHOE *hg)
 {
   GtkTreeIter iter;
-  gchar tmp[2048];
   GtkWidget *dialog, *vbox, *label, *button;
 #ifndef USE_WIN32
   static struct sigaction act;
@@ -5203,12 +5287,11 @@ static void addobj_ned_query (GtkWidget *widget, gpointer gdata)
   addobj_dl(hg);
 }
 
-static void addobj_dialog (GtkWidget *widget, gpointer gdata)
+void addobj_dialog (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
     *spinner, *table, *entry, *bar;
   GtkAdjustment *adj;
-  gchar *tmp_obj_name;
   typHOE *hg;
   GSList *fcdb_group=NULL; 
   gboolean rebuild_flag=FALSE;

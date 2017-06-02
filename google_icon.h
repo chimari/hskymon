@@ -1,3 +1,9 @@
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      google_icon.h  --- ICONs
+//   
+//                                           2012.10.22  A.Tajitsu
+
 /* GdkPixbuf RGBA C-Source image dump 1-byte-run-length-encoded */
 
 #ifdef __SUNPRO_C

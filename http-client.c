@@ -1,4 +1,8 @@
-/* $Id: ftp-client.c,v 1.4 2004/05/29 05:36:31 68user Exp $ */
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      http-client.c  --- http/https access
+//   
+//                                           2017.6.1  A.Tajitsu
 
 #include "main.h"
 #include <sys/param.h>
@@ -79,7 +83,7 @@ gint ssl_write();
 
 extern void printf_log();
 
-extern double get_julian_day_of_epoch();
+extern double get_julian_day_of_equinox();
 extern gboolean draw_skymon_cairo();
 
 gboolean  flag_getting_allsky=FALSE, flag_allsky_finish=FALSE;
@@ -277,7 +281,6 @@ int http_c(typHOE *hg){
   struct in_addr addr;
   int err;
   const char *cause=NULL;
-  char date_tmp[BUF_LEN];
   gchar *img_tmp;
   
   allsky_debug_print("Child: http accessing to %s\n",hg->allsky_host);
@@ -1199,7 +1202,7 @@ int http_c_fc(typHOE *hg){
   gchar *tmp_file=NULL;
 
   gdouble ra_0, dec_0;
-  gchar tmp[2048], tmp_scale[10];
+  gchar *tmp, *tmp_scale;
   gfloat sdss_scale=SDSS_SCALE;
   gint xpix,ypix,i_bin;
   //struct ln_hms ra_hms;
@@ -1278,7 +1281,7 @@ int http_c_fc(typHOE *hg){
 
   ln_hequ_to_equ (&hobject, &object);
   ln_get_equ_prec2 (&object, 
-		    get_julian_day_of_epoch(hg->obj[hg->dss_i].epoch),
+		    get_julian_day_of_equinox(hg->obj[hg->dss_i].equinox),
 		    JD2000, &object_prec);
   ln_equ_to_hequ (&object_prec, &hobject_prec);
 
@@ -1289,27 +1292,27 @@ int http_c_fc(typHOE *hg){
   case FC_STSCI_DSS2R:
   case FC_STSCI_DSS2B:
   case FC_STSCI_DSS2IR:
-    sprintf(tmp,hg->dss_path,
-	    hg->dss_src,
-	    hobject_prec.ra.hours,hobject_prec.ra.minutes,
-	    hobject_prec.ra.seconds,
-	    (hobject_prec.dec.neg) ? "-" : "+", 
-	    hobject_prec.dec.degrees, hobject_prec.dec.minutes,
-	    hobject_prec.dec.seconds,
-	    hg->dss_arcmin,hg->dss_arcmin);
+    tmp=g_strdup_printf(hg->dss_path,
+			hg->dss_src,
+			hobject_prec.ra.hours,hobject_prec.ra.minutes,
+			hobject_prec.ra.seconds,
+			(hobject_prec.dec.neg) ? "-" : "+", 
+			hobject_prec.dec.degrees, hobject_prec.dec.minutes,
+			hobject_prec.dec.seconds,
+			hg->dss_arcmin,hg->dss_arcmin);
     break;
 
   case FC_ESO_DSS1R:
   case FC_ESO_DSS2R:
   case FC_ESO_DSS2B:
   case FC_ESO_DSS2IR:
-    sprintf(tmp,hg->dss_path,
-	    hobject_prec.ra.hours,hobject_prec.ra.minutes,
-	    hobject_prec.ra.seconds,
-	    (hobject_prec.dec.neg) ? "-" : "+", 
-	    hobject_prec.dec.degrees, hobject_prec.dec.minutes,
-	    hobject_prec.dec.seconds,
-	    hg->dss_arcmin,hg->dss_arcmin,hg->dss_src);
+    tmp=g_strdup_printf(hg->dss_path,
+			hobject_prec.ra.hours,hobject_prec.ra.minutes,
+			hobject_prec.ra.seconds,
+			(hobject_prec.dec.neg) ? "-" : "+", 
+			hobject_prec.dec.degrees, hobject_prec.dec.minutes,
+			hobject_prec.dec.seconds,
+			hg->dss_arcmin,hg->dss_arcmin,hg->dss_src);
     break;
 
   case FC_SKYVIEW_GALEXF:
@@ -1333,59 +1336,59 @@ int http_c_fc(typHOE *hg){
   case FC_SKYVIEW_WISE22:
     switch(hg->dss_scale){
     case FC_SCALE_LOG:
-      sprintf(tmp_scale,"Log");
+      tmp_scale=g_strdup("Log");
       break;
     case FC_SCALE_SQRT:
-      sprintf(tmp_scale,"Sqrt");
+      tmp_scale=g_strdup("Sqrt");
       break;
     case FC_SCALE_HISTEQ:
-      sprintf(tmp_scale,"HistEq");
+      tmp_scale=g_strdup("HistEq");
       break;
     case FC_SCALE_LOGLOG:
-      sprintf(tmp_scale,"LogLog");
+      tmp_scale=g_strdup("LogLog");
       break;
     default:
-      sprintf(tmp_scale,"Linear");
+      tmp_scale=g_strdup("Linear");
     }
-    sprintf(tmp,hg->dss_path,
-	    hg->dss_src, hg->obj[hg->dss_i].epoch,
-	    tmp_scale,
-	    //	    (hg->dss_log) ? "Log" : "Linear",
-	    (hg->dss_invert) ? "&invert=on&" : "&",
-	    (gdouble)hg->dss_arcmin/60.,
-	    (gdouble)hg->dss_arcmin/60.,
-	    hg->dss_pix,
-	    ln_hms_to_deg(&hobject_prec.ra),
-	    ln_dms_to_deg(&hobject_prec.dec));
+    tmp=g_strdup_printf(hg->dss_path,
+			hg->dss_src, hg->obj[hg->dss_i].equinox,
+			tmp_scale,
+			(hg->dss_invert) ? "&invert=on&" : "&",
+			(gdouble)hg->dss_arcmin/60.,
+			(gdouble)hg->dss_arcmin/60.,
+			hg->dss_pix,
+			ln_hms_to_deg(&hobject_prec.ra),
+			ln_dms_to_deg(&hobject_prec.dec));
+    if(tmp_scale) g_free(tmp_scale);
     break;
 
 
   case FC_SKYVIEW_RGB:
     switch(hg->dss_scale_RGB[hg->i_RGB]){
     case FC_SCALE_LOG:
-      sprintf(tmp_scale,"Log");
+      tmp_scale=g_strdup("Log");
       break;
     case FC_SCALE_SQRT:
-      sprintf(tmp_scale,"Sqrt");
+      tmp_scale=g_strdup("Sqrt");
       break;
     case FC_SCALE_HISTEQ:
-      sprintf(tmp_scale,"HistEq");
+      tmp_scale=g_strdup("HistEq");
       break;
     case FC_SCALE_LOGLOG:
-      sprintf(tmp_scale,"LogLog");
+      tmp_scale=g_strdup("LogLog");
       break;
     default:
-      sprintf(tmp_scale,"Linear");
+      tmp_scale=g_strdup("Linear");
     }
-    sprintf(tmp,hg->dss_path,
-	    hg->dss_src, hg->obj[hg->dss_i].epoch,
-	    tmp_scale,
-	    //(hg->dss_invert) ? "&invert=on&" : "&",
-	    (gdouble)hg->dss_arcmin/60.,
-	    (gdouble)hg->dss_arcmin/60.,
-	    hg->dss_pix,
-	    ln_hms_to_deg(&hobject_prec.ra),
-	    ln_dms_to_deg(&hobject_prec.dec));
+    tmp=g_strdup_printf(hg->dss_path,
+			hg->dss_src, hg->obj[hg->dss_i].equinox,
+			tmp_scale,
+			(gdouble)hg->dss_arcmin/60.,
+			(gdouble)hg->dss_arcmin/60.,
+			hg->dss_pix,
+			ln_hms_to_deg(&hobject_prec.ra),
+			ln_dms_to_deg(&hobject_prec.dec));
+    if(tmp_scale) g_free(tmp_scale);
     break;
 
   case FC_SDSS:
@@ -1396,42 +1399,32 @@ int http_c_fc(typHOE *hg){
       ypix=(gint)((gfloat)hg->dss_arcmin*60/sdss_scale);
       i_bin++;
     }while((xpix>1000)||(ypix>1000));
-    sprintf(tmp,hg->dss_path,
-	    ln_hms_to_deg(&hobject_prec.ra),
-	    ln_dms_to_deg(&hobject_prec.dec),
-	    sdss_scale,
-	    xpix,
-	    ypix,
-	    (hg->sdss_photo) ? "P" : "",
-	    (hg->sdss_spec) ? "S" : "",
-	    (hg->sdss_photo) ? "&PhotoObjs=on" : "",
-	    (hg->sdss_spec) ? "&SpecObjs=on" : "");
+    tmp=g_strdup_printf(hg->dss_path,
+			ln_hms_to_deg(&hobject_prec.ra),
+			ln_dms_to_deg(&hobject_prec.dec),
+			sdss_scale,
+			xpix,
+			ypix,
+			(hg->sdss_photo) ? "P" : "",
+			(hg->sdss_spec) ? "S" : "",
+			(hg->sdss_photo) ? "&PhotoObjs=on" : "",
+			(hg->sdss_spec) ? "&SpecObjs=on" : "");
     break;
 
   case FC_SDSS13:
-    /*  SDSS DR10 Server could not responce, when file size < 800??
-                                      2014/2/20
-    i_bin=1;
-    do{
-      sdss_scale=SDSS_SCALE/10.*(gfloat)i_bin;
-      xpix=(gint)((gfloat)hg->dss_arcmin*60/sdss_scale);
-      ypix=(gint)((gfloat)hg->dss_arcmin*60/sdss_scale);
-      i_bin++;
-    }while((xpix>1500)||(ypix>1500));
-    */
     xpix=1500;
     ypix=1500;
     sdss_scale=((gfloat)hg->dss_arcmin*60.)/(gfloat)xpix;
-    sprintf(tmp,hg->dss_path,
-	    ln_hms_to_deg(&hobject_prec.ra),
-	    ln_dms_to_deg(&hobject_prec.dec),
-	    sdss_scale,
-	    xpix,
-	    ypix,
-	    (hg->sdss_photo) ? "P" : "",
-	    (hg->sdss_spec) ? "S" : "",
-	    (hg->sdss_photo) ? "&PhotoObjs=on" : "",
-	    (hg->sdss_spec) ? "&SpecObjs=on" : "");
+    tmp=g_strdup_printf(hg->dss_path,
+			ln_hms_to_deg(&hobject_prec.ra),
+			ln_dms_to_deg(&hobject_prec.dec),
+			sdss_scale,
+			xpix,
+			ypix,
+			(hg->sdss_photo) ? "P" : "",
+			(hg->sdss_spec) ? "S" : "",
+			(hg->sdss_photo) ? "&PhotoObjs=on" : "",
+			(hg->sdss_spec) ? "&SpecObjs=on" : "");
     break;
 
 
@@ -1445,16 +1438,17 @@ int http_c_fc(typHOE *hg){
       gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
 			       (gdouble)(PANSTARRS_MAX_ARCMIN));
     }
-    sprintf(tmp,hg->dss_path,
-	    ln_hms_to_deg(&hobject_prec.ra),
-	    ln_dms_to_deg(&hobject_prec.dec),
-	    hg->dss_arcmin*240);
+    tmp=g_strdup_printf(hg->dss_path,
+			ln_hms_to_deg(&hobject_prec.ra),
+			ln_dms_to_deg(&hobject_prec.dec),
+			hg->dss_arcmin*240);
     break;
 
   }
 
   sprintf(send_mesg, "GET %s HTTP/1.1\r\n", tmp);
   write_to_server(command_socket, send_mesg);
+  if(tmp) g_free(tmp);
 
   sprintf(send_mesg, "Accept: image/gif, image/jpeg, image/png, */*\r\n");
   write_to_server(command_socket, send_mesg);
@@ -1788,7 +1782,7 @@ int http_c_fc_ssl(typHOE *hg){
   gchar *tmp_file=NULL;
 
   gdouble ra_0, dec_0;
-  gchar tmp[2048], tmp_scale[10];
+  gchar *tmp, *tmp_scale;
   gfloat sdss_scale=SDSS_SCALE;
   gint xpix,ypix,i_bin;
   //struct ln_hms ra_hms;
@@ -1885,7 +1879,7 @@ int http_c_fc_ssl(typHOE *hg){
 
   ln_hequ_to_equ (&hobject, &object);
   ln_get_equ_prec2 (&object, 
-		    get_julian_day_of_epoch(hg->obj[hg->dss_i].epoch),
+		    get_julian_day_of_equinox(hg->obj[hg->dss_i].equinox),
 		    JD2000, &object_prec);
   ln_equ_to_hequ (&object_prec, &hobject_prec);
 
@@ -1896,27 +1890,27 @@ int http_c_fc_ssl(typHOE *hg){
   case FC_STSCI_DSS2R:
   case FC_STSCI_DSS2B:
   case FC_STSCI_DSS2IR:
-    sprintf(tmp,hg->dss_path,
-	    hg->dss_src,
-	    hobject_prec.ra.hours,hobject_prec.ra.minutes,
-	    hobject_prec.ra.seconds,
-	    (hobject_prec.dec.neg) ? "-" : "+", 
-	    hobject_prec.dec.degrees, hobject_prec.dec.minutes,
-	    hobject_prec.dec.seconds,
-	    hg->dss_arcmin,hg->dss_arcmin);
+    tmp=g_strdup_printf(hg->dss_path,
+			hg->dss_src,
+			hobject_prec.ra.hours,hobject_prec.ra.minutes,
+			hobject_prec.ra.seconds,
+			(hobject_prec.dec.neg) ? "-" : "+", 
+			hobject_prec.dec.degrees, hobject_prec.dec.minutes,
+			hobject_prec.dec.seconds,
+			hg->dss_arcmin,hg->dss_arcmin);
     break;
-
+    
   case FC_ESO_DSS1R:
   case FC_ESO_DSS2R:
   case FC_ESO_DSS2B:
   case FC_ESO_DSS2IR:
-    sprintf(tmp,hg->dss_path,
-	    hobject_prec.ra.hours,hobject_prec.ra.minutes,
-	    hobject_prec.ra.seconds,
-	    (hobject_prec.dec.neg) ? "-" : "+", 
-	    hobject_prec.dec.degrees, hobject_prec.dec.minutes,
-	    hobject_prec.dec.seconds,
-	    hg->dss_arcmin,hg->dss_arcmin,hg->dss_src);
+    tmp=g_strdup_printf(hg->dss_path,
+			hobject_prec.ra.hours,hobject_prec.ra.minutes,
+			hobject_prec.ra.seconds,
+			(hobject_prec.dec.neg) ? "-" : "+", 
+			hobject_prec.dec.degrees, hobject_prec.dec.minutes,
+			hobject_prec.dec.seconds,
+			hg->dss_arcmin,hg->dss_arcmin,hg->dss_src);
     break;
 
   case FC_SKYVIEW_GALEXF:
@@ -1940,59 +1934,59 @@ int http_c_fc_ssl(typHOE *hg){
   case FC_SKYVIEW_WISE22:
     switch(hg->dss_scale){
     case FC_SCALE_LOG:
-      sprintf(tmp_scale,"Log");
+      tmp_scale=g_strdup("Log");
       break;
     case FC_SCALE_SQRT:
-      sprintf(tmp_scale,"Sqrt");
+      tmp_scale=g_strdup("Sqrt");
       break;
     case FC_SCALE_HISTEQ:
-      sprintf(tmp_scale,"HistEq");
+      tmp_scale=g_strdup("HistEq");
       break;
     case FC_SCALE_LOGLOG:
-      sprintf(tmp_scale,"LogLog");
+      tmp_scale=g_strdup("LogLog");
       break;
     default:
-      sprintf(tmp_scale,"Linear");
+      tmp_scale=g_strdup("Linear");
     }
-    sprintf(tmp,hg->dss_path,
-	    hg->dss_src, hg->obj[hg->dss_i].epoch,
-	    tmp_scale,
-	    //	    (hg->dss_log) ? "Log" : "Linear",
-	    (hg->dss_invert) ? "&invert=on&" : "&",
-	    (gdouble)hg->dss_arcmin/60.,
-	    (gdouble)hg->dss_arcmin/60.,
-	    hg->dss_pix,
-	    ln_hms_to_deg(&hobject_prec.ra),
-	    ln_dms_to_deg(&hobject_prec.dec));
+    tmp=g_strdup_printf(hg->dss_path,
+			hg->dss_src, hg->obj[hg->dss_i].equinox,
+			tmp_scale,
+			(hg->dss_invert) ? "&invert=on&" : "&",
+			(gdouble)hg->dss_arcmin/60.,
+			(gdouble)hg->dss_arcmin/60.,
+			hg->dss_pix,
+			ln_hms_to_deg(&hobject_prec.ra),
+			ln_dms_to_deg(&hobject_prec.dec));
+    if(tmp_scale) g_free(tmp_scale);
     break;
 
 
   case FC_SKYVIEW_RGB:
     switch(hg->dss_scale_RGB[hg->i_RGB]){
     case FC_SCALE_LOG:
-      sprintf(tmp_scale,"Log");
+      tmp_scale=g_strdup("Log");
       break;
     case FC_SCALE_SQRT:
-      sprintf(tmp_scale,"Sqrt");
+      tmp_scale=g_strdup("Sqrt");
       break;
     case FC_SCALE_HISTEQ:
-      sprintf(tmp_scale,"HistEq");
+      tmp_scale=g_strdup("HistEq");
       break;
     case FC_SCALE_LOGLOG:
-      sprintf(tmp_scale,"LogLog");
+      tmp_scale=g_strdup("LogLog");
       break;
     default:
-      sprintf(tmp_scale,"Linear");
+      tmp_scale=g_strdup("Linear");
     }
-    sprintf(tmp,hg->dss_path,
-	    hg->dss_src, hg->obj[hg->dss_i].epoch,
-	    tmp_scale,
-	    //(hg->dss_invert) ? "&invert=on&" : "&",
-	    (gdouble)hg->dss_arcmin/60.,
-	    (gdouble)hg->dss_arcmin/60.,
-	    hg->dss_pix,
-	    ln_hms_to_deg(&hobject_prec.ra),
-	    ln_dms_to_deg(&hobject_prec.dec));
+    tmp=g_strdup_printf(hg->dss_path,
+			hg->dss_src, hg->obj[hg->dss_i].equinox,
+			tmp_scale,
+			(gdouble)hg->dss_arcmin/60.,
+			(gdouble)hg->dss_arcmin/60.,
+			hg->dss_pix,
+			ln_hms_to_deg(&hobject_prec.ra),
+			ln_dms_to_deg(&hobject_prec.dec));
+    if(tmp_scale) g_free(tmp_scale);
     break;
 
   case FC_SDSS:
@@ -2003,42 +1997,32 @@ int http_c_fc_ssl(typHOE *hg){
       ypix=(gint)((gfloat)hg->dss_arcmin*60/sdss_scale);
       i_bin++;
     }while((xpix>1000)||(ypix>1000));
-    sprintf(tmp,hg->dss_path,
-	    ln_hms_to_deg(&hobject_prec.ra),
-	    ln_dms_to_deg(&hobject_prec.dec),
-	    sdss_scale,
-	    xpix,
-	    ypix,
-	    (hg->sdss_photo) ? "P" : "",
-	    (hg->sdss_spec) ? "S" : "",
-	    (hg->sdss_photo) ? "&PhotoObjs=on" : "",
-	    (hg->sdss_spec) ? "&SpecObjs=on" : "");
+    tmp=g_strdup_printf(hg->dss_path,
+			ln_hms_to_deg(&hobject_prec.ra),
+			ln_dms_to_deg(&hobject_prec.dec),
+			sdss_scale,
+			xpix,
+			ypix,
+			(hg->sdss_photo) ? "P" : "",
+			(hg->sdss_spec) ? "S" : "",
+			(hg->sdss_photo) ? "&PhotoObjs=on" : "",
+			(hg->sdss_spec) ? "&SpecObjs=on" : "");
     break;
-
+    
   case FC_SDSS13:
-    /*  SDSS DR10 Server could not responce, when file size < 800??
-                                      2014/2/20
-    i_bin=1;
-    do{
-      sdss_scale=SDSS_SCALE/10.*(gfloat)i_bin;
-      xpix=(gint)((gfloat)hg->dss_arcmin*60/sdss_scale);
-      ypix=(gint)((gfloat)hg->dss_arcmin*60/sdss_scale);
-      i_bin++;
-    }while((xpix>1500)||(ypix>1500));
-    */
     xpix=1500;
     ypix=1500;
     sdss_scale=((gfloat)hg->dss_arcmin*60.)/(gfloat)xpix;
-    sprintf(tmp,hg->dss_path,
-	    ln_hms_to_deg(&hobject_prec.ra),
-	    ln_dms_to_deg(&hobject_prec.dec),
-	    sdss_scale,
-	    xpix,
-	    ypix,
-	    (hg->sdss_photo) ? "P" : "",
-	    (hg->sdss_spec) ? "S" : "",
-	    (hg->sdss_photo) ? "&PhotoObjs=on" : "",
-	    (hg->sdss_spec) ? "&SpecObjs=on" : "");
+    tmp=g_strdup_printf(hg->dss_path,
+			ln_hms_to_deg(&hobject_prec.ra),
+			ln_dms_to_deg(&hobject_prec.dec),
+			sdss_scale,
+			xpix,
+			ypix,
+			(hg->sdss_photo) ? "P" : "",
+			(hg->sdss_spec) ? "S" : "",
+			(hg->sdss_photo) ? "&PhotoObjs=on" : "",
+			(hg->sdss_spec) ? "&SpecObjs=on" : "");
     break;
 
 
@@ -2052,16 +2036,17 @@ int http_c_fc_ssl(typHOE *hg){
       gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
 			       (gdouble)(PANSTARRS_MAX_ARCMIN));
     }
-    sprintf(tmp,hg->dss_path,
-	    ln_hms_to_deg(&hobject_prec.ra),
-	    ln_dms_to_deg(&hobject_prec.dec),
-	    hg->dss_arcmin*240);
+    tmp=g_strdup_printf(hg->dss_path,
+			ln_hms_to_deg(&hobject_prec.ra),
+			ln_dms_to_deg(&hobject_prec.dec),
+			hg->dss_arcmin*240);
     break;
 
   }
 
   sprintf(send_mesg, "GET %s HTTP/1.1\r\n", tmp);
   write_to_SSLserver(ssl, send_mesg);
+  if(tmp) g_free(tmp);
 
   sprintf(send_mesg, "Accept: image/gif, image/jpeg, image/png, */*\r\n");
   write_to_SSLserver(ssl, send_mesg);
@@ -3174,7 +3159,7 @@ GdkPixbuf* diff_pixbuf(GdkPixbuf *pixbuf1, GdkPixbuf* pixbuf2,
 void unchunk(gchar *dss_tmp){
    FILE *fp_read, *fp_write;
    gchar *unchunk_tmp;
-   static char cbuf[BUFFSIZE];
+   gchar *cbuf=NULL;
    gchar *cpp;
    gchar *chunkptr, *endptr;
    long chunk_size;
@@ -3189,8 +3174,10 @@ void unchunk(gchar *dss_tmp){
    fp_write=fopen(unchunk_tmp,"w");
 
    while(!feof(fp_read)){
+     if(cbuf) g_free(cbuf);
+     cbuf = (gchar *)g_malloc(sizeof(gchar)*BUFFSIZE);
 
-     if(fgets(cbuf,BUFFSIZE-1,fp_read)){
+     if(fgets(cbuf,sizeof(cbuf),fp_read)){
        cpp=cbuf;
        
        read_size=strlen(cpp);
@@ -3208,16 +3195,16 @@ void unchunk(gchar *dss_tmp){
        g_free(chunkptr);
 	  
        if(chunk_size==0) break;
-       if(chunk_size>BUFFSIZE-crlf_size){
-	 fprintf(stderr, "!!! Buffer size overflow. Stopped to convert\"%s\".\n", dss_tmp);
+
+       if(cbuf) g_free(cbuf);
+       if((cbuf = (gchar *)g_malloc(sizeof(gchar)*(chunk_size+crlf_size+1)))==NULL){
+	 fprintf(stderr, "!!! Memory allocation error in unchunk() \"%s\".\n", dss_tmp);
 	 fflush(stderr);
 	 break;
        }
-
-
        if(fread(cbuf,1, chunk_size+crlf_size, fp_read)){
 	 cpp=cbuf;
-	 fwrite( &cbuf , chunk_size , 1 , fp_write ); 
+	 fwrite( cbuf , chunk_size , 1 , fp_write ); 
        }
        else{
 	 break;
@@ -3225,6 +3212,7 @@ void unchunk(gchar *dss_tmp){
      }
    }
 
+   if(cbuf) g_free(cbuf);
    fclose(fp_read);
    fclose(fp_write);
 

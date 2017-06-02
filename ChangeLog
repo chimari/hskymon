@@ -1,3 +1,8 @@
+2017.06.01 ver2.9.3 - Added "Add Object" menu in main menu.
+	            - Added GAIA DR1 for database query in FC.
+	            - Revised unchunk code (g_malloc base).
+	            - Some adjustments for public release.
+
 2017.05.17 ver2.9.2 - Added "Add" button in FCDB/Standard treeview panels
 	              to add a selected object into the object tree.
 	            - Added "File/Export to/OPE Def." and "Text List" in
@@ -37,7 +42,7 @@
 	            - Bug fix on standards' position calculation in SET mode.
 	            - Revised some all sky camera servers.
 	            - Change SIMBAD site to the USA mirror (harvard.edu)
-	            - Adjusted timeing of the progress bar timeout.
+	            - Adjusted timing of the progress bar timeout.
 	            - Removed GTK_WIDGET_REALIZE() in button_signal (skymon.c).
 	            - Adjusted initialization timing of telstat.
 

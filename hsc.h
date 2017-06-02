@@ -1,3 +1,9 @@
+//    hskymon  from HDS OPE file Editor
+//          New SkyMonitor for Subaru Gen2
+//      hsc.h  --- Hyper Suprime Cam CCD chips information
+//   
+//                                           2012.10.22  A.Tajitsu
+
 /*
 [VERSION]
 version: 116 CCDs for Summit4
