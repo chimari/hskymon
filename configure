@@ -794,6 +794,7 @@ enable_libtool_lock
 with_win32
 enable_glibtest
 enable_gtktest
+with_gtkmac
 with_xmlrpc
 with_xml_prefix
 with_xml_exec_prefix
@@ -1457,6 +1458,7 @@ Optional Packages:
   --with-sysroot=DIR Search for dependent libraries within DIR
                         (or the compiler's sysroot if not specified).
   --with-win32            Make for Win32
+  --with-gtkmac           make with gtkmacintegration
   --with-xmlrpc           make with xmlrpc for Gen2
   --with-xml-prefix=PFX   Prefix where libxml is installed (optional)
   --with-xml-exec-prefix=PFX Exec prefix where libxml is installed (optional)
@@ -12985,7 +12987,6 @@ case "$target" in
 *-darwin*)
 	os_osx=yes
 	CFLAGS="$CFLAGS -no-cpp-precomp -fno-common"
-	LIBSYLPH_CFLAGS="$LIBSYLPH_CFLAGS -xobjective-c"
 	;;
 esac
 
@@ -13629,59 +13630,27 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "#define USE_GTK2 /**/" >>confdefs.h
 
 
-if test "$os_osx" == yes; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gtkosx_application_ready in -lgtkmacintegration" >&5
-$as_echo_n "checking for gtkosx_application_ready in -lgtkmacintegration... " >&6; }
-if ${ac_cv_lib_gtkmacintegration_gtkosx_application_ready+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lgtkmacintegration  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char gtkosx_application_ready ();
-int
-main ()
-{
-return gtkosx_application_ready ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_gtkmacintegration_gtkosx_application_ready=yes
-else
-  ac_cv_lib_gtkmacintegration_gtkosx_application_ready=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gtkmacintegration_gtkosx_application_ready" >&5
-$as_echo "$ac_cv_lib_gtkmacintegration_gtkosx_application_ready" >&6; }
-if test "x$ac_cv_lib_gtkmacintegration_gtkosx_application_ready" = xyes; then :
-   ac_have_gtkmacintegration=yes
-else
-   ac_have_gtkmacintegration=no
+# Check whether --with-gtkmac was given.
+if test "${with_gtkmac+set}" = set; then :
+  withval=$with_gtkmac; with_gtkmac=yes
 fi
 
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if gtkmacintegration is available" >&5
-$as_echo_n "checking if gtkmacintegration is available... " >&6; }
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_have_gtkmacintegration" >&5
-$as_echo "$ac_have_gtkmacintegration" >&6; }
-	if test "$ac_have_gtkmacintegration" = yes; then
-		GTK_LIBS="$GTK_LIBS -lgtkmacintegration"
 
-$as_echo "#define USE_GTKMACINTEGRATION 1" >>confdefs.h
+ if test x"${with_gtkmac}" = "xyes"; then
+ if test "$os_osx" == yes; then
 
-	fi
+$as_echo "#define USE_GTKMACINTEGRATION /**/" >>confdefs.h
+
+    GTKMAC_CFLAGS="`pkg-config gtk-mac-ntegration-gtk2 --cflags`"
+    GTKMAC_CFLAGS="`pkg-config gtk-mac-ntegration-gtk2 --libs`"
+ else
+    GTKMAC_CFALGS=""
+    GTKMAC_LIBS=""
+ fi
+ else
+    GTKMAC_CFALGS=""
+    GTKMAC_LIBS=""
 fi
 
 

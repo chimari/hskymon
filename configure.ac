@@ -49,7 +49,6 @@ case "$target" in
 *-darwin*)
 	os_osx=yes
 	CFLAGS="$CFLAGS -no-cpp-precomp -fno-common"
-	LIBSYLPH_CFLAGS="$LIBSYLPH_CFLAGS -xobjective-c"
 	;;
 esac
 
@@ -79,14 +78,24 @@ AM_PATH_GLIB_2_0(2.8.0,, AC_MSG_ERROR([glib-2.x is required]), gthread gobject)
 AM_PATH_GTK_2_0(2.8.0,, AC_MSG_ERROR([gtk+-2.x is required]), gthread gobject)
 AC_DEFINE([USE_GTK2],[],[Use Gtk+2.x instead of Gtk+1.2])
 
-if test "$os_osx" == yes; then
-	AC_CHECK_LIB(gtkmacintegration, gtkosx_application_ready, [ ac_have_gtkmacintegration=yes ], [ ac_have_gtkmacintegration=no ])
-	AC_MSG_CHECKING([if gtkmacintegration is available])
-	AC_MSG_RESULT($ac_have_gtkmacintegration)
-	if test "$ac_have_gtkmacintegration" = yes; then
-		GTK_LIBS="$GTK_LIBS -lgtkmacintegration"
-		AC_DEFINE(USE_GTKMACINTEGRATION, 1, Define if you use gtkmacintegration library.)
-	fi
+dnl GtkMACIntegration
+ AC_ARG_WITH(gtkmac,
+ 		 AC_HELP_STRING([--with-gtkmac],
+		            [make with gtkmacintegration]),
+			    [with_gtkmac=yes])
+ 
+ if test x"${with_gtkmac}" = "xyes"; then
+ if test "$os_osx" == yes; then
+ AC_DEFINE([USE_GTKMACINTEGRATION],[],[With gtkmacintegration])
+    GTKMAC_CFLAGS="`pkg-config gtk-mac-ntegration-gtk2 --cflags`"
+    GTKMAC_CFLAGS="`pkg-config gtk-mac-ntegration-gtk2 --libs`"
+ else
+    GTKMAC_CFALGS=""
+    GTKMAC_LIBS=""
+ fi
+ else
+    GTKMAC_CFALGS=""
+    GTKMAC_LIBS=""
 fi
 
 dnl  XMLRPC
