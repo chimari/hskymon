@@ -140,6 +140,9 @@ void create_skymon_dialog(typHOE *hg)
   GtkTooltips *tooltips;
 #endif
   GdkPixbuf *icon;
+#ifdef USE_GTKMACINTEGRATION
+  GtkosxApplication *osxapp;
+#endif
 
   skymon_debug_print("Starting create_skymon_dialog\n");
 
@@ -163,9 +166,23 @@ void create_skymon_dialog(typHOE *hg)
   vbox = gtk_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (hg->skymon_main), vbox);
 
+#ifdef USE_GTKMACINTEGRATION
+  osxapp = g_object_new(GTKOSX_TYPE_APPLICATION, NULL);
+#endif
   menubar=make_menu(hg);
   gtk_box_pack_start(GTK_BOX(vbox), menubar,FALSE, FALSE, 0);
-
+  
+#ifdef USE_GTKMACINTEGRATION
+  gtk_widget_hide(menubar);
+  gtkosx_application_set_menu_bar(osxapp, GTK_MENU_SHELL(menubar));
+  //about_menu = gtk_item_factory_get_item(ifactory, "/Help/About");
+  //prefs_menu = gtk_item_factory_get_item(ifactory, "/Configuration/Preferences...");
+  //gtkosx_application_insert_app_menu_item(osxapp, about_menu, 0);
+  //gtkosx_application_insert_app_menu_item(osxapp, prefs_menu, 1);
+  //g_signal_connect(G_OBJECT(osxapp), "NSApplicationBlockTermination",
+  //		   G_CALLBACK(osx_block_termination), mainwin);
+  gtkosx_application_ready(osxapp);
+#endif
 
   // Menu
   hbox = gtk_hbox_new(FALSE,0);

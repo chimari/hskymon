@@ -2,6 +2,8 @@
 	            - Added GAIA DR1 for database query in FC.
 	            - Revised unchunk code (g_malloc base).
 	            - Some adjustments for public release.
+	            - Adjusted for gtkmacintegration in OSX version to
+	              display the mneu in OSX menu bar.
 
 2017.05.17 ver2.9.2 - Added "Add" button in FCDB/Standard treeview panels
 	              to add a selected object into the object tree.

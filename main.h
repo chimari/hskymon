@@ -8,16 +8,14 @@
 #  include "config.h"
 #endif  
 
-//#undef USE_OSX
-
 #undef ALLSKY_DEBUG
 #undef SKYMON_DEBUG
 
-#include <glib.h>
+#include<glib.h>
 #include<gtk/gtk.h>
 
-#ifdef GTKOSXAPPLICATION
-#include <gtkmacintegration/gtkosxapplication.h>
+#ifdef USE_GTKMACINTEGRATION
+#include<gtkmacintegration/gtkosxapplication.h>
 #endif
 
 #include<stdio.h>

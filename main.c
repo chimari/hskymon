@@ -349,7 +349,7 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",do_sync_ope,(gpointer)hg);
 
-  bar =gtk_menu_item_new();
+  bar =gtk_separator_menu_item_new();
   gtk_widget_show (bar);
   gtk_container_add (GTK_CONTAINER (menu), bar);
 #endif
@@ -403,7 +403,7 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
   }
 
-  bar =gtk_menu_item_new();
+  bar =gtk_separator_menu_item_new();
   gtk_widget_show (bar);
   gtk_container_add (GTK_CONTAINER (menu), bar);
 
@@ -432,7 +432,7 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
   }
 
-  bar =gtk_menu_item_new();
+  bar =gtk_separator_menu_item_new();
   gtk_widget_show (bar);
   gtk_container_add (GTK_CONTAINER (menu), bar);
 
@@ -475,7 +475,7 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
   }
 
-  bar =gtk_menu_item_new();
+  bar =gtk_separator_menu_item_new();
   gtk_widget_show (bar);
   gtk_container_add (GTK_CONTAINER (menu), bar);
 
@@ -519,7 +519,7 @@ GtkWidget *make_menu(typHOE *hg){
   }
 
 
-  bar =gtk_menu_item_new();
+  bar =gtk_separator_menu_item_new();
   gtk_widget_show (bar);
   gtk_container_add (GTK_CONTAINER (menu), bar);
 
@@ -653,7 +653,7 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_container_add (GTK_CONTAINER (menu), popup_button);
     my_signal_connect (popup_button, "activate",create_diff_para_dialog, (gpointer)hg);
 
-    bar =gtk_menu_item_new();
+    bar =gtk_separator_menu_item_new();
     gtk_widget_show (bar);
     gtk_container_add (GTK_CONTAINER (menu), bar);
   }
@@ -783,6 +783,7 @@ GtkWidget *make_menu(typHOE *hg){
 
 
   gtk_widget_show_all(menu_bar);
+
   return(menu_bar);
 }
 
