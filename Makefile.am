@@ -28,6 +28,7 @@ EXTRA_DIST = autogen.sh\
              hskymon_res.rc.in\
              hskymon_icon.png\
              makewin32.sh\
+             makewin64.sh\
              ar_u0.xpm\
              ar_u1.xpm\
              ar_u2.xpm\
