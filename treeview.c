@@ -1190,7 +1190,6 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   case FCDB_TYPE_PS1:
   case FCDB_TYPE_SDSS:
   case FCDB_TYPE_USNO:
-  case FCDB_TYPE_GAIA:
     tmp_obj.def=make_ttgs(hg->obj[hg->fcdb_i].name,hg->obj[hg->fcdb_i].def);
     tmp_obj.name=g_strconcat(hg->obj[hg->fcdb_i].name," TTGS",NULL);
     tmp_obj.note=g_strconcat("added via FC (",hg->obj[hg->fcdb_i].name,")",NULL);
@@ -1198,6 +1197,8 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
     tmp_obj.ope=ADDTYPE_TTGS;
     break;
     
+  case FCDB_TYPE_GAIA:
+  case FCDB_TYPE_2MASS:
   default:
     tmp_obj.def=make_tgt(hg->fcdb[hg->fcdb_tree_focus].name);
     tmp_obj.name=g_strdup(hg->fcdb[hg->fcdb_tree_focus].name);
@@ -3916,6 +3917,55 @@ fcdb_add_columns (typHOE *hg,
     gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_PLX);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
   }
+  else if(hg->fcdb_type==FCDB_TYPE_2MASS){
+    /* J */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_J));
+    column=gtk_tree_view_column_new_with_attributes ("J",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_J,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_double_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_J),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_J);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+    
+    /* H */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_H));
+    column=gtk_tree_view_column_new_with_attributes ("H",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_H,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_double_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_H),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_H);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+    
+    /* K */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_K));
+    column=gtk_tree_view_column_new_with_attributes ("K",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_K,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_double_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_K),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_K);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+  }
 
 
 }
@@ -4783,10 +4833,11 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
     case FCDB_TYPE_PS1:
     case FCDB_TYPE_SDSS:
     case FCDB_TYPE_USNO:
-    case FCDB_TYPE_GAIA:
       tgt=make_ttgs(hg->obj[hg->fcdb_i].name,hg->obj[hg->fcdb_i].def);
       break;
 
+    case FCDB_TYPE_GAIA:
+    case FCDB_TYPE_2MASS:
     default:
       tgt=make_tgt(hg->fcdb[hg->fcdb_tree_focus].name);
       break;
@@ -4816,12 +4867,13 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
       case FCDB_TYPE_PS1:
       case FCDB_TYPE_SDSS:
       case FCDB_TYPE_USNO:
-      case FCDB_TYPE_GAIA:
 	tmp=g_strdup_printf("PM%s=OBJECT=\"%s TTGS\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
 			    tgt,hg->obj[hg->fcdb_i].name,
 			    new_ra,new_dec,2000.00);
 	break;
 
+      case FCDB_TYPE_GAIA:
+      case FCDB_TYPE_2MASS:
       default:
 	tmp=g_strdup_printf("PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
 			    tgt,hg->fcdb[hg->fcdb_tree_focus].name,
@@ -4835,7 +4887,6 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
       case FCDB_TYPE_PS1:
       case FCDB_TYPE_SDSS:
       case FCDB_TYPE_USNO:
-      case FCDB_TYPE_GAIA:
 	tmp=g_strdup_printf("%s=OBJECT=\"%s TTGS\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
 			    tgt,hg->obj[hg->fcdb_i].name,
 			    hg->fcdb[hg->fcdb_tree_focus].ra,
@@ -4843,6 +4894,8 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
 			    hg->fcdb[hg->fcdb_tree_focus].equinox);
 	break;
 	
+      case FCDB_TYPE_GAIA:
+      case FCDB_TYPE_2MASS:
       default:
 	tmp=g_strdup_printf("%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
 			    tgt,hg->fcdb[hg->fcdb_tree_focus].name,

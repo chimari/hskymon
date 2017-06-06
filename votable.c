@@ -1770,6 +1770,110 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
 }
 
 
+void fcdb_2mass_vo_parse(typHOE *hg) {
+  xmlTextReaderPtr reader;
+  list_field *vfield_move;
+  list_tabledata *vtabledata_move;
+  VOTable votable;
+  int nbFields, process_column;
+  int *columns;
+  reader = Init_VO_Parser(hg->fcdb_file,&votable);
+  int i_list=0;
+  struct ln_hms hms;
+  struct ln_dms dms;
+
+  printf_log(hg,"[FCDB] pursing XML.");
+
+  Extract_Att_VO_Table(reader,&votable);
+
+  Extract_VO_Fields(reader,&votable,&nbFields,&columns);
+  for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
+    if(xmlStrcmp(vfield_move->name,"ra") == 0)
+      columns[0] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"dec") == 0) 
+      columns[1] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"designation") == 0) 
+      columns[2] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"j_m") == 0) 
+      columns[3] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"h_m") == 0) 
+      columns[4] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"k_m") == 0) 
+      columns[5] = vfield_move->position;
+ }
+
+
+ Extract_VO_TableData(reader,&votable, nbFields, columns);
+ for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+   if(i_list==MAX_FCDB) break;
+
+   if (vtabledata_move->colomn == columns[0]){
+     hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
+     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
+     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
+       + (gdouble)hms.minutes*100. + hms.seconds;
+     if((!hg->fcdb_2mass_fil)||(hg->fcdb[i_list].h<=hg->fcdb_2mass_mag)){
+       i_list++;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[1]){
+     hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
+     ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
+     if(dms.neg==1){ 
+       hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
+	 - (gdouble)dms.minutes*100. - dms.seconds;
+     }
+     else{
+       hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
+	 + (gdouble)dms.minutes*100. + dms.seconds;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[2]){
+     if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+     hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[3]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].j=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].j=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[4]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].h=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].h=+100;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[5]){
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].k=atof(vtabledata_move->value);
+     }
+     else{
+       hg->fcdb[i_list].k=+100;
+     }
+   }
+  }
+  hg->fcdb_i_max=i_list;
+
+  if (Free_VO_Parser(reader,&votable,&columns) == 1)
+    fprintf(stderr,"memory problem\n");
+
+  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    hg->fcdb[i_list].equinox=2000.00;
+    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
+				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+    hg->fcdb[i_list].pmra=0;
+    hg->fcdb[i_list].pmdec=0;
+    hg->fcdb[i_list].pm=FALSE;
+  }
+}
+
+
+
 
 void addobj_vo_parse(typHOE *hg) {
   xmlTextReaderPtr reader;

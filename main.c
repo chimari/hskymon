@@ -4478,14 +4478,14 @@ static void fcdb_para_item (GtkWidget *widget, gpointer data)
 void create_fcdb_para_dialog (typHOE *hg)
 {
   GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
-    *spinner, *combo, *table, *check, *r1, *r2, *r3, *r4, *r5, *r6, *r7;
+    *spinner, *combo, *table, *check, *r1, *r2, *r3, *r4, *r5, *r6, *r7, *r8;
   GtkAdjustment *adj;
   gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, 
     tmp_gsc_mag, tmp_gsc_diam, tmp_ps1_mag, tmp_ps1_diam, tmp_ps1_mindet, 
     tmp_sdss_mag, tmp_sdss_diam, tmp_usno_mag, tmp_usno_diam,
-    tmp_gaia_mag, tmp_gaia_diam;
+    tmp_gaia_mag, tmp_gaia_diam, tmp_2mass_mag, tmp_2mass_diam;
   gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_sdss_fil, tmp_usno_fil,
-    tmp_gaia_fil;
+    tmp_gaia_fil, tmp_2mass_fil;
   confPropFCDB *cdata;
   gboolean rebuild_flag=FALSE;
 
@@ -4522,6 +4522,9 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_gaia_fil=hg->fcdb_gaia_fil;
   tmp_gaia_mag=hg->fcdb_gaia_mag;
   tmp_gaia_diam=hg->fcdb_gaia_diam;
+  tmp_2mass_fil=hg->fcdb_2mass_fil;
+  tmp_2mass_mag=hg->fcdb_2mass_mag;
+  tmp_2mass_diam=hg->fcdb_2mass_diam;
 
   while (my_main_iteration(FALSE));
   gdk_flush();
@@ -4572,6 +4575,11 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_box_pack_start(GTK_BOX(hbox), r7, FALSE, FALSE, 0);
   gtk_widget_show (r7);
   my_signal_connect (r7, "toggled", radio_fcdb, (gpointer)hg);
+
+  r8 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "2MASS");
+  gtk_box_pack_start(GTK_BOX(hbox), r8, FALSE, FALSE, 0);
+  gtk_widget_show (r8);
+  my_signal_connect (r8, "toggled", radio_fcdb, (gpointer)hg);
 
   cdata->fcdb_group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(r1));
   cdata->fcdb_type=hg->fcdb_type;
@@ -4898,7 +4906,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_gsc_diam,
-					    20, 120, 10, 10, 0);
+					    20, 180, 10, 10, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -4962,7 +4970,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_ps1_diam,
-					    20, 120, 10, 10, 0);
+					    20, 180, 10, 10, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -5042,7 +5050,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_sdss_diam,
-					    20, 120, 10, 10, 0);
+					    20, 180, 10, 10, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -5106,7 +5114,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_usno_diam,
-					    20, 120, 10, 10, 0);
+					    20, 180, 10, 10, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -5170,7 +5178,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_gaia_diam,
-					    20, 120, 10, 10, 0);
+					    20, 180, 10, 10, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -5211,6 +5219,71 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_gaia_mag);
+
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("2MASS");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
+
+  table = gtk_table_new(2,2,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
+
+  label = gtk_label_new ("Max Search Diameter ");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_2mass_diam,
+					    20, 180, 10, 10, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_2mass_diam);
+
+  label = gtk_label_new ("[arcsec]"); 
+ gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+
+  check = gtk_check_button_new_with_label("Mag. filter");
+  gtk_table_attach(GTK_TABLE(table), check, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_2mass_fil);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       hg->fcdb_2mass_fil);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  label = gtk_label_new ("H < ");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_2mass_mag,
+					    8, 16, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_2mass_mag);
+
 
 #ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
@@ -5261,6 +5334,8 @@ void create_fcdb_para_dialog (typHOE *hg)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r6),TRUE);
   if(hg->fcdb_type==FCDB_TYPE_GAIA)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r7),TRUE);
+  if(hg->fcdb_type==FCDB_TYPE_2MASS)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r8),TRUE);
 
   gtk_main();
 
@@ -5290,6 +5365,9 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_gaia_fil  = tmp_gaia_fil;
       hg->fcdb_gaia_mag  = tmp_gaia_mag;
       hg->fcdb_gaia_diam  = tmp_gaia_diam;
+      hg->fcdb_2mass_fil  = tmp_2mass_fil;
+      hg->fcdb_2mass_mag  = tmp_2mass_mag;
+      hg->fcdb_2mass_diam  = tmp_2mass_diam;
     }
     else{
       hg->fcdb_band  = FCDB_BAND_NOP;
@@ -5316,6 +5394,9 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_gaia_fil = TRUE;
       hg->fcdb_gaia_mag = 19;
       hg->fcdb_gaia_diam = 90;
+      hg->fcdb_2mass_fil = TRUE;
+      hg->fcdb_2mass_mag = 12;
+      hg->fcdb_2mass_diam = 90;
     }
 
     if(flagFC){
@@ -5333,6 +5414,8 @@ void create_fcdb_para_dialog (typHOE *hg)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"USNO-B");
       else if(hg->fcdb_type==FCDB_TYPE_GAIA)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"GAIA DR1");
+      else if(hg->fcdb_type==FCDB_TYPE_2MASS)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"2MASS");
     }
 
     if((rebuild_flag)&&(flagTree)) rebuild_tree(hg);
@@ -8701,6 +8784,9 @@ void param_init(typHOE *hg){
   hg->fcdb_gaia_fil=TRUE;
   hg->fcdb_gaia_mag=19;
   hg->fcdb_gaia_diam=90;
+  hg->fcdb_2mass_fil=TRUE;
+  hg->fcdb_2mass_mag=12;
+  hg->fcdb_2mass_diam=90;
 
   hg->adc_inst=ADC_INST_IMR;
   hg->adc_flip=FALSE;

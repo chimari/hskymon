@@ -101,6 +101,7 @@ extern void fcdb_ps1_vo_parse();
 extern void fcdb_sdss_vo_parse();
 extern void fcdb_usno_vo_parse();
 extern void fcdb_gaia_vo_parse();
+extern void fcdb_2mass_vo_parse();
 extern void addobj_vo_parse();
 extern double get_julian_day_of_equinox();
 
@@ -1146,6 +1147,9 @@ void create_fc_dialog(typHOE *hg)
   }
   else if(hg->fcdb_type==FCDB_TYPE_GAIA){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "GAIA DR1");
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_2MASS){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "2MASS");
   }
   gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_frame), 3);
@@ -4018,6 +4022,10 @@ void fcdb_dl(typHOE *hg)
   case FCDB_TYPE_GAIA:
     label=gtk_label_new("Searching objects in GAIA ...");
     break;
+
+  case FCDB_TYPE_2MASS:
+    label=gtk_label_new("Searching objects in 2MASS ...");
+    break;
  }
 
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
@@ -4061,6 +4069,10 @@ void fcdb_dl(typHOE *hg)
 
   case FCDB_TYPE_GAIA:
     hg->plabel=gtk_label_new("Searching objects in GAIA ...");
+    break;
+
+  case FCDB_TYPE_2MASS:
+    hg->plabel=gtk_label_new("Searching objects in 2MASS ...");
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
@@ -4213,6 +4225,9 @@ void addobj_dl(typHOE *hg)
     hg->plabel=gtk_label_new("Searching objects in GAIA ...");
     break;
 
+  case FCDB_TYPE_2MASS:
+    hg->plabel=gtk_label_new("Searching objects in 2MASS ...");
+    break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
@@ -4646,6 +4661,31 @@ void fcdb_item2 (typHOE *hg)
     fcdb_gaia_vo_parse(hg);
 
     break;
+
+  case FCDB_TYPE_2MASS:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_2MASS);
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_2MASS_PATH,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  (double)hg->fcdb_2mass_diam/60./60.);
+
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+
+    fcdb_dl(hg);
+
+    fcdb_2mass_vo_parse(hg);
+
+    break;
   }
 
   if(flagTree) fcdb_make_tree(NULL, hg);
@@ -4794,6 +4834,14 @@ void fcdb_tree_update_azel_item(typHOE *hg,
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 		       COLUMN_FCDB_V, hg->fcdb[i_list].v,  // g
 		       COLUMN_FCDB_PLX, hg->fcdb[i_list].plx,  // Parallax
+		       -1);
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_2MASS){
+    // JHK
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_J, hg->fcdb[i_list].j,
+		       COLUMN_FCDB_H, hg->fcdb[i_list].h,
+		       COLUMN_FCDB_K, hg->fcdb[i_list].k,
 		       -1);
   }
 }

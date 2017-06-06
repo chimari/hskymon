@@ -162,6 +162,9 @@
 #define FCDB_HOST_GAIA "vizier.nao.ac.jp"
 #define FCDB_GAIA_PATH "/viz-bin/votable?-source=I/337/gaia&-c=%lf%%20%+lf&-c.u=deg&-c.r=%lf&-c.geom=r&-out.max=500&-out.form=VOTable"
 
+#define FCDB_HOST_2MASS "gsss.stsci.edu"
+#define FCDB_2MASS_PATH "/webservices/vo/CatalogSearch.aspx?CAT=2MASS&RA=%lf&DEC=%+lf&SR=%lf&MAXOBJ=500"
+
 
 #define ADDOBJ_SIMBAD_PATH "/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=VOTABLE"
 #define ADDOBJ_NED_PATH "/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES&of=xml_main"
@@ -442,7 +445,8 @@ enum
   FCDB_TYPE_PS1,
   FCDB_TYPE_SDSS,
   FCDB_TYPE_USNO,
-  FCDB_TYPE_GAIA
+  FCDB_TYPE_GAIA,
+  FCDB_TYPE_2MASS
 };
 
 enum
@@ -1579,6 +1583,9 @@ struct _typHOE{
   gint fcdb_gaia_mag;
   gint fcdb_gaia_diam;
   gboolean fcdb_gaia_fil;
+  gint fcdb_2mass_mag;
+  gint fcdb_2mass_diam;
+  gboolean fcdb_2mass_fil;
 
   gint addobj_type;
   gchar *addobj_name;
