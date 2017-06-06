@@ -3148,7 +3148,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
 		     hbox,FALSE, FALSE, 0);
 
 #ifdef USE_GTK2
-  icon = gdk_pixbuf_new_from_inline(sizeof(hskymon_icon), hskymon_icon, 
+  icon = gdk_pixbuf_new_from_inline(sizeof(icon_subaru), icon_subaru, 
 				    FALSE, NULL);
   pixmap = gtk_image_new_from_pixbuf(icon);
   g_object_unref(icon);
@@ -3194,6 +3194,25 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox), label,FALSE, FALSE, 0);
 
+#ifdef USE_OSX
+  g_snprintf(buf, sizeof(buf),
+	     "Compiled-in features : XmlRPC=%s, OpenSSL=%s, GtkMacIntegration=%s", 
+#ifdef USE_XMLRPC
+	     "ON",
+#else
+	     "OFF",
+#endif
+#ifdef USE_SSL
+	     "ON",
+#else
+             "OFF",
+#endif
+#ifdef USE_GTKMACINTEGRATION
+	     "ON");
+#else
+             "OFF");
+#endif
+#else
   g_snprintf(buf, sizeof(buf),
 	     "Compiled-in features : XmlRPC=%s, OpenSSL=%s", 
 #ifdef USE_XMLRPC
@@ -3205,6 +3224,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
 	     "ON");
 #else
              "OFF");
+#endif
 #endif
   label = gtk_label_new (buf);
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
@@ -12459,7 +12479,7 @@ int main(int argc, char* argv[]){
 
 #ifndef USE_WIN32  
 #ifdef USE_GTK2
-  icon = gdk_pixbuf_new_from_inline(sizeof(hskymon_icon), hskymon_icon, 
+  icon = gdk_pixbuf_new_from_inline(sizeof(icon_subaru), icon_subaru, 
 				    FALSE, NULL);
   gtk_window_set_default_icon(icon);
 #endif
