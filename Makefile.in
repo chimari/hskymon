@@ -405,6 +405,7 @@ EXTRA_DIST = autogen.sh\
              messier.lst\
 	     sample.list\
 	     samplePS.list\
+             subaru_logo.ico\
              hskymon.ico\
              hskymon_res.rc.in\
              hskymon_icon.png\
