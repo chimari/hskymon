@@ -374,7 +374,7 @@ void create_adc_dialog(typHOE *hg)
   gtk_widget_set_app_paintable(hg->adc_dw, TRUE);
   gtk_widget_show(hg->adc_dw);
 
-  screen_changed(hg->adc_dw,NULL,NULL);
+  //screen_changed(hg->adc_dw,NULL,NULL);
 
   gtk_widget_set_events(hg->adc_dw, GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK);
   my_signal_connect(hg->adc_dw, 

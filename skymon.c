@@ -534,7 +534,7 @@ void create_skymon_dialog(typHOE *hg)
   gtk_widget_set_app_paintable(hg->skymon_dw, TRUE);
   gtk_widget_show(hg->skymon_dw);
 
-  screen_changed(hg->skymon_dw,NULL,NULL);
+  //screen_changed(hg->skymon_dw,NULL,NULL);
 
 
   gtk_widget_set_events(hg->skymon_dw, GDK_STRUCTURE_MASK | GDK_EXPOSURE_MASK);

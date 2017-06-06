@@ -479,7 +479,7 @@ void create_plot_dialog(typHOE *hg)
   gtk_widget_set_app_paintable(hg->plot_dw, TRUE);
   gtk_widget_show(hg->plot_dw);
 
-  screen_changed(hg->plot_dw,NULL,NULL);
+  //screen_changed(hg->plot_dw,NULL,NULL);
 
   gtk_widget_show_all(hg->plot_main);
 

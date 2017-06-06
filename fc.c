@@ -1295,7 +1295,7 @@ void create_fc_dialog(typHOE *hg)
   gtk_container_add(GTK_CONTAINER(ebox), hg->fc_dw);
   gtk_widget_set_app_paintable(hg->fc_dw, TRUE);
 
-  screen_changed(hg->fc_dw,NULL,NULL);
+  //screen_changed(hg->fc_dw,NULL,NULL);
 
   
   gtk_widget_set_events(hg->fc_dw, GDK_STRUCTURE_MASK | GDK_EXPOSURE_MASK);
@@ -4852,6 +4852,7 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
   typHOE *hg;
   GtkTreeModel *model;
   GtkTreeIter iter;
+  gchar *db_name;
 
   hg=(typHOE *)gdata;
 
@@ -4867,12 +4868,43 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
     fcdb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
   }
 
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_SIMBAD:
+    db_name=g_strdup("SIMBAD");
+    break;
+  case FCDB_TYPE_NED:
+    db_name=g_strdup("NED");
+    break;
+  case FCDB_TYPE_GSC:
+    db_name=g_strdup("GSC");
+    break;
+  case FCDB_TYPE_PS1:
+    db_name=g_strdup("PanSTARRS");
+    break;
+  case FCDB_TYPE_SDSS:
+    db_name=g_strdup("SDSS");
+    break;
+  case FCDB_TYPE_USNO:
+    db_name=g_strdup("USNO-B");
+    break;
+  case FCDB_TYPE_GAIA:
+    db_name=g_strdup("GAIA");
+    break;
+  case FCDB_TYPE_2MASS:
+    db_name=g_strdup("2MASS");
+    break;
+  default:
+    db_name=g_strdup("Database queried");
+    break;
+  }
   if(hg->fcdb_label_text) g_free(hg->fcdb_label_text);
   hg->fcdb_label_text
-    =g_strdup_printf("Objects around [%d-%d] %s (%d objects found)",
+    =g_strdup_printf("%s Objects around [%d-%d] %s (%d objects found)",
+		     db_name,
 		     hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
 		     hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
   gtk_label_set_text(GTK_LABEL(hg->fcdb_label), hg->fcdb_label_text);
+  g_free(db_name);
 
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),2);
 }
