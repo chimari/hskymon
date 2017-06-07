@@ -55,7 +55,7 @@
 
 
 #ifdef USE_XMLRPC
-#define DEFAULT_RO_NAMSERVER "g2stat.sum.subaru.nao.ac.jp"
+#define DEFAULT_RO_NAMSERVER "addres.for.gen2.status.server.foo.bar"
 #endif
 
 #ifdef SIGRTMIN

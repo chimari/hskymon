@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 2.9.2    2017/05/17
+#                                  ver 2.9.3    2017/06/01
 #                               Copyright (C) 2003-17 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #########################################################################
@@ -19,26 +19,25 @@ it can be adoped to other telescopes, changing positional parameters.
 For target lists to display on the program, you can input OPE
 files for SOSs or CSV text lists.
 
-The latest version of hskymon is avairable on "HDS wiki"
-    http://hds.skr.jp/wiki/  .
-(But, you need to input password for this page.)  
-
-The latest version can be also downloaded from GitHub, using
+The latest version (souce code and Win/Mac binary packages) can be 
+found in GitHub.
+  https://github.com/chimari/hskymon
+If you want to make a clone of the latest source code, use
   git clone https://github.com/chimari/hskymon.git
 in your terminal.
 
 
 *** Environment
-hskymon requires UNIX operating system with X window system or
-MS Windows (Win2000 or later).
+hskymon requires UNIX operating system with X window system,
+MS Windows (Win2000 or later), or MacOS (Mavericks or later).
 
 To compile this program from its source code, you need to install
-Gtk+ development tools (for Windows, I used MinGW + Gtk-dev).
+Gtk+ development tools (for Windows, I use msys + Gtk-dev).
 Gtk+2.8 (or later) is required (my recommendation is ver2.10 or later).
 libxml2 and openssl is also required to build the program.
 
 In order to get telescope status, hskymon requires xmlrpc-c library.
-But, Windows version does not support this function.
+But, Windows/Mac version does not support this function.
 You need to install some libraries and develope environment for them
 to make this program.
 (gtk+2-dev, xmlrpc-c3-dev, libcurl4-openssl-dev ... etc.)
@@ -88,7 +87,7 @@ If you use msys + min-gw + gtk-dev,
 
 *** Input files
 [1]OPE file
-OPE files for SOSs can be avairable for inputs.
+OPE files for SOSs can be avairable for objects inputs.
 hskymon reads the parameter list section in OPE files likely,
 
    <PARAMETER_LIST>
@@ -131,7 +130,8 @@ file.
 
 
 [2]CSV Text file
-The following fromat text files are also avairable for data inputs.
+The text files written in the following CSV format are also avairable for
+objects inputs.
 
 	HD94028     ,105128.1 ,+201639.0 ,2000,  <comments>
 	BD+36 2165  ,111248.0 ,+354343.9 ,2000,  Mv=8.4  Fe/H=-2

@@ -3242,6 +3242,10 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox), label,FALSE, FALSE, 0);
 
+  label = gtk_label_new ("Subaru Telescope, National Astronomical Observatory of Japan");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
+  gtk_box_pack_start(GTK_BOX(vbox), label,FALSE, FALSE, 0);
+
   label = gtk_label_new ("");
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox), label,FALSE, FALSE, 0);
