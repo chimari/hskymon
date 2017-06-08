@@ -1672,9 +1672,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
   
   if(!flagFC) return (FALSE);
 
-  while (my_main_iteration(FALSE));
-  gdk_flush();
-  //printf("Drawing!\n");
+  // Removed (2.9.4) cannot resize in Win64
+  //while (my_main_iteration(FALSE));
+  //gdk_flush();
 
   if(hg->fc_output==FC_OUTPUT_PDF){
     width= hg->sz_plot;
