@@ -1,3 +1,7 @@
+2017.06.XX ver2.9.4 - Fixed a bug in unchunk() [Win32].
+	            - Chnaged vizier server to strasbourg (nao.ac.jp mirror
+	              could be troubled in the summit LAN).
+
 2017.06.01 ver2.9.3 - Added "Add Object" menu in main menu.
 	            - Added GAIA DR1/2MASS for database query in FC.
 	            - Revised unchunk code (g_malloc base).

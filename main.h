@@ -159,7 +159,7 @@
 #define FCDB_HOST_USNO "www.nofs.navy.mil"
 #define FCDB_USNO_PATH "/cgi-bin/vo_cone.cgi?CAT=USNO-B1&RA=%lf&DEC=%+lf&SR=%lf&VERB=1"
 
-#define FCDB_HOST_GAIA "vizier.nao.ac.jp"
+#define FCDB_HOST_GAIA "vizier.u-strasbg.fr"
 #define FCDB_GAIA_PATH "/viz-bin/votable?-source=I/337/gaia&-c=%lf%%20%+lf&-c.u=deg&-c.r=%lf&-c.geom=r&-out.max=500&-out.form=VOTable"
 
 #define FCDB_HOST_2MASS "gsss.stsci.edu"

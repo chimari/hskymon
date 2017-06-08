@@ -3159,7 +3159,8 @@ GdkPixbuf* diff_pixbuf(GdkPixbuf *pixbuf1, GdkPixbuf* pixbuf2,
 void unchunk(gchar *dss_tmp){
    FILE *fp_read, *fp_write;
    gchar *unchunk_tmp;
-   gchar *cbuf=NULL;
+   gchar cbuf[BUFFSIZE];
+   gchar *dbuf=NULL;
    gchar *cpp;
    gchar *chunkptr, *endptr;
    long chunk_size;
@@ -3174,10 +3175,7 @@ void unchunk(gchar *dss_tmp){
    fp_write=fopen(unchunk_tmp,"w");
 
    while(!feof(fp_read)){
-     if(cbuf) g_free(cbuf);
-     cbuf = (gchar *)g_malloc(sizeof(gchar)*BUFFSIZE);
-
-     if(fgets(cbuf,sizeof(cbuf),fp_read)){
+     if(fgets(cbuf,BUFFSIZE-1,fp_read)){
        cpp=cbuf;
        
        read_size=strlen(cpp);
@@ -3196,15 +3194,14 @@ void unchunk(gchar *dss_tmp){
 	  
        if(chunk_size==0) break;
 
-       if(cbuf) g_free(cbuf);
-       if((cbuf = (gchar *)g_malloc(sizeof(gchar)*(chunk_size+crlf_size+1)))==NULL){
+       if((dbuf = (gchar *)g_malloc(sizeof(gchar)*(chunk_size+crlf_size+1)))==NULL){
 	 fprintf(stderr, "!!! Memory allocation error in unchunk() \"%s\".\n", dss_tmp);
 	 fflush(stderr);
 	 break;
        }
-       if(fread(cbuf,1, chunk_size+crlf_size, fp_read)){
-	 cpp=cbuf;
-	 fwrite( cbuf , chunk_size , 1 , fp_write ); 
+       if(fread(dbuf,1, chunk_size+crlf_size, fp_read)){
+	 fwrite( dbuf , chunk_size , 1 , fp_write ); 
+	 if(dbuf) g_free(dbuf);
        }
        else{
 	 break;
@@ -3212,7 +3209,6 @@ void unchunk(gchar *dss_tmp){
      }
    }
 
-   if(cbuf) g_free(cbuf);
    fclose(fp_read);
    fclose(fp_write);
 
