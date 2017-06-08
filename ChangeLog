@@ -3,6 +3,7 @@
 	              could be troubled in the summit LAN).
 	            - Removed main_iteration(FALSE) in draw_fc_cairo
 	              to fix the FC resize problem in Win64.
+	            - Bug fix on gmt offset calc in AllSky Camera time stamp.
 
 2017.06.01 ver2.9.3 - Added "Add Object" menu in main menu.
 	            - Added GAIA DR1/2MASS for database query in FC.

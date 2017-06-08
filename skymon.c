@@ -55,6 +55,8 @@ extern gint tree_update_azel ();
 extern void make_tree();
 extern void raise_tree();
 
+extern int get_gmtoff_from_sys ();
+
 void create_skymon_dialog();
 void close_skymon();
 
@@ -1676,8 +1678,11 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
       ln_get_timet_from_julian (JD0, &t0);
       
       if(hg->skymon_mode==SKYMON_CUR){
+	int sys_gmtoff=get_gmtoff_from_sys();
+
 	if(hg->allsky_last_t[hg->allsky_last_i-1]>0){
-	  ago=(t0-hg->allsky_last_t[hg->allsky_last_i-1])/60;
+	  ago=(t0-hg->allsky_last_t[hg->allsky_last_i-1])/60
+	    +(sys_gmtoff+hg->obs_timezone*60);
 	  if(ago>30){
 	    cairo_set_source_rgba(cr, 1.0, 0, 0, 1.0);
 	  }
@@ -1686,7 +1691,8 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	  }
 	  
 	  if((hg->allsky_diff_flag)&&(hg->allsky_last_i>1)){
-	    gint ago0=(t0-hg->allsky_last_t[hg->allsky_last_i-2])/60;
+	    gint ago0=(t0-hg->allsky_last_t[hg->allsky_last_i-2])/60
+	      	    +(sys_gmtoff+hg->obs_timezone*60);
 	    tmp=g_strdup_printf("[%dmin ago] - [%dmin ago]",ago,ago0);
 	  }
 	  else{
@@ -1700,12 +1706,16 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	
       }
       else if(hg->skymon_mode==SKYMON_LAST){
+	int sys_gmtoff=get_gmtoff_from_sys();
+
 	if(hg->allsky_last_t[hg->allsky_last_frame]>0){
-	  ago=(t0-hg->allsky_last_t[hg->allsky_last_frame])/60;
+	  ago=(t0-hg->allsky_last_t[hg->allsky_last_frame])/60
+	    +(sys_gmtoff+hg->obs_timezone*60);
 
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
 	  if((hg->allsky_diff_flag)&&(hg->allsky_last_frame>0)){
-	    gint ago0=(t0-hg->allsky_last_t[hg->allsky_last_frame-1])/60;
+	    gint ago0=(t0-hg->allsky_last_t[hg->allsky_last_frame-1])/60
+	      +(sys_gmtoff+hg->obs_timezone*60);
 	    tmp=g_strdup_printf("[%dmin ago] - [%dmin ago]",ago,ago0);
 	  }
 	  else{
