@@ -1749,9 +1749,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
     else{
       cairo_set_source_rgba(cr, 0.8, 0.0, 0.0, 1.0);
     }
-    cairo_set_font_size (cr, 12.0*scale);
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2*scale);
 
-    cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_BOLD);
     tmp=g_strdup("Error : Failed to load the image for the finding chart!");
     cairo_text_extents (cr,tmp, &extents);
@@ -1761,9 +1761,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
     cairo_show_text(cr, tmp);
     if(tmp) g_free(tmp);
  
-    cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size (cr, 10.0*scale);
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
     tmp=g_strdup("The position might be out of the surveyed area.");
     cairo_text_extents (cr,tmp, &extents);
     cairo_move_to(cr,width/2-extents.width/2,
@@ -1901,9 +1901,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
       
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 9.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
       cairo_move_to(cr,
 		    ((gdouble)width_file*r)/2+1.5*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*cos(M_PI/4),
 		    ((gdouble)height_file*r)/2-1.5*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*sin(M_PI/4));
@@ -1925,7 +1925,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 		  0,M_PI*2);
 	cairo_stroke(cr);
 
-	cairo_set_font_size (cr, 9.0*scale);
+	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 	
 	tmp=g_strdup_printf("Tip-Tilt Guide Star w/LGS (%darcmin)",IRCS_TTGS_ARCMIN/2);
 	cairo_text_extents (cr,tmp, &extents);
@@ -1947,9 +1947,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 9.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 
       tmp=g_strdup_printf("IRCS FOV (%dx%darcsec)",(gint)IRCS_X_ARCSEC, (gint)IRCS_Y_ARCSEC);
       cairo_text_extents (cr,tmp, &extents);
@@ -1977,9 +1977,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 9.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 
       tmp=g_strdup_printf("COMICS FOV (%dx%darcsec)",(gint)COMICS_X_ARCSEC, (gint)COMICS_Y_ARCSEC);
       cairo_text_extents (cr,tmp, &extents);
@@ -2005,9 +2005,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 9.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 	
       tmp=g_strdup_printf("FOCAS FOV (%darcmin)",FOCAS_R_ARCMIN);
       cairo_text_extents (cr,tmp, &extents);
@@ -2036,9 +2036,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
 	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
 	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-	cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+	cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 				CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_font_size (cr, 9.0*scale);
+	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 	cairo_text_extents (cr,"Chip 2", &extents);
 
 	cairo_move_to(cr,
@@ -2071,9 +2071,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 9.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 
       tmp=g_strdup_printf("MOIRCS FOV (%dx%darcmin)",(gint)MOIRCS_X_ARCMIN, (gint)MOIRCS_Y_ARCMIN);
       cairo_text_extents (cr,tmp, &extents);
@@ -2135,9 +2135,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
 	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
 	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-	cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+	cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 				CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_font_size (cr, 9.0*scale);
+	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 	cairo_text_extents (cr,"Detector 2", &extents);
 
 	cairo_move_to(cr,
@@ -2177,9 +2177,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 9.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 
       tmp=g_strdup_printf("Suprime-Cam FOV (%dx%darcmin)",SPCAM_X_ARCMIN, SPCAM_Y_ARCMIN);
       cairo_text_extents (cr,tmp, &extents);
@@ -2236,9 +2236,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
 	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
 	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-	cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+	cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 				CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_font_size (cr, 9.0*scale);
+	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 	cairo_text_extents (cr,"2. fio", &extents);
 
 	//2 fio
@@ -2299,9 +2299,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 9.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 	
       if(!hg->dss_draw_slit){
 	tmp=g_strdup_printf("HSC FOV (%darcmin)",HSC_R_ARCMIN);
@@ -2324,7 +2324,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
 	cairo_set_line_width (cr, 0.8*scale);
 
-	cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+	cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 				CAIRO_FONT_WEIGHT_BOLD);
 
 	// Dead chips
@@ -2438,9 +2438,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 9.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 	
       tmp=g_strdup_printf("FMOS FOV (%darcmin)",FMOS_R_ARCMIN);
       cairo_text_extents (cr,tmp, &extents);
@@ -2481,9 +2481,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
     if(hg->dss_invert) cairo_set_source_rgba(cr, 0.3, 0.45, 0.0, 1.0);
     else cairo_set_source_rgba(cr, 1.0, 1.0, 0.4, 1.0);
-    cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size (cr, 11.0*scale);
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.1*scale);
     cairo_move_to(cr,5*scale,(gdouble)height_file*r-5*scale);
     tmp=g_strdup_printf("RA=%02d:%02d:%05.2lf  Dec=%s%02d:%02d:%05.2lf (%.1lf)",
 			hobject.ra.hours,hobject.ra.minutes,
@@ -2496,7 +2496,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
     cairo_show_text(cr,tmp);
     if(tmp) g_free(tmp);
 
-    cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_BOLD);
     cairo_move_to(cr,5*scale,(gdouble)height_file*r-5*scale-extents.height-5*scale);
     cairo_show_text(cr,hg->obj[hg->dss_i].name);
@@ -2504,9 +2504,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
     if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
     else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-    cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size (cr, 10.0*scale);
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
     switch(hg->fc_mode_get){
     case FC_SKYVIEW_GALEXF:
       tmp=g_strdup_printf("GALEX (Far UV)  %dx%d arcmin",
@@ -2714,9 +2714,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
     if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
     else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
-    cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (cr, 11.0*scale);
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.1*scale);
     cairo_text_extents (cr, "N", &extents);
 
     cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
@@ -2778,10 +2778,10 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_BOLD);
 
-      cairo_set_font_size (cr, 14.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
       if((xsec>60.) && (ysec>60.)){
 	tmp=g_strdup_printf("x%d : %.2lfx%.2lf arcmin",hg->fc_mag,
 			    xsec/60.,
@@ -2804,10 +2804,10 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 		      -width/(gdouble)hg->fc_mag,
 		      -height/(gdouble)hg->fc_mag);
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_BOLD);
 
-      cairo_set_font_size (cr, 11.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.1*scale);
       cairo_text_extents (cr, "N", &extents);
 
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
@@ -2968,7 +2968,12 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
       cairo_save(cr);
 
       translate_to_center(cr,width,height,width_file,height_file,r,hg);
-      yrs=current_yrs(hg);
+      if(hg->fcdb_type==FCDB_TYPE_GAIA){
+	yrs=current_yrs(hg)-15.0;
+      }
+      else{
+	yrs=current_yrs(hg);
+      }
 
       for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
 	hg->fcdb[i_list].x=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0)*60.
@@ -3071,9 +3076,9 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 12.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2*scale);
 
       distance=sqrt((gdouble)((hg->fc_ptx1-hg->fc_ptx2)
 			      *(hg->fc_ptx1-hg->fc_ptx2))

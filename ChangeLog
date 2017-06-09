@@ -1,16 +1,20 @@
 2017.06.10 ver2.9.4 - Fixed a bug in unchunk() [Win32].
-	            - Chnaged vizier server to strasbourg (nao.ac.jp mirror
+	            - Changed vizier server to Strasbourg (nao.ac.jp mirror
 	              could be troubled in the summit LAN).
 	            - Removed main_iteration(FALSE) in draw_fc_cairo
 	              to fix the FC resize problem in Win64.
 	            - Bug fix on gmt offset calc in AllSky Camera time stamp.
+	            - Added Font Size setup for all Cairo character rendering.
+	            - Moon Sep. in ObjList is changed to ON in default.
+	            - Fixed GAIA DR1 position epoch 2000 -> 2015 for proper
+	              motion calculation.
 
 2017.06.01 ver2.9.3 - Added "Add Object" menu in main menu.
 	            - Added GAIA DR1/2MASS for database query in FC.
 	            - Revised unchunk code (g_malloc base).
 	            - Some adjustments for public release.
 	            - Adjusted for gtkmacintegration in OSX version to
-	              display the mneu in OSX menu bar.
+	              display the menu in OSX menu bar.
 	            - removed screen_changed() in drawing_area operation
 	              to avoid the window resize failure on OSX.
 
@@ -63,14 +67,14 @@
 	            - Added an interactive dialog to add an object in the
 	              object list tree_view.
 	            - Added MAST Portal for web database access.
-	            - Adjusted focus movements amoung Obj.list, FC, and SkyMon.
+	            - Adjusted focus movements among Obj.list, FC, and SkyMon.
 	            - Added FC,StdDB,FCDB information into printf_log.
 
-2017.01.09 ver2.8.8 - Interactive search of SIMBAD querried object in FC.
+2017.01.09 ver2.8.8 - Interactive search of SIMBAD queried object in FC.
 	              (Left click on searched objects).
 
 2017.01.05 ver2.8.7 - Added GALEX (Far/Near UV) and WISE (4ch) in FC.
-	            - Bug fix in SIMBAD ID seach for standard and FC objects.
+	            - Bug fix in SIMBAD ID search for standard and FC objects.
                           '+' => "%2b"  and  ' ' => "%20"
 	            - Added SkyView RGB composite in FC.
 	              Three sources can be selected in the properties window.
@@ -80,7 +84,7 @@
 	            - gdk_window_invalidate_rect() for progress bar update.
 	            - Changed the directory where hskymon.ini is saved to
 	              %APPDATA%\hskymon\ in Windows version.
-	            - Crrected implicit declarations.
+	            - Corrected implicit declarations.
 
 2016.12.29 ver2.8.6 - Changed catalog matching criteria SIMBAD into
 	              "region(box,..." style.
@@ -135,7 +139,7 @@
 	            - Update parameters for UH All Sky Camera.
 
 2014.06.10 ver2.7.4 - Small bug fix in sprintf for Ubuntu 14.04 (again)
-	              Bug fix for compinling w/gcc on Ubuntu 14.04 (-lm)
+	              Bug fix for compiling w/gcc on Ubuntu 14.04 (-lm)
 
 2014.06.10 ver2.7.3 - Added HDS zenith mode (for UV obs) in AD Chart.
 	              Small bug fix in sprintf for Ubuntu 14.04
@@ -186,11 +190,11 @@
 	              from main menu.
 	            - "Standard Star Locator" (almost same function with the
 	               same named tool in Subaru official web) is also
-	               avairable in Web access menu.
+	               available in Web access menu.
 	               (Catalog: UKIRT FS/HIPPARCOS/SAO)
                     - "File" menu is reconstructed using submenu (OPE/PRM/CSV).
                     - Changed Finding Chart SDSS(DR8) --> SDSS(DR10).
-	              After DR8, SDSS server mimght be stacked during small
+	              After DR8, SDSS server might be stacked during small
 	              size (W<800??) jpeg transfer. Now, I fixed to 1500x1500
 	              for DR10.
 
@@ -221,17 +225,17 @@
 	              (added #include <sys/time.h> in skymon.h).
 	            - Added some observatories and allsky cameras.
 	            - Adjusted some camera positions.
-	            - Added a new function to check observatory positons
+	            - Added a new function to check observatory positions
 	              on Google map.
 
 2013.05.15 ver2.6.0 - Bug fix for making allsky diff images.
 	            - Added some presets for observatory positions and
-	              allsky canmeras.
+	              allsky cameras.
 	            - Changed configuration GUI.
 
 2012.12.21 ver2.5.11- Auto Zero Adjustment in Making Differential Images.
 	            - Added Stddev graph for All-Sky differential images.
-	            - Bug fixes for someinexplicit conversions between
+	            - Bug fixes for some in-explicit conversions between
 	              double and int.
 
 2012.12.17 ver2.5.10- Added direct target selection by clicking the object
@@ -244,7 +248,7 @@
 2012.11.14 ver2.5.9 - Changed allsky camera drawing timing (Child->Parent).
 
 2012.11.06 ver2.5.8 - Fix the operation of FC download button w/o the Object
-	              Lits table.
+	              List table.
                     - Buffer clear for AllSky Images after properties changed.
 	            - Added internal procedure to create "Differential Image"
 	              for All-Sky Camera.
@@ -263,10 +267,10 @@
 	              To see differential images, Check "Show Diff. Images"
 	              in the menu.
 	              Some parameters creating differential images can be
-	              changed in a dlalog.
+	              changed in a dialog.
 	            - Added display parameters to show all sky images
 	              (screen & saturation factor), which can be changed
-	              in a popup window.
+	              in a pop-up window.
 	            - Limit pixbuf size of All-Sky image for ASIVA [Visual].
 	              (= 800x800 pix) to save main memory, using
 	              gdk_pixbuf_new_from_file_at_size .
@@ -281,12 +285,12 @@
 	            - Changed obsolete "getbyhostname" to "getaddrinfo".
 
 2012.10.23 ver2.5.6 - Small adjustment in AD Chart display.
-	              (Refresh work smoothly/Font size can ve changed
+	              (Refresh work smoothly/Font size can be changed
 	               by "Sz." in the main window)
                     - Added font change button in Properties window.
                     - Font family and size are saved in the config file.
 	            - Change default font in Win32 ms gothic --> arial.
-	               (Antialias works well in Win32 with this font.)
+	               (Anti-alias works well in Win32 with this font.)
 	            - Added CFHT ASIVA (Visual/IR) Camera for All-Sky Camera.
 	              Preset combo and Set button are added in Properties
 	              window to switch UH88 <---> ASIVA camera.
@@ -304,7 +308,7 @@
 	            - In FC, HDS(Auto) added in the instrument selection.
 	              This mode automatically calculate the current PA of HDS
 	              SV and rotate the FC image.
-	            - Skip Object List tree updating during editting the list.
+	            - Skip Object List tree updating during editing the list.
 
 2012.05.24 ver2.5.3 - Added
 	                NED
@@ -324,13 +328,13 @@
 	              (Default OFF in treeview)
 
 2011.10.06 ver2.5.0 - Added precession calculation (added precession.c).
-	              (Now, FC & SIMBAD search is avairable for objects whose
+	              (Now, FC & SIMBAD search is available for objects whose
 	               Epoch != 2000.0 .)
 	            - Change default PDF file names for FC & Plot
 	              (using object name).
                     - Change default plot center "Midnight" -> "Current"
 	            - Reserve lower/upper case of object names in OPE files.
-	            - Error message on FC, when the image retireval filed.
+	            - Error message on FC, when the image retrieval filed.
 	            - "Max. El" in treeview & elevation plot.
 	              (Default OFF in treeview)
 
@@ -348,10 +352,10 @@
                     - Added "AD-PA vs EL." mode in plot window.
 	            - North/South mark in elevation plot.
 	            - V_ADPA, V_Az display for current object.
-	            - Burh up ADPA calc routine.
+	            - Brush up ADPA calc routine.
 	            - PDF output for plot window.
 
-2011.8.01  ver2.4.3 - Added twighlight information display.
+2011.8.01  ver2.4.3 - Added twilight information display.
 
 2011.4.29  ver2.4.2 - Accepted the alternative OPE format (e.g. :PARAMETER).
 	            - Color changing in properties window.
@@ -359,15 +363,15 @@
 2011.4.27  ver2.4.1 - Bug fix on loading PRM file.
 	            - Bug fix on merging OPE file.
 
-2011.4.11  ver2.4.0 - Add a function to synchronize OPE files with Integui,
+2011.4.11  ver2.4.0 - Add a function to synchronize OPE files with IntegGUI,
                       using XMLRPC (method "get_ope_paths" via "integgui0").
-                      Use a menu button "File -> Sync OPE w/InteGUI".
+                      Use a menu button "File -> Sync OPE w/IntegGUI".
                     - If TelStat is running (w/XMLRPC), "Open OPE" is now
 	              trying to find the directory where the latest OPE file is
 	              loaded in IntegGUI.
 	            - Added "Merge" OPE file.
 
-2011.2.3  ver2.3.12 - Maginification along time axis for El/Az/AD plot.
+2011.2.3  ver2.3.12 - Magnification along time axis for El/Az/AD plot.
 
 2010.11.22  ver2.3.11 - Added sun and planets plot the in sky monitor.
 	              - Added "UT" at the top left corner.
@@ -400,9 +404,9 @@
 	                to "SkyView" at NASA.
 	                (It has a flexibility to change image size and
 	                scale. It's good for smooth downloading.)
-	                Added 2MASS images for dinding charts via SkyView.
+	                Added 2MASS images for finding charts via SkyView.
 
-2010.6.28   ver2.3.8  - Added "oulti objects plot" function for elevation
+2010.6.28   ver2.3.8  - Added "multiple objects plot" function for elevation
 	                plot window.
 	              - Refurbished the procedure for spinner widgets.
 	                  use gtk_adjustment_set_value
@@ -411,8 +415,8 @@
 2010.6.21   ver2.3.7  - Changed how to parse OPE.
 	                Now, the order of "RA=", "DEC=", EQUINOX=" and
 	                "OBJECT=" must be voluntary.
-	                For each line in the prarameter_list section of ope files,
-	                  [1] sarch "=" first
+	                For each line in the parameter_list section of ope files,
+	                  [1] search "=" first
 	                  [2] Then, for the rest of the line,
 	                      just search "OBJECT=", "RA=" etc.
 	                  [3] Then, check the previous character of each
@@ -447,8 +451,8 @@
 
 2010.3.25   ver2.3.2  - Bug fix on the function of making finding charts
 	                with SDSS (for dec<0).
-	              - Added "fflush(stderr)" just before issueing SIGUSR2
-                        in the child thred.
+	              - Added "fflush(stderr)" just before issuing SIGUSR2
+                        in the child thread.
 
 2010.3.24   ver2.3.1  - Small bug fixes on the termination of the fetching
 	                process for the UH all sky camera image.
@@ -473,10 +477,10 @@
                       - Showing the telescope route estimation during its
 	                slewing time.
 
-                      - Added the Azimuth indicator for telestat.
+                      - Added the Azimuth indicator for TelStat.
 
 
-2009.6.13   ver2.1.0  - "Telstat" function to access a Gen2 satus server
+2009.6.13   ver2.1.0  - "Telstat" function to access a Gen2 status server
 	                to get the telescope status (using xmlrpc-c).
 
 	              - The 1st release for Gen2.

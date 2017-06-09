@@ -1325,6 +1325,9 @@ struct _typHOE{
 
   gchar *fontname;  
   gchar *fontfamily;  
+  gchar *fontname_all;  
+  gchar *fontfamily_all;  
+  gint  skymon_allsz;
 
   gint timer;
 #ifdef USE_SKYMON

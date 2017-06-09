@@ -14,12 +14,12 @@ This program (hskymon) is a telescope monitoring software for
 SUBARU Telescope. It can be useful for actual observation and
 also for obs preparation as a telescope simulator.
 Basically, hskymon is optimized for SUBARU Telescope. However,
-it can be adoped to other telescopes, changing positional parameters.
+it can be adopted to other telescopes, changing positional parameters.
 
 For target lists to display on the program, you can input OPE
 files for SOSs or CSV text lists.
 
-The latest version (souce code and Win/Mac binary packages) can be 
+The latest version (source code and Win/Mac binary packages) can be 
 found in GitHub.
   https://github.com/chimari/hskymon
 If you want to make a clone of the latest source code, use
@@ -38,7 +38,7 @@ libxml2 and openssl is also required to build the program.
 
 In order to get telescope status, hskymon requires xmlrpc-c library.
 But, Windows/Mac version does not support this function.
-You need to install some libraries and develope environment for them
+You need to install some libraries and developer's environment for them
 to make this program.
 (gtk+2-dev, xmlrpc-c3-dev, libcurl4-openssl-dev ... etc.)
 
@@ -56,7 +56,7 @@ to make this program.
 
   - % make
 
-Then, an excutable file "hskymon" will be created.
+Then, an executable file "hskymon" will be created.
 
   - # make install  
    (or you can copy "hskymon" file to an appropriate directory.)
@@ -65,7 +65,7 @@ Then, an excutable file "hskymon" will be created.
 
 
 *** Build from the source code (Windows ver.)
-Basicall, Windows version of hskymon is distributed as a binary
+Basically, Windows version of hskymon is distributed as a binary
 package with Gtk+ libraries.
 
 If you use msys + min-gw + gtk-dev,
@@ -78,8 +78,8 @@ If you use msys + min-gw + gtk-dev,
 
 *** Command line option
      -h, --help                    : Print help message
-     -i, --input [input-file]      : Set the inpout CSV list file
-     -a, --witht-allsky            : Switch on All Sky Camera
+     -i, --input [input-file]      : Set the input CSV list file
+     -a, --with-allsky            : Switch on All Sky Camera
      -nt, --without-telstat        : Switch off to read Telescope Status
      -s, --server [server-address] : Override Telstat Server
      -l, --log [log-file]          : Output log file
@@ -87,7 +87,7 @@ If you use msys + min-gw + gtk-dev,
 
 *** Input files
 [1]OPE file
-OPE files for SOSs can be avairable for objects inputs.
+OPE files for SOSs can be available for objects inputs.
 hskymon reads the parameter list section in OPE files likely,
 
    <PARAMETER_LIST>
@@ -107,7 +107,7 @@ You should write command to load *.prm files likely
 *LOAD "hogehoge.prm"
 
 in the <PARAMETER> field of OPE files.
-# double quatation is required for the file name.
+# double quotation is required for the file name.
 Current searching paths for *.prm files are
   1.  same directory with the loaded *.ope
   2.  subdirectory "COMMON/"
@@ -124,13 +124,13 @@ If you want to hide unused objects (in "GetObject*", "GetStandard*" or
 you can hide them with "Hide Objects unused in OPE file" button
 (the 2nd button in ASC/Telstat menu). 
 
-For .prm files, the ojects are loaded only in the case that it is used
+For .prm files, the objects are loaded only in the case that it is used
 in commands ("GetObject*", "GetStandard*" or "SetupField*") in the OPE
 file.
 
 
 [2]CSV Text file
-The text files written in the following CSV format are also avairable for
+The text files written in the following CSV format are also available for
 objects inputs.
 
 	HD94028     ,105128.1 ,+201639.0 ,2000,  <comments>

@@ -5835,6 +5835,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gint tmp_size_edge;
   confCol *cdata_col;
   gchar *tmp_fontname;
+  gchar *tmp_fontname_all;
   confPos *cdata_pos;
   gint i;
 
@@ -5919,6 +5920,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   tmp_ro_use_default_auth =hg->ro_use_default_auth;
 #endif
   tmp_fontname     =g_strdup(hg->fontname);
+  tmp_fontname_all =g_strdup(hg->fontname_all);
 
   tmp_size_edge = hg->size_edge;
 
@@ -7947,6 +7949,25 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   hbox = gtk_hbox_new(FALSE,2);
   gtk_container_add (GTK_CONTAINER (frame), hbox);
 
+  label = gtk_label_new ("Basic");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+  {
+    button = gtk_font_button_new_with_font(hg->fontname_all);
+    gtk_box_pack_start(GTK_BOX(hbox), button,TRUE, TRUE, 0);
+    gtk_font_button_set_show_style(GTK_FONT_BUTTON(button),FALSE);
+    gtk_font_button_set_use_font(GTK_FONT_BUTTON(button),TRUE);
+    gtk_font_button_set_show_size(GTK_FONT_BUTTON(button),TRUE);
+    gtk_font_button_set_use_size(GTK_FONT_BUTTON(button),TRUE);
+    my_signal_connect(button,"font-set",ChangeFontButton, 
+		      &tmp_fontname_all);
+  }
+
+  label = gtk_label_new ("     Object");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
   {
     button = gtk_font_button_new_with_font(hg->fontname);
     gtk_box_pack_start(GTK_BOX(hbox), button,TRUE, TRUE, 0);
@@ -8226,6 +8247,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
     if(hg->fontname) g_free(hg->fontname);
     hg->fontname             =g_strdup(tmp_fontname);
+    if(hg->fontname_all) g_free(hg->fontname_all);
+    hg->fontname_all         =g_strdup(tmp_fontname_all);
     get_font_family_size(hg);
     gtk_adjustment_set_value(hg->skymon_adj_objsz, (gdouble)hg->skymon_objsz);
 
@@ -8302,7 +8325,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->show_ad	  = TRUE;
     hg->show_ang  = TRUE;
     hg->show_hpa  = FALSE;
-    hg->show_moon = FALSE;
+    hg->show_moon = TRUE;
     hg->show_ra	  = TRUE;
     hg->show_dec  = TRUE;
     hg->show_equinox= TRUE;
@@ -8336,6 +8359,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
     if(hg->fontname) g_free(hg->fontname);
     hg->fontname=g_strdup(SKYMON_FONT);
+    if(hg->fontname_all) g_free(hg->fontname_all);
+    hg->fontname_all=g_strdup(SKYMON_FONT);
     get_font_family_size(hg);
     gtk_adjustment_set_value(hg->skymon_adj_objsz, (gdouble)hg->skymon_objsz);
 
@@ -8377,6 +8402,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   g_free(tmp_ro_ns_host);
 #endif
   g_free(tmp_fontname);
+  g_free(tmp_fontname_all);
 
   flagChildDialog=FALSE;
   g_free(cdata);
@@ -11124,6 +11150,7 @@ void WriteConf(typHOE *hg){
   xmms_cfg_write_int(cfgfile, "Color", "edge_s",(gint)hg->size_edge);
 
   xmms_cfg_write_string(cfgfile, "Font", "Name", hg->fontname);
+  xmms_cfg_write_string(cfgfile, "Font", "All", hg->fontname_all);
 
 
   xmms_cfg_write_file(cfgfile, conffile);
@@ -11433,7 +11460,7 @@ void ReadConf(typHOE *hg)
     if(xmms_cfg_read_boolean(cfgfile, "Show", "Moon", &b_buf))
       hg->show_moon =b_buf;
     else
-      hg->show_moon =FALSE;
+      hg->show_moon =TRUE;
     if(xmms_cfg_read_boolean(cfgfile, "Show", "RA", &b_buf))
       hg->show_ra =b_buf;
     else
@@ -11518,6 +11545,11 @@ void ReadConf(typHOE *hg)
       hg->fontname =c_buf;
     else
       hg->fontname=g_strdup(SKYMON_FONT);
+
+    if(xmms_cfg_read_string(cfgfile, "Font", "All", &c_buf)) 
+      hg->fontname_all=c_buf;
+    else
+      hg->fontname_all=g_strdup(SKYMON_FONT);
     get_font_family_size(hg);
 
     xmms_cfg_free(cfgfile);
@@ -11567,7 +11599,7 @@ void ReadConf(typHOE *hg)
     hg->show_ad=TRUE;
     hg->show_ang=TRUE;
     hg->show_hpa=FALSE;
-    hg->show_moon=FALSE;
+    hg->show_moon=TRUE;
     hg->show_ra=TRUE;
     hg->show_dec=TRUE;
     hg->show_equinox=TRUE;
@@ -11580,6 +11612,7 @@ void ReadConf(typHOE *hg)
 #endif
 
     hg->fontname=g_strdup(SKYMON_FONT);
+    hg->fontname_all=g_strdup(SKYMON_FONT);
     get_font_family_size(hg);
   }
 
@@ -12380,8 +12413,16 @@ void get_font_family_size(typHOE *hg)
   hg->skymon_objsz
     =pango_font_description_get_size(fontdc)/PANGO_SCALE;
   pango_font_description_free(fontdc);
-}
 
+  fontdc=pango_font_description_from_string(hg->fontname_all);
+
+  if(hg->fontfamily_all) g_free(hg->fontfamily_all);
+  hg->fontfamily_all
+    =g_strdup(pango_font_description_get_family(fontdc));
+  hg->skymon_allsz
+    =pango_font_description_get_size(fontdc)/PANGO_SCALE;
+  pango_font_description_free(fontdc);
+}
 
 void Export_OpeDef(typHOE *hg){
   FILE *fp;

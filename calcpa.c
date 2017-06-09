@@ -663,7 +663,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
   cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
 
   // Object Name etc.
-  cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_NORMAL);
 
   tmp=g_strdup_printf("\"%s\"  RA=%09.2f Dec=%+010.2f Equinox=%7.2f",
@@ -672,7 +672,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 		      hg->obj[hg->plot_i].dec,
 		      hg->obj[hg->plot_i].equinox);
   cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
-  cairo_set_font_size (cr, 12.0*scale);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2*scale);
   cairo_text_extents (cr, tmp, &extents);
   cairo_move_to(cr,width/2-extents.width/2,+extents.height);
   cairo_show_text(cr, tmp);
@@ -768,11 +768,11 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 
       
       // El Text
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
       
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 0.8);
-      cairo_set_font_size (cr, 10.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_text_extents (cr, "90", &extents);
       x = dx-extents.width-5*scale;
       y = dy-(extents.height/2 + extents.y_bearing);
@@ -815,10 +815,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_translate (cr, dx-x0, height/2);
       cairo_rotate (cr,M_PI/2);
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 0.8);
-      cairo_set_font_size (cr, 14.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
       cairo_text_extents (cr, "Elevation[deg]", &extents);
 
       x = dx-extents.width/2-x0-(dx-x0);
@@ -913,10 +913,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 
       
       // Az Text
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 0.8);
-      cairo_set_font_size (cr, 10.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_text_extents (cr, "+180", &extents);
       x = dx-extents.width-5*scale;
       y = dy-(extents.height/2 + extents.y_bearing);
@@ -983,10 +983,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_translate (cr, dx-x0, height/2);
       cairo_rotate (cr,M_PI/2);
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 0.8);
-      cairo_set_font_size (cr, 14.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
       cairo_text_extents (cr, "Azimuth[deg]", &extents);
 
       x = dx-extents.width/2-x0-(dx-x0);
@@ -1049,9 +1049,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
      
 
       // AD Text
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 10.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 0.8);
 
       cairo_text_extents (cr, "4.0", &extents);
@@ -1114,10 +1114,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_translate (cr, dx-x0, height/2);
       cairo_rotate (cr,M_PI/2);
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 0.8);
-      cairo_set_font_size (cr, 14.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
 
       tmp=g_strdup_printf("AD[\"] (%d-%dA)", hg->wave1,hg->wave0);
       cairo_text_extents (cr, tmp, &extents);
@@ -1131,9 +1131,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_restore (cr);
 
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 10.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_set_source_rgba(cr, 0.2, 0.2, 0.4, 0.8);
 
       cairo_text_extents (cr, "+180", &extents);
@@ -1172,10 +1172,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_translate (cr, dx+lx+x0, height/2);
       cairo_rotate (cr,-M_PI/2);
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_source_rgba(cr, 0.2, 0.2, 0.4, 0.8);
-      cairo_set_font_size (cr, 14.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
       cairo_text_extents (cr, "Zenith PA[deg]", &extents);
 
       x = dx+lx-extents.width/2+x0-(dx+lx+x0);
@@ -1286,11 +1286,11 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 
       
       // El Text
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
       
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 0.8);
-      cairo_set_font_size (cr, 10.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_text_extents (cr, "90", &extents);
       x = dx-extents.width-5*scale;
       y = dy-(extents.height/2 + extents.y_bearing);
@@ -1327,10 +1327,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_translate (cr, dx-x0, height/2);
       cairo_rotate (cr,M_PI/2);
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 0.8);
-      cairo_set_font_size (cr, 14.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
       cairo_text_extents (cr, "Elevation[deg]", &extents);
 
       x = dx-extents.width/2-x0-(dx-x0);
@@ -1342,9 +1342,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 
 
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 10.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_set_source_rgba(cr, 0.2, 0.2, 0.4, 0.8);
 
       cairo_text_extents (cr, "+180", &extents);
@@ -1383,10 +1383,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_translate (cr, dx+lx+x0, height/2);
       cairo_rotate (cr,-M_PI/2);
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_source_rgba(cr, 0.2, 0.2, 0.4, 0.8);
-      cairo_set_font_size (cr, 14.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
       cairo_text_extents (cr, "Zenith PA[deg]", &extents);
 
       x = dx+lx-extents.width/2+x0-(dx+lx+x0);
@@ -1497,11 +1497,11 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 
       
       // El Text
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
       
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 0.8);
-      cairo_set_font_size (cr, 10.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_text_extents (cr, "90", &extents);
       x = dx-extents.width-5*scale;
       y = dy-(extents.height/2 + extents.y_bearing);
@@ -1538,10 +1538,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_translate (cr, dx-x0, height/2);
       cairo_rotate (cr,M_PI/2);
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 0.8);
-      cairo_set_font_size (cr, 14.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
       cairo_text_extents (cr, "Elevation[deg]", &extents);
 
       x = dx-extents.width/2-x0-(dx-x0);
@@ -1553,9 +1553,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 
 
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 10.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_set_source_rgba(cr, 0.2, 0.2, 0.4, 0.8);
 
       cairo_text_extents (cr, "180", &extents);
@@ -1595,10 +1595,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_translate (cr, dx+lx+x0, height/2);
       cairo_rotate (cr,-M_PI/2);
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_source_rgba(cr, 0.2, 0.2, 0.4, 0.8);
-      cairo_set_font_size (cr, 14.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
       cairo_text_extents (cr, "Separation from the Moon[deg]", &extents);
 
       x = dx+lx-extents.width/2-(dx+lx);
@@ -1692,10 +1692,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 
       
       // HDS PA  Text
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_source_rgba(cr, 0.2, 0.2, 0.4, 0.8);
-      cairo_set_font_size (cr, 10.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_text_extents (cr, "+180", &extents);
       x = dx-extents.width-5*scale;
       y = dy-(extents.height/2 + extents.y_bearing);
@@ -1762,16 +1762,16 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_translate (cr, dx-x0, height/2);
       cairo_rotate (cr,M_PI/2);
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 12.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2*scale);
       cairo_text_extents (cr, "  & Zenith PA [deg]", &extents);
       w1=extents.width;
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_source_rgba(cr, 0.2, 0.2, 0.4, 0.8);
-      cairo_set_font_size (cr, 14.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
       cairo_text_extents (cr, "HDS PA w/o ImR[deg]", &extents);
 
       x = dx-(extents.width+w1)/2-x0-(dx-x0);
@@ -1783,10 +1783,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_text_extents (cr, "HDS PA w/o ImR[deg]", &extents);
       x += extents.width;
 
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.2, 0.8);
-      cairo_set_font_size (cr, 12.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2*scale);
 
       cairo_move_to(cr, x, y);
 
@@ -1804,8 +1804,8 @@ gboolean draw_plot_cairo(GtkWidget *widget,
     cairo_clip(cr);
 
 
-    cairo_set_font_size (cr, 10.0*scale);
-    cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_NORMAL);
 
     if(hg->skymon_mode==SKYMON_SET){
@@ -2125,8 +2125,8 @@ gboolean draw_plot_cairo(GtkWidget *widget,
     
     
     cairo_set_source_rgba(cr, 0.8, 0.4, 0.2, 1.0);
-    cairo_set_font_size (cr, 10.0*scale);
-    cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_NORMAL);
 
     if(ihst1-ihst0<10.0){
@@ -2177,9 +2177,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       add_day(hg, &iyear, &month, &iday, -1);
     }
   
-    cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (cr, 14.0*scale);
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
     cairo_text_extents (cr, hg->obs_tzname, &extents);
     x = width/2-extents.width/2;
     y += extents.height+5*scale;
@@ -2189,9 +2189,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
     {
       gint iyear1,month1,iday1;
       
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, 12.0*scale);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2*scale);
       tmp=g_strdup_printf("(%4d/%2d/%2d)",iyear,month,iday);
       cairo_text_extents (cr, tmp, &extents);
       x = dx;
@@ -2229,8 +2229,8 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_set_line_width(cr,3.0*scale);
       cairo_stroke(cr);
       
-      cairo_set_font_size (cr, 10.0*scale);
-      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
       if(hour>=24){
@@ -2456,9 +2456,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 			dy+ly*(90.-m_tr_el)/90.);
 	  
 	  cairo_set_source_rgba(cr, 0.8, 0.6, 0.0, 1.0);
-	  cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+	  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 				  CAIRO_FONT_WEIGHT_BOLD);
-	  cairo_set_font_size (cr, 11.0*scale);
+	  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.1*scale);
 	  
 	  cairo_text_extents (cr, "moon", &extents);
 	  cairo_save(cr);
@@ -2668,9 +2668,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 			  dy+ly*y_tr/90.);
 	    
 	    if(i_list==hg->plot_i){
-	      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+	      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 				      CAIRO_FONT_WEIGHT_BOLD);
-	      cairo_set_font_size (cr, 9.0*scale);
+	      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 	      
 	      if(oequ_prec.dec>hg->obs_latitude){
 		tmp=g_strdup_printf("North(%.2f)",
@@ -2693,16 +2693,16 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 			    dy+ly*y_tr/90.);
 	      cairo_rel_move_to(cr,0,-extents.height-5*scale);
 
-	      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+	      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 				      CAIRO_FONT_WEIGHT_BOLD);
-	      cairo_set_font_size (cr, 12.0*scale);
+	      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2*scale);
 	      cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 1.0);
 	      
 	    }
 	    else{
-	      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+	      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 				      CAIRO_FONT_WEIGHT_NORMAL);
-	      cairo_set_font_size (cr, 9.0*scale);
+	      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 	    }
 
 	    tmp=g_strdup_printf("%s",hg->obj[i_list].name);
@@ -2880,9 +2880,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 			  dy+ly*y_tr/90.);
 	    
 	    if(i_list==hg->plot_i){
-	      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+	      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 				      CAIRO_FONT_WEIGHT_BOLD);
-	      cairo_set_font_size (cr, 9.0*scale);
+	      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 	      cairo_set_source_rgba(cr, 0.2, 0.4, 0.2, 1.0);
 
 	      if(oequ_prec.dec>hg->obs_latitude){
@@ -2991,9 +2991,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 			  dy+ly*y_tr/90.);
 	    
 	    if(i_list==hg->plot_i){
-	      cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
+	      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 				      CAIRO_FONT_WEIGHT_BOLD);
-	      cairo_set_font_size (cr, 9.0*scale);
+	      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
 	      cairo_set_source_rgba(cr, 0.2, 0.4, 0.2, 1.0);
 
 	      if(oequ_prec.dec>hg->obs_latitude){
