@@ -122,9 +122,6 @@ dnl    XMLRPC_CFLAGS=""
 dnl    XMLRPC_LIBS="-lxmlrpc_xmltok -lxmlrpc_xmlparse -lxmlrpc_util -lxmlrpc_client -lxmlrpc"
 dnl   -----------------
 
-dnl libm
-AC_SEARCH_LIBS([cos], [m], [], [AC_MSG_ERROR([unable to find the cos() function])])
-
 dnl for Fedora
 dnl   --- from here ---
 dnl    XMLRPC_CFLAGS="`pkg-config xmlrpc --cflags`"
@@ -145,6 +142,9 @@ dnl   -----------------
 
 dnl XML2
 AM_PATH_XML2(2.2.6,, AC_MSG_ERROR([xml-2.2.6 or later is required]))
+
+dnl libm
+AC_SEARCH_LIBS([cos], [m], [], [AC_MSG_ERROR([unable to find the cos() function])])
 
 
 dnl Maintainer Mode

@@ -26,13 +26,11 @@ extern void calcpa2_main();
 extern void pdf_plot();
 extern void create_plot_dialog();
 
-#ifdef USE_SKYMON
 extern  void create_skymon_dialog();
 extern gboolean draw_skymon_cairo();
 #ifdef USE_XMLRPC
 extern gboolean draw_skymon_with_telstat_cairo();
 extern int close_telstat();
-#endif
 #endif
 extern void calc_moon();
 
@@ -118,9 +116,7 @@ void do_save_fc_pdf();
 void show_version();
 static void show_help();
 void show_properties();
-#ifdef USE_SKYMON
 void do_skymon();
-#endif
 
 void ChangeColorAlpha();
 void ChangeFontButton();
@@ -214,9 +210,7 @@ void Export_TextList();
 gboolean flagProp=FALSE;
 gboolean flagChildDialog=FALSE;
 gboolean flag_make_obj_list=TRUE;
-#ifdef USE_SKYMON
 gboolean flagSkymon=TRUE;
-#endif
 gboolean flagTree=FALSE;
 gboolean flagFCDBTree=FALSE;
 gboolean flagPlot=FALSE;
@@ -325,11 +319,7 @@ GtkWidget *make_menu(typHOE *hg){
   menu_item =gtk_menu_item_new_with_label ("File");
 #endif
   gtk_widget_show (menu_item);
-#ifdef USE_GTK2
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
-#else
-  gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), menu_item);
-#endif
   
   menu=gtk_menu_new();
   gtk_widget_show (menu);
@@ -537,7 +527,6 @@ GtkWidget *make_menu(typHOE *hg){
   my_signal_connect (popup_button, "activate",do_quit,(gpointer)hg);
 
 
-#ifdef USE_SKYMON
   //// List
 #ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_JUSTIFY_FILL, GTK_ICON_SIZE_MENU);
@@ -547,11 +536,7 @@ GtkWidget *make_menu(typHOE *hg){
   menu_item =gtk_menu_item_new_with_label ("Object");
 #endif
   gtk_widget_show (menu_item);
-#ifdef USE_GTK2
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
-#else
-  gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), menu_item);
-#endif
   
   menu=gtk_menu_new();
   gtk_widget_show (menu);
@@ -579,7 +564,6 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",AddObj,(gpointer)hg);
-#endif
 
   //// Update
 #ifdef __GTK_STOCK_H__
@@ -590,11 +574,7 @@ GtkWidget *make_menu(typHOE *hg){
   menu_item =gtk_menu_item_new_with_label ("Update");
 #endif
   gtk_widget_show (menu_item);
-#ifdef USE_GTK2
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
-#else
-  gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), menu_item);
-#endif
   
   menu=gtk_menu_new();
   gtk_widget_show (menu);
@@ -623,11 +603,7 @@ GtkWidget *make_menu(typHOE *hg){
   menu_item =gtk_image_menu_item_new_with_label ("AllSky-Cam");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
   gtk_widget_show (menu_item);
-#ifdef USE_GTK2
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
-#else
-  gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), menu_item);
-#endif
   
   menu=gtk_menu_new();
   gtk_widget_show (menu);
@@ -682,11 +658,7 @@ GtkWidget *make_menu(typHOE *hg){
   menu_item =gtk_menu_item_new_with_label ("Search Param");
 #endif
   gtk_widget_show (menu_item);
-#ifdef USE_GTK2
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
-#else
-  gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), menu_item);
-#endif
   
   menu=gtk_menu_new();
   gtk_widget_show (menu);
@@ -731,11 +703,7 @@ GtkWidget *make_menu(typHOE *hg){
   menu_item =gtk_menu_item_new_with_label ("Info");
 #endif
   gtk_widget_show (menu_item);
-#ifdef USE_GTK2
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
-#else
-  gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), menu_item);
-#endif
   
   menu=gtk_menu_new();
   gtk_widget_show (menu);
@@ -3120,9 +3088,7 @@ void do_merge (GtkWidget *widget, gpointer gdata)
 void show_version (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox;
-#ifdef USE_GTK2
   GdkPixbuf *icon;
-#endif  
 #if HAVE_SYS_UTSNAME_H
   struct utsname utsbuf;
 #endif
@@ -3147,12 +3113,10 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
 		     hbox,FALSE, FALSE, 0);
 
-#ifdef USE_GTK2
   icon = gdk_pixbuf_new_from_inline(sizeof(icon_subaru), icon_subaru, 
 				    FALSE, NULL);
   pixmap = gtk_image_new_from_pixbuf(icon);
   g_object_unref(icon);
-#endif
 
   gtk_box_pack_start(GTK_BOX(hbox), pixmap,FALSE, FALSE, 0);
 
@@ -3267,9 +3231,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
 static void show_help (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox, *table;
-#ifdef USE_GTK2
   GdkPixbuf *icon, *pixbuf;
-#endif  
   flagChildDialog=FALSE;
 
   while (my_main_iteration(FALSE));
@@ -5777,9 +5739,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     *frame, *frame1, *spinner, *table1, *table2, *entry, *check;
   GtkAdjustment *adj;
   GSList *obs_group=NULL, *allsky_group=NULL;
-#ifdef USE_GTK2
   GdkPixbuf *icon;
-#endif  
 #if HAVE_SYS_UTSNAME_H
   struct utsname utsbuf;
 #endif
@@ -8411,7 +8371,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 }
 
 
-#ifdef USE_SKYMON
 void do_skymon(GtkWidget *widget, gpointer gdata){
   typHOE *hg;
 
@@ -8427,7 +8386,6 @@ void do_skymon(GtkWidget *widget, gpointer gdata){
   
   create_skymon_dialog(hg);
 }
-#endif
 
 void do_plot(GtkWidget *widget, gpointer gdata){
   typHOE *hg;
@@ -8694,10 +8652,7 @@ void param_init(typHOE *hg){
   }
   hg->azel_mode=AZEL_NORMAL;
 
-#ifdef USE_SKYMON
   hg->skymon_mode=SKYMON_CUR;
-  //hg->skymon_objsz=SKYMON_DEF_OBJSZ;
-#endif
 
   hg->skymon_timer=-1;
 
@@ -8996,14 +8951,12 @@ gboolean update_allsky (gpointer gdata){
 void update_c_label (typHOE *hg){
   if(!flag_make_obj_list)  return;
 
-#ifdef USE_SKYMON
   {
     if(flagSkymon){  // Automatic update for current time
       if(hg->skymon_mode==SKYMON_CUR)
 	draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
     }
   }
-#endif
 }
 
 
@@ -10908,7 +10861,7 @@ void usage(void)
   g_print("  [usage] %% hskymon [options...]\n");
   g_print("     -h, --help                    : Print this message\n");
   g_print("     -i, --input [input-file]      : Set the inpout CSV list file\n");
-  g_print("     -a, --witht-allsky            : Switch on All Sky Camera\n");
+  g_print("     -a, --with-allsky             : Switch on All Sky Camera\n");
 #ifdef USE_XMLRPC
   g_print("     -nt, --without-telstat        : Switch off to reaImaged Telescope Status\n");
   g_print("     -s, --server [server-address] : Override Telstat Server\n");
@@ -10942,11 +10895,7 @@ void get_option(int argc, char **argv, typHOE *hg)
        (strcmp(argv[i_opt],"--input") == 0)){ 
       if(i_opt+1 < argc ) {
 	i_opt++;
-#ifdef USE_GTK2
 	if(!g_path_is_absolute(g_path_get_dirname(argv[i_opt]))){
-#else
-	if(!g_path_is_absolute(g_dirname(argv[i_opt]))){
-#endif
 	  cwdname=g_malloc0(sizeof(gchar)*1024);
 	  if(!getcwd(cwdname,1024)){
 	    fprintf(stderr,"Error : cannot get current working directory!\n");
@@ -11661,23 +11610,15 @@ gboolean is_number(gchar *s, gint line, const gchar* sect){
 }
 
 gchar* to_utf8(gchar *input){
-#ifdef USE_GTK2
   return(g_locale_to_utf8(input,-1,NULL,NULL,NULL));
-#else
-  return(input);
-#endif
 }
 
 gchar* to_locale(gchar *input){
-#ifdef USE_GTK2
 #ifdef USE_WIN32
   //return(x_locale_from_utf8(input,-1,NULL,NULL,NULL,"SJIS"));
   return(g_win32_locale_filename_from_utf8(input));
 #else
   return(g_locale_from_utf8(input,-1,NULL,NULL,NULL));
-#endif
-#else
-  return(input);
 #endif
 }
 
@@ -11854,9 +11795,7 @@ void popup_message(gint delay, ...){
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
 
-#ifdef USE_GTK2  
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),FALSE);
-#endif
 
   if(delay>0){
     timer=g_timeout_add(delay*1000, (GSourceFunc)close_popup,
@@ -11957,35 +11896,20 @@ void my_signal_connect(GtkWidget *widget,
 		       void *func,
 		       gpointer data)
 {
-#ifdef USE_GTK2
   g_signal_connect(G_OBJECT(widget),
 		   detailed_signal,
 		   G_CALLBACK(func),
 		   data);
-#else
-  gtk_signal_connect(GTK_OBJECT(widget),
-		     detailed_signal,
-		     GTK_SIGNAL_FUNC(func),
-		     data);
-#endif
 }
 
 
 gboolean my_main_iteration(gboolean may_block){
-#ifdef USE_GTK2
   return(g_main_context_iteration(NULL, may_block));
-#else
-  return(g_main_iteration(may_block));
-#endif
 }
 
 
 void my_entry_set_width_chars(GtkEntry *entry, guint n){
-#ifdef USE_GTK2
   gtk_entry_set_width_chars(entry, n);
-#else
-  gtk_widget_set_usize(GTK_WIDGET(entry), (entry_height/2)*(n+1),entry_height);
-#endif
 }
 
 
@@ -12498,9 +12422,7 @@ void Export_TextList(typHOE *hg){
 int main(int argc, char* argv[]){
   typHOE *hg;
 #ifndef USE_WIN32  
-#ifdef USE_GTK2
   GdkPixbuf *icon;
-#endif
 #endif
 #ifdef USE_WIN32
   WSADATA wsaData;
@@ -12523,11 +12445,9 @@ int main(int argc, char* argv[]){
   gdk_rgb_init();
 
 #ifndef USE_WIN32  
-#ifdef USE_GTK2
   icon = gdk_pixbuf_new_from_inline(sizeof(icon_subaru), icon_subaru, 
 				    FALSE, NULL);
   gtk_window_set_default_icon(icon);
-#endif
 #endif
 
 #ifdef USE_WIN32   // Initialize Winsock2

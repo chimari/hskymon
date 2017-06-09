@@ -19,14 +19,10 @@ double new_tu(int iyear, int month, int iday);
 //void calcpa_main(PApara* padata,char* plot_dev);
 void calcpa2_main(typHOE* hg);
 
-#ifdef USE_SKYMON
 void calcpa2_skymon(typHOE* hg);
-#endif
 
 void calc_moon();
-#ifdef USE_SKYMON
 void calc_moon_skymon();
-#endif
 
 void close_plot();
 void create_plot_dialog();
@@ -3957,7 +3953,6 @@ void calcpa2_main(typHOE* hg){
 }
 
 
-#ifdef USE_SKYMON
 void calcpa2_skymon(typHOE* hg){
   double JD;
   struct ln_lnlat_posn observer;
@@ -4417,9 +4412,6 @@ void calcpa2_skymon(typHOE* hg){
   }
 }
 
-
-#endif
-
 void calc_moon(typHOE *hg){
   /* for Moon */
   double JD;
@@ -4717,7 +4709,6 @@ void calc_moon(typHOE *hg){
 }
 
 
-#ifdef USE_SKYMON
 void calc_moon_skymon(typHOE *hg){
   /* for Moon */
   double JD;
@@ -5030,8 +5021,6 @@ void calc_moon_skymon(typHOE *hg){
     hg->atw06.s_set.seconds=set.seconds;
   }
 }
-
-#endif
 
 gfloat get_meridian_hour(typHOE *hg){
   int iyear;

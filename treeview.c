@@ -66,9 +66,7 @@ GdkColor col_sub={0,0xDDDD,0xFFFF,0xFFFF};
 
 static void cell_toggled_check();
 
-#ifdef USE_SKYMON
 extern gboolean draw_skymon();
-#endif
 extern gboolean draw_plot_cairo();
 extern void calcpa2_main();
 extern void calcpa2_skymon();
@@ -83,9 +81,7 @@ extern void cc_get_entry_double();
 extern void cc_get_entry_int();
 extern void cc_get_toggle();
 
-#ifdef USE_SKYMON
 extern gboolean flagSkymon;
-#endif
 extern gboolean flagChildDialog;
 extern gboolean flagTree;
 extern gboolean flagPlot;
@@ -2341,15 +2337,12 @@ focus_item (GtkWidget *widget, gpointer data)
       gtk_tree_path_free (path);
     }
 
-#ifdef USE_SKYMON
   {
     if(flagSkymon){
       draw_skymon(hg->skymon_dw,hg, FALSE);
       //gdk_window_raise(hg->skymon_main->window);
     }
   }
-
-#endif
 
   if(flagPlot){
     draw_plot_cairo(hg->plot_dw,(gpointer)hg);
@@ -2381,11 +2374,9 @@ std_focus_item (GtkWidget *widget, gpointer data)
       
       gtk_tree_path_free (path);
       
-#ifdef USE_SKYMON
       if(flagSkymon){
 	draw_skymon(hg->skymon_dw,hg, FALSE);
       }
-#endif
     }
 }
 
@@ -5171,9 +5162,7 @@ void stddb_dl(typHOE *hg)
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
 
 
-#ifdef USE_GTK2  
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
-#endif
   
   label=gtk_label_new("Searching standards in SIMBAD ...");
 

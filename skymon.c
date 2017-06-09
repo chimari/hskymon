@@ -7,7 +7,6 @@
 #include"main.h"    // 設定ヘッダ
 #include"version.h"
 
-#ifdef USE_SKYMON
 #include <cairo.h>
 
 #ifdef HAVE_SYS_WAIT_H
@@ -691,6 +690,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
   }
 
   skymon_debug_print("Starting draw_skymon_cairo\n");
+  skymon_debug_print("family %s  size%d\n",hg->fontfamily_all, hg->skymon_allsz);
 
   int width, height;
   width= widget->allocation.width;
@@ -3725,7 +3725,6 @@ void skymon_set_time_current(typHOE *hg){
   hg->skymon_min=min;
 }
 
-#endif
 
 void skymon_debug_print(const gchar *format, ...)
 {

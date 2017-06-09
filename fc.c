@@ -299,9 +299,7 @@ void fc_dl (typHOE *hg)
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   
-#ifdef USE_GTK2  
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
-#endif
   
   if(hg->fc_mode==FC_SKYVIEW_RGB){
     mode=hg->fc_mode_RGB[hg->i_RGB];
@@ -3758,9 +3756,7 @@ void set_fc_frame_col(typHOE *hg){
 static void show_fc_help (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox, *table;
-#ifdef USE_GTK2
   GdkPixbuf *icon, *pixbuf;
-#endif  
 
   while (my_main_iteration(FALSE));
   gdk_flush();
@@ -3995,9 +3991,7 @@ void fcdb_dl(typHOE *hg)
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   
-#ifdef USE_GTK2  
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
-#endif
   
   switch(hg->fcdb_type){
   case FCDB_TYPE_SIMBAD:
@@ -4173,9 +4167,7 @@ void addobj_dl(typHOE *hg)
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   
-#ifdef USE_GTK2  
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
-#endif
   
   switch(hg->addobj_type){
   case FCDB_TYPE_SIMBAD:

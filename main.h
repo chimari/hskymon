@@ -510,19 +510,12 @@ enum{
 
 
 // Sky Monitor
-#if GTK_CHECK_VERSION(2,8,0)
-#define USE_SKYMON
-#else
-#undef USE_SKYMON
-#endif
-
-#ifdef USE_SKYMON
 #define SKYMON_WINSIZE 500
+
 #ifdef USE_WIN32
 #define SKYMON_FONT "arial 10"
 #else
 #define SKYMON_FONT "Suns 10"
-#endif
 #endif
 
 #define DEF_SIZE_EDGE 4
@@ -548,10 +541,8 @@ enum{
 #define CHECK_ALLSKY_INTERVAL 3*1000
 
 
-#ifdef USE_SKYMON
 #define SKYMON_INTERVAL 200
 #define SKYMON_STEP 5
-#endif
 
 #define MAX_OBJECT 2000
 #define MAX_ROPE 32
@@ -613,7 +604,6 @@ enum{ STDDB_SSLOC, STDDB_RAPID, STDDB_MIRSTD, STDDB_ESOSTD, STDDB_IRAFSTD, STDDB
 #define PDF_EXTENSION "pdf"
 
 
-#ifdef USE_SKYMON
 // SKYMON Mode
 enum{ SKYMON_CUR, SKYMON_SET, SKYMON_LAST} SkymonMode;
 
@@ -621,7 +611,6 @@ enum{ SKYMON_CUR, SKYMON_SET, SKYMON_LAST} SkymonMode;
 #define SUNRISE_OFFSET 25
 
 #define SKYMON_DEF_OBJSZ 10.0
-#endif
 
 // SIZE　OF GUI ENTRY
 #define SMALL_ENTRY_SIZE 24
@@ -1113,7 +1102,6 @@ struct _OBJpara{
   gdouble c_hpa;
   gdouble c_vhpa;
 
-#ifdef USE_SKYMON
   gdouble s_az;
   gdouble s_el;
   gdouble s_elmax;
@@ -1125,7 +1113,6 @@ struct _OBJpara{
   gdouble s_sep;
   gdouble s_hpa;
   gdouble s_vhpa;
-#endif
 
   gboolean check_disp;
   gboolean check_sm;
@@ -1247,7 +1234,6 @@ struct _Moonpara{
   my_hms c_set;
   gboolean c_circum;
 
-#ifdef USE_SKYMON
   struct ln_hms s_ra;
   struct ln_dms s_dec;
   gdouble s_az;
@@ -1258,7 +1244,6 @@ struct _Moonpara{
   my_hms s_rise;
   my_hms s_set;
   gboolean s_circum;
-#endif
 };
 
 typedef struct _Sunpara typSun;
@@ -1271,7 +1256,6 @@ struct _Sunpara{
   my_hms c_set;
   gboolean c_circum;
 
-#ifdef USE_SKYMON
   struct ln_hms s_ra;
   struct ln_dms s_dec;
   gdouble s_az;
@@ -1279,7 +1263,6 @@ struct _Sunpara{
   my_hms s_rise;
   my_hms s_set;
   gboolean s_circum;
-#endif
 };
 
 
@@ -1293,13 +1276,11 @@ struct _Planetpara{
   gdouble c_el;
   gdouble c_mag;
 
-#ifdef USE_SKYMON
   struct ln_hms s_ra;
   struct ln_dms s_dec;
   gdouble s_az;
   gdouble s_el;
   gdouble s_mag;
-#endif
 };
 
 
@@ -1330,10 +1311,8 @@ struct _typHOE{
   gint  skymon_allsz;
 
   gint timer;
-#ifdef USE_SKYMON
   gint skymon_timer;
   gint plot_timer;
-#endif
 #ifdef USE_XMLRPC
   gint telstat_timer;
 #endif
@@ -1410,19 +1389,15 @@ struct _typHOE{
   gint lst_min;
   gdouble lst_sec;
 
-#ifdef USE_SKYMON
   gint skymon_lst_hour;
   gint skymon_lst_min;
   gdouble skymon_lst_sec;
-#endif
-
 
   gint azel_mode;
 
   gint wwwdb_mode;
   gint stddb_mode;
 
-#ifdef USE_SKYMON
   GtkWidget *skymon_main;
   GtkWidget *skymon_dw;
   GtkWidget *skymon_frame_mode;
@@ -1443,7 +1418,6 @@ struct _typHOE{
   gint skymon_mode;
   gint skymon_year,skymon_month,skymon_day,skymon_min,skymon_hour;
   gint skymon_objsz;
-#endif
 
   gint plot_mode;
   gint plot_all;
