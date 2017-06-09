@@ -7946,16 +7946,16 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtk_hbox_new(FALSE,5);
   gtk_container_add (GTK_CONTAINER (frame), hbox);
 
-  label = gtk_label_new ("Basic");
+  label = gtk_label_new ("Base");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 5);
 
   {
     button = gtk_font_button_new_with_font(hg->fontname_all);
-    gtk_box_pack_start(GTK_BOX(hbox), button,TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), button,TRUE, TRUE, 2);
     gtk_font_button_set_show_style(GTK_FONT_BUTTON(button),FALSE);
     gtk_font_button_set_use_font(GTK_FONT_BUTTON(button),TRUE);
     gtk_font_button_set_show_size(GTK_FONT_BUTTON(button),TRUE);
@@ -7966,11 +7966,11 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
   label = gtk_label_new ("     Object");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 5);
 
   {
     button = gtk_font_button_new_with_font(hg->fontname);
-    gtk_box_pack_start(GTK_BOX(hbox), button,TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), button,TRUE, TRUE, 2);
     gtk_font_button_set_show_style(GTK_FONT_BUTTON(button),FALSE);
     gtk_font_button_set_use_font(GTK_FONT_BUTTON(button),TRUE);
     gtk_font_button_set_show_size(GTK_FONT_BUTTON(button),TRUE);
