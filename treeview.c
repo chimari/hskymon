@@ -2413,7 +2413,12 @@ refresh_item (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
   gint i_list;
 
-  calcpa2_main(hg);
+  if(hg->skymon_mode==SKYMON_SET){
+    calcpa2_skymon(hg);
+  }
+  else{
+    calcpa2_main(hg);
+  }
 
   tree_update_azel((gpointer)hg);
 }
@@ -2466,7 +2471,12 @@ cell_edited (GtkCellRendererText *cell,
 	hg->obj[i].ra=(gdouble)g_strtod(new_text,NULL);	
         gtk_list_store_set (GTK_LIST_STORE (model), &iter, column,
                             hg->obj[i].ra, -1);
-	calcpa2_main(hg);
+	if(hg->skymon_mode==SKYMON_SET){
+	  calcpa2_skymon(hg);
+	}
+	else{
+	  calcpa2_main(hg);
+	}
       }
       break;
 
@@ -2481,7 +2491,12 @@ cell_edited (GtkCellRendererText *cell,
 	hg->obj[i].dec=(gdouble)g_strtod(new_text,NULL);	
         gtk_list_store_set (GTK_LIST_STORE (model), &iter, column,
                             hg->obj[i].dec, -1);
-	calcpa2_main(hg);
+	if(hg->skymon_mode==SKYMON_SET){
+	  calcpa2_skymon(hg);
+	}
+	else{
+	  calcpa2_main(hg);
+	}
       }
       break;
 
@@ -2496,7 +2511,12 @@ cell_edited (GtkCellRendererText *cell,
 	hg->obj[i].equinox=(gdouble)g_strtod(new_text,NULL);	
         gtk_list_store_set (GTK_LIST_STORE (model), &iter, column,
                             hg->obj[i].equinox, -1);
-	calcpa2_main(hg);
+	if(hg->skymon_mode==SKYMON_SET){
+	  calcpa2_skymon(hg);
+	}
+	else{
+	  calcpa2_main(hg);
+	}
       }
       break;
 

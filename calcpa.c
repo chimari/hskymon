@@ -16,7 +16,6 @@
 
 double adrad(double zrad, double wlnm,double h,double t,double p,double f);
 double new_tu(int iyear, int month, int iday);
-//void calcpa_main(PApara* padata,char* plot_dev);
 void calcpa2_main(typHOE* hg);
 
 void calcpa2_skymon(typHOE* hg);
@@ -56,6 +55,13 @@ double get_julian_day_of_equinox();
 gdouble deg_sep();
 
 void calc_moon_topocen();
+void geocen_to_topocen();
+
+gdouble ra_to_deg();
+gdouble dec_to_deg();
+gdouble deg_to_ra();
+gdouble deg_to_dec();
+gdouble date_to_jd();
 
 extern gboolean my_main_iteration();
 extern void my_signal_connect();
@@ -521,10 +527,6 @@ gboolean draw_plot_cairo(GtkWidget *widget,
   //#### input ####### 
   
   char *tmp;
-  double a0s;
-  int ia0h,ia0m;
-  double d0s;
-  int id0d,id0m;
   int iyear;
   int month;
   int iday;
@@ -534,7 +536,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
   //int ihst0=17, ihst1=31;
   double utstart,utend;
   double ut_offset;
-  double a0,d0,a0rad,d0rad;
+  double a0,d0,d0rad;
   double ut,d_ut;
   double flst, ha;
   double el0, az0;
@@ -2491,29 +2493,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
     }
     
     if(plot_flag){
-	//a0s=padata->ra;
-      a0s=hg->obj[i_list].ra;
-      ia0h=(int)(a0s/10000);
-      a0s=a0s-(double)(ia0h)*10000;
-      ia0m=(int)(a0s/100);
-      a0s=a0s-(double)(ia0m)*100;
-      
-      //d0s=padata->dec;
-      d0s=hg->obj[i_list].dec;
-      id0d=(int)(d0s/10000);
-      d0s=d0s-(double)(id0d)*10000;
-      id0m=(int)(d0s/100);
-      d0s=d0s-(double)(id0m)*100;
+      oequ.ra=ra_to_deg(hg->obj[i_list].ra);
+      oequ.dec=dec_to_deg(hg->obj[i_list].dec);
 
-      
-      a0=ia0h + ia0m/60. + a0s/3600.;  //[hour]
-      d0=id0d + id0m/60. + d0s/3600.;  //[deg]
-      a0rad=M_PI*a0/12.;  //[rad]
-      d0rad=M_PI*d0/180.; //[rad]
-      
-      oequ.ra=a0*360/24;
-      oequ.dec=d0;
-      
       JD = ln_get_julian_local_date(&zonedate);
 
       ln_get_equ_prec2 (&oequ, get_julian_day_of_equinox(hg->obj[i_list].equinox),
@@ -2523,7 +2505,6 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*3600);
 
       a0=oequ_prec.ra*24./360.; //[hour]
-      a0rad=oequ_prec.ra*M_PI/180.;
       d0rad=oequ_prec.dec*M_PI/180.;
 
       ut=utstart;
@@ -3462,16 +3443,12 @@ void calcpa2_main(typHOE* hg){
 
   //#### input ####### 
   
-  double a0s;
-  int ia0h,ia0m;
-  double d0s;
-  int id0d,id0m;
   int iyear;
   int month;
   int iday;
   int min,hour;
   gdouble sec;
-  double a0,d0,a0rad,d0rad;
+  double a0,d0,d0rad;
   double ut;
   double ut_offset;
   double flst, ha;
@@ -3499,13 +3476,10 @@ void calcpa2_main(typHOE* hg){
   observer.lat = hg->obs_latitude;
   observer.lng = hg->obs_longitude;
 
-  //JD = ln_get_julian_from_sys();
   ln_get_date_from_sys(&date);
   ln_date_to_zonedate(&date,&zonedate,(long)hg->obs_timezone*3600);
   JD = ln_get_julian_local_date(&zonedate);
-  //JD_hst = ln_get_julian_local_date(&zonedate);
 
-  //flst = ln_get_apparent_sidereal_time(JD_hst) + hg->obs_longitude *24./360.;
   flst = ln_get_mean_sidereal_time(JD) + hg->obs_longitude *24./360.;
   flst=set_ul(0., flst, 24.);
 
@@ -3514,24 +3488,49 @@ void calcpa2_main(typHOE* hg){
   hg->lst_sec=((flst-(double)hg->lst_hour-(double)hg->lst_min/60.)*60.*60.);
 
   for(i_list=0;i_list<hg->i_max;i_list++){
-    hobject.ra.hours = (int)(hg->obj[i_list].ra/10000);
-    hobject.ra.minutes = (int)((hg->obj[i_list].ra - (double)(hobject.ra.hours*10000))/100);
-    hobject.ra.seconds = hg->obj[i_list].ra - (double)(hobject.ra.hours*10000) 
-      - (double)(hobject.ra.minutes*100);
-    if(hg->obj[i_list].dec<0){
-      objd=-hg->obj[i_list].dec;
-      hobject.dec.neg = 1;
-    }
-    else{
-      objd=hg->obj[i_list].dec;
-      hobject.dec.neg = 0;
-    }
-    hobject.dec.degrees = (int)(objd/10000);
-    hobject.dec.minutes = (int)((objd - (double)(hobject.dec.degrees*10000))/100);
-    hobject.dec.seconds = objd - (double)(hobject.dec.degrees*10000) 
-      - (double)(hobject.dec.minutes*100);
+    if(hg->obj[i_list].i_nst>=0){ //Non-Sidereal
+      if(hg->nst[hg->obj[i_list].i_nst].eph[0].jd>JD){
+	hg->obj[i_list].ra=hg->nst[hg->obj[i_list].i_nst].eph[0].ra;
+	hg->obj[i_list].dec=hg->nst[hg->obj[i_list].i_nst].eph[0].dec;
+	hg->obj[i_list].equinox=hg->nst[hg->obj[i_list].i_nst].eph[0].equinox;
+	hg->nst[hg->obj[i_list].i_nst].c_fl=-1;
+      }
+      else if(hg->nst[hg->obj[i_list].i_nst].eph[hg->nst[hg->obj[i_list].i_nst].i_max-1].jd<JD){
+	hg->obj[i_list].ra=hg->nst[hg->obj[i_list].i_nst].eph[hg->nst[hg->obj[i_list].i_nst].i_max-1].ra;
+	hg->obj[i_list].dec=hg->nst[hg->obj[i_list].i_nst].eph[hg->nst[hg->obj[i_list].i_nst].i_max-1].dec;
+	hg->obj[i_list].equinox=hg->nst[hg->obj[i_list].i_nst].eph[hg->nst[hg->obj[i_list].i_nst].i_max-1].equinox;
+	hg->nst[hg->obj[i_list].i_nst].c_fl=1;
+      }
+      else{
+	gint i;
+	gdouble dJD, dJD1, ra1,ra2,dec1,dec2,dra,ddec;
 
-    ln_hequ_to_equ (&hobject, &object);
+	for(i=0;i<hg->nst[hg->obj[i_list].i_nst].i_max;i++){
+	  if(hg->nst[hg->obj[i_list].i_nst].eph[i].jd>JD){
+	    dJD=hg->nst[hg->obj[i_list].i_nst].eph[i].jd
+	      -hg->nst[hg->obj[i_list].i_nst].eph[i-1].jd;
+	    dJD1=JD-hg->nst[hg->obj[i_list].i_nst].eph[i-1].jd;
+	    ra1=ra_to_deg(hg->nst[hg->obj[i_list].i_nst].eph[i-1].ra);
+	    ra2=ra_to_deg(hg->nst[hg->obj[i_list].i_nst].eph[i].ra);
+	    dec1=dec_to_deg(hg->nst[hg->obj[i_list].i_nst].eph[i-1].dec);
+	    dec2=dec_to_deg(hg->nst[hg->obj[i_list].i_nst].eph[i].dec);
+	    dra=ra2-ra1;
+	    ddec=dec2-dec1;
+	    
+	    hg->obj[i_list].ra=deg_to_ra(ra1+dra*dJD1/dJD);
+	    hg->obj[i_list].dec=deg_to_dec(dec1+ddec*dJD1/dJD);
+
+	    hg->obj[i_list].equinox=hg->nst[hg->obj[i_list].i_nst].eph[i-1].equinox;
+	    hg->nst[hg->obj[i_list].i_nst].c_fl=0;
+	    break;
+	  }
+	}
+      }
+    } // Non-Sidereal
+
+    object.ra=ra_to_deg(hg->obj[i_list].ra);
+    object.dec=dec_to_deg(hg->obj[i_list].dec);
+
     ln_get_equ_prec2 (&object, get_julian_day_of_equinox(hg->obj[i_list].equinox),
 		      JD, &object_prec);
     ln_equ_to_hequ (&object_prec, &hobject_prec);
@@ -3540,7 +3539,6 @@ void calcpa2_main(typHOE* hg){
     hg->obj[i_list].c_elmax=90.0-(object_prec.dec-hg->obs_latitude);
     
     a0=ln_hms_to_deg(&hobject_prec.ra)/360.*24.; //[hour]
-    a0rad=ln_hms_to_rad(&hobject_prec.ra);
     d0rad=ln_dms_to_rad(&hobject_prec.dec);
 
     ha=flst-a0;             //hour angle [hour]
@@ -3705,24 +3703,9 @@ void calcpa2_main(typHOE* hg){
   }
 
   for(i_list=0;i_list<hg->std_i_max;i_list++){
-    hobject.ra.hours = (int)(hg->std[i_list].ra/10000);
-    hobject.ra.minutes = (int)((hg->std[i_list].ra - (double)(hobject.ra.hours*10000))/100);
-    hobject.ra.seconds = hg->std[i_list].ra - (double)(hobject.ra.hours*10000) 
-      - (double)(hobject.ra.minutes*100);
-    if(hg->std[i_list].dec<0){
-      objd=-hg->std[i_list].dec;
-      hobject.dec.neg = 1;
-    }
-    else{
-      objd=hg->std[i_list].dec;
-      hobject.dec.neg = 0;
-    }
-    hobject.dec.degrees = (int)(objd/10000);
-    hobject.dec.minutes = (int)((objd - (double)(hobject.dec.degrees*10000))/100);
-    hobject.dec.seconds = objd - (double)(hobject.dec.degrees*10000) 
-      - (double)(hobject.dec.minutes*100);
+    object.ra=ra_to_deg(hg->std[i_list].ra);
+    object.dec=dec_to_deg(hg->std[i_list].dec);
 
-    ln_hequ_to_equ (&hobject, &object);
     ln_get_equ_prec2 (&object, get_julian_day_of_equinox(hg->std[i_list].equinox),
 		      JD, &object_prec);
     ln_equ_to_hequ (&object_prec, &hobject_prec);
@@ -3974,10 +3957,6 @@ void calcpa2_skymon(typHOE* hg){
 
   //#### input ####### 
   
-  double a0s;
-  int ia0h,ia0m;
-  double d0s;
-  int id0d,id0m;
   int iyear;
   int month;
   int iday;
@@ -4014,9 +3993,7 @@ void calcpa2_skymon(typHOE* hg){
   zonedate.seconds=0;
   zonedate.gmtoff=(long)hg->obs_timezone*3600;
 
-  //ln_zonedate_to_date(&zonedate, &date);
   JD = ln_get_julian_local_date(&zonedate);
-  //flst = ln_get_apparent_sidereal_time(JD) + hg->obs_longitude *24/360;
   flst = ln_get_mean_sidereal_time(JD) + hg->obs_longitude *24/360;
 
   flst=set_ul(0., flst, 24.);
@@ -4026,24 +4003,49 @@ void calcpa2_skymon(typHOE* hg){
   hg->skymon_lst_sec=((flst-(double)hg->skymon_lst_hour-(double)hg->skymon_lst_min/60.)*60.*60.);
 
   for(i_list=0;i_list<hg->i_max;i_list++){
-    hobject.ra.hours = (int)(hg->obj[i_list].ra/10000);
-    hobject.ra.minutes = (int)((hg->obj[i_list].ra - (double)(hobject.ra.hours*10000))/100);
-    hobject.ra.seconds = hg->obj[i_list].ra - (double)(hobject.ra.hours*10000) 
-      - (double)(hobject.ra.minutes*100);
-    if(hg->obj[i_list].dec<0){
-      objd=-hg->obj[i_list].dec;
-      hobject.dec.neg = 1;
-    }
-    else{
-      objd=hg->obj[i_list].dec;
-      hobject.dec.neg = 0;
-    }
-    hobject.dec.degrees = (int)(objd/10000);
-    hobject.dec.minutes = (int)((objd - (double)(hobject.dec.degrees*10000))/100);
-    hobject.dec.seconds = objd - (double)(hobject.dec.degrees*10000) 
-      - (double)(hobject.dec.minutes*100);
+    if(hg->obj[i_list].i_nst>=0){ //Non-Sidereal
+      if(hg->nst[hg->obj[i_list].i_nst].eph[0].jd>JD){
+	hg->obj[i_list].ra=hg->nst[hg->obj[i_list].i_nst].eph[0].ra;
+	hg->obj[i_list].dec=hg->nst[hg->obj[i_list].i_nst].eph[0].dec;
+	hg->obj[i_list].equinox=hg->nst[hg->obj[i_list].i_nst].eph[0].equinox;
+	hg->nst[hg->obj[i_list].i_nst].s_fl=-1;
+      }
+      else if(hg->nst[hg->obj[i_list].i_nst].eph[hg->nst[hg->obj[i_list].i_nst].i_max-1].jd<JD){
+	hg->obj[i_list].ra=hg->nst[hg->obj[i_list].i_nst].eph[hg->nst[hg->obj[i_list].i_nst].i_max-1].ra;
+	hg->obj[i_list].dec=hg->nst[hg->obj[i_list].i_nst].eph[hg->nst[hg->obj[i_list].i_nst].i_max-1].dec;
+	hg->obj[i_list].equinox=hg->nst[hg->obj[i_list].i_nst].eph[hg->nst[hg->obj[i_list].i_nst].i_max-1].equinox;
+	hg->nst[hg->obj[i_list].i_nst].s_fl=1;
+      }
+      else{
+	gint i;
+	gdouble dJD, dJD1, ra1,ra2,dec1,dec2,dra,ddec;
 
-    ln_hequ_to_equ (&hobject, &object);
+	for(i=0;i<hg->nst[hg->obj[i_list].i_nst].i_max;i++){
+	  if(hg->nst[hg->obj[i_list].i_nst].eph[i].jd>JD){
+	    dJD=hg->nst[hg->obj[i_list].i_nst].eph[i].jd
+	      -hg->nst[hg->obj[i_list].i_nst].eph[i-1].jd;
+	    dJD1=JD-hg->nst[hg->obj[i_list].i_nst].eph[i-1].jd;
+	    ra1=ra_to_deg(hg->nst[hg->obj[i_list].i_nst].eph[i-1].ra);
+	    ra2=ra_to_deg(hg->nst[hg->obj[i_list].i_nst].eph[i].ra);
+	    dec1=dec_to_deg(hg->nst[hg->obj[i_list].i_nst].eph[i-1].dec);
+	    dec2=dec_to_deg(hg->nst[hg->obj[i_list].i_nst].eph[i].dec);
+	    dra=ra2-ra1;
+	    ddec=dec2-dec1;
+
+	    hg->obj[i_list].ra=deg_to_ra(ra1+dra*dJD1/dJD);
+	    hg->obj[i_list].dec=deg_to_dec(dec1+ddec*dJD1/dJD);
+
+	    hg->obj[i_list].equinox=hg->nst[hg->obj[i_list].i_nst].eph[i-1].equinox;
+	    hg->nst[hg->obj[i_list].i_nst].s_fl=0;
+	    break;
+	  }
+	}
+      }
+    } // Non-Sidereal
+
+    object.ra=ra_to_deg(hg->obj[i_list].ra);
+    object.dec=dec_to_deg(hg->obj[i_list].dec);
+
     ln_get_equ_prec2 (&object, get_julian_day_of_equinox(hg->obj[i_list].equinox),
 		      JD, &object_prec);
     ln_equ_to_hequ (&object_prec, &hobject_prec);
@@ -4178,24 +4180,9 @@ void calcpa2_skymon(typHOE* hg){
   }
 
   for(i_list=0;i_list<hg->std_i_max;i_list++){
-    hobject.ra.hours = (int)(hg->std[i_list].ra/10000);
-    hobject.ra.minutes = (int)((hg->std[i_list].ra - (double)(hobject.ra.hours*10000))/100);
-    hobject.ra.seconds = hg->std[i_list].ra - (double)(hobject.ra.hours*10000) 
-      - (double)(hobject.ra.minutes*100);
-    if(hg->std[i_list].dec<0){
-      objd=-hg->std[i_list].dec;
-      hobject.dec.neg = 1;
-    }
-    else{
-      objd=hg->std[i_list].dec;
-      hobject.dec.neg = 0;
-    }
-    hobject.dec.degrees = (int)(objd/10000);
-    hobject.dec.minutes = (int)((objd - (double)(hobject.dec.degrees*10000))/100);
-    hobject.dec.seconds = objd - (double)(hobject.dec.degrees*10000) 
-      - (double)(hobject.dec.minutes*100);
+    object.ra=ra_to_deg(hg->std[i_list].ra);
+    object.dec=dec_to_deg(hg->std[i_list].dec);
 
-    ln_hequ_to_equ (&hobject, &object);
     ln_get_equ_prec2 (&object, get_julian_day_of_equinox(hg->std[i_list].equinox),
 		      JD, &object_prec);
     ln_equ_to_hequ (&object_prec, &hobject_prec);
@@ -5029,11 +5016,6 @@ gfloat get_meridian_hour(typHOE *hg){
   int hour, min;
   gdouble sec;
 
-  double a0s;
-  int ia0h,ia0m;
-  double d0s;
-  int id0d,id0m;
-  double a0,d0,a0rad,d0rad;
   struct ln_zonedate zonedate;
   struct ln_date date;
   struct ln_equ_posn oequ;
@@ -5072,27 +5054,8 @@ gfloat get_meridian_hour(typHOE *hg){
   zonedate.seconds=sec;
   zonedate.gmtoff=(long)hg->obs_timezone*3600;
 
-  a0s=hg->obj[hg->plot_i].ra;
-  ia0h=(int)(a0s/10000);
-  a0s=a0s-(double)(ia0h)*10000;
-  ia0m=(int)(a0s/100);
-  a0s=a0s-(double)(ia0m)*100;
-	
-  //d0s=padata->dec;
-  d0s=hg->obj[hg->plot_i].dec;
-  id0d=(int)(d0s/10000);
-  d0s=d0s-(double)(id0d)*10000;
-  id0m=(int)(d0s/100);
-  d0s=d0s-(double)(id0m)*100;
-
-
-  a0=ia0h + ia0m/60. + a0s/3600.;  //[hour]
-  d0=id0d + id0m/60. + d0s/3600.;  //[deg]
-  a0rad=M_PI*a0/12.;  //[rad]
-  d0rad=M_PI*d0/180.; //[rad]
-  
-  oequ.ra=a0*360/24;
-  oequ.dec=d0;
+  oequ.ra=ra_to_deg(hg->obj[hg->plot_i].ra);
+  oequ.dec=dec_to_deg(hg->obj[hg->plot_i].dec);
   
   JD = ln_get_julian_local_date(&zonedate);
   ln_get_equ_prec2 (&oequ, get_julian_day_of_equinox(hg->obj[hg->plot_i].equinox),
@@ -5257,4 +5220,138 @@ void calc_moon_topocen(typHOE *hg,
   //printf("flst = %.2lf, mpar = %.2lf,  dRA = %.2lf,   dDec = %.2lf\n",
   //	 flst, mpar*60., (equ->ra-equ_geoc->ra)*60.,(equ->dec-equ_geoc->dec)*60.);
 
+}
+
+void geocen_to_topocen(typHOE *hg,
+		       gdouble JD,
+		       gdouble geo_d,
+		       struct ln_equ_posn * equ_geoc,
+		       struct ln_equ_posn * equ)
+{
+  gdouble mpar, gclat, rho, HA, g, topRA, topDec, geo_d_km;
+  gdouble r_earth=6378.137;
+  gdouble flst;
+  gdouble f=1./298.257222101;
+  
+  flst = ln_get_mean_sidereal_time(JD) + hg->obs_longitude *24/360;
+  
+  //d_moon=ln_get_lunar_earth_dist(JD);  //km
+  geo_d_km=geo_d*(AU_IN_KM);  //km
+  mpar=asin((r_earth+hg->obs_altitude/1000.)/geo_d_km)*180./M_PI; //degree
+  gclat=(hg->obs_latitude 
+	 - 0.1924*sin(2*hg->obs_latitude*M_PI/180.))*M_PI/180.; //rad
+  rho  =0.99833 + 0.00167 * cos(2*hg->obs_latitude*M_PI/180.)
+        + hg->obs_altitude/1000./r_earth; // r_earth
+  HA = flst - (equ_geoc->ra * 24./360.); // hour
+  g = atan(tan(gclat) / cos(HA*M_PI/12.)); // rad
+    
+  equ->ra = equ_geoc->ra - mpar * rho * cos(gclat)
+    * sin(HA*M_PI/12.) / cos(equ_geoc->dec*M_PI/180.);  // degree
+  if(equ_geoc->dec>89.99){
+    equ->dec = equ_geoc->dec - mpar * rho * sin(-equ_geoc->dec*M_PI/180.) 
+      *cos(HA*M_PI/12.);  // degree
+  }
+  else{
+    equ->dec = equ_geoc->dec - mpar * rho * sin(gclat) *
+      sin(g-equ_geoc->dec*M_PI/180.) / sin(g);  // degree
+  }
+}
+
+gdouble ra_to_deg(gdouble ra){
+  double a0s;
+  int ia0h,ia0m;
+  double a0;
+ 
+  a0s=ra;
+  ia0h=(int)(a0s/10000);
+  a0s=a0s-(double)(ia0h)*10000;
+  ia0m=(int)(a0s/100);
+  a0s=a0s-(double)(ia0m)*100;
+
+  a0=ia0h + ia0m/60. + a0s/3600.;  //[hour]
+
+  return(a0*360/24);
+}
+
+gdouble dec_to_deg(gdouble dec){
+  double d0s;
+  int id0d,id0m;
+  double d0;
+ 
+  d0s=dec;
+  id0d=(int)(d0s/10000);
+  d0s=d0s-(double)(id0d)*10000;
+  id0m=(int)(d0s/100);
+  d0s=d0s-(double)(id0m)*100;
+
+  d0=id0d + id0m/60. + d0s/3600.;  //[deg]
+  
+  return(d0);
+}
+
+gdouble deg_to_ra(gdouble d_ra){
+  struct ln_equ_posn object;
+  struct lnh_equ_posn hobject;
+  gdouble ra;
+
+  object.ra=d_ra;
+  object.dec=0;
+
+  ln_equ_to_hequ (&object, &hobject);
+
+  ra=(gdouble)hobject.ra.hours*10000
+    +(gdouble)hobject.ra.minutes*100
+    +(gdouble)hobject.ra.seconds;
+
+  return(ra);
+}
+
+
+gdouble deg_to_dec(gdouble d_dec){ 
+  struct ln_equ_posn object;
+  struct lnh_equ_posn hobject;
+  gdouble dec;
+
+  object.ra=0;
+  object.dec=d_dec;
+
+  ln_equ_to_hequ (&object, &hobject);
+
+  if(hobject.dec.neg){
+    dec=-(gdouble)hobject.dec.degrees*10000
+      -(gdouble)hobject.dec.minutes*100
+      -(gdouble)hobject.dec.seconds;
+  }
+  else{
+    dec=(gdouble)hobject.dec.degrees*10000
+      +(gdouble)hobject.dec.minutes*100
+      +(gdouble)hobject.dec.seconds;
+  }
+  
+  return(dec);
+}
+
+gdouble date_to_jd(gdouble date){
+  struct ln_zonedate local_date;
+  gint dtmp;
+  gdouble ttmp;
+  gdouble JD;
+
+  local_date.gmtoff=0;
+
+  dtmp=local_date.years=(gint)(date/1000000);
+  ttmp=date-(gdouble)dtmp*1000000;
+
+  local_date.years=dtmp/10000;
+  local_date.months=(dtmp-local_date.years*10000)/100;
+  local_date.days=dtmp-local_date.years*10000-local_date.months*100;
+
+  local_date.hours=(gint)(ttmp/10000);
+  local_date.minutes=(gint)((ttmp-(gdouble)local_date.hours*10000)/100);
+  local_date.seconds=ttmp-(gdouble)local_date.hours*10000
+    -(gdouble)local_date.minutes*100;
+
+  JD=ln_get_julian_local_date(&local_date);
+  
+  return(JD);
 }

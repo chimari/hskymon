@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 2.9.4    2017/06/10
+#                                  ver 2.9.5    2017/06/20
 #                               Copyright (C) 2003-17 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #########################################################################
@@ -139,6 +139,26 @@ objects inputs.
 	BD+51 1696  ,114635.2 ,+505254.7 ,2000   
 	BD-13 3442  ,114650.7 ,-140643.5 ,2000,
            ....................................
+
+
+[3] Non-Sidereal Tracking File (TSC format)
+Non-Sidereal tracking files for TSC can also be avairable.
+Please put TSC files in an appropriate directory (maybe in the same 
+directory where your OPE files locate) and load them from the menu.
+Files must follow the format described in
+  https://www.naoj.org/Observing/Telescope/Tracking/NonSidereal/
+. You should use "Geocentric" coordinate in TSC files.
+They would be automatically converted into topocentric in the program.
+When hskymon's time and date are out of the range of the tracking 
+calculation, the object will be plotted with an "x" mark in the monitor.
+You can check the orbit of the non-sidereal target in the Finsing Chart.
+
+
+[4] Non-Sidereal Tracking File (JPL HORIZONS format)
+hskymon can also load NASA JPL HIRIZONS output files.
+  https://ssd.jpl.nasa.gov/horizons.cgi
+Please note that you should set "Observer Location" to "Geocentric".
+From the main menu, HORIZONS files can be converted into the TSC format.
 
 
 *** Copyright

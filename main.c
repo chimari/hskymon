@@ -26,6 +26,13 @@ extern void calcpa2_main();
 extern void pdf_plot();
 extern void create_plot_dialog();
 
+extern void geocen_to_topocen();
+extern gdouble ra_to_deg();
+extern gdouble dec_to_deg();
+extern gdouble deg_to_ra();
+extern gdouble deg_to_dec();
+extern gdouble date_to_jd();
+
 extern  void create_skymon_dialog();
 extern gboolean draw_skymon_cairo();
 #ifdef USE_XMLRPC
@@ -100,6 +107,9 @@ static void show_simbad();
 
 void do_quit();
 void do_open();
+void do_open_NST();
+void do_open_JPL();
+void do_conv_JPL();
 void do_reload_ope();
 #ifdef USE_XMLRPC
 void do_sync_ope();
@@ -137,11 +147,12 @@ void create_std_para_dialog();
 static void fcdb_para_item();
 void create_fcdb_para_dialog();
 
+extern int month_from_string_short();
 
 void InitDefCol();
 void param_init();
 void do_update_azel();
-gint update_azel2();
+gint update_azel_auto();
 #ifdef USE_XMLRPC
 gint update_telstat();
 #endif
@@ -149,6 +160,9 @@ gint update_allsky();
 void update_c_label();
 gchar *cut_spc();
 gchar *make_filehead();
+void MergeNST();
+void MergeJPL();
+void ConvJPL();
 void ReadList();
 void UploadOPE();
 void ReadListOPE();
@@ -175,9 +189,7 @@ void popup_message(gint , ...);
 gboolean close_popup();
 static void destroy_popup();
 
-#ifdef __GTK_FILE_CHOOSER_H__
 void my_file_chooser_add_filter (GtkWidget *dialog, const gchar *name, ...);
-#endif
 void my_signal_connect();
 gboolean my_main_iteration();
 void my_entry_set_width_chars();
@@ -460,6 +472,65 @@ GtkWidget *make_menu(typHOE *hg){
     my_signal_connect (popup_button, "activate",do_merge,(gpointer)hg);
     
     popup_button =gtk_menu_item_new_with_label ("CSV List");
+    gtk_widget_show (popup_button);
+    gtk_container_add (GTK_CONTAINER (menu), popup_button);
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
+  }
+
+  bar =gtk_separator_menu_item_new();
+  gtk_widget_show (bar);
+  gtk_container_add (GTK_CONTAINER (menu), bar);
+
+  {
+    GtkWidget *new_menu; 
+    GtkWidget *popup_button;
+    GtkWidget *bar;
+   
+    new_menu = gtk_menu_new();
+    gtk_widget_show (new_menu);
+    
+  //Non-Sidereal/Merge TSC
+#ifdef __GTK_STOCK_H__
+    image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
+    popup_button =gtk_image_menu_item_new_with_label ("Merge TSC file");
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#else
+    popup_button =gtk_menu_item_new_with_label ("Merge TSC file");
+#endif
+    gtk_widget_show (popup_button);
+    gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
+    my_signal_connect (popup_button, "activate",do_open_NST,(gpointer)hg);
+
+    //Non-Sidereal/Merge JPL
+#ifdef __GTK_STOCK_H__
+    image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
+    popup_button =gtk_image_menu_item_new_with_label ("Merge JPL HORIZONS file");
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#else
+    popup_button =gtk_menu_item_new_with_label ("Merge JPL HORIZONS file");
+#endif
+    gtk_widget_show (popup_button);
+    gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
+    my_signal_connect (popup_button, "activate",do_open_JPL,(gpointer)hg);
+
+    bar =gtk_separator_menu_item_new();
+    gtk_widget_show (bar);
+    gtk_container_add (GTK_CONTAINER (new_menu), bar);
+
+    //Non-Sidereal/Conv JPL to TSC
+#ifdef __GTK_STOCK_H__
+    image=gtk_image_new_from_stock (GTK_STOCK_CONVERT, GTK_ICON_SIZE_MENU);
+    popup_button =gtk_image_menu_item_new_with_label ("Convert HORIZONS to TSC");
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#else
+    popup_button =gtk_menu_item_new_with_label ("Merge JPL HORIZONS file");
+#endif
+    gtk_widget_show (popup_button);
+    gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
+    my_signal_connect (popup_button, "activate",do_conv_JPL,(gpointer)hg);
+
+
+    popup_button =gtk_menu_item_new_with_label ("Non-Sidereal");
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (menu), popup_button);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
@@ -2269,7 +2340,6 @@ void do_quit (GtkWidget *widget, gpointer gdata)
 
 void do_open (GtkWidget *widget, gpointer gdata)
 {
-#ifdef __GTK_FILE_CHOOSER_H__
   GtkWidget *fdialog;
   typHOE *hg;
 
@@ -2331,7 +2401,12 @@ void do_open (GtkWidget *widget, gpointer gdata)
       //make_obj_list(hg,TRUE);
 
       //// Current Condition
-      calcpa2_main(hg);
+      if(hg->skymon_mode==SKYMON_SET){
+	calcpa2_skymon(hg);
+      }
+      else{
+	calcpa2_main(hg);
+      }
       update_c_label(hg);
 
       if(flagTree){
@@ -2359,13 +2434,13 @@ void do_open (GtkWidget *widget, gpointer gdata)
 
   flagChildDialog=FALSE;
   
-#else
+}
+
+
+void do_open_NST (GtkWidget *widget, gpointer gdata)
+{
   GtkWidget *fdialog;
-  GtkWidget *button;
   typHOE *hg;
-  confArg *cdata;
-  
-  cdata=g_malloc0(sizeof(confArg));
 
   if(flagChildDialog){
     return;
@@ -2380,71 +2455,301 @@ void do_open (GtkWidget *widget, gpointer gdata)
   while (my_main_iteration(FALSE));
   gdk_flush();
 
-  fdialog = gtk_file_selection_new("Sky Monitor : Select Input List File");
+  fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File [TSC]",
+					NULL,
+					GTK_FILE_CHOOSER_ACTION_OPEN,
+					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+					NULL);
   
-  cdata->fs=GTK_FILE_SELECTION(fdialog);
-  cdata->update=FALSE;
-  cdata->filename=NULL;
+  gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
+  if(access(hg->filename_nst,F_OK)==0){
+    gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (fdialog), 
+				   to_utf8(hg->filename_nst));
+    gtk_file_chooser_select_filename (GTK_FILE_CHOOSER (fdialog), 
+				      to_utf8(hg->filename_nst));
+  }
 
-  
-  my_signal_connect(fdialog,"destroy",
-		    close_child_dialog, 
-		    GTK_WIDGET(fdialog));
-  
-  my_signal_connect(GTK_FILE_SELECTION(fdialog)->ok_button,
-		    "clicked", 
-		    ReadListGUI, (gpointer)cdata);
-  
-  my_signal_connect(GTK_FILE_SELECTION(fdialog)->cancel_button,
-		    "clicked", 
-		    close_child_dialog, 
-		    GTK_WIDGET(fdialog));
-
-  button=gtk_button_new_with_label("*." LIST1_EXTENSION);
-  gtk_box_pack_start(GTK_BOX(GTK_FILE_SELECTION(fdialog)->action_area),
-		     button,FALSE,FALSE,0);
-  my_signal_connect(button,"clicked", 
-		    fs_set_list1ext, 
-		    (gpointer)fdialog);
-
-  button=gtk_button_new_with_label("*." LIST2_EXTENSION);
-  gtk_box_pack_start(GTK_BOX(GTK_FILE_SELECTION(fdialog)->action_area),
-		     button,FALSE,FALSE,0);
-  my_signal_connect(button,"clicked", 
-		    fs_set_list2ext, 
-		    (gpointer)fdialog);
-
-  button=gtk_button_new_with_label("*." LIST3_EXTENSION);
-  gtk_box_pack_start(GTK_BOX(GTK_FILE_SELECTION(fdialog)->action_area),
-		     button,FALSE,FALSE,0);
-  my_signal_connect(button,"clicked", 
-		    fs_set_list3ext, 
-		    (gpointer)fdialog);
-
+  my_file_chooser_add_filter(fdialog,"List File", 
+			     "*." NST2_EXTENSION,
+			     "*." NST3_EXTENSION,
+			     NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*",NULL);
 
   gtk_widget_show_all(fdialog);
-  
-  gtk_main();
 
-  if(cdata->update){
-    hg->filename_list=g_strdup(cdata->filename);
+
+  if (gtk_dialog_run(GTK_DIALOG(fdialog)) == GTK_RESPONSE_ACCEPT) {
+    char *fname;
+    gchar *dest_file;
     
-    ReadList(hg, 0);
-    //make_obj_list(hg,TRUE);
+    fname = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog)));
+    gtk_widget_destroy(fdialog);
 
-    //// Current Condition
-    calcpa2_main(hg);
-    update_c_label(hg);
+    dest_file=to_locale(fname);
 
-    if(flagTree){
-      remake_tree(hg);
+    if(access(dest_file,F_OK)==0){
+      if(hg->filename_nst) g_free(hg->filename_nst);
+      hg->filename_nst=g_strdup(dest_file);
+      MergeNST(hg, hg->ope_max);
+
+      //// Current Condition
+      if(hg->skymon_mode==SKYMON_SET){
+	calcpa2_skymon(hg);
+      }
+      else{
+	calcpa2_main(hg);
+      }
+      update_c_label(hg);
+
+      if(flagTree){
+	remake_tree(hg);
+      }
     }
+    else{
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: File cannot be opened.",
+		  " ",
+		  fname,
+		  NULL);
+#else
+      g_print ("Cannot Open %s\n",
+	       fname);
+#endif
+    }
+    
+    g_free(dest_file);
+    g_free(fname);
+  } else {
+    gtk_widget_destroy(fdialog);
   }
 
   flagChildDialog=FALSE;
-  g_free(cdata);
+}
 
+
+void do_open_JPL (GtkWidget *widget, gpointer gdata)
+{
+  GtkWidget *fdialog;
+  typHOE *hg;
+
+  if(flagChildDialog){
+    return;
+  }
+  else{
+    flagChildDialog=TRUE;
+  }
+
+  hg=(typHOE *)gdata;
+
+  // Win構築は重いので先にExposeイベント等をすべて処理してから
+  while (my_main_iteration(FALSE));
+  gdk_flush();
+
+  fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File  [JPL HRIZONS]",
+					NULL,
+					GTK_FILE_CHOOSER_ACTION_OPEN,
+					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+					NULL);
+  
+  gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
+  if(access(hg->filename_nst,F_OK)==0){
+    gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (fdialog), 
+				   to_utf8(hg->filename_nst));
+    gtk_file_chooser_select_filename (GTK_FILE_CHOOSER (fdialog), 
+				      to_utf8(hg->filename_nst));
+  }
+
+  my_file_chooser_add_filter(fdialog,"List File", 
+			     "*." NST1_EXTENSION,
+			     "*." NST3_EXTENSION,
+			     NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*",NULL);
+
+  gtk_widget_show_all(fdialog);
+
+
+  if (gtk_dialog_run(GTK_DIALOG(fdialog)) == GTK_RESPONSE_ACCEPT) {
+    char *fname;
+    gchar *dest_file;
+    
+    fname = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog)));
+    gtk_widget_destroy(fdialog);
+
+    dest_file=to_locale(fname);
+
+    if(access(dest_file,F_OK)==0){
+      if(hg->filename_nst) g_free(hg->filename_nst);
+      hg->filename_nst=g_strdup(dest_file);
+      MergeJPL(hg, hg->ope_max);
+
+      //// Current Condition
+      if(hg->skymon_mode==SKYMON_SET){
+	calcpa2_skymon(hg);
+      }
+      else{
+	calcpa2_main(hg);
+      }
+      update_c_label(hg);
+
+      if(flagTree){
+	remake_tree(hg);
+      }
+    }
+    else{
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: File cannot be opened.",
+		  " ",
+		  fname,
+		  NULL);
+#else
+      g_print ("Cannot Open %s\n",
+	       fname);
 #endif
+    }
+    
+    g_free(dest_file);
+    g_free(fname);
+  } else {
+    gtk_widget_destroy(fdialog);
+  }
+
+  flagChildDialog=FALSE;
+}
+
+
+
+void do_conv_JPL (GtkWidget *widget, gpointer gdata)
+{
+  GtkWidget *fdialog;
+  GtkWidget *fdialog_w;
+  typHOE *hg;
+  char *fname, *fname_w;
+  gchar *dest_file, *dest_file_w;
+
+  if(flagChildDialog){
+    return;
+  }
+  else{
+    flagChildDialog=TRUE;
+  }
+
+  hg=(typHOE *)gdata;
+
+  // Win構築は重いので先にExposeイベント等をすべて処理してから
+  while (my_main_iteration(FALSE));
+  gdk_flush();
+
+  fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File  [JPL HRIZONS]",
+					NULL,
+					GTK_FILE_CHOOSER_ACTION_OPEN,
+					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+					NULL);
+  
+  gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
+  if(access(hg->filename_nst,F_OK)==0){
+    gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (fdialog), 
+				   to_utf8(hg->filename_nst));
+    gtk_file_chooser_select_filename (GTK_FILE_CHOOSER (fdialog), 
+				      to_utf8(hg->filename_nst));
+  }
+
+  my_file_chooser_add_filter(fdialog,"List File", 
+			     "*." NST1_EXTENSION,
+			     "*." NST3_EXTENSION,
+			     NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*",NULL);
+
+  gtk_widget_show_all(fdialog);
+
+
+  if (gtk_dialog_run(GTK_DIALOG(fdialog)) == GTK_RESPONSE_ACCEPT) {
+    gchar *cpp, *basename0, *basename1;
+    
+    fname = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog)));
+    gtk_widget_destroy(fdialog);
+
+    dest_file=to_locale(fname);
+
+    if(access(dest_file,F_OK)==0){
+      if(hg->filename_nst) g_free(hg->filename_nst);
+      hg->filename_nst=g_strdup(dest_file);
+    }
+    else{
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: File cannot be opened.",
+		    " ",
+		    fname,
+		    NULL);
+#else
+      g_print ("Cannot Open %s\n",
+	       fname);
+#endif
+      return;
+    }
+     
+      if(fname) g_free(fname);
+      if(dest_file) g_free(dest_file);
+
+      // Win構築は重いので先にExposeイベント等をすべて処理してから
+      while (my_main_iteration(FALSE));
+      gdk_flush();
+
+      fdialog_w = gtk_file_chooser_dialog_new("Sky Monitor : Input TSC Tracking File to be saved",
+	NULL,
+	GTK_FILE_CHOOSER_ACTION_SAVE,
+	GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+	GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+	NULL);
+      
+      gtk_dialog_set_default_response(GTK_DIALOG(fdialog_w), GTK_RESPONSE_ACCEPT); 
+    
+      my_file_chooser_add_filter(fdialog_w,"List File", 
+	"*." NST2_EXTENSION,
+	NULL);
+    
+      my_file_chooser_add_filter(fdialog_w,"All File","*",NULL);
+      
+      gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (fdialog_w), 
+	to_utf8(g_path_get_dirname(hg->filename_nst)));
+
+      basename0=g_path_get_basename(hg->filename_nst);
+      cpp=(gchar *)strtok(basename0,".");
+      basename1=g_strconcat(cpp,".",NST2_EXTENSION,NULL);
+      gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (fdialog_w), 
+	to_utf8(basename1));
+      if(basename0) g_free(basename0);
+      if(basename1) g_free(basename1);
+    
+    gtk_widget_show_all(fdialog_w);
+    
+    
+    if (gtk_dialog_run(GTK_DIALOG(fdialog_w)) == GTK_RESPONSE_ACCEPT) {
+      fname_w = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog_w)));
+      gtk_widget_destroy(fdialog_w);
+      dest_file_w=to_locale(fname_w);
+      
+      if(hg->filename_tscconv) g_free(hg->filename_tscconv);
+      hg->filename_tscconv=g_strdup(dest_file_w);
+      ConvJPL(hg);
+
+      if(fname_w) g_free(fname_w);
+      if(dest_file_w) g_free(dest_file_w);
+    }
+    else {
+      gtk_widget_destroy(fdialog_w);
+    }
+  }
+  else {
+    gtk_widget_destroy(fdialog);
+  }
+
+  flagChildDialog=FALSE;
 }
 
 
@@ -2461,7 +2766,12 @@ void do_reload_ope (GtkWidget *widget, gpointer gdata)
       //make_obj_list(hg,TRUE);
       
       //// Current Condition
-      calcpa2_main(hg);
+      if(hg->skymon_mode==SKYMON_SET){
+	calcpa2_skymon(hg);
+      }
+      else{
+	calcpa2_main(hg);
+      }
       update_c_label(hg);
       
       if(flagTree){
@@ -2486,7 +2796,6 @@ void do_reload_ope (GtkWidget *widget, gpointer gdata)
 
 void do_open_ope (GtkWidget *widget, gpointer gdata)
 {
-#ifdef __GTK_FILE_CHOOSER_H__
   GtkWidget *fdialog;
   typHOE *hg;
 
@@ -2554,7 +2863,12 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
       //make_obj_list(hg,TRUE);
 
       //// Current Condition
-      calcpa2_main(hg);
+      if(hg->skymon_mode==SKYMON_SET){
+	calcpa2_skymon(hg);
+      }
+      else{
+	calcpa2_main(hg);
+      }
       update_c_label(hg);
       
       if(flagTree){
@@ -2582,83 +2896,11 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
 
   flagChildDialog=FALSE;
   
-#else
-  GtkWidget *fdialog;
-  GtkWidget *button;
-  typHOE *hg;
-  confArg *cdata;
-  
-  cdata=g_malloc0(sizeof(confArg));
-
-  if(flagChildDialog){
-    return;
-  }
-  else{
-    flagChildDialog=TRUE;
-  }
-
-  hg=(typHOE *)gdata;
-
-  // Win構築は重いので先にExposeイベント等をすべて処理してから
-  while (my_main_iteration(FALSE));
-  gdk_flush();
-
-  fdialog = gtk_file_selection_new("Sky Monitor : Select OPE File");
-  
-  cdata->fs=GTK_FILE_SELECTION(fdialog);
-  cdata->update=FALSE;
-  cdata->filename=NULL;
-
-  
-  my_signal_connect(fdialog,"destroy",
-		    close_child_dialog, 
-		    GTK_WIDGET(fdialog));
-  
-  my_signal_connect(GTK_FILE_SELECTION(fdialog)->ok_button,
-		    "clicked", 
-		    ReadListGUI, (gpointer)cdata);
-  
-  my_signal_connect(GTK_FILE_SELECTION(fdialog)->cancel_button,
-		    "clicked", 
-		    close_child_dialog, 
-		    GTK_WIDGET(fdialog));
-
-  button=gtk_button_new_with_label("*." OPE_EXTENSION);
-  gtk_box_pack_start(GTK_BOX(GTK_FILE_SELECTION(fdialog)->action_area),
-		     button,FALSE,FALSE,0);
-  my_signal_connect(button,"clicked", 
-		    fs_set_list1ext, 
-		    (gpointer)fdialog);
-
-  gtk_widget_show_all(fdialog);
-  
-  gtk_main();
-
-  if(cdata->update){
-    hg->filename_ope=g_strdup(cdata->filename);
-    
-    ReadListOPE(hg, 0);
-    //make_obj_list(hg,TRUE);
-    
-    //// Current Condition
-    calcpa2_main(hg);
-    update_c_label(hg);
-    
-    if(flagTree){
-      remake_tree(hg);
-    }
-  }
-
-  flagChildDialog=FALSE;
-  g_free(cdata);
-
-#endif
 }
 
 
 void do_merge_ope (GtkWidget *widget, gpointer gdata)
 {
-#ifdef __GTK_FILE_CHOOSER_H__
   GtkWidget *fdialog;
   typHOE *hg;
 
@@ -2714,7 +2956,12 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
       //make_obj_list(hg,TRUE);
 
       //// Current Condition
-      calcpa2_main(hg);
+      if(hg->skymon_mode==SKYMON_SET){
+	calcpa2_skymon(hg);
+      }
+      else{
+	calcpa2_main(hg);
+      }
       update_c_label(hg);
       
       if(flagTree){
@@ -2742,77 +2989,6 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
 
   flagChildDialog=FALSE;
   
-#else
-  GtkWidget *fdialog;
-  GtkWidget *button;
-  typHOE *hg;
-  confArg *cdata;
-  
-  cdata=g_malloc0(sizeof(confArg));
-
-  if(flagChildDialog){
-    return;
-  }
-  else{
-    flagChildDialog=TRUE;
-  }
-
-  hg=(typHOE *)gdata;
-
-  // Win構築は重いので先にExposeイベント等をすべて処理してから
-  while (my_main_iteration(FALSE));
-  gdk_flush();
-
-  fdialog = gtk_file_selection_new("Sky Monitor : Select OPE File");
-  
-  cdata->fs=GTK_FILE_SELECTION(fdialog);
-  cdata->update=FALSE;
-  cdata->filename=NULL;
-
-  
-  my_signal_connect(fdialog,"destroy",
-		    close_child_dialog, 
-		    GTK_WIDGET(fdialog));
-  
-  my_signal_connect(GTK_FILE_SELECTION(fdialog)->ok_button,
-		    "clicked", 
-		    ReadListGUI, (gpointer)cdata);
-  
-  my_signal_connect(GTK_FILE_SELECTION(fdialog)->cancel_button,
-		    "clicked", 
-		    close_child_dialog, 
-		    GTK_WIDGET(fdialog));
-
-  button=gtk_button_new_with_label("*." OPE_EXTENSION);
-  gtk_box_pack_start(GTK_BOX(GTK_FILE_SELECTION(fdialog)->action_area),
-		     button,FALSE,FALSE,0);
-  my_signal_connect(button,"clicked", 
-		    fs_set_list1ext, 
-		    (gpointer)fdialog);
-
-  gtk_widget_show_all(fdialog);
-  
-  gtk_main();
-
-  if(cdata->update){
-    hg->filename_ope=g_strdup(cdata->filename);
-    
-    MergeListOPE(hg, hg->ope_max);
-    //make_obj_list(hg,TRUE);
-    
-    //// Current Condition
-    calcpa2_main(hg);
-    update_c_label(hg);
-    
-    if(flagTree){
-      remake_tree(hg);
-    }
-  }
-
-  flagChildDialog=FALSE;
-  g_free(cdata);
-
-#endif
 }
 
 
@@ -2871,7 +3047,12 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
       //make_obj_list(hg,TRUE);
 
       //// Current Condition
-      calcpa2_main(hg);
+      if(hg->skymon_mode==SKYMON_SET){
+	calcpa2_skymon(hg);
+      }
+      else{
+	calcpa2_main(hg);
+      }
       update_c_label(hg);
       
       if(flagTree){
@@ -2905,7 +3086,6 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
 
 void do_merge (GtkWidget *widget, gpointer gdata)
 {
-#ifdef __GTK_FILE_CHOOSER_H__
   GtkWidget *fdialog;
   typHOE *hg;
 
@@ -2967,7 +3147,12 @@ void do_merge (GtkWidget *widget, gpointer gdata)
       //make_obj_list(hg,TRUE);
       
       //// Current Condition
-      calcpa2_main(hg);
+      if(hg->skymon_mode==SKYMON_SET){
+	calcpa2_skymon(hg);
+      }
+      else{
+	calcpa2_main(hg);
+      }
       update_c_label(hg);
       
       if(flagTree){
@@ -2995,91 +3180,6 @@ void do_merge (GtkWidget *widget, gpointer gdata)
 
   flagChildDialog=FALSE;
   
-#else
-  GtkWidget *fdialog;
-  GtkWidget *button;
-  typHOE *hg;
-  confArg *cdata;
-  
-  cdata=g_malloc0(sizeof(confArg));
-
-  if(flagChildDialog){
-    return;
-  }
-  else{
-    flagChildDialog=TRUE;
-  }
-
-  hg=(typHOE *)gdata;
-
-  // Win構築は重いので先にExposeイベント等をすべて処理してから
-  while (my_main_iteration(FALSE));
-  gdk_flush();
-
-  fdialog = gtk_file_selection_new("Sky Monitor : Select Input List File to Merge");
-  
-  cdata->fs=GTK_FILE_SELECTION(fdialog);
-  cdata->update=FALSE;
-  cdata->filename=NULL;
-
-  
-  my_signal_connect(fdialog,"destroy",
-		    close_child_dialog, 
-		    GTK_WIDGET(fdialog));
-  
-  my_signal_connect(GTK_FILE_SELECTION(fdialog)->ok_button,
-		    "clicked", 
-		    ReadListGUI, (gpointer)cdata);
-  
-  my_signal_connect(GTK_FILE_SELECTION(fdialog)->cancel_button,
-		    "clicked", 
-		    close_child_dialog, 
-		    GTK_WIDGET(fdialog));
-
-  button=gtk_button_new_with_label("*." LIST1_EXTENSION);
-  gtk_box_pack_start(GTK_BOX(GTK_FILE_SELECTION(fdialog)->action_area),
-		     button,FALSE,FALSE,0);
-  my_signal_connect(button,"clicked", 
-		    fs_set_list1ext, 
-		    (gpointer)fdialog);
-
-  button=gtk_button_new_with_label("*." LIST2_EXTENSION);
-  gtk_box_pack_start(GTK_BOX(GTK_FILE_SELECTION(fdialog)->action_area),
-		     button,FALSE,FALSE,0);
-  my_signal_connect(button,"clicked", 
-		    fs_set_list2ext, 
-		    (gpointer)fdialog);
-
-  button=gtk_button_new_with_label("*." LIST3_EXTENSION);
-  gtk_box_pack_start(GTK_BOX(GTK_FILE_SELECTION(fdialog)->action_area),
-		     button,FALSE,FALSE,0);
-  my_signal_connect(button,"clicked", 
-		    fs_set_list3ext, 
-		    (gpointer)fdialog);
-
-
-  gtk_widget_show_all(fdialog);
-  
-  gtk_main();
-
-  if(cdata->update){
-    hg->filename_list=g_strdup(cdata->filename);
-    
-    MergeList(hg, hg->ope_max);
-    //make_obj_list(hg,TRUE);
-    
-    //// Current Condition
-    calcpa2_main(hg);
-    update_c_label(hg);
-    
-    if(flagTree){
-      remake_tree(hg);
-    }
-  }
-
-  flagChildDialog=FALSE;
-  g_free(cdata);
-#endif
 }
 
 
@@ -8230,7 +8330,12 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 				     (gpointer)hg);
     }
 
-    calcpa2_main(hg);
+    if(hg->skymon_mode==SKYMON_SET){
+      calcpa2_skymon(hg);
+    }
+    else{
+      calcpa2_main(hg);
+    }
     
     update_c_label(hg);
     if(flagTree){
@@ -8342,7 +8447,12 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 				     (gpointer)hg);
     }
 
-    calcpa2_main(hg);
+    if(hg->skymon_mode==SKYMON_SET){
+      calcpa2_skymon(hg);
+    }
+    else{
+      calcpa2_main(hg);
+    }
     
     update_c_label(hg);
     if(flagTree){
@@ -8611,6 +8721,7 @@ void param_init(typHOE *hg){
   hg->i_max=0;
   hg->ope_max=0;
   hg->add_max=0;
+  hg->nst_max=0;
 
   hg->sz_skymon=SKYMON_WINSIZE;
   hg->sz_plot  =  PLOT_WINSIZE;
@@ -8644,6 +8755,7 @@ void param_init(typHOE *hg){
     hg->obj[i].check_used=TRUE;
     hg->obj[i].check_std=FALSE;
     hg->obj[i].type=OBJTYPE_OBJ;
+    hg->obj[i].i_nst=-1;
 
     hg->obj[i].x=-1;
     hg->obj[i].y=-1;
@@ -8847,31 +8959,37 @@ void do_update_azel(GtkWidget *widget, gpointer gdata){
 
   hg=(typHOE *)gdata;
 
-  calcpa2_main(hg);
-
-  update_c_label(hg);
-  if(flagTree){
-    tree_update_azel((gpointer)hg);
+  if(hg->skymon_mode==SKYMON_SET){
+    calcpa2_skymon(hg);
   }
-  
+  else{
+    calcpa2_main(hg);
+  }
+    update_c_label(hg);
+
+    if(flagTree){
+      tree_update_azel((gpointer)hg);
+    }
 }
 
 
 
-gboolean update_azel2 (gpointer gdata){
+gboolean update_azel_auto (gpointer gdata){
   typHOE *hg;
 
   if(!flag_make_obj_list)  return(TRUE);
 
   hg=(typHOE *)gdata;
 
-  calcpa2_main(hg);
+  if(hg->skymon_mode==SKYMON_CUR){
+    calcpa2_main(hg);
+    update_c_label(hg);
 
-  update_c_label(hg);
-
-  if(flagTree){
-    tree_update_azel((gpointer)hg);
+    if(flagTree){
+      tree_update_azel((gpointer)hg);
+    }
   }
+
 
   return(TRUE);
 
@@ -9011,6 +9129,744 @@ gchar *make_filehead(const gchar *file_head, gchar * obj_name){
 }
 
 
+void MergeNST(typHOE *hg, gint ope_max){
+  FILE *fp;
+  gint i,i_list=0,i_base;
+  static char buf[BUFFSIZE];
+  struct ln_equ_posn equ, equ_geoc;
+  gdouble date_tmp, ra_geoc, dec_geoc;
+  gchar *cp, *cpp, *tmp_name, *cut_name;
+  struct ln_zonedate zonedate;
+  
+  if(hg->i_max>=MAX_OBJECT){
+    popup_message(POPUP_TIMEOUT,
+		  "Warning: Object Number exceeds the limit.",
+		  NULL);
+    return;
+  }
+  
+
+  if((fp=fopen(hg->filename_nst,"r"))==NULL){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: File cannot be opened.",
+		  " ",
+		  hg->filename_nst,
+		  NULL);
+#else
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+    printf_log(hg,"[MergeNST] File Read Error  \"%s\".", hg->filename_nst);
+    return;
+  }
+
+  printf_log(hg,"[MergeNST] Opening %s.",hg->filename_nst);
+  i_list=hg->i_max;
+  hg->ope_max=ope_max;
+  if(ope_max==0){
+    hg->nst_max=0;
+  }
+
+  for(i=0;i<6;i++){
+    if(fgets(buf,BUFFSIZE-1,fp)){
+      if(i==0){
+	cpp=buf;
+	cpp++;
+	if(NULL != (cp = strstr(cpp, "     "))){
+	  tmp_name=g_strndup(cpp,strlen(cpp)-strlen(cp));
+	}
+	else{
+	  tmp_name=g_strdup(cpp);
+	}
+      }
+    }
+    else{
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: TSC File format might be incorrect.",
+		    " ",
+		    hg->filename_nst,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+      fclose(fp);
+      return;
+    }
+  }
+  hg->nst[hg->nst_max].i_max=(gint)g_strtod(buf,NULL);
+  if(hg->nst[hg->nst_max].i_max<=0){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: TSC File format might be incorrect.",
+		  " ",
+		  hg->filename_nst,
+		  NULL);
+#else
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+    fclose(fp);
+    return;
+  }
+
+  if(hg->nst[hg->nst_max].eph) g_free(hg->nst[hg->nst_max].eph);
+  hg->nst[hg->nst_max].eph
+    =g_malloc0(sizeof(EPHpara)*hg->nst[hg->nst_max].i_max);
+  
+  i=0;
+  while((!feof(fp))||(i<hg->nst_max)){
+    if(fgets(buf,BUFFSIZE-1,fp)){
+      sscanf(buf,"%lf %lf %lf %lf %lf",
+	     &date_tmp,
+	     &ra_geoc,
+	     &dec_geoc,
+	     &hg->nst[hg->nst_max].eph[i].geo_d,
+	     &hg->nst[hg->nst_max].eph[i].equinox);
+      
+      hg->nst[hg->nst_max].eph[i].jd=date_to_jd(date_tmp);
+      // GeoCentric --> TopoCentric
+      equ_geoc.ra=ra_to_deg(ra_geoc);
+      equ_geoc.dec=dec_to_deg(dec_geoc);
+      geocen_to_topocen(hg,hg->nst[hg->nst_max].eph[i].jd,
+			hg->nst[hg->nst_max].eph[i].geo_d,&equ_geoc,&equ);
+      hg->nst[hg->nst_max].eph[i].ra=deg_to_ra(equ.ra);
+      hg->nst[hg->nst_max].eph[i].dec=deg_to_dec(equ.dec);
+      i++;
+    }
+  }
+  
+  if(i!=hg->nst[hg->nst_max].i_max){
+    printf_log(hg,"[MergeNST] Inconsistent Line Number in  \"%s\", %d <--> %d.", hg->filename_nst,hg->nst[hg->nst_max].i_max,i);
+  }
+
+  fclose(fp);
+
+  if(i>0){
+    ln_get_local_date(hg->nst[hg->nst_max].eph[0].jd, &zonedate, 
+		      hg->obs_timezone);
+    if(tmp_name){
+      cut_name=cut_spc(tmp_name);
+      g_free(tmp_name);
+      if(hg->obj[i_list].name) g_free(hg->obj[i_list].name);
+      hg->obj[i_list].name=g_strdup(cut_name);
+      g_free(cut_name);
+    }
+    else{
+      hg->obj[i_list].name=g_strdup("(None-Sidereal)");
+    }
+    hg->obj[i_list].ra=hg->nst[hg->nst_max].eph[0].ra;
+    hg->obj[i_list].dec=hg->nst[hg->nst_max].eph[0].dec;
+    hg->obj[i_list].equinox=hg->nst[hg->nst_max].eph[0].equinox;
+    hg->obj[i_list].note=g_strdup_printf("%s [on %4d/%02d/%02d]",
+					 g_path_get_basename(hg->filename_nst),
+					 zonedate.years,
+					 zonedate.months,
+					 zonedate.days);
+
+    hg->obj[i_list].check_disp=TRUE;
+    hg->obj[i_list].check_sm=FALSE;
+    hg->obj[i_list].check_lock=FALSE;
+    hg->obj[i_list].check_used=TRUE;
+    hg->obj[i_list].check_std=FALSE;
+    hg->obj[i_list].ope=hg->ope_max;
+    hg->obj[i_list].ope_i=0;
+    hg->obj[i_list].type=OBJTYPE_OBJ;
+    hg->obj[i_list].i_nst=hg->nst_max;
+
+    hg->i_max++;
+    if(hg->ope_max<MAX_ROPE-1) hg->ope_max++;
+    hg->nst_max++;
+  }
+}
+
+void MergeJPL(typHOE *hg, gint ope_max){
+  FILE *fp;
+  gint i,i_list, i_line, i_soe=0, i_eoe=0;
+  static char buf[BUFFSIZE];
+  struct ln_equ_posn equ, equ_geoc;
+  gchar *cp, *cpp, *tmp_name, *cut_name, *tmp_center;
+  struct ln_zonedate zonedate;
+  char *tmp;
+  struct lnh_equ_posn hequ;
+  
+  if(hg->i_max>=MAX_OBJECT){
+    popup_message(POPUP_TIMEOUT,
+		  "Warning: Object Number exceeds the limit.",
+		  NULL);
+    return;
+  }
+  
+
+  if((fp=fopen(hg->filename_nst,"r"))==NULL){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: File cannot be opened.",
+		  " ",
+		  hg->filename_nst,
+		  NULL);
+#else
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+    printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_nst);
+    return;
+  }
+
+  printf_log(hg,"[MergeJPL] Opening %s.",hg->filename_nst);
+  i_list=hg->i_max;
+  hg->ope_max=ope_max;
+  if(ope_max==0){
+    hg->nst_max=0;
+  }
+
+  i_line=0;
+  while(!feof(fp)){
+    if(fgets(buf,BUFFSIZE-1,fp)){
+      i_line++;
+      if(g_ascii_strncasecmp(buf,"$$SOE",strlen("$$SOE"))==0){
+	i_soe=i_line;
+      }
+      else if(g_ascii_strncasecmp(buf,"$$EOE",strlen("$$EOE"))==0){
+	i_eoe=i_line;
+      }
+      else if(g_ascii_strncasecmp(buf,"Target body name:",
+				  strlen("Target body name:"))==0){
+	cpp=buf;
+	cpp+=strlen("Target body name:");
+	if(NULL != (cp = strstr(cpp, "     "))){
+	  tmp_name=g_strndup(cpp,strlen(cpp)-strlen(cp));
+	}
+	else{
+	  tmp_name=g_strdup(cpp);
+	}
+      }
+      else if(g_ascii_strncasecmp(buf,"Center-site name: ",
+				  strlen("Center-site name: "))==0){
+	cpp=buf;
+	cpp+=strlen("Center-site name: ");
+	tmp_center=g_strndup(cpp,strlen("GEOCENTRIC"));
+	if(g_ascii_strncasecmp(tmp_center,"GEOCENTRIC",
+			       strlen("GEOCENTRIC"))!=0){	
+	  if(tmp_center) g_free(tmp_center);
+	  fclose(fp);
+#ifdef GTK_MSG
+	  popup_message(POPUP_TIMEOUT*2,
+			"Error: Invalid HORIZONS File.",
+			"Center-site must be \"GEOCENTRIC\".",
+			" ",
+			hg->filename_nst,
+			NULL);
+#else
+	  fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+	  printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_nst);
+	  return;
+	}
+	if(tmp_center) g_free(tmp_center);
+      }
+    }
+    else{
+      break;
+    }
+  }
+
+  fclose(fp);
+
+  if((fp=fopen(hg->filename_nst,"r"))==NULL){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: File cannot be opened.",
+		  " ",
+		  hg->filename_nst,
+		  NULL);
+#else
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+    printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_nst);
+    return;
+  }
+
+
+  if(i_soe>=i_eoe){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: Invalid HORIZONS File.",
+		  " ",
+		  hg->filename_nst,
+		  NULL);
+#else
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+    return;
+  }
+
+  hg->nst[hg->nst_max].i_max=i_eoe-i_soe-1;
+
+  if(hg->nst[hg->nst_max].eph) g_free(hg->nst[hg->nst_max].eph);
+  hg->nst[hg->nst_max].eph
+    =g_malloc0(sizeof(EPHpara)*hg->nst[hg->nst_max].i_max);
+
+  for(i=0;i<i_soe;i++){
+    if(!fgets(buf,BUFFSIZE-1,fp)){
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: Invalid HORIZONS File.",
+		    " ",
+		    hg->filename_nst,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+      fclose(fp);
+      return;
+    }
+  }
+
+  for(i=i_soe+1;i<i_eoe;i++){
+    if(fgets(buf,BUFFSIZE-1,fp)){
+      cpp=buf;
+      cpp+=1;  // space x1
+
+      tmp=g_strndup(cpp,4); //year
+      zonedate.years=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+4;  // - x1
+
+      tmp=g_strndup(cpp,3); //month
+      zonedate.months=month_from_string_short(tmp)+1;
+      g_free(tmp);
+
+      cpp+=1+3;  // - x1
+
+      tmp=g_strndup(cpp,2); //day
+      zonedate.days=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // space x1
+
+      tmp=g_strndup(cpp,2); //hour
+      zonedate.hours=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // : x1
+
+      tmp=g_strndup(cpp,2); //minute
+      zonedate.minutes=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // : x1
+
+      tmp=g_strndup(cpp,6); //second
+      zonedate.seconds=(gdouble)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=5+6;  // space x6
+
+      zonedate.gmtoff=0;
+
+      hg->nst[hg->nst_max].eph[i-i_soe-1].jd=
+	ln_get_julian_local_date(&zonedate);
+
+      tmp=g_strndup(cpp,2); // ra hours
+      hequ.ra.hours=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // space x1
+      
+      tmp=g_strndup(cpp,2); // ra minutes
+      hequ.ra.minutes=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // space x1
+      
+      tmp=g_strndup(cpp,7); // ra seconds
+      hequ.ra.seconds=(gdouble)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+7;  // space x1
+      
+      tmp=g_strndup(cpp,1); // dec neg
+      if(g_ascii_strncasecmp(tmp,"-",strlen("-"))==0){
+	hequ.dec.neg=1;
+      }
+      else{
+	hequ.dec.neg=0;
+      }
+      g_free(tmp);
+
+      cpp+=1;  // 
+      
+      tmp=g_strndup(cpp,2); // dec degrees
+      hequ.dec.degrees=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // space x1
+      
+      tmp=g_strndup(cpp,2); // dec minutes
+      hequ.dec.minutes=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // space x1
+      
+      tmp=g_strndup(cpp,6); // dec seconds
+      hequ.dec.seconds=(gdouble)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+6;  // space x1
+	    
+      tmp=g_strdup(cpp); // geocentric distance in AU
+      hg->nst[hg->nst_max].eph[i-i_soe-1].geo_d=(gdouble)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      ln_hequ_to_equ (&hequ, &equ_geoc);
+      geocen_to_topocen(hg,hg->nst[hg->nst_max].eph[i-i_soe-1].jd,
+			hg->nst[hg->nst_max].eph[i-i_soe-1].geo_d,
+			&equ_geoc,
+			&equ);
+      hg->nst[hg->nst_max].eph[i-i_soe-1].ra=deg_to_ra(equ.ra);
+      hg->nst[hg->nst_max].eph[i-i_soe-1].dec=deg_to_dec(equ.dec);
+      hg->nst[hg->nst_max].eph[i-i_soe-1].equinox=2000.0;
+
+     }
+    else{
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: Invalid HORIZONS File.",
+		    " ",
+		    hg->filename_nst,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+      fclose(fp);
+      return;
+    }
+  }
+  
+  fclose(fp);
+
+  ln_get_local_date(hg->nst[hg->nst_max].eph[0].jd, &zonedate, 
+		    hg->obs_timezone);
+  if(tmp_name){
+    cut_name=cut_spc(tmp_name);
+    g_free(tmp_name);
+    if(hg->obj[i_list].name) g_free(hg->obj[i_list].name);
+    hg->obj[i_list].name=g_strdup(cut_name);
+    g_free(cut_name);
+  }
+  else{
+    hg->obj[i_list].name=g_strdup("(None-Sidereal)");
+  }
+  hg->obj[i_list].ra=hg->nst[hg->nst_max].eph[0].ra;
+  hg->obj[i_list].dec=hg->nst[hg->nst_max].eph[0].dec;
+  hg->obj[i_list].equinox=hg->nst[hg->nst_max].eph[0].equinox;
+  hg->obj[i_list].note=g_strdup_printf("%s [on %4d/%02d/%02d]",
+				       g_path_get_basename(hg->filename_nst),
+				       zonedate.years,
+				       zonedate.months,
+				       zonedate.days);
+
+  hg->obj[i_list].check_disp=TRUE;
+  hg->obj[i_list].check_sm=FALSE;
+  hg->obj[i_list].check_lock=FALSE;
+  hg->obj[i_list].check_used=TRUE;
+  hg->obj[i_list].check_std=FALSE;
+  hg->obj[i_list].ope=hg->ope_max;
+  hg->obj[i_list].ope_i=0;
+  hg->obj[i_list].type=OBJTYPE_OBJ;
+  hg->obj[i_list].i_nst=hg->nst_max;
+
+  hg->i_max++;
+  if(hg->ope_max<MAX_ROPE-1) hg->ope_max++;
+  hg->nst_max++;
+}
+
+void ConvJPL(typHOE *hg){
+  FILE *fp, *fp_w;
+  gint i,i_list, i_line, i_soe=0, i_eoe=0, i_max;
+  static char buf[BUFFSIZE];
+  struct ln_equ_posn equ, equ_geoc;
+  gchar *cp, *cpp, *tmp_name, *cut_name, *tmp_center;
+  struct ln_zonedate zonedate;
+  char *tmp;
+  struct lnh_equ_posn hequ;
+  gdouble geo_d;
+  
+  if(hg->i_max>=MAX_OBJECT){
+    popup_message(POPUP_TIMEOUT,
+		  "Warning: Object Number exceeds the limit.",
+		  NULL);
+    return;
+  }
+  
+
+  if((fp=fopen(hg->filename_nst,"r"))==NULL){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: File cannot be opened.",
+		  " ",
+		  hg->filename_nst,
+		  NULL);
+#else
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+    printf_log(hg,"[ConvJPL] File Read Error  \"%s\".", hg->filename_nst);
+    return;
+  }
+
+  if((fp_w=fopen(hg->filename_tscconv,"w"))==NULL){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: File cannot be opened.",
+		  " ",
+		  hg->filename_nst,
+		  NULL);
+#else
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+    printf_log(hg,"[ConvJPL] File Read Error  \"%s\".", hg->filename_nst);
+    return;
+  }
+
+  printf_log(hg,"[ConvJPL] Convert %s --> %s.",
+	     hg->filename_nst, hg->filename_tscconv);
+
+  i_line=0;
+  while(!feof(fp)){
+    if(fgets(buf,BUFFSIZE-1,fp)){
+      i_line++;
+      if(g_ascii_strncasecmp(buf,"$$SOE",strlen("$$SOE"))==0){
+	i_soe=i_line;
+      }
+      else if(g_ascii_strncasecmp(buf,"$$EOE",strlen("$$EOE"))==0){
+	i_eoe=i_line;
+      }
+      else if(g_ascii_strncasecmp(buf,"Target body name:",
+				  strlen("Target body name:"))==0){
+	cpp=buf;
+	cpp+=strlen("Target body name:");
+	if(NULL != (cp = strstr(cpp, "     "))){
+	  tmp_name=g_strndup(cpp,strlen(cpp)-strlen(cp));
+	}
+	else{
+	  tmp_name=g_strdup(cpp);
+	}
+      }
+      else if(g_ascii_strncasecmp(buf,"Center-site name: ",
+				  strlen("Center-site name: "))==0){
+	cpp=buf;
+	cpp+=strlen("Center-site name: ");
+	tmp_center=g_strndup(cpp,strlen("GEOCENTRIC"));
+	if(g_ascii_strncasecmp(tmp_center,"GEOCENTRIC",
+			       strlen("GEOCENTRIC"))!=0){	
+	  if(tmp_center) g_free(tmp_center);
+	  fclose(fp);
+#ifdef GTK_MSG
+	  popup_message(POPUP_TIMEOUT*2,
+			"Error: Invalid HORIZONS File.",
+			"Center-site must be \"GEOCENTRIC\".",
+			" ",
+			hg->filename_nst,
+			NULL);
+#else
+	  fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+	  printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_nst);
+	  return;
+	}
+	if(tmp_center) g_free(tmp_center);
+      }
+    }
+    else{
+      break;
+    }
+  }
+
+  fclose(fp);
+
+  if((fp=fopen(hg->filename_nst,"r"))==NULL){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: File cannot be opened.",
+		  " ",
+		  hg->filename_nst,
+		  NULL);
+#else
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+    printf_log(hg,"[ConvJPL] File Read Error  \"%s\".", hg->filename_nst);
+    return;
+  }
+
+
+  if(i_soe>=i_eoe){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: Invalid HORIZONS File.",
+		  " ",
+		  hg->filename_nst,
+		  NULL);
+#else
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+    return;
+  }
+
+  i_max=i_eoe-i_soe-1;
+
+  for(i=0;i<i_soe;i++){
+    if(!fgets(buf,BUFFSIZE-1,fp)){
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+      fclose(fp);
+      return;
+    }
+  }
+
+  if(tmp_name){
+    cut_name=cut_spc(tmp_name);
+    g_free(tmp_name);
+    fprintf(fp_w,"#%s\n",cut_name);
+    g_free(cut_name);
+  }
+  else{
+    fprintf(fp_w,"#(Non-Sidereal File converted from JPL HORIZONS\n");
+  }
+
+  fprintf(fp_w,"+00.0000 +00.0000 ON%% +0.000\n");
+  fprintf(fp_w,"UTC Geocentric Equatorial Mean Polar Geocentric\n");
+  fprintf(fp_w,"ABS\n");
+  fprintf(fp_w,"TSC\n");
+  fprintf(fp_w,"%d\n",i_max);
+
+  for(i=i_soe+1;i<i_eoe;i++){
+    if(fgets(buf,BUFFSIZE-1,fp)){
+      cpp=buf;
+      cpp+=1;  // space x1
+
+      tmp=g_strndup(cpp,4); //year
+      zonedate.years=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+4;  // - x1
+
+      tmp=g_strndup(cpp,3); //month
+      zonedate.months=month_from_string_short(tmp)+1;
+      g_free(tmp);
+
+      cpp+=1+3;  // - x1
+
+      tmp=g_strndup(cpp,2); //day
+      zonedate.days=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // space x1
+
+      tmp=g_strndup(cpp,2); //hour
+      zonedate.hours=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // : x1
+
+      tmp=g_strndup(cpp,2); //minute
+      zonedate.minutes=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // : x1
+
+      tmp=g_strndup(cpp,6); //second
+      zonedate.seconds=(gdouble)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=5+6;  // space x6
+
+      zonedate.gmtoff=0;
+
+      tmp=g_strndup(cpp,2); // ra hours
+      hequ.ra.hours=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // space x1
+      
+      tmp=g_strndup(cpp,2); // ra minutes
+      hequ.ra.minutes=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // space x1
+      
+      tmp=g_strndup(cpp,7); // ra seconds
+      hequ.ra.seconds=(gdouble)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+7;  // space x1
+      
+      tmp=g_strndup(cpp,1); // dec neg
+      if(g_ascii_strncasecmp(tmp,"-",strlen("-"))==0){
+	hequ.dec.neg=1;
+      }
+      else{
+	hequ.dec.neg=0;
+      }
+      g_free(tmp);
+
+      cpp+=1;  // 
+      
+      tmp=g_strndup(cpp,2); // dec degrees
+      hequ.dec.degrees=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // space x1
+      
+      tmp=g_strndup(cpp,2); // dec minutes
+      hequ.dec.minutes=(gint)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+2;  // space x1
+      
+      tmp=g_strndup(cpp,6); // dec seconds
+      hequ.dec.seconds=(gdouble)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      cpp+=1+6;  // space x1
+	    
+      tmp=g_strdup(cpp); // geocentric distance in AU
+      geo_d=(gdouble)g_strtod(tmp, NULL);
+      g_free(tmp);
+
+      fprintf(fp_w,"%4d%02d%02d%02d%02d%06.3lf %02d%02d%06.3lf %s%02d%02d%05.2lf %13.9lf 2000.0000\n",
+	      zonedate.years,
+	      zonedate.months,
+	      zonedate.days,
+	      zonedate.hours,
+	      zonedate.minutes,
+	      zonedate.seconds,
+	      hequ.ra.hours,
+	      hequ.ra.minutes,
+	      hequ.ra.seconds,
+	      (hequ.dec.neg == 1) ? "-" : "+",
+	      hequ.dec.degrees,
+	      hequ.dec.minutes,
+	      hequ.dec.seconds,
+	      geo_d);
+     }
+    else{
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: Invalid HORIZONS File.",
+		    " ",
+		    hg->filename_nst,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#endif
+      fclose(fp);
+      return;
+    }
+  }
+  
+  fclose(fp);
+  fclose(fp_w);
+}
+
 void ReadList(typHOE *hg, gint ope_max){
   FILE *fp;
   int i_list=0,i_use;
@@ -9034,6 +9890,9 @@ void ReadList(typHOE *hg, gint ope_max){
 
   printf_log(hg,"[ReadList] Opening %s.",hg->filename_list);
   hg->ope_max=ope_max;
+  if(ope_max==0){
+    hg->nst_max=0;
+  }
 
   while(!feof(fp)){
     if(fgets(buf,BUFFSIZE-1,fp)){
@@ -9073,6 +9932,7 @@ void ReadList(typHOE *hg, gint ope_max){
       hg->obj[i_list].ope=hg->ope_max;
       hg->obj[i_list].ope_i=i_list;
       hg->obj[i_list].type=OBJTYPE_OBJ;
+      hg->obj[i_list].i_nst=-1;
 
       i_list++;
     }
@@ -9124,6 +9984,9 @@ void ReadListOPE(typHOE *hg, gint ope_max){
   
   printf_log(hg,"[ReadOPE] Opening %s.",hg->filename_ope);
   hg->ope_max=ope_max;
+  if(ope_max==0){
+    hg->nst_max=0;
+  }
 
   while(!feof(fp)){
     
@@ -9302,7 +10165,8 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  hg->obj[i_list].check_std=FALSE;
 	  hg->obj[i_list].ope=hg->ope_max;
 	  hg->obj[i_list].ope_i=i_list;
-  
+	  hg->obj[i_list].i_nst=-1;
+
 	  if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	    if(!ObjOverlap(hg,i_list)){
 	      //hg->obj[i_list].note=NULL;
@@ -9334,7 +10198,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
   }
 
 
-  CheckTargetDefOPE(hg);
+  CheckTargetDefOPE(hg, 0);
 
 
   // Searching *LOAD
@@ -9551,7 +10415,7 @@ gboolean ObjOverlap(typHOE *hg, gint i_max){
 
 void MergeListOPE(typHOE *hg, gint ope_max){
   FILE *fp;
-  int i_list, i_comp;
+  int i_list, i_comp, i0;
   static char buf[BUFFSIZE];
   gchar *BUF=NULL, *buf0=NULL;
   gboolean escape=FALSE;
@@ -9580,9 +10444,13 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 
   printf_log(hg,"[MergeOPE] Opening %s.",hg->filename_ope);
 
+  i0=hg->i_max;
   i_list=hg->i_max;
-  ope_zero=hg->i_max-1;
+  //ope_zero=hg->i_max-1;
   hg->ope_max=ope_max;
+  if(ope_max==0){
+    hg->nst_max=0;
+  }
 
   while(!feof(fp)){
     
@@ -9737,7 +10605,9 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  hg->obj[i_list].check_used=FALSE;
 	  hg->obj[i_list].check_std=FALSE;
 	  hg->obj[i_list].ope=hg->ope_max;
-	  hg->obj[i_list].ope_i=i_list-ope_zero-1;
+	  //hg->obj[i_list].ope_i=i_list-ope_zero-1;
+	  hg->obj[i_list].ope_i=i_list-i0;
+	  hg->obj[i_list].i_nst=-1;
 	  
 	  if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	    if(!ObjOverlap(hg,i_list)){
@@ -9772,7 +10642,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 
   hg->i_max=i_list;
 
-  CheckTargetDefOPE(hg);
+  CheckTargetDefOPE(hg, i0);
 
 
   // Searching *LOAD
@@ -10156,6 +11026,7 @@ void MergeListPRM(typHOE *hg){
 	    hg->obj[hg->i_max].ope=MAX_ROPE-1;
 	    hg->obj[hg->i_max].ope_i=hg->i_max-i0;
 	    hg->obj[hg->i_max].type=OBJTYPE_OBJ;
+	    hg->obj[hg->i_max].i_nst=-1;
 
 	    hg->i_max++;
 	    if(hg->i_max==MAX_OBJECT-1){
@@ -10173,7 +11044,7 @@ void MergeListPRM(typHOE *hg){
 
   fclose(fp);
 
-  CheckTargetDefOPE(hg);
+  CheckTargetDefOPE(hg, i0);
 
   if(BUF) g_free(BUF);
   if(cp3) g_free(cp3);
@@ -10365,6 +11236,7 @@ void MergeListPRM2(typHOE *hg){
 		hg->obj[hg->i_max].ope=MAX_ROPE-1;
 		hg->obj[hg->i_max].ope_i=hg->i_max-i0;
 		hg->obj[hg->i_max].type=OBJTYPE_OBJ;
+		hg->obj[hg->i_max].i_nst=-1;
 
 		hg->i_max++;
 		if(hg->i_max==MAX_OBJECT-1){
@@ -10414,7 +11286,7 @@ gboolean check_ttgs(gchar *def){
   return(FALSE);
 }
 
-void CheckTargetDefOPE(typHOE *hg){
+void CheckTargetDefOPE(typHOE *hg, gint i0){
   FILE *fp;
   int i_list=0;
   gchar *tmp_char;
@@ -10487,7 +11359,7 @@ void CheckTargetDefOPE(typHOE *hg){
 	      if(arg) g_free(arg);
 	      arg=g_strndup(cp,strcspn(cp," \r\n"));
 
-	      for(i_list=0;i_list<hg->i_max;i_list++){
+	      for(i_list=i0;i_list<hg->i_max;i_list++){
 		if(g_ascii_strcasecmp(arg,
 				      hg->obj[i_list].def)==0){
 		  hg->obj[i_list].check_disp=TRUE;
@@ -10513,7 +11385,7 @@ void CheckTargetDefOPE(typHOE *hg){
 	      if(arg) g_free(arg);
 	      arg=g_strndup(cp,strcspn(cp," \r\n"));
 
-	      for(i_list=0;i_list<hg->i_max;i_list++){
+	      for(i_list=i0;i_list<hg->i_max;i_list++){
 		if(g_ascii_strcasecmp(arg,
 				      hg->obj[i_list].def)==0){
 		  hg->obj[i_list].check_disp=TRUE;
@@ -10539,7 +11411,7 @@ void CheckTargetDefOPE(typHOE *hg){
 	      if(arg) g_free(arg);
 	      arg=g_strndup(cp,strcspn(cp," \r\n"));
 
-	      for(i_list=0;i_list<hg->i_max;i_list++){
+	      for(i_list=i0;i_list<hg->i_max;i_list++){
 		if(!check_ttgs(hg->obj[i_list].def)){
 		  if(g_ascii_strcasecmp(arg, hg->obj[i_list].def)==0){
 		    hg->obj[i_list].check_disp=TRUE;
@@ -10565,7 +11437,7 @@ void CheckTargetDefOPE(typHOE *hg){
 	      if(arg) g_free(arg);
 	      arg=g_strndup(cp,strcspn(cp," \r\n"));
 
-	      for(i_list=0;i_list<hg->i_max;i_list++){
+	      for(i_list=i0;i_list<hg->i_max;i_list++){
 		if(g_ascii_strcasecmp(arg,
 				      hg->obj[i_list].def)==0){
 		  hg->obj[i_list].check_disp=TRUE;
@@ -10747,7 +11619,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 
 void MergeList(typHOE *hg, gint ope_max){
   FILE *fp;
-  int i_list=0,i_use, i_base;
+  int i, i_list=0,i_base;
   gchar *tmp_char;
   static char buf[BUFFSIZE];
   OBJpara tmp_obj;
@@ -10772,6 +11644,9 @@ void MergeList(typHOE *hg, gint ope_max){
   
   i_base=hg->i_max;
   hg->ope_max=ope_max;
+  if(ope_max==0){
+    hg->nst_max=0;
+  }
 
   while(!feof(fp)){
     if(fgets(buf,BUFFSIZE-1,fp)){
@@ -10817,6 +11692,7 @@ void MergeList(typHOE *hg, gint ope_max){
 	tmp_obj.ope=hg->ope_max;
 	tmp_obj.ope_i=i_list-i_base;
 	tmp_obj.type=OBJTYPE_OBJ;
+	tmp_obj.i_nst=-1;
 
   
 	hg->obj[hg->i_max]=tmp_obj;
@@ -11755,7 +12631,12 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
 	}
       }
 
-      calcpa2_main(hg);
+      if(hg->skymon_mode==SKYMON_SET){
+	calcpa2_skymon(hg);
+      }
+      else{
+	calcpa2_main(hg);
+      }
       update_c_label(hg);
       
       if(flagTree){
@@ -11852,7 +12733,6 @@ static void destroy_popup(GtkWidget *w, guint data)
 }
 
 
-#ifdef __GTK_FILE_CHOOSER_H__
 void my_file_chooser_add_filter (GtkWidget *dialog, 
 				 const gchar *name,
 				 ...)
@@ -11888,7 +12768,6 @@ void my_file_chooser_add_filter (GtkWidget *dialog,
   if(ptncat) g_free(ptncat);
   if(ptncat2) g_free(ptncat2);
 }
-#endif
 
 
 void my_signal_connect(GtkWidget *widget, 
@@ -12470,7 +13349,12 @@ int main(int argc, char* argv[]){
   //make_obj_list(hg,TRUE);
   flag_make_obj_list=TRUE;
   //// Current Condition
-  calcpa2_main(hg);
+  if(hg->skymon_mode==SKYMON_SET){
+    calcpa2_skymon(hg);
+  }
+  else{
+    calcpa2_main(hg);
+  }
   update_c_label(hg);
 
 #ifdef USE_XMLRPC
@@ -12501,7 +13385,7 @@ int main(int argc, char* argv[]){
   }
 
   hg->timer=g_timeout_add(AZEL_INTERVAL, 
-			  (GSourceFunc)update_azel2,
+			  (GSourceFunc)update_azel_auto,
 			  (gpointer)hg);
 
   gtk_main();

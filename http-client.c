@@ -36,7 +36,7 @@
 
 // From libghttp-1.0.9
 time_t http_date_to_time(const char *a_date);
-static int month_from_string_short(const char *a_month);
+int month_from_string_short(const char *a_month);
 time_t ghttp_parse_date(char *a_date);
 void copy_file();
 #ifndef USE_WIN32
@@ -1108,8 +1108,7 @@ http_date_to_time(const char *a_date)
   return l_return;
 }
 
-static int
-month_from_string_short(const char *a_month)
+int month_from_string_short(const char *a_month)
 {
   if (strncmp(a_month, "Jan", 3) == 0)
     return 0;

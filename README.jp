@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 2.9.4     2017/06/10
+#                                  ver 2.9.5     2017/06/20
 #                               Copyright (C) 2003-17 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #########################################################################
@@ -167,6 +167,26 @@ Objects unused in OPE file"を押してください。
 
 CSVテキストファイルの読み込みはメニューバーからできます。
 また起動時に-iオプションで指定することも可能です。
+
+
+[3] Non-Sidereal Tracking File (TSC format)
+望遠鏡の非恒星追尾ファイルをマニュアルで読み込むことができます。
+OPEファイルと同じディレクトリにファイルを置き、メニューから読み込んでください。
+ファイルは
+  https://www.naoj.org/Observing/Telescope/Tracking/NonSidereal/
+に記述に準拠したフォーマットである必要があります。
+必ず、"GeoCentric" の座標を読み込むようにしてください。
+hskymon内部では GeoCentricを観測者基準座標(TopoCentric)に変換して扱います。
+計算の範囲外の日時が設定されている場合は、天体はXマークでモニターに表示されます。
+Finding Chart上で天体の軌道を表示させることも可能です。
+
+
+[4] Non-Sidereal Tracking File (JPL HORIZONS format)
+3のTSCフォーマットと同様にNASA JPL の HIRIZONS
+  https://ssd.jpl.nasa.gov/horizons.cgi
+の出力ファイルを直接読み込むことができます。
+これも必ず、"Observer Location" を"Geocentric"にしたものを読み込んでください。
+また、HORIZONSの出力ファイルをTSCフォーマットに変換することもできます。
 
 
 ▼著作権的話とか

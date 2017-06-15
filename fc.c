@@ -8,6 +8,7 @@
 #include"main.h"    // 設定ヘッダ
 #include"version.h"
 #include "hsc.h"
+#include "spline_icon.h"
 #include <cairo.h>
 #include <cairo-pdf.h>
 
@@ -35,6 +36,7 @@ static gboolean resize_draw_fc();
 static gboolean button_draw_fc();
 void rot_pa();
 static void refresh_fc();
+static void orbit_fc();
 static void cc_get_fc_inst();
 static void cc_get_fc_mode();
 void pdf_fc();
@@ -85,6 +87,7 @@ extern void cc_get_combo_box();
 extern GtkWidget* gtkut_button_new_from_stock();
 #endif
 extern GtkWidget* gtkut_button_new_from_pixbuf();
+extern GtkWidget* gtkut_toggle_button_new_from_pixbuf();
 extern void do_save_fc_pdf();
 extern void create_fcdb_para_dialog();
 
@@ -110,6 +113,9 @@ extern gchar *make_simbad_id();
 extern void raise_tree();
 
 extern void printf_log();
+
+extern gdouble ra_to_deg();
+extern gdouble dec_to_deg();
 
 extern pid_t fc_pid;
 extern gboolean flagTree;
@@ -1223,6 +1229,26 @@ void create_fc_dialog(typHOE *hg)
   vbox1 = gtk_vbox_new(FALSE,3);
   gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 3);
 
+
+
+#ifdef __GTK_STOCK_H__
+  icon = gdk_pixbuf_new_from_inline(sizeof(spline_icon), spline_icon, 
+				    FALSE, NULL);
+  button=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
+  g_object_unref(icon);
+#else
+  button=gtk_toggle_button_new_with_label("Non-Sidereal Orbit");
+#endif
+  gtk_container_set_border_width (GTK_CONTAINER (button), 0);
+  gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->orbit_flag);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (orbit_fc), (gpointer)hg);
+
+#ifdef __GTK_TOOLTIP_H__
+  gtk_widget_set_tooltip_text(button,
+			      "Draw Non-Sidereal Orbit");
+#endif
 
 #ifdef __GTK_STOCK_H__
   icon = gdk_pixbuf_new_from_inline(sizeof(icon_pdf), icon_pdf, 
@@ -3029,6 +3055,137 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
     }
   }
 
+  {  //Non-Sidereal Orbit
+    if((hg->orbit_flag)&&(hg->obj[hg->dss_i].i_nst>=0)){
+      gint i, i_step=0, i_step_max=1; 
+      gdouble x, y, x0, y0;
+      gdouble d_ra, d_dec;
+      gdouble d_step, t_step;
+      struct ln_equ_posn object, object_prec;
+
+      cairo_save(cr);
+
+      translate_to_center(cr,width,height,width_file,height_file,r,hg);
+
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.5, 0.0, 1.0);
+      else cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 1.0);
+
+      object.ra=ra_to_deg(hg->obj[hg->dss_i].ra);
+      object.dec=dec_to_deg(hg->obj[hg->dss_i].dec);
+
+      ln_get_equ_prec2 (&object, 
+			get_julian_day_of_equinox(hg->obj[hg->dss_i].equinox),
+			JD2000, &object_prec);
+
+      d_ra=ra_to_deg(hg->nst[hg->obj[hg->dss_i].i_nst].eph[0].ra);
+      d_dec=dec_to_deg(hg->nst[hg->obj[hg->dss_i].i_nst].eph[0].dec);
+
+      x=-(d_ra-object_prec.ra)*60.
+	*cos(d_dec/180.*M_PI)
+	*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+      y=-(d_dec-object_prec.dec)*60.
+	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+      if(hg->dss_flip) x=-x;
+
+      cairo_move_to(cr,x,y);
+      
+      for(i=1;i<hg->nst[hg->obj[hg->dss_i].i_nst].i_max;i++){
+	x0=x;
+	y0=y;
+
+	d_ra=ra_to_deg(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].ra);
+	d_dec=dec_to_deg(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].dec);
+
+	x=-(d_ra-object_prec.ra)*60.
+	  *cos(d_dec/180.*M_PI)
+	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	y=-(d_dec-object_prec.dec)*60.
+	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	if(hg->dss_flip) x=-x;
+
+	if(i==1){
+	  d_step=sqrt((x-x0)*(x-x0)+(y-y0)*(y-y0));
+	  if(d_step<(gdouble)width_file*r/20){
+	    i_step_max=(gint)((gdouble)width_file*r/20/d_step);
+	  }
+	  i_step=1;
+	}
+
+	cairo_set_line_width (cr, 2.5*scale);
+	cairo_line_to(cr,x,y);
+	cairo_stroke(cr);
+
+	if(i_step>0){
+	  if(i_step==i_step_max){
+	    cairo_set_line_width (cr, 1.5*scale);
+	    if(fabs(x-x0)>fabs(y-y0)){
+	      cairo_move_to(cr,x,y-5);
+	      cairo_line_to(cr,x,y+5);
+	    }
+	    else{
+	      cairo_move_to(cr,x-5,y);
+	      cairo_line_to(cr,x+5,y);
+	    }
+	    cairo_stroke(cr);
+	    i_step=1;
+	  }
+	  else{
+	  }
+	  i_step++;
+	}
+	else{
+	  cairo_set_line_width (cr, 1.5*scale);
+	  if(fabs(x-x0)>fabs(y-y0)){
+	    cairo_move_to(cr,x,y-5);
+	    cairo_line_to(cr,x,y+5);
+	  }
+	  else{
+	    cairo_move_to(cr,x-5,y);
+	  cairo_line_to(cr,x+5,y);
+	  }
+	  cairo_stroke(cr);
+	}
+
+	cairo_move_to(cr,x,y);
+      }
+
+      if(hg->fc_mag==1){
+	cairo_restore(cr);
+
+	cairo_save(cr);
+
+	cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
+			 (height-(gint)((gdouble)height_file*r))/2);
+
+	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.5, 0.0, 1.0);
+	else cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 1.0);
+
+	t_step=(hg->nst[hg->obj[hg->dss_i].i_nst].eph[1].jd
+		-hg->nst[hg->obj[hg->dss_i].i_nst].eph[0].jd)
+	  *24.*60.*(gdouble)i_step_max; //min
+	
+	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
+	if(t_step<5){
+	  tmp=g_strdup_printf("Step=%dsec",(gint)(t_step*60));
+	}
+	else if(t_step<60){
+	  tmp=g_strdup_printf("Step=%dmin",(gint)t_step);
+	}
+	else{
+	  tmp=g_strdup_printf("Step=%.1lfhrs",t_step/60);
+	}
+	cairo_text_extents (cr, tmp, &extents);
+	cairo_move_to(cr,
+		      (gdouble)width_file*r-extents.width-5*scale,
+		      (gdouble)height_file*r-5*scale);
+	cairo_show_text(cr,tmp);
+	if(tmp) g_free(tmp);
+      }
+
+     cairo_restore(cr);
+    }
+  }
+
   {  // Points and Distance
     gdouble distance;
     gdouble arad;
@@ -3206,6 +3363,18 @@ static void refresh_fc (GtkWidget *widget, gpointer data)
   }
 }
 
+static void orbit_fc (GtkWidget *widget, gpointer data)
+{
+  typHOE *hg = (typHOE *)data;
+
+  if(flagFC){
+    hg->orbit_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  
+    hg->fc_output=FC_OUTPUT_WINDOW;
+    draw_fc_cairo(hg->fc_dw, hg);
+  }
+}
+
 
 void rot_pa(cairo_t *cr, typHOE *hg){
   switch(hg->fc_inst){
@@ -3292,19 +3461,61 @@ static void cc_get_fc_inst (GtkWidget *widget,  gpointer * gdata)
     break;
 
   case FC_INST_FMOS:
-    gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
-			     (gdouble)(FMOS_SIZE));
+    switch(hg->fc_mode){
+    case FC_PANCOL:
+    case FC_PANG:
+    case FC_PANR:
+    case FC_PANI:
+    case FC_PANY:
+    case FC_PANZ:
+      gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			       (gdouble)(PANSTARRS_MAX_ARCMIN));
+      break;
+
+    default:
+      gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			       (gdouble)(FMOS_SIZE));
+      break;
+    }
     break;
 			     
   case FC_INST_SPCAM:
-    gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
-			     (gdouble)(SPCAM_SIZE));
+    switch(hg->fc_mode){
+    case FC_PANCOL:
+    case FC_PANG:
+    case FC_PANR:
+    case FC_PANI:
+    case FC_PANY:
+    case FC_PANZ:
+      gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			       (gdouble)(PANSTARRS_MAX_ARCMIN));
+      break;
+
+    default:
+      gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			       (gdouble)(SPCAM_SIZE));
+      break;
+    }
     break;
 			     
   case FC_INST_HSCDET:
   case FC_INST_HSCA:
-    gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
-			     (gdouble)(HSC_SIZE));
+    switch(hg->fc_mode){
+    case FC_PANCOL:
+    case FC_PANG:
+    case FC_PANR:
+    case FC_PANI:
+    case FC_PANY:
+    case FC_PANZ:
+      gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			       (gdouble)(PANSTARRS_MAX_ARCMIN));
+      break;
+
+    default:
+      gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			       (gdouble)(HSC_SIZE));
+      break;
+    }
     break;
 
   default:
@@ -4330,6 +4541,7 @@ void fcdb_item2 (typHOE *hg)
 
   hg->fcdb_i=hg->dss_i;
 
+  /*
   ra_0=hg->obj[hg->fcdb_i].ra;
   hobject.ra.hours=(gint)(ra_0/10000);
   ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
@@ -4350,6 +4562,11 @@ void fcdb_item2 (typHOE *hg)
   hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
 
   ln_hequ_to_equ (&hobject, &object);
+  */
+
+  object.ra=ra_to_deg(hg->obj[hg->fcdb_i].ra);
+  object.dec=dec_to_deg(hg->obj[hg->fcdb_i].dec);
+
   ln_get_equ_prec2 (&object, 
 		    get_julian_day_of_equinox(hg->obj[hg->fcdb_i].equinox),
 		    JD2000, &object_prec);

@@ -50,7 +50,7 @@ double ln_get_julian_day (struct ln_date * date)
     double JD;
     double days;
     int a,b;
-	struct ln_date local_date;
+    struct ln_date local_date;
 		
 	/* create local copy */
     memcpy (&local_date, date, sizeof (struct ln_date));

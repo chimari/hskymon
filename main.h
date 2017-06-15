@@ -41,7 +41,6 @@
 #include "remoteObjects.h"
 #endif
 
-
 #include "libnova/libnova.h"
 #include"hskymon_icon.h"
 #include"google_icon.h"
@@ -57,6 +56,8 @@
 #ifdef USE_XMLRPC
 #define DEFAULT_RO_NAMSERVER "addres.for.gen2.status.server.foo.bar"
 #endif
+
+#define AU_IN_KM 149597870.700
 
 #ifdef SIGRTMIN
 #define SIGHSKYMON1 SIGRTMIN
@@ -334,7 +335,8 @@ enum{ ADC_INST_IMR, ADC_INST_HDSAUTO, ADC_INST_HDSZENITH} ADC_Inst;
 // Object Type
 enum{OBJTYPE_OBJ,
      OBJTYPE_STD,
-     OBJTYPE_TTGS} ObjType; 
+     OBJTYPE_TTGS
+} ObjType; 
 
 #define ADDTYPE_OBJ   -1
 #define ADDTYPE_STD   -2
@@ -601,6 +603,9 @@ enum{ STDDB_SSLOC, STDDB_RAPID, STDDB_MIRSTD, STDDB_ESOSTD, STDDB_IRAFSTD, STDDB
 #define LIST1_EXTENSION "list"
 #define LIST2_EXTENSION "lst"
 #define LIST3_EXTENSION "txt"
+#define NST1_EXTENSION "dat"
+#define NST2_EXTENSION "tsc"
+#define NST3_EXTENSION "eph"
 #define PDF_EXTENSION "pdf"
 
 
@@ -1065,6 +1070,24 @@ enum{ PLOT_OUTPUT_WINDOW, PLOT_OUTPUT_PDF, PLOT_OUTPUT_PRINT} PlotOutput;
 enum{ PLOT_CENTER_MIDNIGHT, PLOT_CENTER_CURRENT,PLOT_CENTER_MERIDIAN} PlotCenter;
 #define PLOT_INTERVAL 60*1000
 
+typedef struct _EPHpara EPHpara;
+struct _EPHpara{
+  gdouble jd;
+  gdouble ra;
+  gdouble dec;
+  gdouble equinox;
+  gdouble geo_d;
+};
+
+typedef struct _NSTpara NSTpara;
+struct _NSTpara{
+  gchar*  filename;
+  gint    i_max;
+  EPHpara* eph;
+  gint    c_fl;
+  gint    s_fl;
+};
+
 typedef struct _SSLpara SSLpara;
 struct _SSLpara{
   guint mode;
@@ -1083,6 +1106,8 @@ struct _OBJpara{
   gdouble ra;
   gdouble dec;
   gdouble equinox;
+
+  gint i_nst;
 
   /*
   GtkWidget *w_az;
@@ -1322,6 +1347,8 @@ struct _typHOE{
   gchar *filename_prm;
   gchar *filename_pdf;
   gchar *filename_txt;
+  gchar *filename_nst;
+  gchar *filename_tscconv;
   gchar *filehead;
 
 #ifdef USE_XMLRPC
@@ -1335,6 +1362,7 @@ struct _typHOE{
   gint i_max;
   
   OBJpara obj[MAX_OBJECT];
+  NSTpara nst[MAX_ROPE];
   STDpara std[MAX_STD];
   FCDBpara fcdb[MAX_FCDB];
 
@@ -1664,6 +1692,8 @@ struct _typHOE{
   gboolean noobj_flag;
   gboolean hide_flag;
 
+  gboolean orbit_flag;
+
 #ifdef USE_XMLRPC
   gboolean telstat_flag;
 
@@ -1696,6 +1726,7 @@ struct _typHOE{
 
   gint ope_max;
   gint add_max;
+  gint nst_max;
   GdkColor *col[MAX_ROPE];
   GdkColor *col_edge;
   gint alpha_edge;

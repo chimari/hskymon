@@ -1,3 +1,13 @@
+2017.06.20 ver2.9.5 - Added "Merge Non-Sidereal Tracking File".
+	              Now, Non-Sidereal objects (in TSC & JPL HORIZONS file
+	              formats) can be displayerd. Geocentric coordinates are
+	              converted into Topocentric.
+	            - Added tracking file conversion HORIZONS --> TSC.
+	            - Added Drawing Non-sidereal orbit on FC.
+	            - Fixed a bug in CheckTargetDefOPE(). [Merge OPE crush].
+	            - Bug Fix on "calcpa2_main() instead of calcpa2_skymon()
+	              in SET mode.
+
 2017.06.10 ver2.9.4 - Fixed a bug in unchunk() [Win32].
 	            - Changed vizier server to Strasbourg (nao.ac.jp mirror
 	              could be troubled in the summit LAN).
