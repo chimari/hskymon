@@ -4541,29 +4541,6 @@ void fcdb_item2 (typHOE *hg)
 
   hg->fcdb_i=hg->dss_i;
 
-  /*
-  ra_0=hg->obj[hg->fcdb_i].ra;
-  hobject.ra.hours=(gint)(ra_0/10000);
-  ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
-  hobject.ra.minutes=(gint)(ra_0/100);
-  hobject.ra.seconds=ra_0-(gdouble)(hobject.ra.minutes)*100;
-  
-  if(hg->obj[hg->fcdb_i].dec<0){
-    hobject.dec.neg=1;
-    dec_0=-hg->obj[hg->fcdb_i].dec;
-  }
-  else{
-    hobject.dec.neg=0;
-    dec_0=hg->obj[hg->fcdb_i].dec;
-  }
-  hobject.dec.degrees=(gint)(dec_0/10000);
-  dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
-  hobject.dec.minutes=(gint)(dec_0/100);
-  hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
-
-  ln_hequ_to_equ (&hobject, &object);
-  */
-
   object.ra=ra_to_deg(hg->obj[hg->fcdb_i].ra);
   object.dec=dec_to_deg(hg->obj[hg->fcdb_i].dec);
 

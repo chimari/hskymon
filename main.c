@@ -405,9 +405,9 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
   }
 
-  bar =gtk_separator_menu_item_new();
-  gtk_widget_show (bar);
-  gtk_container_add (GTK_CONTAINER (menu), bar);
+  //bar =gtk_separator_menu_item_new();
+  //gtk_widget_show (bar);
+  //gtk_container_add (GTK_CONTAINER (menu), bar);
 
   {
     GtkWidget *new_menu; 
@@ -434,9 +434,9 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
   }
 
-  bar =gtk_separator_menu_item_new();
-  gtk_widget_show (bar);
-  gtk_container_add (GTK_CONTAINER (menu), bar);
+  //bar =gtk_separator_menu_item_new();
+  //gtk_widget_show (bar);
+  //gtk_container_add (GTK_CONTAINER (menu), bar);
 
   {
     GtkWidget *new_menu; 
@@ -477,9 +477,9 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
   }
 
-  bar =gtk_separator_menu_item_new();
-  gtk_widget_show (bar);
-  gtk_container_add (GTK_CONTAINER (menu), bar);
+  //bar =gtk_separator_menu_item_new();
+  //gtk_widget_show (bar);
+  //gtk_container_add (GTK_CONTAINER (menu), bar);
 
   {
     GtkWidget *new_menu; 
@@ -2470,9 +2470,9 @@ void do_open_NST (GtkWidget *widget, gpointer gdata)
 				      to_utf8(hg->filename_nst));
   }
 
-  my_file_chooser_add_filter(fdialog,"List File", 
+  my_file_chooser_add_filter(fdialog,"TSC Tracking File", 
+			     "*." NST1_EXTENSION,
 			     "*." NST2_EXTENSION,
-			     "*." NST3_EXTENSION,
 			     NULL);
   my_file_chooser_add_filter(fdialog,"All File","*",NULL);
 
@@ -2555,16 +2555,17 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
-  if(access(hg->filename_nst,F_OK)==0){
+  if(access(hg->filename_jpl,F_OK)==0){
     gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (fdialog), 
-				   to_utf8(hg->filename_nst));
+				   to_utf8(hg->filename_jpl));
     gtk_file_chooser_select_filename (GTK_FILE_CHOOSER (fdialog), 
-				      to_utf8(hg->filename_nst));
+				      to_utf8(hg->filename_jpl));
   }
 
-  my_file_chooser_add_filter(fdialog,"List File", 
+  my_file_chooser_add_filter(fdialog,"JPL HORIZONS File", 
 			     "*." NST1_EXTENSION,
 			     "*." NST3_EXTENSION,
+			     "*." LIST3_EXTENSION,
 			     NULL);
   my_file_chooser_add_filter(fdialog,"All File","*",NULL);
 
@@ -2581,8 +2582,8 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
     dest_file=to_locale(fname);
 
     if(access(dest_file,F_OK)==0){
-      if(hg->filename_nst) g_free(hg->filename_nst);
-      hg->filename_nst=g_strdup(dest_file);
+      if(hg->filename_jpl) g_free(hg->filename_jpl);
+      hg->filename_jpl=g_strdup(dest_file);
       MergeJPL(hg, hg->ope_max);
 
       //// Current Condition
@@ -2651,16 +2652,17 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
-  if(access(hg->filename_nst,F_OK)==0){
+  if(access(hg->filename_jpl,F_OK)==0){
     gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (fdialog), 
-				   to_utf8(hg->filename_nst));
+				   to_utf8(hg->filename_jpl));
     gtk_file_chooser_select_filename (GTK_FILE_CHOOSER (fdialog), 
-				      to_utf8(hg->filename_nst));
+				      to_utf8(hg->filename_jpl));
   }
 
   my_file_chooser_add_filter(fdialog,"List File", 
 			     "*." NST1_EXTENSION,
 			     "*." NST3_EXTENSION,
+			     "*." LIST3_EXTENSION,
 			     NULL);
   my_file_chooser_add_filter(fdialog,"All File","*",NULL);
 
@@ -2676,8 +2678,8 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
     dest_file=to_locale(fname);
 
     if(access(dest_file,F_OK)==0){
-      if(hg->filename_nst) g_free(hg->filename_nst);
-      hg->filename_nst=g_strdup(dest_file);
+      if(hg->filename_jpl) g_free(hg->filename_jpl);
+      hg->filename_jpl=g_strdup(dest_file);
     }
     else{
 #ifdef GTK_MSG
@@ -2716,7 +2718,7 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
       my_file_chooser_add_filter(fdialog_w,"All File","*",NULL);
       
       gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (fdialog_w), 
-	to_utf8(g_path_get_dirname(hg->filename_nst)));
+	to_utf8(g_path_get_dirname(hg->filename_tscconv)));
 
       basename0=g_path_get_basename(hg->filename_nst);
       cpp=(gchar *)strtok(basename0,".");
@@ -9284,10 +9286,13 @@ void MergeJPL(typHOE *hg, gint ope_max){
   gint i,i_list, i_line, i_soe=0, i_eoe=0;
   static char buf[BUFFSIZE];
   struct ln_equ_posn equ, equ_geoc;
-  gchar *cp, *cpp, *tmp_name, *cut_name, *tmp_center;
+  gchar *cp, *cpp, *cpp1, *tmp_name, *cut_name, *tmp_center;
   struct ln_zonedate zonedate;
-  char *tmp;
+  gchar *tmp, *tmp1, *ref=NULL;
   struct lnh_equ_posn hequ;
+  gint l_all, p_date, l_date, p_pos, l_pos, p_delt, l_delt;
+  gint i_delt;
+
   
   if(hg->i_max>=MAX_OBJECT){
     popup_message(POPUP_TIMEOUT,
@@ -9297,21 +9302,21 @@ void MergeJPL(typHOE *hg, gint ope_max){
   }
   
 
-  if((fp=fopen(hg->filename_nst,"r"))==NULL){
+  if((fp=fopen(hg->filename_jpl,"r"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
-		  hg->filename_nst,
+		  hg->filename_jpl,
 		  NULL);
 #else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
 #endif
-    printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_nst);
+    printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_jpl);
     return;
   }
 
-  printf_log(hg,"[MergeJPL] Opening %s.",hg->filename_nst);
+  printf_log(hg,"[MergeJPL] Opening %s.",hg->filename_jpl);
   i_list=hg->i_max;
   hg->ope_max=ope_max;
   if(ope_max==0){
@@ -9353,12 +9358,12 @@ void MergeJPL(typHOE *hg, gint ope_max){
 			"Error: Invalid HORIZONS File.",
 			"Center-site must be \"GEOCENTRIC\".",
 			" ",
-			hg->filename_nst,
+			hg->filename_jpl,
 			NULL);
 #else
-	  fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+	  fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
 #endif
-	  printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_nst);
+	  printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_jpl);
 	  return;
 	}
 	if(tmp_center) g_free(tmp_center);
@@ -9371,17 +9376,17 @@ void MergeJPL(typHOE *hg, gint ope_max){
 
   fclose(fp);
 
-  if((fp=fopen(hg->filename_nst,"r"))==NULL){
+  if((fp=fopen(hg->filename_jpl,"r"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
-		  hg->filename_nst,
+		  hg->filename_jpl,
 		  NULL);
 #else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
 #endif
-    printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_nst);
+    printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_jpl);
     return;
   }
 
@@ -9391,10 +9396,10 @@ void MergeJPL(typHOE *hg, gint ope_max){
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: Invalid HORIZONS File.",
 		  " ",
-		  hg->filename_nst,
+		  hg->filename_jpl,
 		  NULL);
 #else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
 #endif
     return;
   }
@@ -9411,112 +9416,186 @@ void MergeJPL(typHOE *hg, gint ope_max){
       popup_message(POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
-		    hg->filename_nst,
+		    hg->filename_jpl,
 		    NULL);
 #else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
 #endif
       fclose(fp);
       return;
     }
+    if(i==i_soe-3){
+      ref=g_strdup(buf);
+    }
+  }
+
+  if(ref){
+    cpp1=g_strdup(ref);
+    l_all=(gint)strlen(cpp1);
+    if(NULL != (cp = strstr(cpp1, "Date"))){
+      p_date=l_all-(gint)strlen(cp);
+      tmp=(gchar *)strtok(cp," ");
+      l_date=(gint)strlen(tmp);
+    }
+    g_free(cpp1);
+
+    cpp1=g_strdup(ref);
+    if(NULL != (cp = strstr(cpp1, "R.A."))){
+      p_pos=l_all-(gint)strlen(cp);
+      tmp=(gchar *)strtok(cp," ");
+      l_pos=(gint)strlen(tmp);
+    }
+    g_free(cpp1);
+
+    cpp1=g_strdup(ref);
+    if(NULL != (cp = strstr(cpp1, "delta"))){
+      p_delt=l_all-(gint)strlen(cp);
+    }
+    g_free(cpp1);
+    cpp=ref;
+    cpp+=p_delt-1;
+    i_delt=0;
+    while(cpp[0]==0x20){
+      cpp--;
+      p_delt--;
+      i_delt++;
+    }
+    p_delt++;
+    l_delt=i_delt+strlen("delta")-1;
+    
+    /*
+    printf("%s%d  %d  %d  %d  %d  %d  %d\n",ref,l_all,p_date,l_date, p_pos, l_pos, p_delt, l_delt);
+
+    for(i=0;i<p_date;i++){
+      printf(" ");
+    }
+    for(i=0;i<l_date;i++){
+      printf("*");
+    }
+    printf("\n");
+
+    for(i=0;i<p_pos;i++){
+      printf(" ");
+    }
+    for(i=0;i<l_pos;i++){
+      printf("*");
+    }
+    printf("\n");
+
+    for(i=0;i<p_delt;i++){
+      printf(" ");
+    }
+    for(i=0;i<l_delt;i++){
+      printf("*");
+    }
+    printf("\n");
+    */
+
+    g_free(ref);
+  }
+  else{
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: Invalid HORIZONS File.",
+		    " ",
+		    hg->filename_jpl,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
+#endif
+      fclose(fp);
+      return;
   }
 
   for(i=i_soe+1;i<i_eoe;i++){
     if(fgets(buf,BUFFSIZE-1,fp)){
+      // Date
       cpp=buf;
-      cpp+=1;  // space x1
+      cpp+=p_date;
+      
+      tmp=g_strndup(cpp,l_date);
 
-      tmp=g_strndup(cpp,4); //year
-      zonedate.years=(gint)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+4;  // - x1
-
-      tmp=g_strndup(cpp,3); //month
-      zonedate.months=month_from_string_short(tmp)+1;
-      g_free(tmp);
-
-      cpp+=1+3;  // - x1
-
-      tmp=g_strndup(cpp,2); //day
-      zonedate.days=(gint)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+2;  // space x1
-
-      tmp=g_strndup(cpp,2); //hour
-      zonedate.hours=(gint)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+2;  // : x1
-
-      tmp=g_strndup(cpp,2); //minute
-      zonedate.minutes=(gint)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+2;  // : x1
-
-      tmp=g_strndup(cpp,6); //second
-      zonedate.seconds=(gdouble)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=5+6;  // space x6
+      cpp1=tmp;
+      tmp1=(gchar *)strtok(cpp1,"-");
 
       zonedate.gmtoff=0;
 
-      hg->nst[hg->nst_max].eph[i-i_soe-1].jd=
-	ln_get_julian_local_date(&zonedate);
+      if(strlen(tmp1)!=4){
+	// JD
+	hg->nst[hg->nst_max].eph[i-i_soe-1].jd=(gdouble)g_strtod(tmp1, NULL);
+      }
+      else{
+	zonedate.years=(gint)g_strtod(tmp1, NULL);
+	
+	tmp1=(gchar *)strtok(NULL,"-");
+	zonedate.months=month_from_string_short(tmp1)+1;
+	
+	tmp1=(gchar *)strtok(NULL," ");
+	zonedate.days=(gint)g_strtod(tmp1, NULL);
+	
+	tmp1=(gchar *)strtok(NULL,":");
+	zonedate.hours=(gint)g_strtod(tmp1, NULL);
+	
+	tmp1=(gchar *)strtok(NULL,":");
+	zonedate.minutes=(gint)g_strtod(tmp1, NULL);
+	
+	tmp1=(gchar *)strtok(NULL,":");
+	if(!tmp1){
+	  zonedate.seconds=0.0;
+	}
+	else{
+	  zonedate.seconds=(gdouble)g_strtod(tmp1, NULL);
+	}
 
-      tmp=g_strndup(cpp,2); // ra hours
-      hequ.ra.hours=(gint)g_strtod(tmp, NULL);
+	hg->nst[hg->nst_max].eph[i-i_soe-1].jd=
+	  ln_get_julian_local_date(&zonedate);
+      }
       g_free(tmp);
 
-      cpp+=1+2;  // space x1
-      
-      tmp=g_strndup(cpp,2); // ra minutes
-      hequ.ra.minutes=(gint)g_strtod(tmp, NULL);
-      g_free(tmp);
 
-      cpp+=1+2;  // space x1
       
-      tmp=g_strndup(cpp,7); // ra seconds
-      hequ.ra.seconds=(gdouble)g_strtod(tmp, NULL);
-      g_free(tmp);
+      // RA & Dec
+      cpp=buf;
+      cpp+=p_pos;
+      
+      tmp=g_strndup(cpp,l_pos);
 
-      cpp+=1+7;  // space x1
-      
-      tmp=g_strndup(cpp,1); // dec neg
-      if(g_ascii_strncasecmp(tmp,"-",strlen("-"))==0){
+      cpp1=tmp;
+      tmp1=(gchar *)strtok(cpp1," ");
+      hequ.ra.hours=(gint)g_strtod(tmp1, NULL);
+
+      tmp1=(gchar *)strtok(NULL," ");
+      hequ.ra.minutes=(gint)g_strtod(tmp1, NULL);
+
+      tmp1=(gchar *)strtok(NULL," ");
+      hequ.ra.seconds=(gdouble)g_strtod(tmp1, NULL);
+
+      tmp1=(gchar *)strtok(NULL," ");
+      hequ.dec.degrees=(gint)g_strtod(tmp1, NULL);
+      if(tmp1[0]==0x2d){
 	hequ.dec.neg=1;
+	hequ.dec.degrees=-hequ.dec.degrees;
       }
       else{
 	hequ.dec.neg=0;
       }
-      g_free(tmp);
-
-      cpp+=1;  // 
       
-      tmp=g_strndup(cpp,2); // dec degrees
-      hequ.dec.degrees=(gint)g_strtod(tmp, NULL);
+      tmp1=(gchar *)strtok(NULL," ");
+      hequ.dec.minutes=(gint)g_strtod(tmp1, NULL);
+	
+      tmp1=(gchar *)strtok(NULL," ");
+      hequ.dec.seconds=(gdouble)g_strtod(tmp1, NULL);
       g_free(tmp);
 
-      cpp+=1+2;  // space x1
       
-      tmp=g_strndup(cpp,2); // dec minutes
-      hequ.dec.minutes=(gint)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+2;  // space x1
+      // delta
+      cpp=buf;
+      cpp+=p_delt;
       
-      tmp=g_strndup(cpp,6); // dec seconds
-      hequ.dec.seconds=(gdouble)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+6;  // space x1
-	    
-      tmp=g_strdup(cpp); // geocentric distance in AU
+      tmp=g_strndup(cpp,l_delt);
       hg->nst[hg->nst_max].eph[i-i_soe-1].geo_d=(gdouble)g_strtod(tmp, NULL);
       g_free(tmp);
+
 
       ln_hequ_to_equ (&hequ, &equ_geoc);
       geocen_to_topocen(hg,hg->nst[hg->nst_max].eph[i-i_soe-1].jd,
@@ -9526,17 +9605,16 @@ void MergeJPL(typHOE *hg, gint ope_max){
       hg->nst[hg->nst_max].eph[i-i_soe-1].ra=deg_to_ra(equ.ra);
       hg->nst[hg->nst_max].eph[i-i_soe-1].dec=deg_to_dec(equ.dec);
       hg->nst[hg->nst_max].eph[i-i_soe-1].equinox=2000.0;
-
-     }
+    }
     else{
 #ifdef GTK_MSG
       popup_message(POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
-		    hg->filename_nst,
+		    hg->filename_jpl,
 		    NULL);
 #else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
 #endif
       fclose(fp);
       return;
@@ -9561,7 +9639,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
   hg->obj[i_list].dec=hg->nst[hg->nst_max].eph[0].dec;
   hg->obj[i_list].equinox=hg->nst[hg->nst_max].eph[0].equinox;
   hg->obj[i_list].note=g_strdup_printf("%s [on %4d/%02d/%02d]",
-				       g_path_get_basename(hg->filename_nst),
+				       g_path_get_basename(hg->filename_jpl),
 				       zonedate.years,
 				       zonedate.months,
 				       zonedate.days);
@@ -9586,11 +9664,13 @@ void ConvJPL(typHOE *hg){
   gint i,i_list, i_line, i_soe=0, i_eoe=0, i_max;
   static char buf[BUFFSIZE];
   struct ln_equ_posn equ, equ_geoc;
-  gchar *cp, *cpp, *tmp_name, *cut_name, *tmp_center;
-  struct ln_zonedate zonedate;
-  char *tmp;
+  gchar *cp, *cpp, *cpp1, *tmp_name, *cut_name, *tmp_center;
+  struct ln_date date;
+  char *tmp, *tmp1, *ref=NULL;
   struct lnh_equ_posn hequ;
-  gdouble geo_d;
+  gdouble JD, geo_d;
+  gint l_all, p_date, l_date, p_pos, l_pos, p_delt, l_delt;
+  gint i_delt;
   
   if(hg->i_max>=MAX_OBJECT){
     popup_message(POPUP_TIMEOUT,
@@ -9600,17 +9680,17 @@ void ConvJPL(typHOE *hg){
   }
   
 
-  if((fp=fopen(hg->filename_nst,"r"))==NULL){
+  if((fp=fopen(hg->filename_jpl,"r"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
-		  hg->filename_nst,
+		  hg->filename_jpl,
 		  NULL);
 #else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
 #endif
-    printf_log(hg,"[ConvJPL] File Read Error  \"%s\".", hg->filename_nst);
+    printf_log(hg,"[ConvJPL] File Read Error  \"%s\".", hg->filename_jpl);
     return;
   }
 
@@ -9619,17 +9699,17 @@ void ConvJPL(typHOE *hg){
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
-		  hg->filename_nst,
+		  hg->filename_jpl,
 		  NULL);
 #else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
 #endif
-    printf_log(hg,"[ConvJPL] File Read Error  \"%s\".", hg->filename_nst);
+    printf_log(hg,"[ConvJPL] File Read Error  \"%s\".", hg->filename_jpl);
     return;
   }
 
   printf_log(hg,"[ConvJPL] Convert %s --> %s.",
-	     hg->filename_nst, hg->filename_tscconv);
+	     hg->filename_jpl, hg->filename_tscconv);
 
   i_line=0;
   while(!feof(fp)){
@@ -9666,12 +9746,12 @@ void ConvJPL(typHOE *hg){
 			"Error: Invalid HORIZONS File.",
 			"Center-site must be \"GEOCENTRIC\".",
 			" ",
-			hg->filename_nst,
+			hg->filename_jpl,
 			NULL);
 #else
-	  fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+	  fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
 #endif
-	  printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_nst);
+	  printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_jpl);
 	  return;
 	}
 	if(tmp_center) g_free(tmp_center);
@@ -9684,17 +9764,17 @@ void ConvJPL(typHOE *hg){
 
   fclose(fp);
 
-  if((fp=fopen(hg->filename_nst,"r"))==NULL){
+  if((fp=fopen(hg->filename_jpl,"r"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
-		  hg->filename_nst,
+		  hg->filename_jpl,
 		  NULL);
 #else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
 #endif
-    printf_log(hg,"[ConvJPL] File Read Error  \"%s\".", hg->filename_nst);
+    printf_log(hg,"[ConvJPL] File Read Error  \"%s\".", hg->filename_jpl);
     return;
   }
 
@@ -9704,10 +9784,10 @@ void ConvJPL(typHOE *hg){
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: Invalid HORIZONS File.",
 		  " ",
-		  hg->filename_nst,
+		  hg->filename_jpl,
 		  NULL);
 #else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
 #endif
     return;
   }
@@ -9716,10 +9796,71 @@ void ConvJPL(typHOE *hg){
 
   for(i=0;i<i_soe;i++){
     if(!fgets(buf,BUFFSIZE-1,fp)){
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: Invalid HORIZONS File.",
+		    " ",
+		    hg->filename_jpl,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
+#endif
       fclose(fp);
       return;
     }
+    if(i==i_soe-3){
+      ref=g_strdup(buf);
+    }
+  }
+
+  if(ref){
+    cpp1=g_strdup(ref);
+    l_all=(gint)strlen(cpp1);
+    if(NULL != (cp = strstr(cpp1, "Date"))){
+      p_date=l_all-(gint)strlen(cp);
+      tmp=(gchar *)strtok(cp," ");
+      l_date=(gint)strlen(tmp);
+    }
+    g_free(cpp1);
+
+    cpp1=g_strdup(ref);
+    if(NULL != (cp = strstr(cpp1, "R.A."))){
+      p_pos=l_all-(gint)strlen(cp);
+      tmp=(gchar *)strtok(cp," ");
+      l_pos=(gint)strlen(tmp);
+    }
+    g_free(cpp1);
+
+    cpp1=g_strdup(ref);
+    if(NULL != (cp = strstr(cpp1, "delta"))){
+      p_delt=l_all-(gint)strlen(cp);
+    }
+    g_free(cpp1);
+    cpp=ref;
+    cpp+=p_delt-1;
+    i_delt=0;
+    while(cpp[0]==0x20){
+      cpp--;
+      p_delt--;
+      i_delt++;
+    }
+    p_delt++;
+    l_delt=i_delt+strlen("delta")-1;
+    
+    g_free(ref);
+  }
+  else{
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: Invalid HORIZONS File.",
+		    " ",
+		    hg->filename_jpl,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
+#endif
+      fclose(fp);
+      return;
   }
 
   if(tmp_name){
@@ -9740,105 +9881,96 @@ void ConvJPL(typHOE *hg){
 
   for(i=i_soe+1;i<i_eoe;i++){
     if(fgets(buf,BUFFSIZE-1,fp)){
+      // Date
       cpp=buf;
-      cpp+=1;  // space x1
-
-      tmp=g_strndup(cpp,4); //year
-      zonedate.years=(gint)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+4;  // - x1
-
-      tmp=g_strndup(cpp,3); //month
-      zonedate.months=month_from_string_short(tmp)+1;
-      g_free(tmp);
-
-      cpp+=1+3;  // - x1
-
-      tmp=g_strndup(cpp,2); //day
-      zonedate.days=(gint)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+2;  // space x1
-
-      tmp=g_strndup(cpp,2); //hour
-      zonedate.hours=(gint)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+2;  // : x1
-
-      tmp=g_strndup(cpp,2); //minute
-      zonedate.minutes=(gint)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+2;  // : x1
-
-      tmp=g_strndup(cpp,6); //second
-      zonedate.seconds=(gdouble)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=5+6;  // space x6
-
-      zonedate.gmtoff=0;
-
-      tmp=g_strndup(cpp,2); // ra hours
-      hequ.ra.hours=(gint)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+2;  // space x1
+      cpp+=p_date;
       
-      tmp=g_strndup(cpp,2); // ra minutes
-      hequ.ra.minutes=(gint)g_strtod(tmp, NULL);
+      tmp=g_strndup(cpp,l_date);
+
+      cpp1=tmp;
+      tmp1=(gchar *)strtok(cpp1,"-");
+
+      if(strlen(tmp1)!=4){
+	// JD
+	JD=(gdouble)g_strtod(tmp1, NULL);
+	ln_get_date(JD,&date);
+      }
+      else{
+	date.years=(gint)g_strtod(tmp1, NULL);
+	
+	tmp1=(gchar *)strtok(NULL,"-");
+	date.months=month_from_string_short(tmp1)+1;
+	
+	tmp1=(gchar *)strtok(NULL," ");
+	date.days=(gint)g_strtod(tmp1, NULL);
+	
+	tmp1=(gchar *)strtok(NULL,":");
+	date.hours=(gint)g_strtod(tmp1, NULL);
+	
+	tmp1=(gchar *)strtok(NULL,":");
+	date.minutes=(gint)g_strtod(tmp1, NULL);
+	
+	tmp1=(gchar *)strtok(NULL,":");
+	if(!tmp1){
+	  date.seconds=0.0;
+	}
+	else{
+	  date.seconds=(gdouble)g_strtod(tmp1, NULL);
+	}
+      }
       g_free(tmp);
 
-      cpp+=1+2;  // space x1
       
-      tmp=g_strndup(cpp,7); // ra seconds
-      hequ.ra.seconds=(gdouble)g_strtod(tmp, NULL);
-      g_free(tmp);
+      // RA & Dec
+      cpp=buf;
+      cpp+=p_pos;
+      
+      tmp=g_strndup(cpp,l_pos);
 
-      cpp+=1+7;  // space x1
-      
-      tmp=g_strndup(cpp,1); // dec neg
-      if(g_ascii_strncasecmp(tmp,"-",strlen("-"))==0){
+      cpp1=tmp;
+      tmp1=(gchar *)strtok(cpp1," ");
+      hequ.ra.hours=(gint)g_strtod(tmp1, NULL);
+
+      tmp1=(gchar *)strtok(NULL," ");
+      hequ.ra.minutes=(gint)g_strtod(tmp1, NULL);
+
+      tmp1=(gchar *)strtok(NULL," ");
+      hequ.ra.seconds=(gdouble)g_strtod(tmp1, NULL);
+
+      tmp1=(gchar *)strtok(NULL," ");
+      hequ.dec.degrees=(gint)g_strtod(tmp1, NULL);
+      if(tmp1[0]==0x2d){
 	hequ.dec.neg=1;
+	hequ.dec.degrees=-hequ.dec.degrees;
       }
       else{
 	hequ.dec.neg=0;
       }
-      g_free(tmp);
-
-      cpp+=1;  // 
       
-      tmp=g_strndup(cpp,2); // dec degrees
-      hequ.dec.degrees=(gint)g_strtod(tmp, NULL);
+      tmp1=(gchar *)strtok(NULL," ");
+      hequ.dec.minutes=(gint)g_strtod(tmp1, NULL);
+	
+      tmp1=(gchar *)strtok(NULL," ");
+      hequ.dec.seconds=(gdouble)g_strtod(tmp1, NULL);
       g_free(tmp);
 
-      cpp+=1+2;  // space x1
       
-      tmp=g_strndup(cpp,2); // dec minutes
-      hequ.dec.minutes=(gint)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+2;  // space x1
+      // delta
+      cpp=buf;
+      cpp+=p_delt;
       
-      tmp=g_strndup(cpp,6); // dec seconds
-      hequ.dec.seconds=(gdouble)g_strtod(tmp, NULL);
-      g_free(tmp);
-
-      cpp+=1+6;  // space x1
-	    
-      tmp=g_strdup(cpp); // geocentric distance in AU
+      tmp=g_strndup(cpp,l_delt);
       geo_d=(gdouble)g_strtod(tmp, NULL);
       g_free(tmp);
 
+
       fprintf(fp_w,"%4d%02d%02d%02d%02d%06.3lf %02d%02d%06.3lf %s%02d%02d%05.2lf %13.9lf 2000.0000\n",
-	      zonedate.years,
-	      zonedate.months,
-	      zonedate.days,
-	      zonedate.hours,
-	      zonedate.minutes,
-	      zonedate.seconds,
+	      date.years,
+	      date.months,
+	      date.days,
+	      date.hours,
+	      date.minutes,
+	      date.seconds,
 	      hequ.ra.hours,
 	      hequ.ra.minutes,
 	      hequ.ra.seconds,
@@ -9853,14 +9985,15 @@ void ConvJPL(typHOE *hg){
       popup_message(POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
-		    hg->filename_nst,
+		    hg->filename_jpl,
 		    NULL);
 #else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
 #endif
       fclose(fp);
       return;
     }
+
   }
   
   fclose(fp);

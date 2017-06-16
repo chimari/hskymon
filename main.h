@@ -45,6 +45,8 @@
 #include"hskymon_icon.h"
 #include"google_icon.h"
 
+#include "gen2.h"
+
 
 #ifdef USE_WIN32
 #define USER_CONFFILE "hskymon.ini"
@@ -52,10 +54,6 @@
 #define USER_CONFFILE ".hskymon"
 #endif
 
-
-#ifdef USE_XMLRPC
-#define DEFAULT_RO_NAMSERVER "addres.for.gen2.status.server.foo.bar"
-#endif
 
 #define AU_IN_KM 149597870.700
 
@@ -1348,6 +1346,7 @@ struct _typHOE{
   gchar *filename_pdf;
   gchar *filename_txt;
   gchar *filename_nst;
+  gchar *filename_jpl;
   gchar *filename_tscconv;
   gchar *filehead;
 

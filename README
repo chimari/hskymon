@@ -6,6 +6,7 @@
 #                                  ver 2.9.5    2017/06/20
 #                               Copyright (C) 2003-17 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
+#      Subaru Telescope, National Astronomical Observatory of Japan
 #########################################################################
 
 
@@ -29,7 +30,7 @@ in your terminal.
 
 *** Environment
 hskymon requires UNIX operating system with X window system,
-MS Windows (Win2000 or later), or MacOS (Mavericks or later).
+MS Windows (Win2000 or later), or macOS (Mavericks or later).
 
 To compile this program from its source code, you need to install
 Gtk+ development tools (for Windows, I use msys + Gtk-dev).
@@ -79,7 +80,7 @@ If you use msys + min-gw + gtk-dev,
 *** Command line option
      -h, --help                    : Print help message
      -i, --input [input-file]      : Set the input CSV list file
-     -a, --with-allsky            : Switch on All Sky Camera
+     -a, --with-allsky             : Switch on All Sky Camera
      -nt, --without-telstat        : Switch off to read Telescope Status
      -s, --server [server-address] : Override Telstat Server
      -l, --log [log-file]          : Output log file
@@ -157,7 +158,12 @@ You can check the orbit of the non-sidereal target in the Finsing Chart.
 [4] Non-Sidereal Tracking File (JPL HORIZONS format)
 hskymon can also load NASA JPL HIRIZONS output files.
   https://ssd.jpl.nasa.gov/horizons.cgi
-Please note that you should set "Observer Location" to "Geocentric".
+Please note that you should set 
+   "Epehmeris Type" = OBSERVER
+   "Observer Location" = Geocentric
+   "Table Settings" = 1. Astrometric RA & Dec, 20. Observer range
+for your input.
+Either calendar date or JD is acceptable for date format.
 From the main menu, HORIZONS files can be converted into the TSC format.
 
 

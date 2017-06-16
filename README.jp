@@ -6,6 +6,7 @@
 #                                  ver 2.9.5     2017/06/20
 #                               Copyright (C) 2003-17 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
+#      Subaru Telescope, National Astronomical Observatory of Japan
 #########################################################################
 
 
@@ -30,11 +31,12 @@ X Window Systemが稼働しているUNIX環境、もしくは MS Windows/Mac OS環境
 でも利用が可能です。
 Win/Mac用にはバイナリー配布をしています。
 
-sourceからコンパイルするためにはGtk+が必要(Windows版はmsys + Gtk-devを使用)
-です。
+sourceからコンパイルするためにはGtk+が必要(Windows版は 32bit: msys+Gtk-dev,
+64bit: msys2を使用)です。
 Gtk+についてはcairoグラフィックライブラリを使用しているため、最低限ver2.8以降
 が必要、推奨はver2.10以降となります。
 libxml2とopensslも必要となります。
+macOS, Windowsのバイナリー配布版には必要なライブラリはすべて同梱されています。
 
 Subaru Gen2と接続し、望遠鏡のステータスをとる場合(Gen2 summitネットワーク内
 のみで有効)はxmlrpc-cの開発環境が必要となります。
@@ -75,9 +77,9 @@ make に関しては、各種ライブラリとそれに対応する開発環境が必要です。
  
   - % make
 
-同様のmakeをしてくれるスクリプトを "makewin32.sh"としてパッケージに同
-梱しています。最後のインストール先ディレクトリを適当に変更して使用して
-ください。
+同様のmakeをしてくれるスクリプトを "makewin32.sh", "makewin64.sh"として
+パッケージに同梱しています。最後のインストール先ディレクトリを適当に変更
+して使用してください。
 
 Windows/Mac版の制限として、後述のXMLRPCに関する機能は現在ありません。
 
@@ -85,7 +87,7 @@ Windows/Mac版の制限として、後述のXMLRPCに関する機能は現在ありません。
 ▼コマンドラインオプション
      -h, --help                    : ヘルプの表示
      -i, --input [input-file]      : CSV入力リストの指定
-     -a, --witht-allsky            : 全天カメラ表示をオン
+     -a, --with-allsky             : 全天カメラ表示をオン
                       (デフォルトはオフ)
      -nt, --without-telstat        : 望遠鏡との通信をオフにする
                       (--with-xmlrpcでconfigureした場合デフォルトでオン)
@@ -185,8 +187,14 @@ Finding Chart上で天体の軌道を表示させることも可能です。
 3のTSCフォーマットと同様にNASA JPL の HIRIZONS
   https://ssd.jpl.nasa.gov/horizons.cgi
 の出力ファイルを直接読み込むことができます。
-これも必ず、"Observer Location" を"Geocentric"にしたものを読み込んでください。
-また、HORIZONSの出力ファイルをTSCフォーマットに変換することもできます。
+必ず、
+   "Epehmeris Type" = OBSERVER
+   "Observer Location" = Geocentric
+   "Table Settings" = 1. Astrometric RA & Dec, 20. Observer range
+にした出力結果を読み込んでください。Tableには上記以外が含まれていてもよいですが、
+各epochが一行に収まっている必要があります。
+Dateのフォーマットはカレンダー形式、JDのどちらでもかまいません。
+また、HORIZONSの出力ファイルをTSCフォーマットに変換して保存することもできます。
 
 
 ▼著作権的話とか
