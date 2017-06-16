@@ -4315,9 +4315,13 @@ do_editable_cells (typHOE *hg)
 			 &hg->wwwdb_mode);
 
 #ifdef __GTK_STOCK_H__
+#ifdef USE_OSX
+      icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
+					FALSE, NULL);
+#else
       icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
 					FALSE, NULL);
-
+#endif
       button=gtkut_toggle_button_new_from_pixbuf("Go", icon);
       g_object_unref(icon);
 #else
@@ -4499,9 +4503,13 @@ do_editable_cells (typHOE *hg)
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
 #ifdef __GTK_STOCK_H__
+#ifdef USE_OSX
+      icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
+					FALSE, NULL);
+#else
       icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
 					FALSE, NULL);
-
+#endif
       button=gtkut_toggle_button_new_from_pixbuf("Browse", icon);
       g_object_unref(icon);
 #else
@@ -4625,9 +4633,13 @@ do_editable_cells (typHOE *hg)
     case FCDB_TYPE_NED:
     case FCDB_TYPE_SDSS:
 #ifdef __GTK_STOCK_H__
+#ifdef USE_OSX
+      icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
+					FALSE, NULL);
+#else
       icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
 					FALSE, NULL);
-
+#endif
       button=gtkut_toggle_button_new_from_pixbuf("Browse", icon);
       g_object_unref(icon);
 #else
