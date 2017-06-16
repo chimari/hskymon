@@ -1,7 +1,7 @@
 bin_PROGRAMS    = hskymon
 SUBDIRS = . libnova std_data
 hskymon_SOURCES   =\
-	 main.c calcpa.c fc.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c votable.h remoteObjects.h configfile.h hskymon_icon.h google_icon.h spline_icon.h esostd.h ssl.h gen2.h
+	 main.c calcpa.c fc.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c votable.h remoteObjects.h configfile.h hskymon_icon.h google_icon.h esostd.h ssl.h gen2.h
 
 CLEANFILES      = *~ libnova/*~ std_data/*~
 DISTCLEANFILES  = .deps/*.P

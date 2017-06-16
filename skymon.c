@@ -1105,14 +1105,14 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
     cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2);
     cairo_text_extents (cr, tmp, &extents);
     e_h=extents.height;
-    cairo_move_to(cr,0,+e_h);
+    cairo_move_to(cr,5,+e_h+5);
     cairo_show_text(cr, tmp);
     if(tmp) g_free(tmp);
 
     tmp=g_strdup_printf("%s=%02d:%02d",hg->obs_tzname,hour,min);
     cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
     cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2);
-    cairo_move_to(cr,10,+e_h*2+5);
+    cairo_move_to(cr,10,+e_h*2+10);
     cairo_show_text(cr, tmp);
     if(tmp) g_free(tmp);
 
@@ -1130,7 +1130,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 			date.hours,date.minutes);
     cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
     cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2);
-    cairo_move_to(cr,10,+e_h*3+10);
+    cairo_move_to(cr,10,+e_h*3+15);
     cairo_show_text(cr, tmp);
     if(tmp) g_free(tmp);
 
@@ -1153,7 +1153,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
       }
       cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
       cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2);
-      cairo_move_to(cr,10,+e_h*4+15);
+      cairo_move_to(cr,10,+e_h*4+20);
       cairo_show_text(cr, tmp);
       if(tmp) g_free(tmp);
     }
@@ -1181,7 +1181,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
     }
 
 
-    base_height=e_h*5+30;
+    base_height=e_h*5+35;
     cairo_set_font_size (cr, (gdouble)hg->skymon_allsz);
     cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
 

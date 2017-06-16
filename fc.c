@@ -8,7 +8,6 @@
 #include"main.h"    // 設定ヘッダ
 #include"version.h"
 #include "hsc.h"
-#include "spline_icon.h"
 #include <cairo.h>
 #include <cairo-pdf.h>
 

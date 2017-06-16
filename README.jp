@@ -184,7 +184,7 @@ Finding Chart上で天体の軌道を表示させることも可能です。
 
 
 [4] Non-Sidereal Tracking File (JPL HORIZONS format)
-3のTSCフォーマットと同様にNASA JPL の HIRIZONS
+TSCフォーマットと同様にNASA JPL の HIRIZONS
   https://ssd.jpl.nasa.gov/horizons.cgi
 の出力ファイルを直接読み込むことができます。
 必ず、

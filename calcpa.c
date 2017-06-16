@@ -351,7 +351,7 @@ void create_plot_dialog(typHOE *hg)
 
 #ifdef __GTK_STOCK_H__
   //button=gtkut_toggle_button_new_from_stock(NULL,GTK_STOCK_ABOUT);
-  icon = gdk_pixbuf_new_from_inline(sizeof(icon_moon), icon_moon, 
+  icon = gdk_pixbuf_new_from_inline(sizeof(moon_icon), moon_icon, 
 				    FALSE, NULL);
 
   button=gtkut_toggle_button_new_from_pixbuf(NULL, icon);

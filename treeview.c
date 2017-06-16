@@ -75,6 +75,7 @@ extern void make_obj_list();
 extern GtkWidget* gtkut_button_new_from_stock();
 extern GtkWidget* gtkut_toggle_button_new_from_stock();
 #endif
+extern GtkWidget* gtkut_toggle_button_new_from_pixbuf();
 extern void cc_get_combo_box ();
 extern void cc_get_entry();
 extern void cc_get_entry_double();
@@ -3997,6 +3998,7 @@ do_editable_cells (typHOE *hg)
   GtkWidget *check;
   GtkWidget *entry;
   GtkWidget *all_note, *note_vbox;
+  GdkPixbuf *icon;
 
   while (my_main_iteration(FALSE));
   gdk_flush();
@@ -4009,7 +4011,7 @@ do_editable_cells (typHOE *hg)
 			   gtk_widget_get_screen (hg->skymon_main));
     gtk_window_set_title (GTK_WINDOW (window), "Sky Monitor : Object List");
     gtk_window_set_default_size (GTK_WINDOW (window), hg->tree_width, hg->tree_height);
-    gtk_container_set_border_width (GTK_CONTAINER (window), 5);
+    gtk_container_set_border_width (GTK_CONTAINER (window), 0);
     my_signal_connect (window, "destroy",
 		       G_CALLBACK (close_tree), (gpointer)hg);
     
@@ -4313,9 +4315,13 @@ do_editable_cells (typHOE *hg)
 			 &hg->wwwdb_mode);
 
 #ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("Go",GTK_STOCK_FIND);
+      icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
+					FALSE, NULL);
+
+      button=gtkut_toggle_button_new_from_pixbuf("Go", icon);
+      g_object_unref(icon);
 #else
-      button = gtk_button_new_with_label ("Go");
+      button=gtk_toggle_button_new_with_label("Go");
 #endif
       gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
       my_signal_connect (button, "clicked",
@@ -4493,9 +4499,13 @@ do_editable_cells (typHOE *hg)
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
 #ifdef __GTK_STOCK_H__
-    button=gtkut_button_new_from_stock("Browse",GTK_STOCK_FIND);
+      icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
+					FALSE, NULL);
+
+      button=gtkut_toggle_button_new_from_pixbuf("Browse", icon);
+      g_object_unref(icon);
 #else
-    button = gtk_button_new_with_label ("Browse");
+      button=gtk_toggle_button_new_with_label("Browse");
 #endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
@@ -4615,9 +4625,13 @@ do_editable_cells (typHOE *hg)
     case FCDB_TYPE_NED:
     case FCDB_TYPE_SDSS:
 #ifdef __GTK_STOCK_H__
-      button=gtkut_button_new_from_stock("Browse",GTK_STOCK_FIND);
+      icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
+					FALSE, NULL);
+
+      button=gtkut_toggle_button_new_from_pixbuf("Browse", icon);
+      g_object_unref(icon);
 #else
-      button = gtk_button_new_with_label ("Browse");
+      button=gtk_toggle_button_new_with_label("Browse");
 #endif
       gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
       my_signal_connect (button, "clicked",
