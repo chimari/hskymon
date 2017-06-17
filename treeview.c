@@ -1733,29 +1733,31 @@ std_simbad (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
   gchar *tgt;
 
-  tgt=make_simbad_id(hg->std[hg->stddb_tree_focus].name);
+  if((hg->stddb_tree_focus>=0)&&(hg->stddb_tree_focus<hg->std_i_max)){
+    tgt=make_simbad_id(hg->std[hg->stddb_tree_focus].name);
 
-  tmp=g_strdup_printf(STD_SIMBAD_URL,tgt);
-  
+    tmp=g_strdup_printf(STD_SIMBAD_URL,tgt);
+    
 #ifdef USE_WIN32
-  ShellExecute(NULL, 
-	       "open", 
-	       tmp,
+    ShellExecute(NULL, 
+		 "open", 
+		 tmp,
+		 NULL, 
 	       NULL, 
-	       NULL, 
-	       SW_SHOWNORMAL);
+		 SW_SHOWNORMAL);
 #elif defined(USE_OSX)
-  if(system(tmp)==0){
-    fprintf(stderr, "Error: Could not open the default www browser.");
-  }
+    if(system(tmp)==0){
+      fprintf(stderr, "Error: Could not open the default www browser.");
+    }
 #else
-  cmdline=g_strconcat(hg->www_com," ",tmp,NULL);
-  
-  ext_play(cmdline);
-  g_free(cmdline);
-  g_free(tgt);
-  g_free(tmp);
+    cmdline=g_strconcat(hg->www_com," ",tmp,NULL);
+    
+    ext_play(cmdline);
+    g_free(cmdline);
+    g_free(tgt);
+    g_free(tmp);
 #endif
+  }
 }
 
 static void
@@ -1768,41 +1770,43 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
   gchar *tgt;
 
-  tgt=make_simbad_id(hg->fcdb[hg->fcdb_tree_focus].name);
+  if((hg->fcdb_tree_focus>=0)&&(hg->fcdb_tree_focus<hg->fcdb_i_max)){
+    tgt=make_simbad_id(hg->fcdb[hg->fcdb_tree_focus].name);
 
-  switch(hg->fcdb_type){
-  case FCDB_TYPE_SIMBAD:
-    tmp=g_strdup_printf(STD_SIMBAD_URL,tgt);
-    break;
-
-  case FCDB_TYPE_NED:
-    tmp=g_strdup_printf(FCDB_NED_URL,tgt);
-    break;
-
-  case FCDB_TYPE_SDSS:
-    tmp=g_strdup_printf(FCDB_SDSS_URL,tgt);
-    break;
-  }
+    switch(hg->fcdb_type){
+    case FCDB_TYPE_SIMBAD:
+      tmp=g_strdup_printf(STD_SIMBAD_URL,tgt);
+      break;
+    
+    case FCDB_TYPE_NED:
+      tmp=g_strdup_printf(FCDB_NED_URL,tgt);
+      break;
+      
+    case FCDB_TYPE_SDSS:
+      tmp=g_strdup_printf(FCDB_SDSS_URL,tgt);
+      break;
+    }
 
 #ifdef USE_WIN32
-  ShellExecute(NULL, 
-	       "open", 
-	       tmp,
-	       NULL, 
-	       NULL, 
-	       SW_SHOWNORMAL);
+    ShellExecute(NULL, 
+		 "open", 
+		 tmp,
+		 NULL, 
+		 NULL, 
+		 SW_SHOWNORMAL);
 #elif defined(USE_OSX)
-  if(system(tmp)==0){
-    fprintf(stderr, "Error: Could not open the default www browser.");
-  }
+    if(system(tmp)==0){
+      fprintf(stderr, "Error: Could not open the default www browser.");
+    }
 #else
-  cmdline=g_strconcat(hg->www_com," ",tmp,NULL);
+    cmdline=g_strconcat(hg->www_com," ",tmp,NULL);
   
-  ext_play(cmdline);
-  g_free(cmdline);
-  g_free(tgt);
-  g_free(tmp);
+    ext_play(cmdline);
+    g_free(cmdline);
+    g_free(tgt);
+    g_free(tmp);
 #endif
+  }
 }
 
 void copy_stacstd(typHOE *hg, const stacSTDpara *stacstd, 
@@ -4476,7 +4480,7 @@ do_editable_cells (typHOE *hg)
 		       G_CALLBACK (add_item_std), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
-    gtk_widget_set_tooltip_text(button,"to Object List");
+    gtk_widget_set_tooltip_text(button,"to Main Target List");
 #endif
 
     label= gtk_label_new ("    ");
@@ -4597,7 +4601,7 @@ do_editable_cells (typHOE *hg)
 		       G_CALLBACK (add_item_fcdb), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
-    gtk_widget_set_tooltip_text(button,"to Object List");
+    gtk_widget_set_tooltip_text(button,"to Main Target List");
 #endif
 
     label= gtk_label_new ("    ");

@@ -207,6 +207,7 @@ void create_plot_dialog(typHOE *hg)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
+  gdk_flush();
 
   hg->plot_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(hg->plot_main), "Sky Monitor : Plot Window");

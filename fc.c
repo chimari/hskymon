@@ -493,9 +493,6 @@ void fc_dl (typHOE *hg)
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
 
-  //#ifdef USE_WIN32
-  //while (my_main_iteration(FALSE));
-  //#else
 #ifndef USE_WIN32
   act.sa_handler=dss_signal;
   sigemptyset(&act.sa_mask);
@@ -1652,10 +1649,6 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
   struct lnh_equ_posn hobject;
   
   if(!flagFC) return (FALSE);
-
-  // Removed (2.9.4) cannot resize in Win64
-  //while (my_main_iteration(FALSE));
-  //gdk_flush();
 
   if(hg->fc_output==FC_OUTPUT_PDF){
     width= hg->sz_plot;
