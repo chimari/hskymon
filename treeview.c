@@ -71,10 +71,8 @@ extern gboolean draw_plot_cairo();
 extern void calcpa2_main();
 extern void calcpa2_skymon();
 extern void make_obj_list();
-#ifdef __GTK_STOCK_H__
 extern GtkWidget* gtkut_button_new_from_stock();
 extern GtkWidget* gtkut_toggle_button_new_from_stock();
-#endif
 extern GtkWidget* gtkut_toggle_button_new_from_pixbuf();
 extern void cc_get_combo_box ();
 extern void cc_get_entry();
@@ -4028,11 +4026,7 @@ do_editable_cells (typHOE *hg)
     hbox = gtk_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
-#else
-    button = gtk_button_new_with_label ("Find Object");
-#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
     		       G_CALLBACK (search_item), (gpointer)hg);
@@ -4056,11 +4050,7 @@ do_editable_cells (typHOE *hg)
     hg->tree_label= gtk_label_new (hg->tree_label_text);
     gtk_box_pack_start(GTK_BOX(hbox), hg->tree_label, TRUE, TRUE, 0);
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
-#else
-    button = gtk_button_new_with_label ("Quit");
-#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (close_tree2), (gpointer)hg);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -4095,29 +4085,17 @@ do_editable_cells (typHOE *hg)
     hbox = gtk_hbox_new (FALSE, 4);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock("Plot",GTK_STOCK_PRINT_PREVIEW);
-#else
-    button = gtk_button_new_with_label ("Plot");
-#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (plot2_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock("AD",GTK_STOCK_PRINT_PREVIEW);
-#else
-    button = gtk_button_new_with_label ("AD");
-#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (adc_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock("Finding Chart",GTK_STOCK_ABOUT);
-#else
-    button = gtk_button_new_with_label ("Finding Chart");
-#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (fc_item), (gpointer)hg);
@@ -4125,39 +4103,23 @@ do_editable_cells (typHOE *hg)
     label = gtk_label_new ("   ");
     gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_ADD);
-#else
-    button = gtk_button_new_with_label ("Add");
-#endif
     my_signal_connect (button, "clicked",
 		       //	      G_CALLBACK (add_item), (gpointer)hg);
 		       G_CALLBACK (addobj_dialog), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REMOVE);
-#else
-    button = gtk_button_new_with_label ("Del");
-#endif
     my_signal_connect (button, "clicked",
 		      G_CALLBACK (remove_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_GO_UP);
-#else
-    button = gtk_button_new_with_label ("Up");
-#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (up_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_GO_DOWN);
-#else
-    button = gtk_button_new_with_label ("Down");
-#endif
     my_signal_connect (button, "clicked",
 		      G_CALLBACK (down_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
@@ -4204,11 +4166,7 @@ do_editable_cells (typHOE *hg)
 			   &hg->azel_mode);
     }
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
-#else
-    button = gtk_button_new_with_label ("Refresh");
-#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (refresh_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
@@ -4314,19 +4272,24 @@ do_editable_cells (typHOE *hg)
       my_signal_connect (combo,"changed",cc_get_combo_box,
 			 &hg->wwwdb_mode);
 
-#ifdef __GTK_STOCK_H__
 #ifdef USE_OSX
       icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
 					FALSE, NULL);
-#else
-      icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
+#elif defined(USE_WIN32)
+      icon = gdk_pixbuf_new_from_inline(sizeof(ie_icon), ie_icon, 
 					FALSE, NULL);
+#else
+      if(strcmp(hg->www_com,"firefox")==0){
+	icon = gdk_pixbuf_new_from_inline(sizeof(firefox_icon), firefox_icon, 
+					  FALSE, NULL);
+      }
+      else{
+	icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
+					  FALSE, NULL);
+      }
 #endif
       button=gtkut_toggle_button_new_from_pixbuf("Go", icon);
       g_object_unref(icon);
-#else
-      button=gtk_toggle_button_new_with_label("Go");
-#endif
       gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
       my_signal_connect (button, "clicked",
 			   G_CALLBACK (wwwdb_item), (gpointer)hg);
@@ -4403,11 +4366,7 @@ do_editable_cells (typHOE *hg)
     }
     
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock("Search",GTK_STOCK_FIND);
-#else
-    button = gtk_button_new_with_label ("Search");
-#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (stddb_item), (gpointer)hg);
@@ -4423,11 +4382,7 @@ do_editable_cells (typHOE *hg)
     hbox = gtk_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
-#else
-    button = gtk_button_new_with_label ("Find Standards");
-#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (stddb_item), (gpointer)hg);
@@ -4437,11 +4392,7 @@ do_editable_cells (typHOE *hg)
     
 
 
-#ifdef __GTK_STOCK_H__
     hg->stddb_button=gtkut_toggle_button_new_from_stock(NULL,GTK_STOCK_APPLY);
-#else
-    hg->stddb_button=gtk_toggle_button_new_with_label("Display Standards");
-#endif
     gtk_container_set_border_width (GTK_CONTAINER (hg->stddb_button), 0);
     gtk_box_pack_start(GTK_BOX(hbox),hg->stddb_button,FALSE,FALSE,0);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->stddb_button),
@@ -4459,11 +4410,7 @@ do_editable_cells (typHOE *hg)
     
     stddb_set_label(hg);
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
-#else
-    button = gtk_button_new_with_label ("Quit");
-#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (close_tree2), (gpointer)hg);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -4502,28 +4449,29 @@ do_editable_cells (typHOE *hg)
     hbox = gtk_hbox_new (FALSE, 4);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
-#ifdef __GTK_STOCK_H__
 #ifdef USE_OSX
-      icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
-					FALSE, NULL);
+    icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
+				      FALSE, NULL);
+#elif defined(USE_WIN32)
+    icon = gdk_pixbuf_new_from_inline(sizeof(ie_icon), ie_icon, 
+				      FALSE, NULL);
 #else
+    if(strcmp(hg->www_com,"firefox")==0){
+      icon = gdk_pixbuf_new_from_inline(sizeof(firefox_icon), firefox_icon, 
+					FALSE, NULL);
+      }
+    else{
       icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
 					FALSE, NULL);
+    }
 #endif
-      button=gtkut_toggle_button_new_from_pixbuf("Browse", icon);
-      g_object_unref(icon);
-#else
-      button=gtk_toggle_button_new_with_label("Browse");
-#endif
+    button=gtkut_toggle_button_new_from_pixbuf("Browse", icon);
+    g_object_unref(icon);
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (std_simbad), (gpointer)hg);
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_ADD);
-#else
-    button = gtk_button_new_with_label ("Add");
-#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (add_item_std), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
@@ -4534,11 +4482,7 @@ do_editable_cells (typHOE *hg)
     label= gtk_label_new ("    ");
     gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock("OPE Def.",GTK_STOCK_EDIT);
-#else
-    button = gtk_button_new_with_label ("OPE Def.");
-#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       make_std_tgt, (gpointer)hg);
@@ -4548,11 +4492,7 @@ do_editable_cells (typHOE *hg)
     gtk_entry_set_editable(GTK_ENTRY(hg->std_tgt),FALSE);
     my_entry_set_width_chars(GTK_ENTRY(hg->std_tgt),50);
 
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_COPY);
-#else
-    button = gtk_button_new_with_label ("Copy to clipboard");
-#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (clip_copy), (gpointer)hg->std_tgt);
@@ -4571,11 +4511,7 @@ do_editable_cells (typHOE *hg)
     hbox = gtk_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
-#else
-    button = gtk_button_new_with_label ("Catalog query in SIMBAD");
-#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (fcdb_item), (gpointer)hg);
@@ -4586,11 +4522,7 @@ do_editable_cells (typHOE *hg)
     hg->fcdb_label= gtk_label_new (hg->fcdb_label_text);
     gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_label, TRUE, TRUE, 0);
       
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
-#else
-    button = gtk_button_new_with_label ("Quit");
-#endif
     my_signal_connect (button, "clicked",
 		      G_CALLBACK (close_tree2), (gpointer)hg);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -4632,19 +4564,24 @@ do_editable_cells (typHOE *hg)
     case FCDB_TYPE_SIMBAD:
     case FCDB_TYPE_NED:
     case FCDB_TYPE_SDSS:
-#ifdef __GTK_STOCK_H__
 #ifdef USE_OSX
       icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
 					FALSE, NULL);
-#else
-      icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
+#elif defined(USE_WIN32)
+      icon = gdk_pixbuf_new_from_inline(sizeof(ie_icon), ie_icon, 
 					FALSE, NULL);
+#else
+      if(strcmp(hg->www_com,"firefox")==0){
+	icon = gdk_pixbuf_new_from_inline(sizeof(firefox_icon), firefox_icon, 
+					  FALSE, NULL);
+      }
+      else{
+	icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
+					  FALSE, NULL);
+      }
 #endif
       button=gtkut_toggle_button_new_from_pixbuf("Browse", icon);
       g_object_unref(icon);
-#else
-      button=gtk_toggle_button_new_with_label("Browse");
-#endif
       gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
       my_signal_connect (button, "clicked",
 			 G_CALLBACK (fcdb_simbad), (gpointer)hg);
@@ -4655,11 +4592,7 @@ do_editable_cells (typHOE *hg)
       break;
     }
 
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_ADD);
-#else
-    button = gtk_button_new_with_label ("Add");
-#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (add_item_fcdb), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
@@ -4670,11 +4603,7 @@ do_editable_cells (typHOE *hg)
     label= gtk_label_new ("    ");
     gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock("OPE Def.",GTK_STOCK_EDIT);
-#else
-    button = gtk_button_new_with_label ("OPE Def.");
-#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       make_fcdb_tgt, (gpointer)hg);
@@ -4684,11 +4613,7 @@ do_editable_cells (typHOE *hg)
     gtk_entry_set_editable(GTK_ENTRY(hg->fcdb_tgt),FALSE);
     my_entry_set_width_chars(GTK_ENTRY(hg->fcdb_tgt),50);
 
-#ifdef __GTK_STOCK_H__
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_COPY);
-#else
-    button = gtk_button_new_with_label ("Copy to clipboard");
-#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (clip_copy), (gpointer)hg->fcdb_tgt);
@@ -5232,11 +5157,7 @@ void stddb_dl(typHOE *hg)
 		     hg->plabel,FALSE,FALSE,0);
   
 #ifndef USE_WIN32
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-#else
-  button=gtk_button_new_with_label("Cancel");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -5418,19 +5339,11 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(entry),30);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("SIMBAD", GTK_STOCK_FIND);
-#else
-  button=gtk_button_new_with_label("SIMBAD query");
-#endif
   gtk_box_pack_start(GTK_BOX(hbox), button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed", addobj_simbad_query, (gpointer)hg);
   
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("NED", GTK_STOCK_FIND);
-#else
-  button=gtk_button_new_with_label("NED query");
-#endif
   gtk_box_pack_start(GTK_BOX(hbox), button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed", addobj_ned_query, (gpointer)hg);
 
@@ -5482,21 +5395,13 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 		     cc_get_entry_double, &hg->addobj_dec);
   
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-#else
-  button=gtk_button_new_with_label("Cancel");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Add Object",GTK_STOCK_ADD);
-#else
-  button=gtk_button_new_with_label("Add Object");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",

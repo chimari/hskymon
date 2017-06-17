@@ -69,10 +69,8 @@ extern void add_day();
 
 extern void screen_changed();
 
-#ifdef __GTK_STOCK_H__
 extern GtkWidget* gtkut_button_new_from_stock();
 extern GtkWidget* gtkut_toggle_button_new_from_stock();
-#endif
 extern GtkWidget* gtkut_button_new_from_pixbuf();
 extern GtkWidget* gtkut_toggle_button_new_from_pixbuf();
 
@@ -293,11 +291,7 @@ void create_plot_dialog(typHOE *hg)
   hbox1 = gtk_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox1);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
-#else
-  button = gtk_button_new_with_label ("Refresh");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (refresh_plot), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
@@ -306,11 +300,7 @@ void create_plot_dialog(typHOE *hg)
 			      "Refresh");
 #endif
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
-#else
-  button = gtk_button_new_with_label ("Close");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (close_plot), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
@@ -319,15 +309,11 @@ void create_plot_dialog(typHOE *hg)
 			      "Close");
 #endif
 
-#ifdef __GTK_STOCK_H__
   icon = gdk_pixbuf_new_from_inline(sizeof(icon_pdf), icon_pdf, 
 				    FALSE, NULL);
 
   button=gtkut_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
-#else
-  button = gtk_button_new_with_label ("PDF");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (do_save_pdf), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
@@ -336,11 +322,7 @@ void create_plot_dialog(typHOE *hg)
 			      "Save as PDF");
 #endif
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_PRINT);
-#else
-  button = gtk_button_new_with_label ("Print");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (do_print), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
@@ -349,16 +331,12 @@ void create_plot_dialog(typHOE *hg)
 			      "Print Out");
 #endif
 
-#ifdef __GTK_STOCK_H__
   //button=gtkut_toggle_button_new_from_stock(NULL,GTK_STOCK_ABOUT);
   icon = gdk_pixbuf_new_from_inline(sizeof(moon_icon), moon_icon, 
 				    FALSE, NULL);
 
   button=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
-#else
-  button=gtk_toggle_button_new_with_label("Moon");
-#endif
   gtk_container_set_border_width (GTK_CONTAINER (button), 0);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->plot_moon);

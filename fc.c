@@ -82,9 +82,7 @@ extern void my_entry_set_width_chars();
 extern void cc_get_toggle();
 extern void cc_get_adj();
 extern void cc_get_combo_box();
-#ifdef __GTK_STOCK_H__
 extern GtkWidget* gtkut_button_new_from_stock();
-#endif
 extern GtkWidget* gtkut_button_new_from_pixbuf();
 extern GtkWidget* gtkut_toggle_button_new_from_pixbuf();
 extern void do_save_fc_pdf();
@@ -479,11 +477,7 @@ void fc_dl (typHOE *hg)
 		     hg->plabel,FALSE,FALSE,0);
   
 #ifndef USE_WIN32
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-#else
-  button=gtk_button_new_with_label("Cancel");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -622,16 +616,12 @@ void create_fc_dialog(typHOE *hg)
   gtk_table_set_row_spacings (GTK_TABLE (table), 0);
   gtk_table_set_col_spacings (GTK_TABLE (table), 3);
 
-#ifdef __GTK_STOCK_H__
   //button=gtkut_button_new_from_stock(NULL,GTK_STOCK_NETWORK);
   icon = gdk_pixbuf_new_from_inline(sizeof(icon_dl), icon_dl, 
 				    FALSE, NULL);
 
   button=gtkut_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
-#else
-  button = gtk_button_new_with_label ("Download & Redraw");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (fc_item), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
@@ -986,11 +976,7 @@ void create_fc_dialog(typHOE *hg)
   gtk_table_set_col_spacings (GTK_TABLE (table), 3);
 
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
-#else
-  button = gtk_button_new_with_label ("Redraw");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (refresh_fc), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
@@ -1167,11 +1153,7 @@ void create_fc_dialog(typHOE *hg)
   gtk_table_attach (GTK_TABLE(table), label, 0, 1, 0, 1,
   		    GTK_SHRINK,GTK_FILL,0,0);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
-#else
-  button = gtk_button_new_with_label ("Query");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (fcdb_item), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
@@ -1206,11 +1188,7 @@ void create_fc_dialog(typHOE *hg)
   gtk_table_attach (GTK_TABLE(table), label, 2, 3, 0, 1,
   		    GTK_SHRINK,GTK_FILL,0,0);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_PROPERTIES);
-#else
-  button = gtk_button_new_with_label ("Search Param.");
-#endif
   my_signal_connect (button, "clicked",
 		     fcdb_para_item, (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 2, 3, 1, 2,
@@ -1230,14 +1208,10 @@ void create_fc_dialog(typHOE *hg)
 
 
 
-#ifdef __GTK_STOCK_H__
   icon = gdk_pixbuf_new_from_inline(sizeof(spline_icon), spline_icon, 
 				    FALSE, NULL);
   button=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
-#else
-  button=gtk_toggle_button_new_with_label("Non-Sidereal Orbit");
-#endif
   gtk_container_set_border_width (GTK_CONTAINER (button), 0);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->orbit_flag);
@@ -1249,14 +1223,10 @@ void create_fc_dialog(typHOE *hg)
 			      "Draw Non-Sidereal Orbit");
 #endif
 
-#ifdef __GTK_STOCK_H__
   icon = gdk_pixbuf_new_from_inline(sizeof(icon_pdf), icon_pdf, 
 				    FALSE, NULL);
   button=gtkut_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
-#else
-  button = gtk_button_new_with_label ("PDF");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (do_save_fc_pdf), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
@@ -1265,11 +1235,7 @@ void create_fc_dialog(typHOE *hg)
 			      "Save as PDF");
 #endif
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_PRINT);
-#else
-  button = gtk_button_new_with_label ("Print");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (do_print_fc), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
@@ -1278,11 +1244,7 @@ void create_fc_dialog(typHOE *hg)
 			      "Print out");
 #endif
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_INFO);
-#else
-  button = gtk_button_new_with_label ("Help");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (show_fc_help), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
@@ -1292,11 +1254,7 @@ void create_fc_dialog(typHOE *hg)
 #endif
   gtk_widget_grab_focus (button);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
-#else
-  button = gtk_button_new_with_label ("Close");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (close_fc), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
@@ -4289,11 +4247,7 @@ void fcdb_dl(typHOE *hg)
 		     hg->plabel,FALSE,FALSE,0);
   
 #ifndef USE_WIN32
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-#else
-  button=gtk_button_new_with_label("Cancel");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -4441,11 +4395,7 @@ void addobj_dl(typHOE *hg)
 		     hg->plabel,FALSE,FALSE,0);
   
 #ifndef USE_WIN32
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-#else
-  button=gtk_button_new_with_label("Cancel");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",

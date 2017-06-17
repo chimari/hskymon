@@ -196,10 +196,8 @@ void my_entry_set_width_chars();
 
 gchar* make_head();
 
-#ifdef __GTK_STOCK_H__
 GtkWidget* gtkut_button_new_from_stock();
 GtkWidget* gtkut_toggle_button_new_from_stock();
-#endif
 GtkWidget* gtkut_button_new_from_pixbuf();
 GtkWidget* gtkut_toggle_button_new_from_pixbuf();
 
@@ -310,16 +308,13 @@ GtkWidget *make_menu(typHOE *hg){
   GtkWidget *popup_button;
   GtkWidget *bar;
   GtkWidget *check;
-#ifdef __GTK_STOCK_H__
   GtkWidget *image;
-#endif
   GdkPixbuf *pixbuf, *pixbuf2;
 
   menu_bar=gtk_menu_bar_new();
   gtk_widget_show (menu_bar);
 
   //// File
-#ifdef __GTK_STOCK_H__
 #ifdef GTK_STOCK_FILE
   image=gtk_image_new_from_stock (GTK_STOCK_FILE, GTK_ICON_SIZE_MENU);
 #else
@@ -327,9 +322,6 @@ GtkWidget *make_menu(typHOE *hg){
 #endif
   menu_item =gtk_image_menu_item_new_with_label ("File");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
-#else
-  menu_item =gtk_menu_item_new_with_label ("File");
-#endif
   gtk_widget_show (menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
   
@@ -340,13 +332,9 @@ GtkWidget *make_menu(typHOE *hg){
 
   //File/Import List from OPE
 #ifdef USE_XMLRPC
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_JUMP_TO, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Sync OPE w/IntegGUI");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-  popup_button =gtk_menu_item_new_with_label ("Sync OPE w/IntegGUI");
-#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",do_sync_ope,(gpointer)hg);
@@ -365,36 +353,24 @@ GtkWidget *make_menu(typHOE *hg){
     new_menu = gtk_menu_new();
     gtk_widget_show (new_menu);
     
-#ifdef __GTK_STOCK_H__
     image=gtk_image_new_from_stock (GTK_STOCK_OPEN, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Open");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-    popup_button =gtk_menu_item_new_with_label ("Open");
-#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_open_ope,(gpointer)hg);
     
-#ifdef __GTK_STOCK_H__
     image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Merge");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-    popup_button =gtk_menu_item_new_with_label ("Merge");
-#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_merge_ope,(gpointer)hg);
     
     
-#ifdef __GTK_STOCK_H__
     image=gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Reload");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-    popup_button =gtk_menu_item_new_with_label ("Reload");
-#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_reload_ope,(gpointer)hg);
@@ -417,13 +393,9 @@ GtkWidget *make_menu(typHOE *hg){
     new_menu = gtk_menu_new();
     gtk_widget_show (new_menu);
     
-#ifdef __GTK_STOCK_H__
     image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Merge");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-    popup_button =gtk_menu_item_new_with_label ("Merge");
-#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_merge_prm,(gpointer)hg);
@@ -447,26 +419,18 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_widget_show (new_menu);
     
   //File/Open List
-#ifdef __GTK_STOCK_H__
     image=gtk_image_new_from_stock (GTK_STOCK_OPEN, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Open");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-    popup_button =gtk_menu_item_new_with_label ("Open");
-#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_open,(gpointer)hg);
     
     
     //File/Merge List
-#ifdef __GTK_STOCK_H__
     image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Merge");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-    popup_button =gtk_menu_item_new_with_label ("Merge");
-#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_merge,(gpointer)hg);
@@ -490,25 +454,17 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_widget_show (new_menu);
     
   //Non-Sidereal/Merge TSC
-#ifdef __GTK_STOCK_H__
     image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Merge TSC file");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-    popup_button =gtk_menu_item_new_with_label ("Merge TSC file");
-#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_open_NST,(gpointer)hg);
 
     //Non-Sidereal/Merge JPL
-#ifdef __GTK_STOCK_H__
     image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Merge JPL HORIZONS file");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-    popup_button =gtk_menu_item_new_with_label ("Merge JPL HORIZONS file");
-#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_open_JPL,(gpointer)hg);
@@ -518,13 +474,9 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_container_add (GTK_CONTAINER (new_menu), bar);
 
     //Non-Sidereal/Conv JPL to TSC
-#ifdef __GTK_STOCK_H__
     image=gtk_image_new_from_stock (GTK_STOCK_CONVERT, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Convert HORIZONS to TSC");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-    popup_button =gtk_menu_item_new_with_label ("Merge JPL HORIZONS file");
-#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_conv_JPL,(gpointer)hg);
@@ -549,26 +501,18 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_widget_show (new_menu);
     
   //File/Export/OPE Def.
-#ifdef __GTK_STOCK_H__
     image=gtk_image_new_from_stock (GTK_STOCK_SAVE, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("OPE Def.");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-    popup_button =gtk_menu_item_new_with_label ("OPE Def.");
-#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_save_OpeDef,(gpointer)hg);
     
     
     //File/Export/Text List.
-#ifdef __GTK_STOCK_H__
     image=gtk_image_new_from_stock (GTK_STOCK_SAVE, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Text List");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-    popup_button =gtk_menu_item_new_with_label ("Text List");
-#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_save_TextList,(gpointer)hg);
@@ -586,26 +530,18 @@ GtkWidget *make_menu(typHOE *hg){
 
 
   //File/Quit
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_QUIT, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Quit");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-  popup_button =gtk_menu_item_new_with_label ("Quit");
-#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",do_quit,(gpointer)hg);
 
 
   //// List
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_JUSTIFY_FILL, GTK_ICON_SIZE_MENU);
   menu_item =gtk_image_menu_item_new_with_label ("Object");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
-#else
-  menu_item =gtk_menu_item_new_with_label ("Object");
-#endif
   gtk_widget_show (menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
   
@@ -613,37 +549,25 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_widget_show (menu);
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
   
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_JUSTIFY_FILL, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Object List");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-  popup_button =gtk_menu_item_new_with_label ("Object List");
-#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",make_tree,(gpointer)hg);
 
  
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Add");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-  popup_button =gtk_menu_item_new_with_label ("Add");
-#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",AddObj,(gpointer)hg);
 
   //// Update
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_MENU);
   menu_item =gtk_image_menu_item_new_with_label ("Update");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
-#else
-  menu_item =gtk_menu_item_new_with_label ("Update");
-#endif
   gtk_widget_show (menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
   
@@ -652,13 +576,9 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
   
   //Update/AzEl
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("AzEl");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-  popup_button =gtk_menu_item_new_with_label ("AzEl");
-#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",do_update_azel,(gpointer)hg);
@@ -689,13 +609,9 @@ GtkWidget *make_menu(typHOE *hg){
     my_signal_connect (check, "toggled", ToggleDiffAllSky,
 		       (gpointer)hg);
 
-#ifdef __GTK_STOCK_H__
     image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Diff. Parameters");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-    popup_button =gtk_menu_item_new_with_label ("Diff. Parameters");
-#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (menu), popup_button);
     my_signal_connect (popup_button, "activate",create_diff_para_dialog, (gpointer)hg);
@@ -705,19 +621,14 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_container_add (GTK_CONTAINER (menu), bar);
   }
   
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Display Parameters");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-  popup_button =gtk_menu_item_new_with_label ("Display Parameters");
-#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",create_disp_para_dialog, (gpointer)hg);
 
   ////Search Param.
-#ifdef __GTK_STOCK_H__
 #ifdef GTK_STOCK_ABOUT
   image=gtk_image_new_from_stock (GTK_STOCK_ABOUT, GTK_ICON_SIZE_MENU);
 #else
@@ -725,9 +636,6 @@ GtkWidget *make_menu(typHOE *hg){
 #endif
   menu_item =gtk_image_menu_item_new_with_label ("Search Param");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
-#else
-  menu_item =gtk_menu_item_new_with_label ("Search Param");
-#endif
   gtk_widget_show (menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
   
@@ -736,25 +644,17 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
   
   // Standard
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Standard");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-  popup_button =gtk_menu_item_new_with_label ("Standard");
-#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",
 		     create_std_para_dialog, (gpointer)hg);
 
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Database query");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-  popup_button =gtk_menu_item_new_with_label ("Database query");
-#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",
@@ -762,7 +662,6 @@ GtkWidget *make_menu(typHOE *hg){
 
 
   //// Info
-#ifdef __GTK_STOCK_H__
 #ifdef GTK_STOCK_INFO
   image=gtk_image_new_from_stock (GTK_STOCK_INFO, GTK_ICON_SIZE_MENU);
 #else
@@ -770,9 +669,6 @@ GtkWidget *make_menu(typHOE *hg){
 #endif
   menu_item =gtk_image_menu_item_new_with_label ("Info");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
-#else
-  menu_item =gtk_menu_item_new_with_label ("Info");
-#endif
   gtk_widget_show (menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
   
@@ -781,7 +677,6 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
   
   //Info/About
-#ifdef __GTK_STOCK_H__
 #ifdef GTK_STOCK_ABOUT
   image=gtk_image_new_from_stock (GTK_STOCK_ABOUT, GTK_ICON_SIZE_MENU);
 #else
@@ -789,33 +684,22 @@ GtkWidget *make_menu(typHOE *hg){
 #endif
   popup_button =gtk_image_menu_item_new_with_label ("About");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-  popup_button =gtk_menu_item_new_with_label ("About");
-#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",show_version, NULL);
 
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_HELP, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Help");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-  popup_button =gtk_menu_item_new_with_label ("Help");
-#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",show_help, NULL);
 
 
   //Info/Properties
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Properties");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
-#else
-  popup_button =gtk_menu_item_new_with_label ("Properties");
-#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",show_properties, (gpointer)hg);
@@ -3712,33 +3596,21 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 		     &tmp_thresh);
 
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
-#else
-  button=gtk_button_new_with_label("Load Default");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-#else
-  button=gtk_button_new_with_label("Cancel");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Remake Images",GTK_STOCK_OK);
-#else
-  button=gtk_button_new_with_label("Remake Images");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -3924,33 +3796,21 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
 #endif
 
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
-#else
-  button=gtk_button_new_with_label("Load Default");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-#else
-  button=gtk_button_new_with_label("Cancel");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
-#else
-  button=gtk_button_new_with_label("Set Params");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -4466,33 +4326,21 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 
 
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
-#else
-  button=gtk_button_new_with_label("Load Default");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-#else
-  button=gtk_button_new_with_label("Cancel");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
-#else
-  button=gtk_button_new_with_label("Set Params");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -5373,33 +5221,21 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_2mass_mag);
 
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
-#else
-  button=gtk_button_new_with_label("Load Default");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-#else
-  button=gtk_button_new_with_label("Cancel");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
-#else
-  button=gtk_button_new_with_label("Set Params");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -6984,15 +6820,11 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   hbox = gtk_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table1), hbox, 2, 3, 0, 1);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Buffer Clear",GTK_STOCK_CLEAR);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Buffer Clear");
 #endif 
-#else
-  button=gtk_button_new_with_label("Clear All-Sky Image Buffer");
-#endif
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   my_signal_connect(button,"pressed",
 		    BufClearAllSky, 
@@ -8149,33 +7981,21 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   
 
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
-#else
-  button=gtk_button_new_with_label("Load Default");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_prop, 
 		    (gpointer)cdata);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-#else
-  button=gtk_button_new_with_label("Cancel");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_prop, 
 		    GTK_WIDGET(dialog));
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock("Save",GTK_STOCK_SAVE);
-#else
-  button=gtk_button_new_with_label("Save");
-#endif
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -12794,9 +12614,7 @@ void popup_message(gint delay, ...){
   GtkWidget *button;
   GtkWidget *hbox, *vbox;
   gint timer;
-#ifdef __GTK_STOCK_H__
   GtkWidget *image;
-#endif
 
   va_start(args, delay);
 
@@ -12822,10 +12640,8 @@ void popup_message(gint delay, ...){
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hbox, FALSE,FALSE,0);
 
   //// File
-#ifdef __GTK_STOCK_H__
   image=gtk_image_new_from_stock (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
   gtk_box_pack_start(GTK_BOX(hbox),image, FALSE,FALSE,0);
-#endif
 
   vbox=gtk_vbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(hbox),vbox, FALSE,FALSE,0);
@@ -12934,7 +12750,6 @@ gchar* make_head(gchar* filename){
 }
 
 
-#ifdef __GTK_STOCK_H__
 GtkWidget* gtkut_button_new_from_stock(gchar *txt,
 				       const gchar *stock){
   GtkWidget *button;
@@ -13010,7 +12825,6 @@ GtkWidget* gtkut_toggle_button_new_from_stock(gchar *txt,
   gtk_widget_show(button);
   return(button);
 }
-#endif
 
 GtkWidget* gtkut_button_new_from_pixbuf(gchar *txt,
 				       GdkPixbuf *pixbuf){

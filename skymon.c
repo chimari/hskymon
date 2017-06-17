@@ -20,10 +20,8 @@
 
 extern void my_signal_connect();
 extern gboolean my_main_iteration();
-#ifdef __GTK_STOCK_H__
 extern GtkWidget* gtkut_button_new_from_stock();
 extern GtkWidget* gtkut_toggle_button_new_from_stock();
-#endif
 extern GtkWidget* gtkut_toggle_button_new_from_pixbuf();
 extern GtkWidget *make_menu();
 extern void do_quit();
@@ -329,15 +327,11 @@ void create_skymon_dialog(typHOE *hg)
 
   hbox1 = gtk_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox1);
-#ifdef __GTK_STOCK_H__
   icon = gdk_pixbuf_new_from_inline(sizeof(icon_feed), icon_feed, 
 				    FALSE, NULL);
 
   button=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
-#else
-  button=gtk_toggle_button_new_with_label("Show");
-#endif
   gtk_container_set_border_width (GTK_CONTAINER (button), 0);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->allsky_flag);
@@ -351,11 +345,7 @@ void create_skymon_dialog(typHOE *hg)
 #endif
 
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_toggle_button_new_from_stock(NULL,GTK_STOCK_REMOVE);
-#else
-  button=gtk_toggle_button_new_with_label("Hide unused Obj.");
-#endif
   gtk_container_set_border_width (GTK_CONTAINER (button), 0);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->hide_flag);
@@ -367,11 +357,7 @@ void create_skymon_dialog(typHOE *hg)
 			      "Hide Objects unused in OPE file");
 #endif
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_toggle_button_new_from_stock(NULL,GTK_STOCK_STRIKETHROUGH);
-#else
-  button=gtk_toggle_button_new_with_label("Del Obj.");
-#endif
   gtk_container_set_border_width (GTK_CONTAINER (button), 0);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->noobj_flag);
@@ -384,15 +370,11 @@ void create_skymon_dialog(typHOE *hg)
 #endif
 
 #ifdef USE_XMLRPC
-#ifdef __GTK_STOCK_H__
   icon = gdk_pixbuf_new_from_inline(sizeof(icon_subaru), icon_subaru, 
 				    FALSE, NULL);
 
   hg->skymon_button_telstat=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
-#else
-  hg->skymon_button_telstat=gtk_toggle_button_new_with_label("Telstat");
-#endif
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_button_telstat), 0);
   gtk_box_pack_start(GTK_BOX(hbox1),hg->skymon_button_telstat,FALSE,FALSE,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->skymon_button_telstat),
@@ -417,11 +399,7 @@ void create_skymon_dialog(typHOE *hg)
   gtk_container_add (GTK_CONTAINER (frame), hbox1);
 
 
-#ifdef __GTK_STOCK_H__
   hg->skymon_button_set=gtkut_button_new_from_stock(NULL, GTK_STOCK_APPLY);
-#else
-  hg->skymon_button_set=gtk_button_new_with_label("Set");
-#endif
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_button_set), 0);
   gtk_box_pack_start(GTK_BOX(hbox1),hg->skymon_button_set,FALSE,FALSE,0);
   my_signal_connect(hg->skymon_button_set,"pressed",
@@ -433,11 +411,7 @@ void create_skymon_dialog(typHOE *hg)
 #endif
 
 
-#ifdef __GTK_STOCK_H__
   hg->skymon_button_even=gtkut_button_new_from_stock(NULL, GTK_STOCK_MEDIA_PREVIOUS);
-#else
-  hg->skymon_button_even=gtk_button_new_with_label("Even");
-#endif
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_button_even), 0);
   gtk_box_pack_start(GTK_BOX(hbox1),hg->skymon_button_even,FALSE,FALSE,0);
   my_signal_connect(hg->skymon_button_even,"pressed",
@@ -449,11 +423,7 @@ void create_skymon_dialog(typHOE *hg)
 #endif
 
 
-#ifdef __GTK_STOCK_H__
   hg->skymon_button_rev=gtkut_toggle_button_new_from_stock(NULL, GTK_STOCK_MEDIA_REWIND);
-#else
-  hg->skymon_button_rev=gtk_toggle_button_new_with_label("Rew");
-#endif
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_button_rev), 0);
   gtk_box_pack_start(GTK_BOX(hbox1),hg->skymon_button_rev,FALSE,FALSE,0);
   my_signal_connect(hg->skymon_button_rev,"toggled",
@@ -465,11 +435,7 @@ void create_skymon_dialog(typHOE *hg)
 #endif
 
 
-#ifdef __GTK_STOCK_H__
   hg->skymon_button_fwd=gtkut_toggle_button_new_from_stock(NULL, GTK_STOCK_MEDIA_FORWARD);
-#else
-  hg->skymon_button_fwd=gtk_toggle_button_new_with_label("Fwd");
-#endif
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_button_fwd), 0);
   gtk_box_pack_start(GTK_BOX(hbox1),hg->skymon_button_fwd,FALSE,FALSE,0);
   my_signal_connect(hg->skymon_button_fwd,"toggled",
@@ -481,11 +447,7 @@ void create_skymon_dialog(typHOE *hg)
 #endif
 
 
-#ifdef __GTK_STOCK_H__
   hg->skymon_button_morn=gtkut_button_new_from_stock(NULL, GTK_STOCK_MEDIA_NEXT);
-#else
-  hg->skymon_button_morn=gtk_button_new_with_label("Morn");
-#endif
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_button_morn), 0);
   gtk_box_pack_start(GTK_BOX(hbox1),hg->skymon_button_morn,FALSE,FALSE,0);
   my_signal_connect(hg->skymon_button_morn,"pressed",

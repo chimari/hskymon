@@ -153,11 +153,7 @@ void create_adc_dialog(typHOE *hg)
   gtk_table_set_row_spacings (GTK_TABLE (table), 6);
   gtk_table_set_col_spacings (GTK_TABLE (table), 3);
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
-#else
-  button = gtk_button_new_with_label ("Close");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (close_adc), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
@@ -167,11 +163,7 @@ void create_adc_dialog(typHOE *hg)
 			      "Close");
 #endif
 
-#ifdef __GTK_STOCK_H__
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
-#else
-  button = gtk_button_new_with_label ("Redraw");
-#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (refresh_adc), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 1, 2, 1, 2,
