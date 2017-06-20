@@ -1131,7 +1131,6 @@ static void add_item (typHOE *hg)
   tmp_obj.ra=hg->addobj_ra;
   tmp_obj.dec=hg->addobj_dec;
   tmp_obj.equinox=2000.0;
-  tmp_obj.note=NULL;
   tmp_obj.note=g_strconcat("added via dialog",NULL);
   
   for(i_list=hg->i_max;i_list>i;i_list--){
@@ -1147,12 +1146,13 @@ static void add_item (typHOE *hg)
   hg->obj[i]=tmp_obj;
   hg->obj[i].check_disp=TRUE;
   hg->obj[i].check_sm=TRUE;
-  
-  //hg->obj[i].ope=MAX_ROPE-1;
-  //hg->obj[i].ope_i=-1;
-  //if(hg->obj[i].ope<0) hg->obj[i].ope=0;
+  hg->obj[i].check_lock=FALSE;
+  hg->obj[i].check_used=TRUE;
+  hg->obj[i].check_std=FALSE;
   hg->obj[i].ope=ADDTYPE_OBJ;
   hg->obj[i].ope_i=hg->add_max;
+  hg->obj[i].type=ADDTYPE_OBJ;
+  hg->obj[i].i_nst=-1;
   hg->add_max++;
 
   
@@ -1248,9 +1248,8 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   hg->obj[i].check_sm=TRUE;
   hg->obj[i].check_used=FALSE;
   
-  //hg->obj[i].ope_i=-1;
-  //if(hg->obj[i].ope<0) hg->obj[i].ope=0;
   hg->obj[i].ope_i=hg->add_max;
+  hg->obj[i].i_nst=-1;
   hg->add_max++;
   
   gtk_list_store_append (GTK_LIST_STORE (model), &iter);
