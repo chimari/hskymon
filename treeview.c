@@ -1151,7 +1151,7 @@ static void add_item (typHOE *hg)
   hg->obj[i].check_std=FALSE;
   hg->obj[i].ope=ADDTYPE_OBJ;
   hg->obj[i].ope_i=hg->add_max;
-  hg->obj[i].type=ADDTYPE_OBJ;
+  hg->obj[i].type=OBJTYPE_OBJ;
   hg->obj[i].i_nst=-1;
   hg->add_max++;
 
@@ -1326,10 +1326,9 @@ void add_item_std(GtkWidget *w, gpointer gdata){
   hg->obj[i].check_sm=TRUE;
   hg->obj[i].check_used=FALSE;
   
-  //hg->obj[i].ope_i=-1;
-  //if(hg->obj[i].ope<0) hg->obj[i].ope=0;
   hg->obj[i].ope=ADDTYPE_STD;
   hg->obj[i].ope_i=hg->add_max;
+  hg->obj[i].i_nst=-1;
   hg->add_max++;
   
   gtk_list_store_append (GTK_LIST_STORE (model), &iter);
