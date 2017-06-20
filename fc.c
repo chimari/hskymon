@@ -5044,12 +5044,14 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
 
 void fcdb_clear_tree(typHOE *hg){
   GtkTreeModel *model;
-
-  if(hg->dss_i!=hg->fcdb_i){
-    model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
-
-    gtk_list_store_clear (GTK_LIST_STORE(model));
-    hg->fcdb_i_max=0;
+  
+  if(GTK_IS_TREE_VIEW(hg->fcdb_tree)){
+    if(hg->dss_i!=hg->fcdb_i){
+      model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
+      
+      gtk_list_store_clear (GTK_LIST_STORE(model));
+      hg->fcdb_i_max=0;
+    }
   }
 
 }
