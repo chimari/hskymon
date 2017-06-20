@@ -2688,7 +2688,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  
 	  for(i=1;i<=iend-1;i++){
 	    if((pel[i]>0)&&(pel[i+1]>0)){
-	      if( (abs(paz[i]-paz[i+1])<180) ) {
+	      if( (fabs(paz[i]-paz[i+1])<180) ) {
 		x=dx+lx*(phst[i]-ihst0)/(ihst1-ihst0);
 		y=dy+ly*(360-paz[i])/360;
 		cairo_move_to(cr,x,y);
@@ -2763,7 +2763,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  
 	  for(i=1;i<=iend-1;i++){
 	    if((pel[i]>0)&&(pel[i+1]>0)){
-	      if( (abs(ppa[i]-ppa[i+1])<180) ) {
+	      if( (fabs(ppa[i]-ppa[i+1])<180) ) {
 		x=dx+lx*(phst[i]-ihst0)/(ihst1-ihst0);
 		y=dy+ly*(360-(ppa[i]+180))/360;
 		cairo_move_to(cr,x,y);
@@ -2872,7 +2872,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  
 	  for(i=1;i<=iend-1;i++){
 	    if((pel[i]>0)&&(pel[i+1]>0)){
-	      if( (abs(ppa[i]-ppa[i+1])<180) ) {
+	      if( (fabs(ppa[i]-ppa[i+1])<180) ) {
 		x=dx+lx*(phst[i]-ihst0)/(ihst1-ihst0);
 		y=dy+ly*(360-(ppa[i]+180))/360;
 		cairo_move_to(cr,x,y);
@@ -3032,7 +3032,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  
 	  for(i=1;i<=iend-1;i++){
 	    if((pel[i]>0)&&(pel[i+1]>0)){
-	      if( (abs(phpa[i]-phpa[i+1])<180) ) {
+	      if( (fabs(phpa[i]-phpa[i+1])<180) ) {
 		x=dx+lx*(phst[i]-ihst0)/(ihst1-ihst0);
 		y=dy+ly*(360-(phpa[i]+180))/360;
 		cairo_move_to(cr,x,y);
@@ -3093,7 +3093,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  
 	    for(i=1;i<=iend-1;i++){
 	      if((pel[i]>0)&&(pel[i+1]>0)){
-		if( (abs(ppa[i]-ppa[i+1])<180) ) {
+		if( (fabs(ppa[i]-ppa[i+1])<180) ) {
 		  x=dx+lx*(phst[i]-ihst0)/(ihst1-ihst0);
 		  y=dy+ly*(360-(ppa[i]+180))/360;
 		  cairo_move_to(cr,x,y);
