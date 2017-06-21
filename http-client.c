@@ -86,6 +86,11 @@ extern void printf_log();
 extern double get_julian_day_of_equinox();
 extern gboolean draw_skymon_cairo();
 
+extern gdouble ra_to_deg();
+extern gdouble dec_to_deg();
+extern gdouble deg_to_ra();
+extern gdouble deg_to_dec();
+
 gboolean  flag_getting_allsky=FALSE, flag_allsky_finish=FALSE;
 pid_t allsky_pid=0, fc_pid=0, stddb_pid=0, fcdb_pid=0;
 #ifndef USE_WIN32
@@ -1200,17 +1205,13 @@ int http_c_fc(typHOE *hg){
   
   gchar *tmp_file=NULL;
 
-  gdouble ra_0, dec_0;
   gchar *tmp, *tmp_scale;
   gfloat sdss_scale=SDSS_SCALE;
   gint xpix,ypix,i_bin;
-  //struct ln_hms ra_hms;
-  //struct ln_dms dec_dms;
   static char cbuf[BUFFSIZE];
   gchar *cp, *cpp, *cp2, *cp3=NULL;
   FILE *fp_read;
 
-  struct lnh_equ_posn hobject;
   struct ln_equ_posn object;
   struct lnh_equ_posn hobject_prec;
   struct ln_equ_posn object_prec;
@@ -1258,27 +1259,9 @@ int http_c_fc(typHOE *hg){
   }
 
   // bin mode
-  ra_0=hg->obj[hg->dss_i].ra;
-  hobject.ra.hours=(gint)(ra_0/10000);
-  ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
-  hobject.ra.minutes=(gint)(ra_0/100);
-  hobject.ra.seconds=ra_0-(gdouble)(hobject.ra.minutes)*100;
- 
-  if(hg->obj[hg->dss_i].dec<0){
-    hobject.dec.neg=1;
-    dec_0=-hg->obj[hg->dss_i].dec;
-  }
-  else{
-    hobject.dec.neg=0;
-    dec_0=hg->obj[hg->dss_i].dec;
-  }
-  hobject.dec.degrees=(gint)(dec_0/10000);
-  dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
-  hobject.dec.minutes=(gint)(dec_0/100);
-  hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
+  object.ra=ra_to_deg(hg->obj[hg->dss_i].ra);
+  object.dec=dec_to_deg(hg->obj[hg->dss_i].dec);
 
-
-  ln_hequ_to_equ (&hobject, &object);
   ln_get_equ_prec2 (&object, 
 		    get_julian_day_of_equinox(hg->obj[hg->dss_i].equinox),
 		    JD2000, &object_prec);
@@ -1780,17 +1763,13 @@ int http_c_fc_ssl(typHOE *hg){
   
   gchar *tmp_file=NULL;
 
-  gdouble ra_0, dec_0;
   gchar *tmp, *tmp_scale;
   gfloat sdss_scale=SDSS_SCALE;
   gint xpix,ypix,i_bin;
-  //struct ln_hms ra_hms;
-  //struct ln_dms dec_dms;
   static char cbuf[BUFFSIZE];
   gchar *cp, *cpp, *cp2, *cp3=NULL;
   FILE *fp_read;
 
-  struct lnh_equ_posn hobject;
   struct ln_equ_posn object;
   struct lnh_equ_posn hobject_prec;
   struct ln_equ_posn object_prec;
@@ -1856,27 +1835,9 @@ int http_c_fc_ssl(typHOE *hg){
   }
   
   // bin mode
-  ra_0=hg->obj[hg->dss_i].ra;
-  hobject.ra.hours=(gint)(ra_0/10000);
-  ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
-  hobject.ra.minutes=(gint)(ra_0/100);
-  hobject.ra.seconds=ra_0-(gdouble)(hobject.ra.minutes)*100;
- 
-  if(hg->obj[hg->dss_i].dec<0){
-    hobject.dec.neg=1;
-    dec_0=-hg->obj[hg->dss_i].dec;
-  }
-  else{
-    hobject.dec.neg=0;
-    dec_0=hg->obj[hg->dss_i].dec;
-  }
-  hobject.dec.degrees=(gint)(dec_0/10000);
-  dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
-  hobject.dec.minutes=(gint)(dec_0/100);
-  hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
+  object.ra=ra_to_deg(hg->obj[hg->dss_i].ra);
+  object.dec=dec_to_deg(hg->obj[hg->dss_i].dec);
 
-
-  ln_hequ_to_equ (&hobject, &object);
   ln_get_equ_prec2 (&object, 
 		    get_julian_day_of_equinox(hg->obj[hg->dss_i].equinox),
 		    JD2000, &object_prec);

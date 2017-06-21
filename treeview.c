@@ -94,6 +94,10 @@ extern void my_entry_set_width_chars();
 
 extern void do_plot();
 extern void do_adc();
+extern gdouble ra_to_deg();
+extern gdouble dec_to_deg();
+extern gdouble deg_to_ra();
+extern gdouble deg_to_dec();
 
 extern void fc_item2 ();
 extern void fcdb_item2();
@@ -1165,8 +1169,6 @@ static void add_item (typHOE *hg)
 void add_item_fcdb(GtkWidget *w, gpointer gdata){
   typHOE *hg;
   gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
-  struct ln_hms hms;
-  struct ln_dms dms;
   OBJpara tmp_obj;
   gint i, i_list;
   GtkTreeIter iter;
@@ -1209,19 +1211,9 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
       hg->fcdb[hg->fcdb_tree_focus].pmra/1000/60/60*yrs;
     new_d_dec=hg->fcdb[hg->fcdb_tree_focus].d_dec+
       hg->fcdb[hg->fcdb_tree_focus].pmdec/1000/60/60*yrs;
-    
-    ln_deg_to_hms(new_d_ra, &hms);
-    new_ra=(gdouble)hms.hours*10000.
-      + (gdouble)hms.minutes*100. + hms.seconds;
-    ln_deg_to_dms(new_d_dec, &dms);
-    if(dms.neg==1){ 
-      new_dec=-(gdouble)dms.degrees*10000.
-	- (gdouble)dms.minutes*100. - dms.seconds;
-    }
-    else{
-      new_dec=(gdouble)dms.degrees*10000.
-	+ (gdouble)dms.minutes*100. + dms.seconds;
-    }
+
+    new_ra=deg_to_ra(new_d_ra);
+    new_dec=deg_to_dec(new_d_dec);
     
     tmp_obj.ra=new_ra;
     tmp_obj.dec=new_dec;
@@ -1261,8 +1253,6 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
 void add_item_std(GtkWidget *w, gpointer gdata){
   typHOE *hg;
   gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
-  struct ln_hms hms;
-  struct ln_dms dms;
   OBJpara tmp_obj;
   gint i, i_list;
   GtkTreeIter iter;
@@ -1288,18 +1278,8 @@ void add_item_std(GtkWidget *w, gpointer gdata){
     new_d_dec=hg->std[hg->stddb_tree_focus].d_dec+
       hg->std[hg->stddb_tree_focus].pmdec/1000/60/60*yrs;
     
-    ln_deg_to_hms(new_d_ra, &hms);
-    new_ra=(gdouble)hms.hours*10000.
-      + (gdouble)hms.minutes*100. + hms.seconds;
-    ln_deg_to_dms(new_d_dec, &dms);
-    if(dms.neg==1){ 
-      new_dec=-(gdouble)dms.degrees*10000.
-	- (gdouble)dms.minutes*100. - dms.seconds;
-    }
-    else{
-      new_dec=(gdouble)dms.degrees*10000.
-	+ (gdouble)dms.minutes*100. + dms.seconds;
-    }
+    new_ra=deg_to_ra(new_d_ra);
+    new_dec=deg_to_dec(new_d_dec);
     
     tmp_obj.ra=new_ra;
     tmp_obj.dec=new_dec;
@@ -1395,98 +1375,10 @@ static void plot2_item (GtkWidget *widget, gpointer data)
 }
 
 
-
-
-static void
-dss_item (GtkWidget *widget, gpointer data)
-{
-  GtkTreeIter iter;
-  gdouble ra_0, dec_0;
-  gchar *tmp;
-#ifndef USE_WIN32
-  gchar *cmdline;
-#endif
-  typHOE *hg = (typHOE *)data;
-  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
-  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->tree));
-  struct ln_hms ra_hms;
-  struct ln_dms dec_dms;
-
-  if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
-    gint i, i_list;
-    GtkTreePath *path;
-    
-    path = gtk_tree_model_get_path (model, &iter);
-    //i = gtk_tree_path_get_indices (path)[0];
-    gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
-    i--;
-
-    if((int)hg->obj[i].equinox!=2000){
-#ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
-		    "Error: Object Equinox should be J2000",
-		    " ",
-		    "       for DSS Quick View.",
-		    NULL);
-#else
-      fprint(stderr, "Error: Object Equinox should be J2000 for DSS Quick View.");
-#endif
-
-      return;
-    }
-  
-    ra_0=hg->obj[i].ra;
-    ra_hms.hours=(gint)(ra_0/10000);
-    ra_0=ra_0-(gdouble)(ra_hms.hours)*10000;
-    ra_hms.minutes=(gint)(ra_0/100);
-    ra_hms.seconds=ra_0-(gdouble)(ra_hms.minutes)*100;
-    
-    if(hg->obj[i].dec<0){
-      dec_dms.neg=1;
-      dec_0=-hg->obj[i].dec;
-    }
-    else{
-      dec_dms.neg=0;
-      dec_0=hg->obj[i].dec;
-    }
-    dec_dms.degrees=(gint)(dec_0/10000);
-    dec_0=dec_0-(gfloat)(dec_dms.degrees)*10000;
-    dec_dms.minutes=(gint)(dec_0/100);
-    dec_dms.seconds=dec_0-(gfloat)(dec_dms.minutes)*100;
-
-    tmp=g_strdup_printf(DSS_URL,
-			ra_hms.hours,ra_hms.minutes,ra_hms.seconds,
-			(dec_dms.neg) ? "-" : "+", 
-			dec_dms.degrees, dec_dms.minutes,dec_dms.seconds);
-
-#ifdef USE_WIN32
-    ShellExecute(NULL, 
-		 "open", 
-		 tmp,
-		 NULL, 
-		 NULL, 
-		 SW_SHOWNORMAL);
-#elif defined(USE_OSX)
-    if(system(tmp)==0){
-      fprintf(stderr, "Error: Could not open the default www browser.");
-    }
-#else
-    cmdline=g_strconcat(hg->www_com," ",tmp,NULL);
-    
-    ext_play(cmdline);
-    g_free(cmdline);
-#endif
-    if(tmp) g_free(tmp);
-
-    gtk_tree_path_free (path);
-  }
-}
-
 static void
 wwwdb_item (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
-  gdouble ra_0, dec_0;
   gchar *tmp;
 #ifndef USE_WIN32
   gchar *cmdline;
@@ -1495,7 +1387,6 @@ wwwdb_item (GtkWidget *widget, gpointer data)
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
   GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->tree));
 
-  struct lnh_equ_posn hobject;
   struct ln_equ_posn object;
   struct lnh_equ_posn hobject_prec;
   struct ln_equ_posn object_prec;
@@ -1509,26 +1400,9 @@ wwwdb_item (GtkWidget *widget, gpointer data)
     gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
     i--;
 
-    ra_0=hg->obj[i].ra;
-    hobject.ra.hours=(gint)(ra_0/10000);
-    ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
-    hobject.ra.minutes=(gint)(ra_0/100);
-    hobject.ra.seconds=ra_0-(gdouble)(hobject.ra.minutes)*100;
+    object.ra=ra_to_deg(hg->obj[i].ra);
+    object.dec=dec_to_deg(hg->obj[i].dec);
 
-    if(hg->obj[i].dec<0){
-      hobject.dec.neg=1;
-      dec_0=-hg->obj[i].dec;
-    }
-    else{
-      hobject.dec.neg=0;
-      dec_0=hg->obj[i].dec;
-    }
-    hobject.dec.degrees=(gint)(dec_0/10000);
-    dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
-    hobject.dec.minutes=(gint)(dec_0/100);
-    hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
-
-    ln_hequ_to_equ (&hobject, &object);
     ln_get_equ_prec2 (&object, 
 		      get_julian_day_of_equinox(hg->obj[i].equinox),
 		      JD2000, &object_prec);
@@ -1823,20 +1697,10 @@ void copy_stacstd(typHOE *hg, const stacSTDpara *stacstd,
     }
     
     hg->std[i_list].d_ra=stacstd[i_list].ra;
-    ln_deg_to_hms(hg->std[i_list].d_ra, &hms);
-    hg->std[i_list].ra=(gdouble)hms.hours*10000.
-      + (gdouble)hms.minutes*100. + hms.seconds;
+    hg->std[i_list].ra=deg_to_ra(hg->std[i_list].d_ra);
     
     hg->std[i_list].d_dec=stacstd[i_list].dec;
-    ln_deg_to_dms(hg->std[i_list].d_dec, &dms);
-    if(dms.neg==1){ 
-      hg->std[i_list].dec=-(gdouble)dms.degrees*10000.
-	- (gdouble)dms.minutes*100. - dms.seconds;
-    }
-    else{
-      hg->std[i_list].dec=(gdouble)dms.degrees*10000.
-	+ (gdouble)dms.minutes*100. + dms.seconds;
-    }
+    hg->std[i_list].dec=deg_to_dec(hg->std[i_list].d_dec);
     
     hg->std[i_list].pmra=stacstd[i_list].pmra;
     hg->std[i_list].pmdec=stacstd[i_list].pmdec;
@@ -1904,7 +1768,6 @@ static void
 stddb_item (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
-  gdouble ra_0, dec_0, d_ra0, d_dec0;
 #ifndef USE_WIN32
   gchar *cmdline;
 #endif
@@ -1912,7 +1775,6 @@ stddb_item (GtkWidget *widget, gpointer data)
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
   GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->tree));
 
-  struct lnh_equ_posn hobject;
   struct ln_equ_posn object;
   struct lnh_equ_posn hobject_prec;
   struct ln_equ_posn object_prec;
@@ -1929,28 +1791,8 @@ stddb_item (GtkWidget *widget, gpointer data)
 
     hg->std_i=i;
 
-    ra_0=hg->obj[i].ra;
-    hobject.ra.hours=(gint)(ra_0/10000);
-    ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
-    hobject.ra.minutes=(gint)(ra_0/100);
-    hobject.ra.seconds=ra_0-(gdouble)(hobject.ra.minutes)*100;
-
-    if(hg->obj[i].dec<0){
-      hobject.dec.neg=1;
-      dec_0=-hg->obj[i].dec;
-    }
-    else{
-      hobject.dec.neg=0;
-      dec_0=hg->obj[i].dec;
-    }
-    hobject.dec.degrees=(gint)(dec_0/10000);
-    dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
-    hobject.dec.minutes=(gint)(dec_0/100);
-    hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
-    d_ra0=ln_hms_to_deg(&hobject.ra);
-    d_dec0=ln_dms_to_deg(&hobject.dec);
-
-    ln_hequ_to_equ (&hobject, &object);
+    object.ra=ra_to_deg(hg->obj[i].ra);
+    object.dec=dec_to_deg(hg->obj[i].dec);
     ln_get_equ_prec2 (&object, 
 		      get_julian_day_of_equinox(hg->obj[i].equinox),
 		      JD2000, &object_prec);
@@ -2090,16 +1932,16 @@ stddb_item (GtkWidget *widget, gpointer data)
       stddb_vo_parse(hg);
       break;
     case STDDB_ESOSTD:
-      copy_stacstd(hg,esostd,d_ra0,d_dec0);
+      copy_stacstd(hg,esostd,object_prec.ra,object_prec.dec);
       break;
     case STDDB_IRAFSTD:
-      copy_stacstd(hg,irafstd,d_ra0,d_dec0);
+      copy_stacstd(hg,irafstd,object_prec.ra,object_prec.dec);
       break;
     case STDDB_CALSPEC:
-      copy_stacstd(hg,calspec,d_ra0,d_dec0);
+      copy_stacstd(hg,calspec,object_prec.ra,object_prec.dec);
       break;
     case STDDB_HDSSTD:
-      copy_stacstd(hg,hdsstd,d_ra0,d_dec0);
+      copy_stacstd(hg,hdsstd,object_prec.ra,object_prec.dec);
       break;
     }
 
@@ -4738,8 +4580,6 @@ void make_std_tgt(GtkWidget *w, gpointer gdata){
   typHOE *hg;
   gchar *tmp, *tgt;
   gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
-  struct ln_hms hms;
-  struct ln_dms dms;
 
   hg=(typHOE *)gdata;
 
@@ -4753,18 +4593,9 @@ void make_std_tgt(GtkWidget *w, gpointer gdata){
       new_d_dec=hg->std[hg->stddb_tree_focus].d_dec+
 	hg->std[hg->stddb_tree_focus].pmdec/1000/60/60*yrs;
 
-      ln_deg_to_hms(new_d_ra, &hms);
-      new_ra=(gdouble)hms.hours*10000.
-	+ (gdouble)hms.minutes*100. + hms.seconds;
-      ln_deg_to_dms(new_d_dec, &dms);
-      if(dms.neg==1){ 
-	new_dec=-(gdouble)dms.degrees*10000.
-	  - (gdouble)dms.minutes*100. - dms.seconds;
-      }
-      else{
-	new_dec=(gdouble)dms.degrees*10000.
-	  + (gdouble)dms.minutes*100. + dms.seconds;
-      }
+      new_ra=deg_to_ra(new_d_ra);
+      new_dec=deg_to_dec(new_d_dec);
+    
       tmp=g_strdup_printf("PM%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
 			  tgt,hg->std[hg->stddb_tree_focus].name,
 			  new_ra,new_dec,2000.00);
@@ -4785,8 +4616,6 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
   typHOE *hg;
   gchar *tmp, *tgt;
   gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
-  struct ln_hms hms;
-  struct ln_dms dms;
 
   hg=(typHOE *)gdata;
 
@@ -4814,18 +4643,9 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
       new_d_dec=hg->fcdb[hg->fcdb_tree_focus].d_dec+
 	hg->fcdb[hg->fcdb_tree_focus].pmdec/1000/60/60*yrs;
 
-      ln_deg_to_hms(new_d_ra, &hms);
-      new_ra=(gdouble)hms.hours*10000.
-	+ (gdouble)hms.minutes*100. + hms.seconds;
-      ln_deg_to_dms(new_d_dec, &dms);
-      if(dms.neg==1){ 
-	new_dec=-(gdouble)dms.degrees*10000.
-	  - (gdouble)dms.minutes*100. - dms.seconds;
-      }
-      else{
-	new_dec=(gdouble)dms.degrees*10000.
-	  + (gdouble)dms.minutes*100. + dms.seconds;
-      }
+      new_ra=deg_to_ra(new_d_ra);
+      new_dec=deg_to_dec(new_d_dec);
+    
       switch(hg->fcdb_type){
       case FCDB_TYPE_GSC:
       case FCDB_TYPE_PS1:

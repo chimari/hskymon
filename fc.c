@@ -1638,14 +1638,12 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
   int width_file, height_file;
   gfloat r_w,r_h, r;
 
-  gdouble ra_0, dec_0;
   gchar *tmp;
   GdkPixbuf *pixbuf_flip=NULL;
   gfloat x_ccd, y_ccd, gap_ccd;
-  //struct ln_hms ra_hms;
-  //struct ln_dms dec_dms;
   gdouble scale;
 
+  struct ln_equ_posn object;
   struct lnh_equ_posn hobject;
   
   if(!flagFC) return (FALSE);
@@ -2434,24 +2432,10 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
     cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
 		     (height-(gint)((gdouble)height_file*r))/2);
     
-    ra_0=hg->obj[hg->dss_i].ra;
-    hobject.ra.hours=(gint)(ra_0/10000);
-    ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
-    hobject.ra.minutes=(gint)(ra_0/100);
-    hobject.ra.seconds=ra_0-(gdouble)(hobject.ra.minutes)*100;
+    object.ra=ra_to_deg(hg->obj[hg->dss_i].ra);
+    object.dec=dec_to_deg(hg->obj[hg->dss_i].dec);
 
-    if(hg->obj[hg->dss_i].dec<0){
-      hobject.dec.neg=1;
-      dec_0=-hg->obj[hg->dss_i].dec;
-    }
-    else{
-      hobject.dec.neg=0;
-      dec_0=hg->obj[hg->dss_i].dec;
-    }
-    hobject.dec.degrees=(gint)(dec_0/10000);
-    dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
-    hobject.dec.minutes=(gint)(dec_0/100);
-    hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
+    ln_equ_to_hequ(&object, &hobject);
 
     if(hg->dss_invert) cairo_set_source_rgba(cr, 0.3, 0.45, 0.0, 1.0);
     else cairo_set_source_rgba(cr, 1.0, 1.0, 0.4, 1.0);

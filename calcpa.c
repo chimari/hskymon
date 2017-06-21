@@ -4474,17 +4474,6 @@ void calc_moon(typHOE *hg){
   hg->pluto.c_dec=dms;
   hg->pluto.c_mag=ln_get_pluto_magnitude (JD);
 
-  /*
-  hg->moon.ra=(gdouble)hms.hours*10000.
-    + (gdouble)hms.minutes*100. + hms.seconds;
-  
-  hg->moon.dec=
-    dms.neg==1 ? 
-    -1.* ((gdouble)dms.degrees*10000. 
-	  + (gdouble)dms.minutes*100. + dms.seconds)
-    : (gdouble)dms.degrees*10000.
-    + (gdouble)dms.minutes*100. + dms.seconds;
-  */
   hg->moon.c_disk=ln_get_lunar_disk(JD);
   hg->moon.c_phase=ln_get_lunar_phase(JD);
   hg->moon.c_limb=ln_get_lunar_bright_limb(JD);
@@ -4780,24 +4769,6 @@ void calc_moon_skymon(typHOE *hg){
   hg->pluto.s_ra=hms;
   hg->pluto.s_dec=dms;
   hg->pluto.s_mag=ln_get_pluto_magnitude (JD);
-
-  /*
-  hg->moon.s_ra=(gdouble)hms.hours*10000.
-    + (gdouble)hms.minutes*100. + hms.seconds;
-  
-  hg->moon.s_dec=
-    dms.neg==1 ? 
-    -1.* ((gdouble)dms.degrees*10000. 
-	  + (gdouble)dms.minutes*100. + dms.seconds)
-    : (gdouble)dms.degrees*10000.
-    + (gdouble)dms.minutes*100. + dms.seconds;
-  */
-
-  /* lunar disk, phase and bright limb 
-  printf ("lunar disk %f\n", ln_get_lunar_disk(JD));
-  printf ("lunar phase %f\n", ln_get_lunar_phase(JD));
-  printf ("lunar bright limb %f\n", ln_get_lunar_bright_limb(JD));
-  */
 
   hg->moon.s_disk=ln_get_lunar_disk(JD);
   hg->moon.s_phase=ln_get_lunar_phase(JD);
@@ -5248,7 +5219,7 @@ gdouble ra_to_deg(gdouble ra){
   a0s=a0s-(double)(ia0m)*100;
 
   a0=ia0h + ia0m/60. + a0s/3600.;  //[hour]
-
+  
   return(a0*360/24);
 }
 

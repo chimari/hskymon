@@ -49,6 +49,8 @@ void fcdb_ned_vo_parse();
 extern gdouble deg_sep();
 extern void printf_log();
 
+extern gdouble ra_to_deg();
+extern gdouble dec_to_deg();
 extern gdouble deg_to_ra();
 extern gdouble deg_to_dec();
 
@@ -472,33 +474,12 @@ void stddb_vo_parse(typHOE *hg) {
   int *columns;
   reader = Init_VO_Parser(hg->std_file,&votable);
   int i_list=0;
-  struct ln_hms hms;
-  struct ln_dms dms;
-  gdouble ra_0, dec_0, d_ra0,d_dec0;
-  struct lnh_equ_posn hobject;
+  gdouble d_ra0,d_dec0;
 
   printf_log(hg,"[StdDB] pursing XML.");
 
-  ra_0=hg->obj[hg->std_i].ra;
-  hobject.ra.hours=(gint)(ra_0/10000);
-  ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
-  hobject.ra.minutes=(gint)(ra_0/100);
-  hobject.ra.seconds=ra_0-(gdouble)(hobject.ra.minutes)*100;
-  
-  if(hg->obj[hg->std_i].dec<0){
-    hobject.dec.neg=1;
-    dec_0=-hg->obj[hg->std_i].dec;
-  }
-  else{
-    hobject.dec.neg=0;
-    dec_0=hg->obj[hg->std_i].dec;
-  }
-  hobject.dec.degrees=(gint)(dec_0/10000);
-  dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
-  hobject.dec.minutes=(gint)(dec_0/100);
-  hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
-  d_ra0=ln_hms_to_deg(&hobject.ra);
-  d_dec0=ln_dms_to_deg(&hobject.dec);
+  d_ra0=ra_to_deg(hg->obj[hg->std_i].ra);
+  d_dec0=dec_to_deg(hg->obj[hg->std_i].dec);
 
   Extract_Att_VO_Table(reader,&votable);
 
@@ -563,21 +544,11 @@ void stddb_vo_parse(typHOE *hg) {
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->std[i_list].d_ra=atof(vtabledata_move->value);
-     ln_deg_to_hms(hg->std[i_list].d_ra, &hms);
-     hg->std[i_list].ra=(gdouble)hms.hours*10000.
-       + (gdouble)hms.minutes*100. + hms.seconds;
+     hg->std[i_list].ra=deg_to_ra(hg->std[i_list].d_ra);
    }
    else if (vtabledata_move->colomn == columns[2]){
      hg->std[i_list].d_dec=atof(vtabledata_move->value);
-     ln_deg_to_dms(hg->std[i_list].d_dec, &dms);
-     if(dms.neg==1){ 
-       hg->std[i_list].dec=-(gdouble)dms.degrees*10000.
-	 - (gdouble)dms.minutes*100. - dms.seconds;
-     }
-     else{
-       hg->std[i_list].dec=(gdouble)dms.degrees*10000.
-	 + (gdouble)dms.minutes*100. + dms.seconds;
-     }
+     hg->std[i_list].dec=deg_to_dec(hg->std[i_list].d_dec);
    }
    else if (vtabledata_move->colomn == columns[3]){
      if(hg->std[i_list].sp) g_free(hg->std[i_list].sp);
@@ -741,8 +712,6 @@ void fcdb_vo_parse(typHOE *hg) {
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
   int i_list=0;
-  struct ln_hms hms;
-  struct ln_dms dms;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -808,21 +777,11 @@ void fcdb_vo_parse(typHOE *hg) {
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
-     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
-     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
-       + (gdouble)hms.minutes*100. + hms.seconds;
+     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
    }
    else if (vtabledata_move->colomn == columns[2]){
      hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
-     ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
-     if(dms.neg==1){ 
-       hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
-	 - (gdouble)dms.minutes*100. - dms.seconds;
-     }
-     else{
-       hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
-	 + (gdouble)dms.minutes*100. + dms.seconds;
-     }
+     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
    }
    else if (vtabledata_move->colomn == columns[3]){
      if(hg->fcdb[i_list].sp) g_free(hg->fcdb[i_list].sp);
@@ -983,8 +942,6 @@ void fcdb_ned_vo_parse(typHOE *hg) {
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
   int i_list=0;
-  struct ln_hms hms;
-  struct ln_dms dms;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1024,21 +981,11 @@ void fcdb_ned_vo_parse(typHOE *hg) {
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
-     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
-     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
-       + (gdouble)hms.minutes*100. + hms.seconds;
+     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
    }
    else if (vtabledata_move->colomn == columns[2]){
      hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
-     ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
-     if(dms.neg==1){ 
-       hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
-	 - (gdouble)dms.minutes*100. - dms.seconds;
-     }
-     else{
-       hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
-	 + (gdouble)dms.minutes*100. + dms.seconds;
-     }
+     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
    }
    else if (vtabledata_move->colomn == columns[3]){
      if(hg->fcdb[i_list].otype) g_free(hg->fcdb[i_list].otype);
@@ -1100,8 +1047,6 @@ void fcdb_gsc_vo_parse(typHOE *hg) {
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
   int i_list=0;
-  struct ln_hms hms;
-  struct ln_dms dms;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1147,21 +1092,11 @@ void fcdb_gsc_vo_parse(typHOE *hg) {
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
-     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
-     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
-       + (gdouble)hms.minutes*100. + hms.seconds;
+     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
    }
    else if (vtabledata_move->colomn == columns[2]){
      hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
-     ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
-     if(dms.neg==1){ 
-       hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
-	 - (gdouble)dms.minutes*100. - dms.seconds;
-     }
-     else{
-       hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
-	 + (gdouble)dms.minutes*100. + dms.seconds;
-     }
+     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
    }
    else if (vtabledata_move->colomn == columns[3]){
      if(vtabledata_move->value){
@@ -1253,8 +1188,6 @@ void fcdb_ps1_vo_parse(typHOE *hg) {
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
   int i_list=0;
-  struct ln_hms hms;
-  struct ln_dms dms;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1296,21 +1229,11 @@ void fcdb_ps1_vo_parse(typHOE *hg) {
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
-     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
-     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
-       + (gdouble)hms.minutes*100. + hms.seconds;
+     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
    }
    else if (vtabledata_move->colomn == columns[2]){
      hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
-     ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
-     if(dms.neg==1){ 
-       hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
-	 - (gdouble)dms.minutes*100. - dms.seconds;
-     }
-     else{
-       hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
-	 + (gdouble)dms.minutes*100. + dms.seconds;
-     }
+     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
    }
    else if (vtabledata_move->colomn == columns[3]){  //ndetections
      if(vtabledata_move->value){
@@ -1391,8 +1314,6 @@ void fcdb_sdss_vo_parse(typHOE *hg) {
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
   int i_list=0;
-  struct ln_hms hms;
-  struct ln_dms dms;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1432,21 +1353,11 @@ void fcdb_sdss_vo_parse(typHOE *hg) {
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
-     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
-     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
-       + (gdouble)hms.minutes*100. + hms.seconds;
+     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
    }
    else if (vtabledata_move->colomn == columns[2]){
      hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
-     ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
-     if(dms.neg==1){ 
-       hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
-	 - (gdouble)dms.minutes*100. - dms.seconds;
-     }
-     else{
-       hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
-	 + (gdouble)dms.minutes*100. + dms.seconds;
-     }
+     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
    }
    else if (vtabledata_move->colomn == columns[3]){ // u
      if(vtabledata_move->value){
@@ -1519,8 +1430,6 @@ void fcdb_usno_vo_parse(typHOE *hg) {
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
   int i_list=0;
-  struct ln_hms hms;
-  struct ln_dms dms;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1563,21 +1472,11 @@ void fcdb_usno_vo_parse(typHOE *hg) {
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
-     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
-     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
-       + (gdouble)hms.minutes*100. + hms.seconds;
+     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
    }
    else if (vtabledata_move->colomn == columns[2]){
      hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
-     ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
-     if(dms.neg==1){ 
-       hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
-	 - (gdouble)dms.minutes*100. - dms.seconds;
-     }
-     else{
-       hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
-	 + (gdouble)dms.minutes*100. + dms.seconds;
-     }
+     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
    }
    else if (vtabledata_move->colomn == columns[3]){  //B1
      if(vtabledata_move->value){
@@ -1669,8 +1568,6 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
   int i_list=0;
-  struct ln_hms hms;
-  struct ln_dms dms;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1697,29 +1594,19 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
   Extract_VO_TableData(reader,&votable, nbFields, columns);
   for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
     if (vtabledata_move->colomn == columns[0]){
-     if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
-     hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
+      if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+      hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
     }
     else if (vtabledata_move->colomn == columns[1]){
-     hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
-     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
-     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
-       + (gdouble)hms.minutes*100. + hms.seconds;
-     if((!hg->fcdb_gaia_fil)||(hg->fcdb[i_list].v<=hg->fcdb_gaia_mag)){
-       i_list++;
-     }
+      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
+      hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
+      if((!hg->fcdb_gaia_fil)||(hg->fcdb[i_list].v<=hg->fcdb_gaia_mag)){
+	i_list++;
+      }
     }
     else if (vtabledata_move->colomn == columns[2]){
       hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
-      ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
-      if(dms.neg==1){ 
-	hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
-	  - (gdouble)dms.minutes*100. - dms.seconds;
-      }
-      else{
-	hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
-	  + (gdouble)dms.minutes*100. + dms.seconds;
-      }
+      hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
     }
     else if (vtabledata_move->colomn == columns[3]){  //g
       if(vtabledata_move->value){
@@ -1783,8 +1670,6 @@ void fcdb_2mass_vo_parse(typHOE *hg) {
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
   int i_list=0;
-  struct ln_hms hms;
-  struct ln_dms dms;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1813,24 +1698,14 @@ void fcdb_2mass_vo_parse(typHOE *hg) {
 
    if (vtabledata_move->colomn == columns[0]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
-     ln_deg_to_hms(hg->fcdb[i_list].d_ra, &hms);
-     hg->fcdb[i_list].ra=(gdouble)hms.hours*10000.
-       + (gdouble)hms.minutes*100. + hms.seconds;
+     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
      if((!hg->fcdb_2mass_fil)||(hg->fcdb[i_list].h<=hg->fcdb_2mass_mag)){
        i_list++;
      }
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
-     ln_deg_to_dms(hg->fcdb[i_list].d_dec, &dms);
-     if(dms.neg==1){ 
-       hg->fcdb[i_list].dec=-(gdouble)dms.degrees*10000.
-	 - (gdouble)dms.minutes*100. - dms.seconds;
-     }
-     else{
-       hg->fcdb[i_list].dec=(gdouble)dms.degrees*10000.
-	 + (gdouble)dms.minutes*100. + dms.seconds;
-     }
+     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
    }
    else if (vtabledata_move->colomn == columns[2]){
      if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);

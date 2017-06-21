@@ -38,6 +38,12 @@ extern GtkWidget* gtkut_button_new_from_stock();
 extern void get_current_obs_time();
 
 extern void calcpa2_main();
+extern gdouble ra_to_deg();
+extern gdouble dec_to_deg();
+extern gdouble deg_to_ra();
+extern gdouble deg_to_dec();
+
+extern void ln_equ_to_hequ();
 
 gboolean flagADC=FALSE;
 
@@ -457,15 +463,13 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
   GdkPixmap *pixmap_adcbk,*pixmap_adcbk2;
   int width, height;
 
-  gdouble ra_0, dec_0;
   gchar *tmp;
   gfloat x_ccd, y_ccd, gap_ccd;
-  //struct ln_hms ra_hms;
-  //struct ln_dms dec_dms;
   gdouble size, scale;
   gdouble z_pa, ad;
   gboolean flag_rise;
   
+  struct ln_equ_posn object;
   struct lnh_equ_posn hobject;
   
   if(!flagADC) return (FALSE);
@@ -692,25 +696,11 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
 
   // Object Name
   {
-    ra_0=hg->obj[hg->plot_i].ra;
-    hobject.ra.hours=(gint)(ra_0/10000);
-    ra_0=ra_0-(gdouble)(hobject.ra.hours)*10000;
-    hobject.ra.minutes=(gint)(ra_0/100);
-    hobject.ra.seconds=ra_0-(gdouble)(hobject.ra.minutes)*100;
+    object.ra=ra_to_deg(hg->obj[hg->plot_i].ra);
+    object.dec=dec_to_deg(hg->obj[hg->plot_i].dec);
 
-    if(hg->obj[hg->plot_i].dec<0){
-      hobject.dec.neg=1;
-      dec_0=-hg->obj[hg->plot_i].dec;
-    }
-    else{
-      hobject.dec.neg=0;
-      dec_0=hg->obj[hg->plot_i].dec;
-    }
-    hobject.dec.degrees=(gint)(dec_0/10000);
-    dec_0=dec_0-(gfloat)(hobject.dec.degrees)*10000;
-    hobject.dec.minutes=(gint)(dec_0/100);
-    hobject.dec.seconds=dec_0-(gfloat)(hobject.dec.minutes)*100;
-
+    ln_equ_to_hequ(&object, &hobject);
+    
     cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
     cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_NORMAL);
