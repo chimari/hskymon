@@ -49,6 +49,10 @@ void fcdb_ned_vo_parse();
 extern gdouble deg_sep();
 extern void printf_log();
 
+extern gdouble deg_to_ra();
+extern gdouble deg_to_dec();
+
+
 static list_field *insert_field(xmlTextReaderPtr reader, 
 				  list_field *list, 
 				  int position) {
@@ -1883,8 +1887,6 @@ void addobj_vo_parse(typHOE *hg) {
   int nbFields, process_column;
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  struct ln_hms hms;
-  struct ln_dms dms;
   gdouble tmp_d_ra, tmp_d_dec;
 
   printf_log(hg,"[FCDB] pursing XML.");
@@ -1930,21 +1932,11 @@ void addobj_vo_parse(typHOE *hg) {
    }
    else if (vtabledata_move->colomn == columns[1]){
      tmp_d_ra=atof(vtabledata_move->value);
-     ln_deg_to_hms(tmp_d_ra, &hms);
-     hg->addobj_ra=(gdouble)hms.hours*10000.
-       + (gdouble)hms.minutes*100. + hms.seconds;
+     hg->addobj_ra=deg_to_ra(tmp_d_ra);
    }
    else if (vtabledata_move->colomn == columns[2]){
      tmp_d_dec=atof(vtabledata_move->value);
-     ln_deg_to_dms(tmp_d_dec, &dms);
-     if(dms.neg==1){ 
-       hg->addobj_dec=-(gdouble)dms.degrees*10000.
-	 - (gdouble)dms.minutes*100. - dms.seconds;
-     }
-     else{
-       hg->addobj_dec=(gdouble)dms.degrees*10000.
-	 + (gdouble)dms.minutes*100. + dms.seconds;
-     }
+     hg->addobj_dec=deg_to_dec(tmp_d_dec);
    }
    else if (vtabledata_move->colomn == columns[3]){
      if(hg->addobj_votype) g_free(hg->addobj_votype);

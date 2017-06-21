@@ -7,6 +7,8 @@
 	            - Fixed a bug in CheckTargetDefOPE(). [Merge OPE crush].
 	            - Bug Fix on "calcpa2_main() instead of calcpa2_skymon()
 	              in SET mode.
+	            - Bug Fix in hms(and dms).sec > XX. XX should be 60 not 59
+	              in utility.c (libnova).
 
 2017.06.10 ver2.9.4 - Fixed a bug in unchunk() [Win32].
 	            - Changed vizier server to Strasbourg (nao.ac.jp mirror
