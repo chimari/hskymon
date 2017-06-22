@@ -1573,6 +1573,7 @@ struct _typHOE{
   gdouble fcdb_d_ra0;
   gdouble fcdb_d_dec0;
   gint  fcdb_i_max;
+  gint  fcdb_i_all;
   GtkWidget *fcdb_tree;
   GtkWidget *fcdb_label;
   GtkWidget *fcdb_frame;

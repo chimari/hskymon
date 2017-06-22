@@ -4673,7 +4673,7 @@ void fcdb_item2 (typHOE *hg)
 				    "%2B",hobject_prec.dec.degrees,
 				    hobject_prec.dec.minutes,
 				    hobject_prec.dec.seconds,
-				    ned_arcmin,
+				    ned_arcmin/2.,
 				    otype_str);
     }
     else{
@@ -4684,7 +4684,7 @@ void fcdb_item2 (typHOE *hg)
 				    "%2D",hobject_prec.dec.degrees,
 				    hobject_prec.dec.minutes,
 				    hobject_prec.dec.seconds,
-				    ned_arcmin,
+				    ned_arcmin/2.,
 				    otype_str);
     }
     g_free(otype_str);
@@ -4708,11 +4708,19 @@ void fcdb_item2 (typHOE *hg)
 
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
-    
-    hg->fcdb_path=g_strdup_printf(FCDB_GSC_PATH,
-				  hg->fcdb_d_ra0,
-				  hg->fcdb_d_dec0,
-				  (double)hg->fcdb_gsc_diam/60./60.);
+
+    if((double)hg->dss_arcmin<(double)hg->fcdb_gsc_diam/60.){
+      hg->fcdb_path=g_strdup_printf(FCDB_GSC_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (double)hg->dss_arcmin/2./60.);
+    }
+    else{
+      hg->fcdb_path=g_strdup_printf(FCDB_GSC_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (double)hg->fcdb_gsc_diam/2./60./60.);
+    }
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
@@ -4735,11 +4743,20 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
-    hg->fcdb_path=g_strdup_printf(FCDB_PS1_PATH,
-				  hg->fcdb_d_ra0,
-				  hg->fcdb_d_dec0,
-				  (double)hg->fcdb_ps1_diam/60./60.,
-				  hg->fcdb_ps1_mindet);
+    if((double)hg->dss_arcmin<(double)hg->fcdb_ps1_diam/60.){
+      hg->fcdb_path=g_strdup_printf(FCDB_PS1_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (double)hg->dss_arcmin/2./60.,
+				    hg->fcdb_ps1_mindet);
+    }
+    else{
+      hg->fcdb_path=g_strdup_printf(FCDB_PS1_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (double)hg->fcdb_ps1_diam/2./60./60.,
+				    hg->fcdb_ps1_mindet);
+    }
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
@@ -4761,10 +4778,18 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
-    hg->fcdb_path=g_strdup_printf(FCDB_SDSS_PATH,
-				  hg->fcdb_d_ra0,
-				  hg->fcdb_d_dec0,
-				  (double)hg->fcdb_sdss_diam/60./60.);
+    if((double)hg->dss_arcmin<(double)hg->fcdb_sdss_diam/60.){
+      hg->fcdb_path=g_strdup_printf(FCDB_SDSS_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (double)hg->dss_arcmin/2./60.);
+    }
+    else{
+      hg->fcdb_path=g_strdup_printf(FCDB_SDSS_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (double)hg->fcdb_sdss_diam/2./60./60.);
+    }
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
@@ -4786,10 +4811,18 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
-    hg->fcdb_path=g_strdup_printf(FCDB_USNO_PATH,
-				  hg->fcdb_d_ra0,
-				  hg->fcdb_d_dec0,
-				  (double)hg->fcdb_usno_diam/60./60.);
+    if((double)hg->dss_arcmin<(double)hg->fcdb_usno_diam/60.){
+      hg->fcdb_path=g_strdup_printf(FCDB_USNO_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (double)hg->dss_arcmin/2./60.);
+    }
+    else{
+      hg->fcdb_path=g_strdup_printf(FCDB_USNO_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (double)hg->fcdb_usno_diam/2./60./60.);
+    }
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
@@ -4811,11 +4844,20 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
-    hg->fcdb_path=g_strdup_printf(FCDB_GAIA_PATH,
-				  hg->fcdb_d_ra0,
-				  hg->fcdb_d_dec0,
-				  hg->fcdb_gaia_diam,
-				  hg->fcdb_gaia_diam);
+    if(hg->dss_arcmin*60<hg->fcdb_gaia_diam){
+      hg->fcdb_path=g_strdup_printf(FCDB_GAIA_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    hg->dss_arcmin*30,
+				    hg->dss_arcmin*30);
+    }
+    else{
+      hg->fcdb_path=g_strdup_printf(FCDB_GAIA_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (gint)(hg->fcdb_gaia_diam/2),
+				    (gint)(hg->fcdb_gaia_diam/2));
+    }
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
@@ -4837,10 +4879,18 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
-    hg->fcdb_path=g_strdup_printf(FCDB_2MASS_PATH,
-				  hg->fcdb_d_ra0,
-				  hg->fcdb_d_dec0,
-				  (double)hg->fcdb_2mass_diam/60./60.);
+    if((double)hg->dss_arcmin<(double)hg->fcdb_2mass_diam/60.){
+      hg->fcdb_path=g_strdup_printf(FCDB_2MASS_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (double)hg->dss_arcmin/2./60.);
+    }
+    else{
+      hg->fcdb_path=g_strdup_printf(FCDB_2MASS_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (double)hg->fcdb_2mass_diam/2./60./60.);
+    }
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
@@ -5194,11 +5244,20 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
     break;
   }
   if(hg->fcdb_label_text) g_free(hg->fcdb_label_text);
-  hg->fcdb_label_text
-    =g_strdup_printf("%s Objects around [%d-%d] %s (%d objects found)",
-		     db_name,
-		     hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
-		     hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+  if(hg->fcdb_i_all>=500){
+    hg->fcdb_label_text
+      =g_strdup_printf("%s Objects around [%d-%d] %s [%d objects (over max.)]",
+		       db_name,
+		       hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
+		       hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+  }
+  else{
+    hg->fcdb_label_text
+      =g_strdup_printf("%s Objects around [%d-%d] %s (%d objects found)",
+		       db_name,
+		       hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
+		       hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+  }
   gtk_label_set_text(GTK_LABEL(hg->fcdb_label), hg->fcdb_label_text);
   g_free(db_name);
 

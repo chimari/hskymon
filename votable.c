@@ -717,7 +717,7 @@ void fcdb_vo_parse(typHOE *hg) {
   int nbFields, process_column;
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  int i_list=0;
+  int i_list=0, i_all=0;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -782,6 +782,7 @@ void fcdb_vo_parse(typHOE *hg) {
      if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
      hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
      i_list++;
+     i_all++;
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
@@ -915,6 +916,7 @@ void fcdb_vo_parse(typHOE *hg) {
    */
  }
  hg->fcdb_i_max=i_list;
+ hg->fcdb_i_all=i_all;
 
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
@@ -953,7 +955,7 @@ void fcdb_ned_vo_parse(typHOE *hg) {
   int nbFields, process_column;
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  int i_list=0;
+  int i_list=0, i_all=0;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -990,6 +992,7 @@ void fcdb_ned_vo_parse(typHOE *hg) {
      if((!hg->fcdb_ned_ref)||(hg->fcdb[i_list].ref!=0)){
        i_list++;
      }
+     i_all++;
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
@@ -1033,6 +1036,7 @@ void fcdb_ned_vo_parse(typHOE *hg) {
    }
   }
   hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
 
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
@@ -1058,7 +1062,7 @@ void fcdb_gsc_vo_parse(typHOE *hg) {
   int nbFields, process_column;
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  int i_list=0;
+  int i_list=0,i_all=0;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1101,6 +1105,7 @@ void fcdb_gsc_vo_parse(typHOE *hg) {
      if((!hg->fcdb_gsc_fil)||(hg->fcdb[i_list].r<=hg->fcdb_gsc_mag)){
        i_list++;
      }
+     i_all++;
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
@@ -1176,6 +1181,7 @@ void fcdb_gsc_vo_parse(typHOE *hg) {
    }
   }
   hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
 
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
@@ -1199,7 +1205,7 @@ void fcdb_ps1_vo_parse(typHOE *hg) {
   int nbFields, process_column;
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  int i_list=0;
+  int i_list=0, i_all=0;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1238,6 +1244,7 @@ void fcdb_ps1_vo_parse(typHOE *hg) {
      if((!hg->fcdb_ps1_fil)||(hg->fcdb[i_list].r<=hg->fcdb_ps1_mag)){
        i_list++;
      }
+     i_all++;
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
@@ -1302,6 +1309,7 @@ void fcdb_ps1_vo_parse(typHOE *hg) {
    }
   }
   hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
 
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
@@ -1325,7 +1333,7 @@ void fcdb_sdss_vo_parse(typHOE *hg) {
   int nbFields, process_column;
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  int i_list=0;
+  int i_list=0, i_all=0;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1362,6 +1370,7 @@ void fcdb_sdss_vo_parse(typHOE *hg) {
      if((!hg->fcdb_sdss_fil)||(hg->fcdb[i_list].r<=hg->fcdb_sdss_mag)){
        i_list++;
      }
+     i_all++;
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
@@ -1418,6 +1427,7 @@ void fcdb_sdss_vo_parse(typHOE *hg) {
    }
   }
   hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
 
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
@@ -1441,7 +1451,7 @@ void fcdb_usno_vo_parse(typHOE *hg) {
   int nbFields, process_column;
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  int i_list=0;
+  int i_list=0, i_all=0;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1481,6 +1491,7 @@ void fcdb_usno_vo_parse(typHOE *hg) {
 	((hg->fcdb[i_list].r<=hg->fcdb_usno_mag)||(hg->fcdb[i_list].j<=hg->fcdb_usno_mag))){
        i_list++;
      }
+     i_all++;
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
@@ -1553,6 +1564,7 @@ void fcdb_usno_vo_parse(typHOE *hg) {
    }
  }
  hg->fcdb_i_max=i_list;
+ hg->fcdb_i_all=i_all;
 
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
@@ -1579,7 +1591,7 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
   int nbFields, process_column;
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  int i_list=0;
+  int i_list=0, i_all=0;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1655,6 +1667,7 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
     }
   }
   hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
  
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
@@ -1681,7 +1694,7 @@ void fcdb_2mass_vo_parse(typHOE *hg) {
   int nbFields, process_column;
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  int i_list=0;
+  int i_list=0, i_all=0;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1749,6 +1762,7 @@ void fcdb_2mass_vo_parse(typHOE *hg) {
    }
   }
   hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
 
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
@@ -1772,7 +1786,7 @@ void fcdb_wise_vo_parse(typHOE *hg) {
   int nbFields, process_column;
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  int i_list=0;
+  int i_list=0, i_all=0;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1813,6 +1827,7 @@ void fcdb_wise_vo_parse(typHOE *hg) {
      if((!hg->fcdb_wise_fil)||(hg->fcdb[i_list].u<=hg->fcdb_wise_mag)){
        i_list++;
      }
+     i_all++;
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
@@ -1880,6 +1895,7 @@ void fcdb_wise_vo_parse(typHOE *hg) {
    }
   }
   hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
 
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
@@ -1903,7 +1919,7 @@ void fcdb_irc_vo_parse(typHOE *hg) {
   int nbFields, process_column;
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  int i_list=0;
+  int i_list=0, i_all=0;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1936,6 +1952,7 @@ void fcdb_irc_vo_parse(typHOE *hg) {
      if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
      hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
      i_list++;
+     i_all++;
    }
    else if (vtabledata_move->colomn == columns[1]){
      if(vtabledata_move->value){
@@ -1979,6 +1996,7 @@ void fcdb_irc_vo_parse(typHOE *hg) {
    }
   }
   hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
 
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
@@ -2002,7 +2020,7 @@ void fcdb_fis_vo_parse(typHOE *hg) {
   int nbFields, process_column;
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  int i_list=0;
+  int i_list=0, i_all=0;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -2043,6 +2061,7 @@ void fcdb_fis_vo_parse(typHOE *hg) {
      if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
      hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
      i_list++;
+     i_all++;
    }
    else if (vtabledata_move->colomn == columns[1]){
      if(vtabledata_move->value){
@@ -2118,6 +2137,7 @@ void fcdb_fis_vo_parse(typHOE *hg) {
    }
   }
   hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
 
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
