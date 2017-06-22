@@ -159,10 +159,20 @@
 #define FCDB_USNO_PATH "/cgi-bin/vo_cone.cgi?CAT=USNO-B1&RA=%lf&DEC=%+lf&SR=%lf&VERB=1"
 
 #define FCDB_HOST_GAIA "vizier.u-strasbg.fr"
-#define FCDB_GAIA_PATH "/viz-bin/votable?-source=I/337/gaia&-c=%lf%%20%+lf&-c.u=deg&-c.r=%lf&-c.geom=r&-out.max=500&-out.form=VOTable"
+#define FCDB_GAIA_PATH "/viz-bin/votable?-source=I/337/gaia&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=500&-out.form=VOTable"
 
 #define FCDB_HOST_2MASS "gsss.stsci.edu"
 #define FCDB_2MASS_PATH "/webservices/vo/CatalogSearch.aspx?CAT=2MASS&RA=%lf&DEC=%+lf&SR=%lf&MAXOBJ=500"
+
+#define FCDB_HOST_WISE "vizier.u-strasbg.fr"
+#define FCDB_WISE_PATH "/viz-bin/votable?-source=II/311/wise&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=500&-out.form=VOTable"
+
+#define FCDB_HOST_IRC "vizier.u-strasbg.fr"
+#define FCDB_IRC_PATH "/viz-bin/votable?-source=II/297/irc&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=500&-out.form=VOTable"
+
+#define FCDB_HOST_FIS "vizier.u-strasbg.fr"
+#define FCDB_FIS_PATH "/viz-bin/votable?-source=II/298/fis&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=500&-out.form=VOTable"
+
 
 
 #define ADDOBJ_SIMBAD_PATH "/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=VOTABLE"
@@ -404,10 +414,12 @@ enum
   COLUMN_STD_J,
   COLUMN_STD_H,
   COLUMN_STD_K,
+  /*  IRAS depricated in SIMBAD 2017-04
   COLUMN_STD_F12,
   COLUMN_STD_F25,
   COLUMN_STD_F60,
   COLUMN_STD_F100,
+  */
   NUM_COLUMN_STD
 };
 
@@ -446,7 +458,10 @@ enum
   FCDB_TYPE_SDSS,
   FCDB_TYPE_USNO,
   FCDB_TYPE_GAIA,
-  FCDB_TYPE_2MASS
+  FCDB_TYPE_2MASS,
+  FCDB_TYPE_WISE,
+  FCDB_TYPE_IRC,
+  FCDB_TYPE_FIS
 };
 
 enum
@@ -1177,6 +1192,7 @@ struct _STDpara{
   gdouble j;
   gdouble h;
   gdouble k;
+  /*  IRAS depricated in SIMBAD 2017-04
   gchar *f12;
   gchar *f25;
   gchar *f60;
@@ -1184,7 +1200,7 @@ struct _STDpara{
   gchar *q12;
   gchar *q25;
   gchar *q60;
-  gchar *q100;
+  gchar *q100;*/
   gdouble c_az;
   gdouble c_el;
   gdouble c_elmax;
@@ -1590,6 +1606,9 @@ struct _typHOE{
   gint fcdb_2mass_mag;
   gint fcdb_2mass_diam;
   gboolean fcdb_2mass_fil;
+  gint fcdb_wise_mag;
+  gint fcdb_wise_diam;
+  gboolean fcdb_wise_fil;
 
   gint addobj_type;
   gchar *addobj_name;

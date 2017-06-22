@@ -15,7 +15,7 @@ BEGIN
             VALUE "FileDescription", "SkyMonitor for Subaru Telescope\0"
             VALUE "FileVersion", "@MAJOR_VERSION@.@MINOR_VERSION@.@MICRO_VERSION@.@BUILD_REVISION@\0"
             VALUE "InternalName", "HSKYMON\0"
-            VALUE "LegalCopyright", "Copyright (C) 2002-2017 A.Tajitsu\0"
+            VALUE "LegalCopyright", "Copyright (C) 2003-2017 A.Tajitsu\0"
             VALUE "OriginalFilename", "hskymon.exe\0"
             VALUE "ProductName", "HSKYMON\0"
             VALUE "ProductVersion", "@VERSION@\0"

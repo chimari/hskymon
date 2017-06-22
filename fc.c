@@ -102,6 +102,9 @@ extern void fcdb_sdss_vo_parse();
 extern void fcdb_usno_vo_parse();
 extern void fcdb_gaia_vo_parse();
 extern void fcdb_2mass_vo_parse();
+extern void fcdb_wise_vo_parse();
+extern void fcdb_irc_vo_parse();
+extern void fcdb_fis_vo_parse();
 extern void addobj_vo_parse();
 extern double get_julian_day_of_equinox();
 
@@ -1136,6 +1139,15 @@ void create_fc_dialog(typHOE *hg)
   }
   else if(hg->fcdb_type==FCDB_TYPE_2MASS){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "2MASS");
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_WISE){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "AKARI/WISE");
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_IRC){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "AKARI/IRC");
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_FIS){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "AKARI/FIS");
   }
   gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_frame), 3);
@@ -4170,6 +4182,18 @@ void fcdb_dl(typHOE *hg)
   case FCDB_TYPE_2MASS:
     label=gtk_label_new("Searching objects in 2MASS ...");
     break;
+
+  case FCDB_TYPE_WISE:
+    label=gtk_label_new("Searching objects in WISE ...");
+    break;
+
+  case FCDB_TYPE_IRC:
+    label=gtk_label_new("Searching objects in AKARI/IRC ...");
+    break;
+
+  case FCDB_TYPE_FIS:
+    label=gtk_label_new("Searching objects in AKARI/FIS ...");
+    break;
  }
 
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
@@ -4217,6 +4241,18 @@ void fcdb_dl(typHOE *hg)
 
   case FCDB_TYPE_2MASS:
     hg->plabel=gtk_label_new("Searching objects in 2MASS ...");
+    break;
+
+  case FCDB_TYPE_WISE:
+    hg->plabel=gtk_label_new("Searching objects in WISE ...");
+    break;
+
+  case FCDB_TYPE_IRC:
+    hg->plabel=gtk_label_new("Searching objects in AKARI/IRC ...");
+    break;
+
+  case FCDB_TYPE_FIS:
+    hg->plabel=gtk_label_new("Searching objects in AKARI/FIS ...");
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
@@ -4365,6 +4401,18 @@ void addobj_dl(typHOE *hg)
 
   case FCDB_TYPE_2MASS:
     hg->plabel=gtk_label_new("Searching objects in 2MASS ...");
+    break;
+
+  case FCDB_TYPE_WISE:
+    hg->plabel=gtk_label_new("Searching objects in WISE ...");
+    break;
+
+  case FCDB_TYPE_IRC:
+    hg->plabel=gtk_label_new("Searching objects in AKARI/IRC ...");
+    break;
+
+  case FCDB_TYPE_FIS:
+    hg->plabel=gtk_label_new("Searching objects in AKARI/FIS ...");
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
@@ -4766,7 +4814,8 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_path=g_strdup_printf(FCDB_GAIA_PATH,
 				  hg->fcdb_d_ra0,
 				  hg->fcdb_d_dec0,
-				  (double)hg->fcdb_gaia_diam/60./60.);
+				  hg->fcdb_gaia_diam,
+				  hg->fcdb_gaia_diam);
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
@@ -4801,6 +4850,93 @@ void fcdb_item2 (typHOE *hg)
     fcdb_dl(hg);
 
     fcdb_2mass_vo_parse(hg);
+
+    break;
+
+  case FCDB_TYPE_WISE:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_WISE);
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+    
+    if(hg->fcdb_wise_diam > hg->dss_arcmin){
+      hg->fcdb_path=g_strdup_printf(FCDB_WISE_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    hg->dss_arcmin*30,
+				    hg->dss_arcmin*30);
+    }
+    else{
+      hg->fcdb_path=g_strdup_printf(FCDB_WISE_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    hg->fcdb_wise_diam*30,
+				    hg->fcdb_wise_diam*30);
+    }
+
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+
+    fcdb_dl(hg);
+
+    fcdb_wise_vo_parse(hg);
+
+    break;
+
+  case FCDB_TYPE_IRC:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_IRC);
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_IRC_PATH,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  hg->dss_arcmin*30,
+				  hg->dss_arcmin*30);
+
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+
+    fcdb_dl(hg);
+
+    fcdb_irc_vo_parse(hg);
+
+    break;
+
+  case FCDB_TYPE_FIS:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_FIS);
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_FIS_PATH,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  hg->dss_arcmin*30,
+				  hg->dss_arcmin*30);
+
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+
+    fcdb_dl(hg);
+
+    fcdb_fis_vo_parse(hg);
 
     break;
   }
@@ -4961,6 +5097,40 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       COLUMN_FCDB_K, hg->fcdb[i_list].k,
 		       -1);
   }
+  else if(hg->fcdb_type==FCDB_TYPE_WISE){
+    // W1-4, JHK
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_U, hg->fcdb[i_list].u,
+		       COLUMN_FCDB_B, hg->fcdb[i_list].b,
+		       COLUMN_FCDB_V, hg->fcdb[i_list].v,
+		       COLUMN_FCDB_R, hg->fcdb[i_list].r,
+		       COLUMN_FCDB_J, hg->fcdb[i_list].j,
+		       COLUMN_FCDB_H, hg->fcdb[i_list].h,
+		       COLUMN_FCDB_K, hg->fcdb[i_list].k,
+		       -1);
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_IRC){
+    // S09, S18
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_U, hg->fcdb[i_list].u,
+		       COLUMN_FCDB_B, hg->fcdb[i_list].b,
+		       COLUMN_FCDB_V, hg->fcdb[i_list].v,
+		       COLUMN_FCDB_R, hg->fcdb[i_list].r,
+		       -1);
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_FIS){
+    // S65, S90, S140
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_U, hg->fcdb[i_list].u,
+		       COLUMN_FCDB_B, hg->fcdb[i_list].b,
+		       COLUMN_FCDB_V, hg->fcdb[i_list].v,
+		       COLUMN_FCDB_R, hg->fcdb[i_list].r,
+		       COLUMN_FCDB_I, hg->fcdb[i_list].i,
+		       COLUMN_FCDB_J, hg->fcdb[i_list].j,
+		       COLUMN_FCDB_H, hg->fcdb[i_list].h,
+		       COLUMN_FCDB_K, hg->fcdb[i_list].k,
+		       -1);
+  }
 }
 
 
@@ -5009,6 +5179,15 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
     break;
   case FCDB_TYPE_2MASS:
     db_name=g_strdup("2MASS");
+    break;
+  case FCDB_TYPE_WISE:
+    db_name=g_strdup("WISE");
+    break;
+  case FCDB_TYPE_IRC:
+    db_name=g_strdup("AKARI/IRC");
+    break;
+  case FCDB_TYPE_FIS:
+    db_name=g_strdup("AKARI/FIS");
     break;
   default:
     db_name=g_strdup("Database queried");
