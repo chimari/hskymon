@@ -2610,38 +2610,38 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
       return;
     }
      
-      if(fname) g_free(fname);
-      if(dest_file) g_free(dest_file);
-
-      // Win構築は重いので先にExposeイベント等をすべて処理してから
-      while (my_main_iteration(FALSE));
-      gdk_flush();
-
-      fdialog_w = gtk_file_chooser_dialog_new("Sky Monitor : Input TSC Tracking File to be saved",
-	NULL,
-	GTK_FILE_CHOOSER_ACTION_SAVE,
-	GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
-	GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-	NULL);
-      
-      gtk_dialog_set_default_response(GTK_DIALOG(fdialog_w), GTK_RESPONSE_ACCEPT); 
+    if(fname) g_free(fname);
+    if(dest_file) g_free(dest_file);
     
-      my_file_chooser_add_filter(fdialog_w,"List File", 
-	"*." NST2_EXTENSION,
-	NULL);
+    // Win構築は重いので先にExposeイベント等をすべて処理してから
+    while (my_main_iteration(FALSE));
+    gdk_flush();
     
-      my_file_chooser_add_filter(fdialog_w,"All File","*",NULL);
-      
-      gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (fdialog_w), 
-	to_utf8(g_path_get_dirname(hg->filename_tscconv)));
+    fdialog_w = gtk_file_chooser_dialog_new("Sky Monitor : Input TSC Tracking File to be saved",
+					    NULL,
+					    GTK_FILE_CHOOSER_ACTION_SAVE,
+					    GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+					    GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+					    NULL);
+    
+    gtk_dialog_set_default_response(GTK_DIALOG(fdialog_w), GTK_RESPONSE_ACCEPT); 
+    
+    my_file_chooser_add_filter(fdialog_w,"List File", 
+			       "*." NST2_EXTENSION,
+			       NULL);
+    
+    my_file_chooser_add_filter(fdialog_w,"All File","*",NULL);
 
-      basename0=g_path_get_basename(hg->filename_nst);
-      cpp=(gchar *)strtok(basename0,".");
-      basename1=g_strconcat(cpp,".",NST2_EXTENSION,NULL);
-      gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (fdialog_w), 
-	to_utf8(basename1));
-      if(basename0) g_free(basename0);
-      if(basename1) g_free(basename1);
+    gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (fdialog_w), 
+					 to_utf8(g_path_get_dirname(hg->filename_jpl)));
+    
+    basename0=g_path_get_basename(hg->filename_jpl);
+    cpp=(gchar *)strtok(basename0,".");
+    basename1=g_strconcat(cpp,".",NST2_EXTENSION,NULL);
+    gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (fdialog_w), 
+				       to_utf8(basename1));
+    if(basename0) g_free(basename0);
+    if(basename1) g_free(basename1);
     
     gtk_widget_show_all(fdialog_w);
     
@@ -2654,7 +2654,7 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
       if(hg->filename_tscconv) g_free(hg->filename_tscconv);
       hg->filename_tscconv=g_strdup(dest_file_w);
       ConvJPL(hg);
-
+      
       if(fname_w) g_free(fname_w);
       if(dest_file_w) g_free(dest_file_w);
     }
