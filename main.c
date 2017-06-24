@@ -244,6 +244,37 @@ GdkColor init_col [MAX_ROPE]
 GdkColor init_col_edge={0,0xFFFF,0xFFFF,0xFFFF};
 gint init_alpha_edge=0xBB00;
 
+gchar* fgets_new(FILE *fp){
+  gint c;
+  gint i=0, j=0;
+  gchar *dbuf=NULL;
+
+  while(!feof(fp)){
+    c=fgetc(fp);
+    if((c==0x00)||(c==0x0a)||(c==0x0d)) break;
+    i++;
+  }
+  fseek(fp,(long)(-i-1),SEEK_CUR);
+
+  if((dbuf = (gchar *)g_malloc(sizeof(gchar)*(i+2)))==NULL){
+    fprintf(stderr, "!!! Memory allocation error in fgets_new().\n");
+    fflush(stderr);
+    return(NULL);
+  }
+  if(fread(dbuf,1, i, fp)){
+    while( (c=fgetc(fp)) !=EOF){
+      if((c==0x00)||(c==0x0a)||(c==0x0d)) j++;
+      else break;
+    }
+    if(c!=EOF) fseek(fp,-1L,SEEK_CUR);
+    dbuf[i]=0x00;
+    return(dbuf);
+  }
+  else{
+    return(NULL);
+  }
+  
+}
 
 gboolean
 is_separator (GtkTreeModel *model,
@@ -9224,7 +9255,7 @@ gchar *make_filehead(const gchar *file_head, gchar * obj_name){
 void MergeNST(typHOE *hg, gint ope_max){
   FILE *fp;
   gint i,i_list=0,i_base;
-  static char buf[BUFFSIZE];
+  gchar *buf=NULL;
   struct ln_equ_posn equ, equ_geoc;
   gdouble date_tmp, ra_geoc, dec_geoc;
   gchar *cp, *cpp, *tmp_name, *cut_name;
@@ -9260,19 +9291,7 @@ void MergeNST(typHOE *hg, gint ope_max){
   }
 
   for(i=0;i<6;i++){
-    if(fgets(buf,BUFFSIZE-1,fp)){
-      if(i==0){
-	cpp=buf;
-	cpp++;
-	if(NULL != (cp = strstr(cpp, "     "))){
-	  tmp_name=g_strndup(cpp,strlen(cpp)-strlen(cp));
-	}
-	else{
-	  tmp_name=g_strdup(cpp);
-	}
-      }
-    }
-    else{
+    if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
       popup_message(POPUP_TIMEOUT*2,
 		    "Error: TSC File format might be incorrect.",
@@ -9285,8 +9304,24 @@ void MergeNST(typHOE *hg, gint ope_max){
       fclose(fp);
       return;
     }
+    else{
+      if(i==0){
+	cpp=buf;
+	cpp++;
+	if(NULL != (cp = strstr(cpp, "     "))){
+	  tmp_name=g_strndup(cpp,strlen(cpp)-strlen(cp));
+	}
+	else{
+	  tmp_name=g_strdup(cpp);
+	}
+      }
+      if(i<5){
+	if(buf) g_free(buf);
+      }
+    }
   }
   hg->nst[hg->nst_max].i_max=(gint)g_strtod(buf,NULL);
+  if(buf) g_free(buf);
   if(hg->nst[hg->nst_max].i_max<=0){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
@@ -9307,7 +9342,10 @@ void MergeNST(typHOE *hg, gint ope_max){
   
   i=0;
   while((!feof(fp))||(i<hg->nst_max)){
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       sscanf(buf,"%lf %lf %lf %lf %lf",
 	     &date_tmp,
 	     &ra_geoc,
@@ -9324,6 +9362,7 @@ void MergeNST(typHOE *hg, gint ope_max){
       hg->nst[hg->nst_max].eph[i].ra=deg_to_ra(equ.ra);
       hg->nst[hg->nst_max].eph[i].dec=deg_to_dec(equ.dec);
       i++;
+      if(buf) g_free(buf);
     }
   }
   
@@ -9384,7 +9423,7 @@ void MergeNST(typHOE *hg, gint ope_max){
 void MergeJPL(typHOE *hg, gint ope_max){
   FILE *fp;
   gint i,i_list, i_line, i_soe=0, i_eoe=0;
-  static char buf[BUFFSIZE];
+  gchar *buf=NULL;
   struct ln_equ_posn equ, equ_geoc;
   gchar *cp, *cpp, *cpp1, *tmp_name, *cut_name, *tmp_center;
   struct ln_zonedate zonedate, zonedate1;
@@ -9425,7 +9464,10 @@ void MergeJPL(typHOE *hg, gint ope_max){
 
   i_line=0;
   while(!feof(fp)){
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       i_line++;
       if(g_ascii_strncasecmp(buf,"$$SOE",strlen("$$SOE"))==0){
 	i_soe=i_line;
@@ -9468,9 +9510,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 	}
 	if(tmp_center) g_free(tmp_center);
       }
-    }
-    else{
-      break;
+      if(buf) g_free(buf);
     }
   }
 
@@ -9511,7 +9551,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
     =g_malloc0(sizeof(EPHpara)*hg->nst[hg->nst_max].i_max);
 
   for(i=0;i<i_soe;i++){
-    if(!fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
       popup_message(POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
@@ -9527,6 +9567,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
     if(i==i_soe-3){
       ref=g_strdup(buf);
     }
+    if(buf) g_free(buf);
   }
 
   if(ref){
@@ -9563,34 +9604,6 @@ void MergeJPL(typHOE *hg, gint ope_max){
     p_delt++;
     l_delt=i_delt+strlen("delta")-1;
     
-    /*
-    printf("%s%d  %d  %d  %d  %d  %d  %d\n",ref,l_all,p_date,l_date, p_pos, l_pos, p_delt, l_delt);
-
-    for(i=0;i<p_date;i++){
-      printf(" ");
-    }
-    for(i=0;i<l_date;i++){
-      printf("*");
-    }
-    printf("\n");
-
-    for(i=0;i<p_pos;i++){
-      printf(" ");
-    }
-    for(i=0;i<l_pos;i++){
-      printf("*");
-    }
-    printf("\n");
-
-    for(i=0;i<p_delt;i++){
-      printf(" ");
-    }
-    for(i=0;i<l_delt;i++){
-      printf("*");
-    }
-    printf("\n");
-    */
-
     g_free(ref);
   }
   else{
@@ -9608,7 +9621,20 @@ void MergeJPL(typHOE *hg, gint ope_max){
   }
 
   for(i=i_soe+1;i<i_eoe;i++){
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: Invalid HORIZONS File.",
+		    " ",
+		    hg->filename_jpl,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
+#endif
+      fclose(fp);
+      return;
+    }
+    else{
       // Date
       cpp=buf;
       cpp+=p_date;
@@ -9705,19 +9731,8 @@ void MergeJPL(typHOE *hg, gint ope_max){
       hg->nst[hg->nst_max].eph[i-i_soe-1].ra=deg_to_ra(equ.ra);
       hg->nst[hg->nst_max].eph[i-i_soe-1].dec=deg_to_dec(equ.dec);
       hg->nst[hg->nst_max].eph[i-i_soe-1].equinox=2000.0;
-    }
-    else{
-#ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
-		    "Error: Invalid HORIZONS File.",
-		    " ",
-		    hg->filename_jpl,
-		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
-      fclose(fp);
-      return;
+
+      if(buf) g_free(buf);
     }
   }
   
@@ -9773,7 +9788,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 void ConvJPL(typHOE *hg){
   FILE *fp, *fp_w;
   gint i,i_list, i_line, i_soe=0, i_eoe=0, i_max;
-  static char buf[BUFFSIZE];
+  gchar *buf=NULL;
   struct ln_equ_posn equ, equ_geoc;
   gchar *cp, *cpp, *cpp1, *tmp_name, *cut_name, *tmp_center;
   struct ln_date date;
@@ -9824,7 +9839,10 @@ void ConvJPL(typHOE *hg){
 
   i_line=0;
   while(!feof(fp)){
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       i_line++;
       if(g_ascii_strncasecmp(buf,"$$SOE",strlen("$$SOE"))==0){
 	i_soe=i_line;
@@ -9867,9 +9885,7 @@ void ConvJPL(typHOE *hg){
 	}
 	if(tmp_center) g_free(tmp_center);
       }
-    }
-    else{
-      break;
+      if(buf) g_free(buf);
     }
   }
 
@@ -9906,7 +9922,7 @@ void ConvJPL(typHOE *hg){
   i_max=i_eoe-i_soe-1;
 
   for(i=0;i<i_soe;i++){
-    if(!fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
       popup_message(POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
@@ -9922,6 +9938,7 @@ void ConvJPL(typHOE *hg){
     if(i==i_soe-3){
       ref=g_strdup(buf);
     }
+    if(buf) g_free(buf);
   }
 
   if(ref){
@@ -9991,7 +10008,20 @@ void ConvJPL(typHOE *hg){
   fprintf(fp_w,"%d\n",i_max);
 
   for(i=i_soe+1;i<i_eoe;i++){
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: Invalid HORIZONS File.",
+		    " ",
+		    hg->filename_jpl,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
+#endif
+      fclose(fp);
+      return;
+    }
+    else{
       // Date
       cpp=buf;
       cpp+=p_date;
@@ -10090,19 +10120,8 @@ void ConvJPL(typHOE *hg){
 	      hequ.dec.minutes,
 	      hequ.dec.seconds,
 	      geo_d);
-     }
-    else{
-#ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
-		    "Error: Invalid HORIZONS File.",
-		    " ",
-		    hg->filename_jpl,
-		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
-      fclose(fp);
-      return;
+
+      if(buf) g_free(buf);
     }
 
   }
@@ -10115,10 +10134,10 @@ void ReadList(typHOE *hg, gint ope_max){
   FILE *fp;
   int i_list=0,i_use;
   gchar *tmp_char;
-  static char buf[BUFFSIZE];
+  gchar *buf=NULL;
   gchar *win_title;
   
-  if((fp=fopen(hg->filename_list,"r"))==NULL){
+  if((fp=fopen(hg->filename_list,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
@@ -10139,7 +10158,10 @@ void ReadList(typHOE *hg, gint ope_max){
   }
 
   while(!feof(fp)){
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       if(strlen(buf)<10) break;
       tmp_char=(char *)strtok(buf,",");
       if(hg->obj[i_list].name) g_free(hg->obj[i_list].name);
@@ -10161,7 +10183,7 @@ void ReadList(typHOE *hg, gint ope_max){
       if(!is_number(tmp_char,i_list+1,"Equinox")) break;
       hg->obj[i_list].equinox=(gdouble)g_strtod(tmp_char,NULL);
       
-      if(tmp_char=(char *)strtok(NULL,"\n")){
+      if(tmp_char=(char *)strtok(NULL,"\r\n")){
 	hg->obj[i_list].note=cut_spc(tmp_char);
       }
       else{
@@ -10179,6 +10201,7 @@ void ReadList(typHOE *hg, gint ope_max){
       hg->obj[i_list].i_nst=-1;
 
       i_list++;
+      if(buf) g_free(buf);
     }
   }
 
@@ -10202,7 +10225,7 @@ void ReadList(typHOE *hg, gint ope_max){
 void ReadListOPE(typHOE *hg, gint ope_max){
   FILE *fp;
   int i_list=0;
-  static char buf[BUFFSIZE];
+  gchar *buf=NULL;
   gchar *BUF=NULL, *buf0=NULL, *buf_strip=NULL;
   gboolean escape=FALSE;
   gchar *cp=NULL, *cp2=NULL, *cp3=NULL, *cpp=NULL;
@@ -10234,7 +10257,10 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 
   while(!feof(fp)){
     
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       if(g_ascii_strncasecmp(buf,"<PARAMETER_LIST>",
 			     strlen("<PARAMETER_LIST>"))==0){
 	escape=TRUE;
@@ -10244,9 +10270,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	escape=TRUE;
 	new_fmt_flag=TRUE;
       }
-    }
-    else{
-      break;
+      g_free(buf);
     }
     
     if(escape){
@@ -10258,13 +10282,11 @@ void ReadListOPE(typHOE *hg, gint ope_max){
   
   while(!feof(fp)){
     gchar *bp;
-    
-    if(fgets(buf,BUFFSIZE-1,fp)){
-      //      if((!new_fmt_flag)
-      // && (g_ascii_strncasecmp(buf,"</PARAMETER_LIST>",
-      //			 strlen("</PARAMETER_LIST>"))==0)){
-      //escape=TRUE;
-      //}
+
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       if((!new_fmt_flag)
 	 && (g_ascii_strncasecmp(buf,"</COMMAND>",
 				 strlen("</COMMAND>"))==0)){
@@ -10276,11 +10298,9 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	escape=TRUE;
       }
       else{
-	//if((*buf!='#') &&(NULL != (buf0 = strchr(buf, '=')))){
-	if((*buf!='#')){
+	if((buf[0]!='#')){
 
 	  if(BUF) g_free(BUF);
-	  //BUF=g_strstrip(g_ascii_strup(buf0,-1));
 	  BUF=g_strstrip(g_ascii_strup(buf,-1));
 	  ok_obj=FALSE;
 	  ok_ra=FALSE;
@@ -10436,11 +10456,11 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  }
 	}
       }
+      if(buf) g_free(buf);
     }
 
     if(escape) break;
   }
-
 
   CheckTargetDefOPE(hg, 0);
 
@@ -10451,12 +10471,10 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 
   while(!feof(fp)){
     
-    if(fgets(buf,BUFFSIZE-1,fp)){
-      //      if((!new_fmt_flag)
-      //	 && (g_ascii_strncasecmp(buf,"</PARAMETER_LIST>",
-      //				 strlen("</PARAMETER_LIST>"))==0)){
-      //	escape=TRUE;
-      //}
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       if((!new_fmt_flag)
 	 && (g_ascii_strncasecmp(buf,"</COMMAND>",
 				 strlen("</COMMAND>"))==0)){
@@ -10618,6 +10636,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  }
 	}
       }
+      if(buf) g_free(buf);
     }
     if(escape) break;
   }
@@ -10660,7 +10679,8 @@ gboolean ObjOverlap(typHOE *hg, gint i_max){
 void MergeListOPE(typHOE *hg, gint ope_max){
   FILE *fp;
   int i_list, i_comp, i0;
-  static char buf[BUFFSIZE];
+  //static char buf[BUFFSIZE];
+  gchar *buf=NULL;
   gchar *BUF=NULL, *buf0=NULL;
   gboolean escape=FALSE;
   gchar *cp=NULL, *cp2=NULL, *cp3=NULL, *cpp=NULL;
@@ -10698,7 +10718,10 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 
   while(!feof(fp)){
     
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       if(g_ascii_strncasecmp(buf,"<PARAMETER_LIST>",
 			     strlen("<PARAMETER_LIST>"))==0){
 	escape=TRUE;
@@ -10708,9 +10731,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	escape=TRUE;
 	new_fmt_flag=TRUE;
       }
-    }
-    else{
-      break;
+      if(buf) g_free(buf);
     }
     
     if(escape){
@@ -10721,12 +10742,10 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 
   while(!feof(fp)){
     
-    if(fgets(buf,BUFFSIZE-1,fp)){
-      //      if((!new_fmt_flag)
-      //	 && (g_ascii_strncasecmp(buf,"</PARAMETER_LIST>",
-      //				 strlen("</PARAMETER_LIST>"))==0)){
-      //	escape=TRUE;
-      //      }
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       if((!new_fmt_flag)
 	 && (g_ascii_strncasecmp(buf,"</COMMAND>",
 				 strlen("</COMMAND>"))==0)){
@@ -10739,7 +10758,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
       }
       else{
 	//if((*buf!='#') &&(NULL != (buf0 = strchr(buf, '=')))){
-	  if((*buf!='#')){
+	  if((buf[0]!='#')){
 
 	  if(BUF) g_free(BUF);
 	  //BUF=g_strstrip(g_ascii_strup(buf0,-1));
@@ -10877,6 +10896,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  }
 	}
       }
+      if(buf) g_free(buf);
     }
 
 
@@ -10895,12 +10915,10 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 
   while(!feof(fp)){
     
-    if(fgets(buf,BUFFSIZE-1,fp)){
-      //      if((!new_fmt_flag)
-      //	 && (g_ascii_strncasecmp(buf,"</PARAMETER_LIST>",
-      //				 strlen("</PARAMETER_LIST>"))==0)){
-      //	escape=TRUE;
-      //}
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       if((!new_fmt_flag)
 	 && (g_ascii_strncasecmp(buf,"</COMMAND>",
 				 strlen("</COMMAND>"))==0)){
@@ -11062,6 +11080,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  }
 	}
       }
+      if(buf) g_free(buf);
     }
     if(escape) break;
   }
@@ -11101,7 +11120,7 @@ void MergeListPRM(typHOE *hg){
   FILE *fp;
   int i_list=0;
   gchar *tmp_char;
-  static char buf[BUFFSIZE];
+  gchar *buf=NULL;
   gchar *BUF=NULL, *buf0=NULL;
   gboolean escape=FALSE;
   gchar *cp=NULL, *cp2=NULL, *cp3=NULL, *cpp=NULL;
@@ -11132,8 +11151,11 @@ void MergeListPRM(typHOE *hg){
 
   while(!feof(fp)){
     
-    if(fgets(buf,BUFFSIZE-1,fp)){
-      if((*buf!='#')&&(NULL != (buf0 = strchr(buf, '=')))){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
+      if((buf[0]!='#')&&(NULL != (buf0 = strchr(buf, '=')))){
 	
 	if(BUF) g_free(BUF);
 	BUF=g_ascii_strup(buf0,-1);
@@ -11282,6 +11304,7 @@ void MergeListPRM(typHOE *hg){
 	  }
 	}
       }
+      if(buf) g_free(buf);
     }
     if(escape) break;
   }
@@ -11304,7 +11327,7 @@ void MergeListPRM2(typHOE *hg){
   FILE *fp;
   int i_list=0;
   gchar *tmp_char;
-  static char buf[BUFFSIZE];
+  gchar *buf=NULL;
   gchar *BUF=NULL, *buf0=NULL;
   gboolean escape=FALSE;
   gchar *cp=NULL, *cp2=NULL, *cp3=NULL, *cpp=NULL;
@@ -11334,8 +11357,11 @@ void MergeListPRM2(typHOE *hg){
 
   while(!feof(fp)){
     
-    if(fgets(buf,BUFFSIZE-1,fp)){
-      if((*buf!='#')&&(NULL != (buf0 = strchr(buf, '=')))){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
+      if((buf[0]!='#')&&(NULL != (buf0 = strchr(buf, '=')))){
 	
 	if(BUF) g_free(BUF);
 	BUF=g_ascii_strup(buf0,-1);
@@ -11494,6 +11520,7 @@ void MergeListPRM2(typHOE *hg){
 	  }
 	}
       }
+      if(buf) g_free(buf);
     }
     if(escape) break;
   }
@@ -11534,7 +11561,7 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
   FILE *fp;
   int i_list=0;
   gchar *tmp_char;
-  static char buf[BUFFSIZE];
+  gchar *buf;
   gchar *BUF=NULL, *buf0=NULL;
   gboolean escape=FALSE;
   gchar *cp=NULL, *cp2=NULL, *cp3=NULL, *cpp=NULL;
@@ -11558,7 +11585,10 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
   
   while(!feof(fp)){
     
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       if(g_ascii_strncasecmp(buf,"<COMMAND>",
 			     strlen("<COMMAND>"))==0){
 	escape=TRUE;
@@ -11568,9 +11598,7 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
 	escape=TRUE;
       }
     }
-    else{
-      break;
-    }
+    if(buf) g_free(buf);
     
     if(escape){
       escape=FALSE;
@@ -11580,7 +11608,10 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
 
   while(!feof(fp)){
     
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       if(g_ascii_strncasecmp(buf,"</COMMAND>",
 			     strlen("</COMMAND>"))==0){
 	escape=TRUE;
@@ -11693,8 +11724,8 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
 	    }
 	  }while(cp);
 	}   
-
       }
+      if(buf) g_free(buf);
     }
 
     if(escape) break;
@@ -11708,7 +11739,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
   FILE *fp;
   int i_list=0;
   gchar *tmp_char;
-  static char buf[BUFFSIZE];
+  gchar *buf;
   gchar *BUF=NULL, *buf0=NULL;
   gboolean escape=FALSE;
   gchar *cp=NULL, *cp2=NULL, *cp3=NULL, *cpp=NULL;
@@ -11731,7 +11762,10 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
   
   while(!feof(fp)){
     
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       if(g_ascii_strncasecmp(buf,"<COMMAND>",
 			     strlen("<COMMAND>"))==0){
 	escape=TRUE;
@@ -11741,9 +11775,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 	escape=TRUE;
       }
     }
-    else{
-      break;
-    }
+    if(buf) g_free(buf);
     
     if(escape){
       escape=FALSE;
@@ -11753,7 +11785,10 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 
   while(!feof(fp)){
     
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       if(g_ascii_strncasecmp(buf,"</COMMAND>",
 			     strlen("</COMMAND>"))==0){
 	escape=TRUE;
@@ -11848,6 +11883,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 	}
 
       }
+      if(buf) g_free(buf);
     }
 
     if(escape) break;
@@ -11865,7 +11901,7 @@ void MergeList(typHOE *hg, gint ope_max){
   FILE *fp;
   int i, i_list=0,i_base;
   gchar *tmp_char;
-  static char buf[BUFFSIZE];
+  gchar *buf;
   OBJpara tmp_obj;
   gboolean name_flag;
   gchar *win_title=NULL;
@@ -11893,7 +11929,10 @@ void MergeList(typHOE *hg, gint ope_max){
   }
 
   while(!feof(fp)){
-    if(fgets(buf,BUFFSIZE-1,fp)){
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
       if(strlen(buf)<10) break;
       
       tmp_char=(char *)strtok(buf,",");
@@ -11921,7 +11960,7 @@ void MergeList(typHOE *hg, gint ope_max){
 	if(!is_number(tmp_char,hg->i_max-i_base+1,"Equinox")) break;
 	tmp_obj.equinox=(gdouble)g_strtod(tmp_char,NULL);
 	
-	if(tmp_char=(char *)strtok(NULL,"\n")){
+	if(tmp_char=(char *)strtok(NULL,"\r\n")){
 	  tmp_obj.note=cut_spc(tmp_char);
 	}
 	else{
@@ -11943,8 +11982,8 @@ void MergeList(typHOE *hg, gint ope_max){
 	hg->i_max++;
       }
     }
+    if(buf) g_free(buf);
   }
-
 
   fclose(fp);
   if(hg->ope_max<MAX_ROPE-1) hg->ope_max++;
@@ -12707,7 +12746,7 @@ gboolean is_number(gchar *s, gint line, const gchar* sect){
     return FALSE;
   }
 
-  while(*s!='\0'){
+  while((*s!='\0')&&(*s!=0x0a)&&(*s!=0x0d)){
     if(!is_num_char(*s)){
       msg=g_strdup_printf(" Line=%d  /  Sect=\"%s\"\n Irregal character code : \"%02x\"", 
 			  line, sect,*s);
