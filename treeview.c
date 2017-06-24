@@ -4326,6 +4326,11 @@ do_editable_cells (typHOE *hg)
       store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
       
       gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "-270",
+			 1, AZEL_NEGA, -1);
+      if(hg->azel_mode==AZEL_NEGA) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, 0, "Normal",
 			 1, AZEL_NORMAL, -1);
       if(hg->azel_mode==AZEL_NORMAL) iter_set=iter;
@@ -4334,11 +4339,6 @@ do_editable_cells (typHOE *hg)
       gtk_list_store_set(store, &iter, 0, "+270",
 			 1, AZEL_POSI, -1);
       if(hg->azel_mode==AZEL_POSI) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "-270",
-			 1, AZEL_NEGA, -1);
-      if(hg->azel_mode==AZEL_NEGA) iter_set=iter;
       
       
       combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));

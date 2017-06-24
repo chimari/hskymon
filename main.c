@@ -9228,7 +9228,7 @@ void MergeNST(typHOE *hg, gint ope_max){
   struct ln_equ_posn equ, equ_geoc;
   gdouble date_tmp, ra_geoc, dec_geoc;
   gchar *cp, *cpp, *tmp_name, *cut_name;
-  struct ln_zonedate zonedate;
+  struct ln_zonedate zonedate, zonedate1;
   
   if(hg->i_max>=MAX_OBJECT){
     popup_message(POPUP_TIMEOUT,
@@ -9336,6 +9336,9 @@ void MergeNST(typHOE *hg, gint ope_max){
   if(i>0){
     ln_get_local_date(hg->nst[hg->nst_max].eph[0].jd, &zonedate, 
 		      hg->obs_timezone);
+    ln_get_local_date(hg->nst[hg->nst_max].eph[hg->nst[hg->nst_max].i_max-1].jd, 
+		      &zonedate1, 
+		      hg->obs_timezone);
     if(tmp_name){
       cut_name=cut_spc(tmp_name);
       g_free(tmp_name);
@@ -9349,11 +9352,18 @@ void MergeNST(typHOE *hg, gint ope_max){
     hg->obj[i_list].ra=hg->nst[hg->nst_max].eph[0].ra;
     hg->obj[i_list].dec=hg->nst[hg->nst_max].eph[0].dec;
     hg->obj[i_list].equinox=hg->nst[hg->nst_max].eph[0].equinox;
-    hg->obj[i_list].note=g_strdup_printf("%s [on %4d/%02d/%02d]",
+    hg->obj[i_list].note=g_strdup_printf("%s (%d/%d/%d %d:%02d -- %d/%02d %d:%02d%s)",
 					 g_path_get_basename(hg->filename_nst),
 					 zonedate.years,
 					 zonedate.months,
-					 zonedate.days);
+					 zonedate.days,
+					 zonedate.hours,
+					 zonedate.minutes,
+					 zonedate1.months,
+					 zonedate1.days,
+					 zonedate1.hours,
+					 zonedate1.minutes,
+					 hg->obs_tzname);
 
     hg->obj[i_list].check_disp=TRUE;
     hg->obj[i_list].check_sm=FALSE;
@@ -9377,7 +9387,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
   static char buf[BUFFSIZE];
   struct ln_equ_posn equ, equ_geoc;
   gchar *cp, *cpp, *cpp1, *tmp_name, *cut_name, *tmp_center;
-  struct ln_zonedate zonedate;
+  struct ln_zonedate zonedate, zonedate1;
   gchar *tmp, *tmp1, *ref=NULL;
   struct lnh_equ_posn hequ;
   gint l_all, p_date, l_date, p_pos, l_pos, p_delt, l_delt;
@@ -9715,6 +9725,10 @@ void MergeJPL(typHOE *hg, gint ope_max){
 
   ln_get_local_date(hg->nst[hg->nst_max].eph[0].jd, &zonedate, 
 		    hg->obs_timezone);
+  ln_get_local_date(hg->nst[hg->nst_max].eph[hg->nst[hg->nst_max].i_max-1].jd, 
+		    &zonedate1, 
+		    hg->obs_timezone);
+  
   if(tmp_name){
     cut_name=cut_spc(tmp_name);
     g_free(tmp_name);
@@ -9728,11 +9742,18 @@ void MergeJPL(typHOE *hg, gint ope_max){
   hg->obj[i_list].ra=hg->nst[hg->nst_max].eph[0].ra;
   hg->obj[i_list].dec=hg->nst[hg->nst_max].eph[0].dec;
   hg->obj[i_list].equinox=hg->nst[hg->nst_max].eph[0].equinox;
-  hg->obj[i_list].note=g_strdup_printf("%s [on %4d/%02d/%02d]",
+  hg->obj[i_list].note=g_strdup_printf("%s (%d/%d/%d %d:%02d -- %d/%02d %d:%02d%s)",
 				       g_path_get_basename(hg->filename_jpl),
 				       zonedate.years,
 				       zonedate.months,
-				       zonedate.days);
+				       zonedate.days,
+				       zonedate.hours,
+				       zonedate.minutes,
+				       zonedate1.months,
+				       zonedate1.days,
+				       zonedate1.hours,
+				       zonedate1.minutes,
+				       hg->obs_tzname);
 
   hg->obj[i_list].check_disp=TRUE;
   hg->obj[i_list].check_sm=FALSE;
