@@ -4889,11 +4889,20 @@ void close_tree2(GtkWidget *w, gpointer gdata){
 }
 
 gchar *make_tgt(gchar * obj_name){
-  gchar tgt_name[BUFFSIZE], *ret_name;
+  gchar *tgt_name, *ret_name;
   gint  i_obj,i_tgt;
 
+  i_tgt=strlen("TGT_");
+
+  if((tgt_name=(gchar *)g_malloc(sizeof(gchar)*(strlen(obj_name)+i_tgt+1)))
+     ==NULL){
+    fprintf(stderr, "!!! Memory allocation error in fgets_new().\n");
+    fflush(stderr);
+    return(NULL);
+  }
+
   strcpy(tgt_name,"TGT_");
-  i_tgt=strlen(tgt_name);
+  
 
   for(i_obj=0;i_obj<strlen(obj_name);i_obj++){
     if(isalnum(obj_name[i_obj])){
@@ -4904,6 +4913,8 @@ gchar *make_tgt(gchar * obj_name){
 
   tgt_name[i_tgt]='\0';
   ret_name=g_strdup(tgt_name);
+
+  if(tgt_name) g_free(tgt_name);
 
   return(ret_name);
 }
@@ -5051,8 +5062,15 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
 }
 
 gchar *make_simbad_id(gchar * obj_name){
-  gchar tgt_name[BUFFSIZE], *ret_name;
+  gchar *tgt_name, *ret_name;
   gint  i_obj, i_tgt;
+
+  if((tgt_name=(gchar *)g_malloc(sizeof(gchar)*(strlen(obj_name)*3+1)))
+     ==NULL){
+    fprintf(stderr, "!!! Memory allocation error in fgets_new().\n");
+    fflush(stderr);
+    return(NULL);
+  }
 
   i_tgt=0;
 
@@ -5081,6 +5099,7 @@ gchar *make_simbad_id(gchar * obj_name){
 
   tgt_name[i_tgt]='\0';
   ret_name=g_strdup(tgt_name);
+  if(tgt_name) g_free(tgt_name);
 
   return(ret_name);
 }
@@ -5612,10 +5631,10 @@ void cc_search_text (GtkWidget *widget, gpointer gdata)
 }
 
 gchar *strip_spc(gchar * obj_name){
-  gchar tgt_name[BUFFSIZE], *ret_name;
+  gchar *tgt_name, *ret_name;
   gint  i_str=0,i;
 
-  strcpy(tgt_name,obj_name);
+  tgt_name=g_strdup(obj_name);
   for(i=0;i<strlen(tgt_name);i++){
     if((obj_name[i]!=0x20)
        &&(obj_name[i]!=0x0A)
@@ -5628,7 +5647,7 @@ gchar *strip_spc(gchar * obj_name){
   tgt_name[i_str]='\0';
   
   ret_name=g_strdup(tgt_name);
-
+  if(tgt_name) g_free(tgt_name);
   return(ret_name);
 }
 

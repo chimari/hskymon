@@ -9202,10 +9202,10 @@ void update_c_label (typHOE *hg){
 
 
 gchar *cut_spc(gchar * obj_name){
-  gchar tgt_name[BUFFSIZE], *ret_name, *c;
+  gchar *tgt_name, *ret_name, *c;
   gint  i_bak,i;
 
-  strcpy(tgt_name,obj_name);
+  tgt_name=g_strdup(obj_name);
   i_bak=strlen(tgt_name)-1;
   while((tgt_name[i_bak]==0x20)
 	||(tgt_name[i_bak]==0x0A)
@@ -9214,7 +9214,7 @@ gchar *cut_spc(gchar * obj_name){
     tgt_name[i_bak]='\0';
     i_bak--;
   }
-  
+    
   c=tgt_name;
   i=0;
   while((tgt_name[i]==0x20)||(tgt_name[i]==0x09)){
@@ -9223,19 +9223,19 @@ gchar *cut_spc(gchar * obj_name){
   }
 
   ret_name=g_strdup(c);
+  if(tgt_name) g_free(tgt_name);
 
   return(ret_name);
 }
 
 gchar *make_filehead(const gchar *file_head, gchar * obj_name){
-  gchar tgt_name[BUFFSIZE], *ret_name;
+  gchar *tgt_name, *ret_name;
   gint  i_obj,i_tgt;
 
-  strcpy(tgt_name,file_head);
+  tgt_name=strdup(file_head);
   i_tgt=strlen(tgt_name);
 
   for(i_obj=0;i_obj<strlen(obj_name);i_obj++){
-    //if(isalnum(obj_name[i_obj])){
     if(g_ascii_isspace(obj_name[i_obj])){
       tgt_name[i_tgt]='_';
     }
@@ -9248,6 +9248,7 @@ gchar *make_filehead(const gchar *file_head, gchar * obj_name){
   tgt_name[i_tgt]='\0';
   ret_name=g_strdup(tgt_name);
 
+  if(tgt_name) g_free(tgt_name);
   return(ret_name);
 }
 
@@ -10679,7 +10680,6 @@ gboolean ObjOverlap(typHOE *hg, gint i_max){
 void MergeListOPE(typHOE *hg, gint ope_max){
   FILE *fp;
   int i_list, i_comp, i0;
-  //static char buf[BUFFSIZE];
   gchar *buf=NULL;
   gchar *BUF=NULL, *buf0=NULL;
   gboolean escape=FALSE;
