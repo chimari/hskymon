@@ -3070,7 +3070,6 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	    cairo_set_line_width (cr, 1.5*scale);
 	    if(fabs(x-x0)>fabs(y-y0)){
 	      if(i_tag==i_tag_max){
-		cairo_move_to(cr,x,y-10);
 		ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
 				  &zonedate, 
 				  hg->obs_timezone);
@@ -3080,6 +3079,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 				    zonedate.hours,
 				    zonedate.minutes);
 		cairo_text_extents (cr, tmp, &extents);
+		cairo_move_to(cr,x,y-10);
 		cairo_rel_move_to(cr,extents.height/2, 0);
 		cairo_rotate (cr,-M_PI/2);
 		cairo_show_text(cr,tmp);
@@ -3095,7 +3095,6 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	    }
 	    else{
 	      if(i_tag==i_tag_max){
-		cairo_move_to(cr,x+10,y);
 		ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
 				  &zonedate, 
 				  hg->obs_timezone);
@@ -3105,6 +3104,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 				    zonedate.hours,
 				    zonedate.minutes);
 		cairo_text_extents (cr, tmp, &extents);
+		cairo_move_to(cr,x+10,y);
 		cairo_rel_move_to(cr,0,extents.height/2);
 		cairo_show_text(cr,tmp);
 		if(tmp) g_free(tmp);
@@ -3127,7 +3127,6 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	  cairo_set_line_width (cr, 1.5*scale);
 	  if(fabs(x-x0)>fabs(y-y0)){
 	    if(i_tag==i_tag_max){
-	      cairo_move_to(cr,x,y-10);
 	      ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
 				&zonedate, 
 				hg->obs_timezone);
@@ -3137,6 +3136,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 				  zonedate.hours,
 				  zonedate.minutes);
 	      cairo_text_extents (cr, tmp, &extents);
+	      cairo_move_to(cr,x,y-10);
 	      cairo_rel_move_to(cr,extents.height/2, 0);
 	      cairo_rotate (cr,-M_PI/2);
 	      cairo_show_text(cr,tmp);
@@ -3152,7 +3152,6 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	  }
 	  else{	
 	    if(i_tag==i_tag_max){
-	      cairo_move_to(cr,x+10,y);
 	      ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
 				&zonedate, 
 				hg->obs_timezone);
@@ -3162,6 +3161,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 				  zonedate.hours,
 				  zonedate.minutes);
 	      cairo_text_extents (cr, tmp, &extents);
+	      cairo_move_to(cr,x+10,y);
 	      cairo_rel_move_to(cr,0,extents.height/2);
 	      cairo_show_text(cr,tmp);
 	      if(tmp) g_free(tmp);
