@@ -9823,7 +9823,7 @@ void ConvJPL(typHOE *hg){
     return;
   }
 
-  if((fp_w=fopen(hg->filename_tscconv,"w"))==NULL){
+  if((fp_w=fopen(hg->filename_tscconv,"wb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
