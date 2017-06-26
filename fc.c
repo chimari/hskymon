@@ -3003,11 +3003,12 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
   {  //Non-Sidereal Orbit
     if((hg->orbit_flag)&&(hg->obj[hg->dss_i].i_nst>=0)){
-      gint i, i_step=0, i_step_max=1; 
+      gint i, i_step=0, i_step_max=1, i_tag=3, i_tag_max=3; 
       gdouble x, y, x0, y0;
       gdouble d_ra, d_dec;
       gdouble d_step, t_step;
       struct ln_equ_posn object, object_prec;
+      struct ln_zonedate zonedate;
 
       cairo_save(cr);
 
@@ -3061,14 +3062,57 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	cairo_line_to(cr,x,y);
 	cairo_stroke(cr);
 
+	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.0*scale);
+
 	if(i_step>0){
+
 	  if(i_step==i_step_max){
 	    cairo_set_line_width (cr, 1.5*scale);
 	    if(fabs(x-x0)>fabs(y-y0)){
+	      if(i_tag==i_tag_max){
+		cairo_move_to(cr,x,y-10);
+		ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
+				  &zonedate, 
+				  hg->obs_timezone);
+		tmp=g_strdup_printf("%d/%d %d:%02d",
+				    zonedate.months,
+				    zonedate.days,
+				    zonedate.hours,
+				    zonedate.minutes);
+		cairo_text_extents (cr, tmp, &extents);
+		cairo_rel_move_to(cr,extents.height/2, 0);
+		cairo_rotate (cr,-M_PI/2);
+		cairo_show_text(cr,tmp);
+		cairo_rotate (cr,M_PI/2);
+		if(tmp) g_free(tmp);
+		i_tag=0;
+	      }
+	      else{
+		i_tag++;
+	      }
 	      cairo_move_to(cr,x,y-5);
 	      cairo_line_to(cr,x,y+5);
 	    }
 	    else{
+	      if(i_tag==i_tag_max){
+		cairo_move_to(cr,x+10,y);
+		ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
+				  &zonedate, 
+				  hg->obs_timezone);
+		tmp=g_strdup_printf("%d/%d %d:%02d",
+				    zonedate.months,
+				    zonedate.days,
+				    zonedate.hours,
+				    zonedate.minutes);
+		cairo_text_extents (cr, tmp, &extents);
+		cairo_rel_move_to(cr,0,extents.height/2);
+		cairo_show_text(cr,tmp);
+		if(tmp) g_free(tmp);
+		i_tag=0;
+	      }
+	      else{
+		i_tag++;
+	      }
 	      cairo_move_to(cr,x-5,y);
 	      cairo_line_to(cr,x+5,y);
 	    }
@@ -3082,12 +3126,52 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	else{
 	  cairo_set_line_width (cr, 1.5*scale);
 	  if(fabs(x-x0)>fabs(y-y0)){
+	    if(i_tag==i_tag_max){
+	      cairo_move_to(cr,x,y-10);
+	      ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
+				&zonedate, 
+				hg->obs_timezone);
+	      tmp=g_strdup_printf("%d/%d %d:%02d",
+				  zonedate.months,
+				  zonedate.days,
+				  zonedate.hours,
+				  zonedate.minutes);
+	      cairo_text_extents (cr, tmp, &extents);
+	      cairo_rel_move_to(cr,extents.height/2, 0);
+	      cairo_rotate (cr,-M_PI/2);
+	      cairo_show_text(cr,tmp);
+	      cairo_rotate (cr,M_PI/2);
+	      if(tmp) g_free(tmp);
+	      i_tag=0;
+	    }
+	    else{
+	      i_tag++;
+	    }
 	    cairo_move_to(cr,x,y-5);
 	    cairo_line_to(cr,x,y+5);
 	  }
-	  else{
+	  else{	
+	    if(i_tag==i_tag_max){
+	      cairo_move_to(cr,x+10,y);
+	      ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
+				&zonedate, 
+				hg->obs_timezone);
+	      tmp=g_strdup_printf("%d/%d %d:%02d",
+				  zonedate.months,
+				  zonedate.days,
+				  zonedate.hours,
+				  zonedate.minutes);
+	      cairo_text_extents (cr, tmp, &extents);
+	      cairo_rel_move_to(cr,0,extents.height/2);
+	      cairo_show_text(cr,tmp);
+	      if(tmp) g_free(tmp);
+	      i_tag=0;
+	    }
+	    else{
+	      i_tag++;
+	    }
 	    cairo_move_to(cr,x-5,y);
-	  cairo_line_to(cr,x+5,y);
+	    cairo_line_to(cr,x+5,y);
 	  }
 	  cairo_stroke(cr);
 	}

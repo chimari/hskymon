@@ -254,7 +254,7 @@ gchar* fgets_new(FILE *fp){
     if((c==0x00)||(c==0x0a)||(c==0x0d)) break;
     i++;
   }
-  fseek(fp,(long)(-i-1),SEEK_CUR);
+  if(fseek(fp,(long)(-i-1),SEEK_CUR)!=0) return(NULL);
 
   if((dbuf = (gchar *)g_malloc(sizeof(gchar)*(i+2)))==NULL){
     fprintf(stderr, "!!! Memory allocation error in fgets_new().\n");
@@ -266,7 +266,9 @@ gchar* fgets_new(FILE *fp){
       if((c==0x00)||(c==0x0a)||(c==0x0d)) j++;
       else break;
     }
-    if(c!=EOF) fseek(fp,-1L,SEEK_CUR);
+    if(c!=EOF){
+      if(fseek(fp,-1L,SEEK_CUR)!=0) return(NULL);
+    }
     dbuf[i]=0x00;
     return(dbuf);
   }
@@ -9270,7 +9272,7 @@ void MergeNST(typHOE *hg, gint ope_max){
   }
   
 
-  if((fp=fopen(hg->filename_nst,"r"))==NULL){
+  if((fp=fopen(hg->filename_nst,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
@@ -9442,7 +9444,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
   }
   
 
-  if((fp=fopen(hg->filename_jpl,"r"))==NULL){
+  if((fp=fopen(hg->filename_jpl,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
@@ -9517,7 +9519,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 
   fclose(fp);
 
-  if((fp=fopen(hg->filename_jpl,"r"))==NULL){
+  if((fp=fopen(hg->filename_jpl,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
@@ -9807,7 +9809,7 @@ void ConvJPL(typHOE *hg){
   }
   
 
-  if((fp=fopen(hg->filename_jpl,"r"))==NULL){
+  if((fp=fopen(hg->filename_jpl,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
@@ -9892,7 +9894,7 @@ void ConvJPL(typHOE *hg){
 
   fclose(fp);
 
-  if((fp=fopen(hg->filename_jpl,"r"))==NULL){
+  if((fp=fopen(hg->filename_jpl,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
@@ -10236,7 +10238,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
   gint prm_place;
   gboolean new_fmt_flag=FALSE;
 
-  if((fp=fopen(hg->filename_ope,"r"))==NULL){
+  if((fp=fopen(hg->filename_ope,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
@@ -10692,7 +10694,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
   gboolean new_fmt_flag=FALSE;
   gint ope_zero=0;
 
-  if((fp=fopen(hg->filename_ope,"r"))==NULL){
+  if((fp=fopen(hg->filename_ope,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
@@ -11130,7 +11132,7 @@ void MergeListPRM(typHOE *hg){
   gboolean newdef;
   gint i0;
   
-  if((fp=fopen(hg->filename_prm,"r"))==NULL){
+  if((fp=fopen(hg->filename_prm,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
@@ -11338,7 +11340,7 @@ void MergeListPRM2(typHOE *hg){
   gint ret_check_def;
   gint i0;
   
-  if((fp=fopen(hg->filename_prm,"r"))==NULL){
+  if((fp=fopen(hg->filename_prm,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
@@ -11567,7 +11569,7 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
   gchar *cp=NULL, *cp2=NULL, *cp3=NULL, *cpp=NULL;
   gchar *arg=NULL;
   
-  if((fp=fopen(hg->filename_ope,"r"))==NULL){
+  if((fp=fopen(hg->filename_ope,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
@@ -11746,7 +11748,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
   gchar *arg=NULL;
   gint used_flag=CHECK_TARGET_DEF_NOUSE;
   
-  if((fp=fopen(hg->filename_ope,"r"))==NULL){
+  if((fp=fopen(hg->filename_ope,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
@@ -11906,7 +11908,7 @@ void MergeList(typHOE *hg, gint ope_max){
   gboolean name_flag;
   gchar *win_title=NULL;
   
-  if((fp=fopen(hg->filename_list,"r"))==NULL){
+  if((fp=fopen(hg->filename_list,"rb"))==NULL){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
