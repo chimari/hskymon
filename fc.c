@@ -4719,10 +4719,10 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_dec0=object_prec.dec;
 
     if(hg->dss_arcmin > hg->fcdb_ned_diam){
-      ned_arcmin=(gdouble)hg->fcdb_ned_diam/2.;
+      ned_arcmin=(gdouble)hg->fcdb_ned_diam;
     }
     else{
-      ned_arcmin=(gdouble)hg->dss_arcmin/2.;
+      ned_arcmin=(gdouble)hg->dss_arcmin;
     }
 
     switch(hg->fcdb_ned_otype){
