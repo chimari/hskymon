@@ -5,7 +5,7 @@ Release: 1%{?_dist_release}
 License: GPL3
 Group: Applications/Engineering
 Packager: Akito Tajitsu <tajitsu@naoj.org>
-URL: http://www.naoj.org/Observing/Insruments/HDS/hskymon-e.html
+URL: https://www.naoj.org/Observing/Insruments/HDS/hskymon-e.html
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Vendor: Subaru Telescope, National Astoronomical Observatory of Japan
@@ -40,6 +40,7 @@ rm -rf %{buildroot}
 
 %files
 /usr/local/bin/hskymon
+/usr/local/share/man/man1/hskymon.1
 
 %changelog
 * Mon Jun 26 2017 Akito Tajitsu <tajitsu@naoj.org>
