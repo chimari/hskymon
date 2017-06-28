@@ -260,7 +260,6 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 EXTRA_DIST = Makefile.am\
 	     README\
-             README.Debian\
              README.source\
              changelog\
              compat\

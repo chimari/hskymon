@@ -1,6 +1,5 @@
 EXTRA_DIST = Makefile.am\
 	     README\
-             README.Debian\
              README.source\
              changelog\
              compat\

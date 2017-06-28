@@ -2,8 +2,8 @@ Source: hskymon
 Section: x11
 Priority: optional
 Maintainer: Akito Tajitsu <tajitsu@naoj.org>
-Build-Depends: debhelper (>= 8.0.0), autotools-dev, libgtk2.0-dev (>= 2.10), libssl-dev, libxml2-dev
-Standards-Version: 3.9.4
+Build-Depends: debhelper (>= 9), autotools-dev, libgtk2.0-dev (>= 2.10), libssl-dev, libxml2-dev
+Standards-Version: 3.9.5
 Homepage: http://www.naoj.org/Observing/Insruments/HDS/hskymon-e.html
 Vcs-Git: https://github.com/chimari/hskymon.git
 #Vcs-Browser: https://github.com/chimari/hskymon.git;a=summary
@@ -11,4 +11,9 @@ Vcs-Git: https://github.com/chimari/hskymon.git
 Package: hskymon
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, openssl
-Description: SKy-Monitor for Subaru Telescope, NAOJ
+Description: SKy-Monitor for Subaru Telescope, NAOJ.
+ During actual observation hskymon works as a sky and telescope monitor.
+ Furthermore, it can be used as a visibility checker, a finding charts 
+ creator, and a guiding stars finder during obs preparation in your environment.
+ Basically, hskymon is optimized for Subaru Telescope. However,
+ it can be adopted to other telescopes, changing positional parameters.
