@@ -1,0 +1,133 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" (C) Copyright 2017 Akito Tajitsu <tajitsu@naoj.org>,
+.\"
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH HSKYMON SECTION "June 27, 2017"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+hskymon \- Sky-Monitor for Subaru Telesocpe, NAOJ
+.SH SYNOPSIS
+.B hskymon
+.RI [ options ]
+.SH DESCRIPTION
+\fBhskymon\fP is a telescope monitoring software for SUBARU Telescope,
+National Astronomical Observatory of Japan.
+.PP
+.\" TeX users may be more comfortable with the \fB<whatever>\fP and
+.\" \fI<whatever>\fP escape sequences to invode bold face and italics,
+.\" respectively.
+This program is useful for actual observation as a telescope and sky monitor
+and also for obs preparation as a visibility checker, a finding charts creator, 
+and a guiding stars finder for your obs preparation in your environment.
+.br
+Basically, hskymon is optimized for SUBARU Telescope. However,
+it can be adopted to other telescopes, changing positional parameters.
+.SH "OPTIONS"
+These programs follow the usual GNU command line syntax, with long
+opt-file]
+Set an input CSV list file.
+.TP
+.B \-a, \-\-with\-allsky
+Switch on All Sky Camera.
+.TP
+.B \-l, \-\-log  [log\-file]
+Output log file.
+.TP
+.B \-nt, \-\-without\-telstat
+Disconnect from Telstat Server (only compiled w/XMLRPC option).
+.TP
+.B \-s, \-\-server [server\-address]
+Override Telstat Server (only compiled w/XMLRPC option).
+
+.SH INPUT FILES
+.TP
+.B OPE file
+.br
+OPE files for Subaru Gen2 system can be available for objects inputs.
+hskymon reads the parameter list section in OPE files likely,
+.br
+ <PARAMETER_LIST>
+.br
+ TGT_BD44493=OBJECT="BD+44 493" RA=022649.60 DEC=...
+.br
+ TGT_HD222304=OBJECT="HD222304" RA=033908.30 DEC=...
+.br
+ TGT_HD224544=OBJECT="HD224544" RA=235849.20 DEC=...
+.br
+ TGT_HD225132=OBJECT="HD225132" RA=000344.40 DEC=...
+.br
+           ....................................
+.br
+All characters in object names will be capitalized.
+PRM files described in OPE files, in which standard stars are defined,
+are also loaded automatically.
+.TP
+.B CSV Text file
+.br
+The text files written in the following CSV format are also available for
+objects inputs.
+.br
+  HD94028     ,105128.1 ,+201639.0 ,2000,  <comments>
+.br
+  BD+36 2165  ,111248.0 ,+354343.9 ,2000,  Mv=8.4  Fe/H=-2
+.br
+  HD97916     ,111554.2 ,+020512.1 ,2000,  Mv=10.2 Fe/H=-2
+.br
+  BD+51 1696  ,114635.2 ,+505254.7 ,2000   
+.br
+  BD-13 3442  ,114650.7 ,-140643.5 ,2000,
+.br
+       ....................................
+.TP 
+.B Non-Sidereal Tracking File (TSC format)
+.br
+Non-Sidereal tracking files for TSC can also be avairable.
+Please put TSC files in an appropriate directory (maybe in the same 
+directory where your OPE files locate) and load them from the menu.
+Files must follow the format described in
+.br
+  https://www.naoj.org/Observing/Telescope/Tracking/NonSidereal/ .
+.br
+You should use "Geocentric" coordinate in TSC files.
+They would be automatically converted into topocentric in the program.
+When hskymon's time and date are out of the range of the tracking 
+calculation, the object will be plotted with an "x" mark in the monitor.
+You can check the orbit of the non-sidereal target in the Finsing Chart.
+.TP
+.B Non-Sidereal Tracking File (JPL HORIZONS format)
+hskymon can also load NASA JPL HIRIZONS output files.
+.br
+  https://ssd.jpl.nasa.gov/horizons.cgi
+.br
+Please note that you should set 
+.br
+  "Epehmeris Type"=OBSERVER
+.br
+  "Observer Location"=Geocentric
+.br
+  "Table Settings"=1.Astrometric RA & Dec, 20.Observer range
+.br
+for your input.
+Either calendar date or JD is acceptable for date format.
+From the main menu, HORIZONS files can be converted into the TSC format.
+
+.SH "AUTHOR"
+.nf
+Akito Tajitsu	<tajitsu@naoj.org>
+.br
+  URL:   https://github.com/chimari/hskymon
+.fi
+

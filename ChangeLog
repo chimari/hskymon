@@ -1,5 +1,9 @@
 2017.06.26 ver2.9.7 - Bug fix for reading files on Windows.
                     - Date tags on Non-Sidereal orbits in FC.
+	            - Attached .spec file for rpmbuild.
+	            - Added debian/ directory for debuild.
+	            - Upgraded License from GPL2 to GPL3.
+	            - Removed extra version (date).
 
 2017.06.25 ver2.9.6 - Removed IRAS fluxes from Starndard List, because its
 	              measurements are removed from SIMBAD (in 4/2017).

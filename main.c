@@ -12021,10 +12021,10 @@ void usage(void)
   g_print(" hskymon : SkyMonitor for Subaru Telescope   Ver"VERSION"\n");
   g_print("  [usage] %% hskymon [options...]\n");
   g_print("     -h, --help                    : Print this message\n");
-  g_print("     -i, --input [input-file]      : Set the inpout CSV list file\n");
+  g_print("     -i, --input [input-file]      : Set the input CSV list file\n");
   g_print("     -a, --with-allsky             : Switch on All Sky Camera\n");
 #ifdef USE_XMLRPC
-  g_print("     -nt, --without-telstat        : Switch off to reaImaged Telescope Status\n");
+  g_print("     -nt, --without-telstat        : Switch off to read Telescope Status\n");
   g_print("     -s, --server [server-address] : Override Telstat Server\n");
 #endif
   g_print("     -l, --log [log-file]          : Output log file\n");

@@ -27,7 +27,9 @@ EXTRA_DIST = autogen.sh\
              subaru_logo.ico\
              hskymon.ico\
              hskymon_res.rc.in\
+             hskymon.spec\
              hskymon_icon.png\
+             hskymon.1\
              makewin32.sh\
              makewin64.sh\
              ar_u0.xpm\
@@ -38,6 +40,8 @@ EXTRA_DIST = autogen.sh\
              ar_d1.xpm\
              ar_d2.xpm\
              ar_d3.xpm
+
+man_MANS = hskymon.1
 
 INCLUDES        = @GTK_CFLAGS@ $(GTKMAC_CFLAGS) $(XMLRPC_CFLAGS) $(XML_CPPFLAGS) $(DISABLE_DEPRECATED)
 LDADD           = @GTK_LIBS@ $(GTKMAC_LIBS) $(WINMM_LIBS) $(WINSOCK_LIBS) $(XMLRPC_LIBS) $(XML_LIBS) $(HSKYMON_RES)
