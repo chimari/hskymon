@@ -14126,7 +14126,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile version.h hskymon_res.rc libnova/Makefile std_data/Makefile"
+ac_config_files="$ac_config_files Makefile version.h hskymon_res.rc libnova/Makefile std_data/Makefile debian/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -15145,6 +15145,7 @@ do
     "hskymon_res.rc") CONFIG_FILES="$CONFIG_FILES hskymon_res.rc" ;;
     "libnova/Makefile") CONFIG_FILES="$CONFIG_FILES libnova/Makefile" ;;
     "std_data/Makefile") CONFIG_FILES="$CONFIG_FILES std_data/Makefile" ;;
+    "debian/Makefile") CONFIG_FILES="$CONFIG_FILES debian/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

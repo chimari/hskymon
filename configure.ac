@@ -192,6 +192,7 @@ version.h
 hskymon_res.rc
 libnova/Makefile
 std_data/Makefile
+debian/Makefile
 ])
 
 
