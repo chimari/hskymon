@@ -19,6 +19,7 @@
 #endif
 
 extern void my_signal_connect();
+extern void my_gdk_flush();
 extern gboolean my_main_iteration();
 extern GtkWidget* gtkut_button_new_from_stock();
 extern GtkWidget* gtkut_toggle_button_new_from_stock();
@@ -150,7 +151,7 @@ void create_skymon_dialog(typHOE *hg)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
 
   hg->skymon_mode=SKYMON_CUR;
 
@@ -521,7 +522,7 @@ void create_skymon_dialog(typHOE *hg)
 
   gtk_widget_show_all(hg->skymon_main);
   draw_skymon(hg->skymon_dw, hg, FALSE);
-  gdk_flush();
+  my_gdk_flush();
 
   skymon_debug_print("Finishing create_skymon_dialog\n");
 }
@@ -3934,7 +3935,7 @@ static gint button_signal(GtkWidget *widget,
 	if(!flagTree){
 	  make_tree(hg->skymon_main,hg);
 	  while (my_main_iteration(FALSE));
-	  gdk_flush();
+	  my_gdk_flush();
 	}
 	//if(GTK_WIDGET_REALIZED(hg->tree)){
 	if(flagTree){

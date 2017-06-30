@@ -63,6 +63,7 @@ gdouble deg_to_ra();
 gdouble deg_to_dec();
 gdouble date_to_jd();
 
+extern void my_gdk_flush();
 extern gboolean my_main_iteration();
 extern void my_signal_connect();
 extern void add_day();
@@ -207,7 +208,7 @@ void create_plot_dialog(typHOE *hg)
 
   // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
 
   hg->plot_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(hg->plot_main), "Sky Monitor : Plot Window");
@@ -472,7 +473,7 @@ void create_plot_dialog(typHOE *hg)
   gdk_window_raise(hg->plot_main->window);
 
   draw_plot_cairo(hg->plot_dw,(gpointer)hg);
-  gdk_flush();
+  my_gdk_flush();
 }
 
 

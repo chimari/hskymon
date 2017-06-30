@@ -75,6 +75,7 @@ gchar *rgb_source_txt();
 
 extern int  get_dss();
 extern int get_fcdb();
+extern void my_gdk_flush();
 extern gboolean my_main_iteration();
 extern void popup_message();
 extern void my_signal_connect();
@@ -295,7 +296,7 @@ void fc_dl (typHOE *hg)
   }
 
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
 
   dialog = gtk_dialog_new();
   
@@ -490,7 +491,7 @@ void fc_dl (typHOE *hg)
   
   gtk_widget_show_all(dialog);
 
-  gdk_flush();
+  my_gdk_flush();
   
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
@@ -584,9 +585,8 @@ void create_fc_dialog(typHOE *hg)
   GtkWidget *menubar;
   GdkPixbuf *icon;
 
-  // Win構築は重いので先にExposeイベント等をすべて処理してから
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
 
   hg->fc_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   //hg->fc_main = gtk_dialog_new();
@@ -1318,7 +1318,7 @@ void create_fc_dialog(typHOE *hg)
 
   draw_fc_cairo(hg->fc_dw,hg);
 
-  gdk_flush();
+  my_gdk_flush();
 }
 
 
@@ -4000,7 +4000,7 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
   GdkPixbuf *icon, *pixbuf;
 
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
 
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -4222,7 +4222,7 @@ void fcdb_dl(typHOE *hg)
   flag_getFCDB=TRUE;
 
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
 
   dialog = gtk_dialog_new();
   
@@ -4354,7 +4354,7 @@ void fcdb_dl(typHOE *hg)
   
   gtk_widget_show_all(dialog);
   
-  gdk_flush();
+  my_gdk_flush();
   
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
@@ -4418,7 +4418,7 @@ void addobj_dl(typHOE *hg)
 			    FCDB_FILE_XML,NULL);
 
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
 
   dialog = gtk_dialog_new();
   
@@ -4514,7 +4514,7 @@ void addobj_dl(typHOE *hg)
   
   gtk_widget_show_all(dialog);
   
-  gdk_flush();
+  my_gdk_flush();
   
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
@@ -5282,7 +5282,7 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
   gtk_list_store_clear (GTK_LIST_STORE(model));
   
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
 
   for (i = 0; i < hg->fcdb_i_max; i++){
     gtk_list_store_append (GTK_LIST_STORE(model), &iter);

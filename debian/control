@@ -12,8 +12,9 @@ Package: hskymon
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, openssl
 Description: SKy-Monitor for Subaru Telescope, NAOJ.
- During actual observation hskymon works as a sky and telescope monitor.
- Furthermore, it can be used as a visibility checker, a finding charts 
- creator, and a guiding stars finder during obs preparation in your environment.
+ hskymon is a GTK+2 based cross-platform application to monitor celecial 
+ objects, sky condition, and telescope in Subaru Telescope Gen2 system.
+ It can be used as a visibility checker, a finding charts creator, 
+ and a guiding stars finder for your obs preparation in your environment.
  Basically, hskymon is optimized for Subaru Telescope. However,
  it can be adopted to other telescopes, changing positional parameters.

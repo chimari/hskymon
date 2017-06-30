@@ -88,6 +88,7 @@ extern gboolean flagPlot;
 extern gboolean flagADC;
 extern gboolean flagFC;
 
+extern void my_gdk_flush();
 extern gboolean my_main_iteration();
 extern void popup_message();
 extern void my_signal_connect();
@@ -4189,7 +4190,7 @@ do_editable_cells (typHOE *hg)
   GdkPixbuf *icon;
 
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
 
   if (!window) {
 
@@ -5131,7 +5132,7 @@ void remake_tree(typHOE *hg)
   gtk_list_store_clear (GTK_LIST_STORE(model));
   
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
   
   hg->tree_search_i=0;
   hg->tree_search_imax=0;
@@ -5148,7 +5149,7 @@ void rebuild_tree(typHOE *hg)
 {
   close_tree2(NULL,hg);
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
 
   hg->fcdb_i_max=0;
 
@@ -5286,7 +5287,7 @@ void stddb_dl(typHOE *hg)
   gint timer=-1;
   
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
 
   if(flag_getSTD) return;
   flag_getSTD=TRUE;
@@ -5363,7 +5364,7 @@ void stddb_dl(typHOE *hg)
   
   gtk_widget_show_all(dialog);
 
-  gdk_flush();
+  my_gdk_flush();
   
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
@@ -5438,7 +5439,7 @@ void std_make_tree(GtkWidget *widget, gpointer gdata){
   gtk_list_store_clear (GTK_LIST_STORE(model));
   
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
   
   for (i = 0; i < hg->std_i_max; i++){
     gtk_list_store_append (GTK_LIST_STORE(model), &iter);
@@ -5513,7 +5514,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   hg->addobj_dec=0;
 
   while (my_main_iteration(FALSE));
-  gdk_flush();
+  my_gdk_flush();
 
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
