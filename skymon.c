@@ -19,8 +19,6 @@
 #endif
 
 extern void my_signal_connect();
-extern void my_gdk_flush();
-extern gboolean my_main_iteration();
 extern GtkWidget* gtkut_button_new_from_stock();
 extern GtkWidget* gtkut_toggle_button_new_from_stock();
 extern GtkWidget* gtkut_toggle_button_new_from_pixbuf();
@@ -120,8 +118,6 @@ extern gboolean flag_getting_allsky;
 gint old_width=0, old_height=0, old_w=0, old_h=0;
 gdouble old_r=0;
 
-//GdkPixmap *pixmap_skymon=NULL;
-
 static gint work_page=0;
 
 #ifndef USE_WIN32
@@ -148,10 +144,6 @@ void create_skymon_dialog(typHOE *hg)
 #endif
 
   skymon_debug_print("Starting create_skymon_dialog\n");
-
-  // Win構築は重いので先にExposeイベント等をすべて処理してから
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   hg->skymon_mode=SKYMON_CUR;
 
@@ -522,7 +514,6 @@ void create_skymon_dialog(typHOE *hg)
 
   gtk_widget_show_all(hg->skymon_main);
   draw_skymon(hg->skymon_dw, hg, FALSE);
-  my_gdk_flush();
 
   skymon_debug_print("Finishing create_skymon_dialog\n");
 }
@@ -2600,9 +2591,6 @@ void my_cairo_std2(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, gdouble 
   cairo_set_line_width (cr, 5.5);
   cairo_stroke (cr);
   
-  //cairo_rectangle (cr, x-10, y-10, 20, 20);
-  //cairo_fill(cr);
-
   cairo_set_source_rgba(cr, 1.0, 0.25, 0.25, 1.0);
   cairo_move_to (cr, x-8, y-8);
   cairo_line_to (cr, x-4, y-8);
@@ -3934,8 +3922,6 @@ static gint button_signal(GtkWidget *widget,
       if(i_sel>=0){
 	if(!flagTree){
 	  make_tree(hg->skymon_main,hg);
-	  while (my_main_iteration(FALSE));
-	  my_gdk_flush();
 	}
 	//if(GTK_WIDGET_REALIZED(hg->tree)){
 	if(flagTree){
@@ -4118,7 +4104,7 @@ void draw_stderr_graph(typHOE *hg, cairo_t *cr, gint width, gint height,
       y=y1;
     }
     cairo_set_line_width(cr,1.0);
-    cairo_stroke(cr);
+cairo_stroke(cr);
   }
 
   cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);

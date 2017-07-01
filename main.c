@@ -191,8 +191,6 @@ static void destroy_popup();
 
 void my_file_chooser_add_filter (GtkWidget *dialog, const gchar *name, ...);
 void my_signal_connect();
-void my_gdk_flush();
-gboolean my_main_iteration();
 void my_entry_set_width_chars();
 
 gchar* make_head();
@@ -415,10 +413,6 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
   }
 
-  //bar =gtk_separator_menu_item_new();
-  //gtk_widget_show (bar);
-  //gtk_container_add (GTK_CONTAINER (menu), bar);
-
   {
     GtkWidget *new_menu; 
     GtkWidget *popup_button;
@@ -439,10 +433,6 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_container_add (GTK_CONTAINER (menu), popup_button);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
   }
-
-  //bar =gtk_separator_menu_item_new();
-  //gtk_widget_show (bar);
-  //gtk_container_add (GTK_CONTAINER (menu), bar);
 
   {
     GtkWidget *new_menu; 
@@ -474,10 +464,6 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_container_add (GTK_CONTAINER (menu), popup_button);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
   }
-
-  //bar =gtk_separator_menu_item_new();
-  //gtk_widget_show (bar);
-  //gtk_container_add (GTK_CONTAINER (menu), bar);
 
   {
     GtkWidget *new_menu; 
@@ -2270,9 +2256,6 @@ void do_open (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Input List File",
 					NULL,
 					GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -2368,9 +2351,6 @@ void do_open_NST (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File [TSC]",
 					NULL,
 					GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -2458,9 +2438,6 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
   }
 
   hg=(typHOE *)gdata;
-
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File  [JPL HRIZONS]",
 					NULL,
@@ -2555,9 +2532,6 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File  [JPL HRIZONS]",
 					NULL,
 					GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -2611,9 +2585,6 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
      
     if(fname) g_free(fname);
     if(dest_file) g_free(dest_file);
-    
-    while (my_main_iteration(FALSE));
-    my_gdk_flush();
     
     fdialog_w = gtk_file_chooser_dialog_new("Sky Monitor : Input TSC Tracking File to be saved",
 					    NULL,
@@ -2723,9 +2694,6 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select OPE File",
 					NULL,
 					GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -2827,9 +2795,6 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select OPE File",
 					NULL,
 					GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -2919,9 +2884,6 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select PRM File",
 					NULL,
 					GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -3009,9 +2971,6 @@ void do_merge (GtkWidget *widget, gpointer gdata)
   }
 
   hg=(typHOE *)gdata;
-
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Input List File",
 					NULL,
@@ -3104,9 +3063,6 @@ void show_version (GtkWidget *widget, gpointer gdata)
   struct utsname utsbuf;
 #endif
   gchar buf[1024];
-
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   flagChildDialog=TRUE;
 
@@ -3244,9 +3200,6 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox, *table;
   GdkPixbuf *icon, *pixbuf;
   flagChildDialog=FALSE;
-
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -3423,9 +3376,6 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
   
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   cdata=g_malloc0(sizeof(confProp));
   cdata->mode=0;
 
@@ -3736,9 +3686,6 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
   
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   cdata=g_malloc0(sizeof(confProp));
   cdata->mode=0;
 
@@ -3889,9 +3836,6 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
   
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   cdata=g_malloc0(sizeof(confProp));
   cdata->mode=0;
 
@@ -4467,7 +4411,6 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_otype=hg->fcdb_otype;
   tmp_ned_diam=hg->fcdb_ned_diam;
   tmp_ned_otype=hg->fcdb_ned_otype;
-  //hg->fcdb_type_tmp=hg->fcdb_type;
   tmp_ned_ref=hg->fcdb_ned_ref;
   tmp_gsc_fil=hg->fcdb_gsc_fil;
   tmp_gsc_mag=hg->fcdb_gsc_mag;
@@ -4491,9 +4434,6 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_wise_fil=hg->fcdb_wise_fil;
   tmp_wise_mag=hg->fcdb_wise_mag;
   tmp_wise_diam=hg->fcdb_wise_diam;
-
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   dialog = gtk_dialog_new();
   cdata->dialog=dialog;
@@ -5649,9 +5589,6 @@ void do_save_pdf (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   fdialog = gtk_file_chooser_dialog_new("HOE : Input PDF File to be Saved",
 					NULL,
 					GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -5733,9 +5670,6 @@ void do_save_OpeDef (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   fdialog = gtk_file_chooser_dialog_new("HOE : Ope Def File to be Saved",
 					NULL,
 					GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -5803,9 +5737,6 @@ void do_save_TextList (GtkWidget *widget, gpointer gdata)
   typHOE *hg;
 
   hg=(typHOE *)gdata;
-
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   fdialog = gtk_file_chooser_dialog_new("HOE : Ope Def File to be Saved",
 					NULL,
@@ -5875,9 +5806,6 @@ void do_save_fc_pdf (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Input PDF File to be Saved",
 					NULL,
 					GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -5890,14 +5818,6 @@ void do_save_fc_pdf (GtkWidget *widget, gpointer gdata)
   if(hg->filename_pdf) g_free(hg->filename_pdf);
   hg->filename_pdf=g_strconcat(make_filehead("FC_",hg->obj[hg->dss_i].name),
 			       "." PDF_EXTENSION,NULL);
-
-  /*
-  if(!hg->filename_pdf){
-    if(hg->filehead){
-      hg->filename_pdf=g_strconcat(hg->filehead,"." PDF_EXTENSION,NULL);
-    }
-  }
-  */
 
   if(access(hg->filename_pdf,F_OK)==0){
     gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (fdialog), 
@@ -6115,9 +6035,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   cdata_pos->www_com=tmp_www_com;
 
   flagChildDialog=TRUE;
-
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   dialog = gtk_dialog_new();
   cdata->dialog=dialog;
@@ -8471,7 +8388,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->pres=PRES_SUBARU;
 
     hg->fc_mode_def         =FC_SKYVIEW_DSS2R;
-    //hg->fc_mode             =hg->fc_mode_def;
     hg->fc_mode_RGB[0]      =FC_SKYVIEW_DSS2IR;
     hg->fc_mode_RGB[1]      =FC_SKYVIEW_DSS2R;
     hg->fc_mode_RGB[2]      =FC_SKYVIEW_DSS2B;
@@ -8519,7 +8435,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       if(update_telstat((gpointer)hg)){
 	printf_log(hg,"[TelStat] connected to the server %s",
 		   hg->ro_ns_host);
-	//draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
 	hg->telstat_timer=g_timeout_add(TELSTAT_INTERVAL, 
 					(GSourceFunc)update_telstat,
 					(gpointer)hg);
@@ -8575,7 +8490,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   g_free(tmp_obs_tzname);
   g_free(tmp_allsky_host);
   g_free(tmp_allsky_path);
-  //if(tmp_allsky_date_path) g_free(tmp_allsky_date_path);
   g_free(tmp_allsky_file);
   g_free(tmp_allsky_last_file00);
 #ifdef USE_XMLRPC
@@ -8798,8 +8712,6 @@ void radio_fcdb(GtkWidget *button, gpointer gdata)
 
 void close_disp_para(GtkWidget *w, GtkWidget *dialog)
 {
-  //gdk_pointer_ungrab(GDK_CURRENT_TIME);
-
   gtk_main_quit();
   gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
@@ -10317,7 +10229,6 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 		  cp+=1;
 		  cp2 = strstr(cp, "\"");
 		  if(hg->obj[i_list].name) g_free(hg->obj[i_list].name);
-		  //hg->obj[i_list].name=g_strndup(cp,strlen(cp)-strlen(cp2));
 		  bp=buf_strip+(strlen(buf_strip)-strlen(cp));
 		  hg->obj[i_list].name=g_strndup(bp,strlen(cp)-strlen(cp2));
 		}
@@ -10325,20 +10236,16 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 		  cp+=1;
 		  cp2 = strstr(cp, "\'");
 		  if(hg->obj[i_list].name) g_free(hg->obj[i_list].name);
-		  //hg->obj[i_list].name=g_strndup(cp,strlen(cp)-strlen(cp2));
 		  bp=buf_strip+(strlen(buf_strip)-strlen(cp));
 		  hg->obj[i_list].name=g_strndup(bp,strlen(cp)-strlen(cp2));
 		}
 		else{
-		  //if(cp3) g_free(cp3);
 		  if(hg->obj[i_list].name) g_free(hg->obj[i_list].name);
 		  bp=buf_strip+(strlen(buf_strip)-strlen(cp));
 		  if(NULL != (cp2 = strstr(cp, " "))){
-		    //hg->obj[i_list].name=g_strndup(cp,strlen(cp)-strlen(cp2));
 		    hg->obj[i_list].name=g_strndup(bp,strlen(cp)-strlen(cp2));
 		  }
 		  else{
-		    //hg->obj[i_list].name=g_strdup(cp);
 		    hg->obj[i_list].name=g_strndup(bp,strlen(cp));
 		  }
 		}
@@ -10424,7 +10331,6 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 
 	  if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	    if(!ObjOverlap(hg,i_list)){
-	      //hg->obj[i_list].note=NULL;
 	      if(hg->obj[i_list].note) g_free(hg->obj[i_list].note);
 	      hg->obj[i_list].note=g_path_get_basename(hg->filename_ope);
 	      
@@ -10700,7 +10606,6 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 
   i0=hg->i_max;
   i_list=hg->i_max;
-  //ope_zero=hg->i_max-1;
   hg->ope_max=ope_max;
   if(ope_max==0){
     hg->nst_max=0;
@@ -10747,11 +10652,9 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	escape=TRUE;
       }
       else{
-	//if((*buf!='#') &&(NULL != (buf0 = strchr(buf, '=')))){
-	  if((buf[0]!='#')){
-
+	if((buf[0]!='#')){
+	  
 	  if(BUF) g_free(BUF);
-	  //BUF=g_strstrip(g_ascii_strup(buf0,-1));
 	  BUF=g_strstrip(g_ascii_strup(buf,-1));
 	  ok_obj=FALSE;
 	  ok_ra=FALSE;
@@ -10858,14 +10761,12 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  hg->obj[i_list].check_used=FALSE;
 	  hg->obj[i_list].check_std=FALSE;
 	  hg->obj[i_list].ope=hg->ope_max;
-	  //hg->obj[i_list].ope_i=i_list-ope_zero-1;
 	  hg->obj[i_list].ope_i=i_list-i0;
 	  hg->obj[i_list].i_nst=-1;
 	  
 	  if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	    if(!ObjOverlap(hg,i_list)){
 	      if(hg->obj[i_list].note) g_free(hg->obj[i_list].note);
-	      //hg->obj[i_list].note=NULL;
 	      hg->obj[i_list].note=g_path_get_basename(hg->filename_ope);
 	      
 	      if(hg->obj[i_list].def) g_free(hg->obj[i_list].def);
@@ -11135,7 +11036,6 @@ void MergeListPRM(typHOE *hg){
   }
   
   printf_log(hg,"[MergePRM] Opening %s.",hg->filename_prm);
-  //hg->ope_max=ope_max;
 
   i0=hg->i_max;
 
@@ -11173,7 +11073,6 @@ void MergeListPRM(typHOE *hg){
 		tmp_name=g_strndup(cp,strlen(cp)-strlen(cp2));
 	      }
 	      else{
-		//if(cp3) g_free(cp3);
 		if(tmp_name) g_free(tmp_name);
 		if(NULL != (cp2 = strstr(cp, " ")))
 		  tmp_name=g_strndup(cp,strlen(cp)-strlen(cp2));
@@ -11379,7 +11278,6 @@ void MergeListPRM2(typHOE *hg){
 		tmp_name=g_strndup(cp,strlen(cp)-strlen(cp2));
 	      }
 	      else{
-		//if(cp3) g_free(cp3);
 		if(tmp_name) g_free(tmp_name);
 		if(NULL != (cp2 = strstr(cp, " ")))
 		  tmp_name=g_strndup(cp,strlen(cp)-strlen(cp2));
@@ -11516,8 +11414,6 @@ void MergeListPRM2(typHOE *hg){
   }
 
   fclose(fp);
-
-  //CheckTargetDefOPE(hg);
 
   if(BUF) g_free(BUF);
   if(cp3) g_free(cp3);
@@ -11844,7 +11740,6 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 
 	      if(g_ascii_strcasecmp(arg,def)==0){
 		if(used_flag==CHECK_TARGET_DEF_NOUSE) used_flag=CHECK_TARGET_DEF_OBJECT;
-		//escape=TRUE;
 		break;
 	      }
 	    }
@@ -11865,7 +11760,6 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 
 	      if(g_ascii_strcasecmp(arg,def)==0){
 		if(used_flag==CHECK_TARGET_DEF_NOUSE) used_flag=CHECK_TARGET_DEF_OBJECT;
-		//escape=TRUE;
 		break;
 	      }
 	    }
@@ -12365,10 +12259,6 @@ void ReadConf(typHOE *hg)
       hg->dss_scale_RGB[2]=i_buf;
     else
       hg->dss_scale_RGB[2]=FC_SCALE_LINEAR;
-    //if(xmms_cfg_read_int  (cfgfile, "DSS", "Pix",  &i_buf))
-    //  hg->dss_pix=i_buf;
-    //else
-    //  hg->dss_pix=DSS_PIX;
     hg->fc_mode=hg->fc_mode_def;
     set_fc_mode(hg);
 
@@ -12814,9 +12704,6 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
 
     flagChildDialog=TRUE;
 
-    while (my_main_iteration(FALSE));
-    my_gdk_flush();
-
     dialog = gtk_dialog_new_with_buttons("Sky Monitor : Sync OPE files with IntegGUI",
 					 NULL,
 					 GTK_DIALOG_MODAL,
@@ -12938,9 +12825,6 @@ void popup_message(gint delay, ...){
 
   va_start(args, delay);
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   dialog = gtk_dialog_new();
 
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_MOUSE);
@@ -13048,16 +12932,6 @@ void my_signal_connect(GtkWidget *widget,
 		   detailed_signal,
 		   G_CALLBACK(func),
 		   data);
-}
-
-
-void my_gdk_flush(){
-  gdk_flush();
-}
-
-gboolean my_main_iteration(gboolean may_block){
-  //return(g_main_context_iteration(NULL, may_block));
-  return(FALSE);
 }
 
 

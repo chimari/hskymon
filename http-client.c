@@ -100,7 +100,6 @@ gint allsky_repeat=0;
 #ifdef USE_WIN32
 #define BUF_LEN 65535             /* バッファのサイズ */
 #else
-//#define BUF_LEN 255             /* バッファのサイズ */
 #define BUF_LEN 1023             /* バッファのサイズ */
 #endif
 
@@ -550,9 +549,6 @@ void allsky_read_data(typHOE *hg){
 
 	hg->allsky_last_time=0;
 	
-	//printf(" ALLSKY LAST Pixbuf %d  %s\n",
-	//	 hg->allsky_last_i-1,
-	//	 hg->allsky_last_date[hg->allsky_last_i-1]);
       }
       else if( strcmp(hg->allsky_date,hg->allsky_last_date[hg->allsky_last_i-1])!=0 ){
 	if(hg->allsky_limit){
@@ -653,9 +649,6 @@ void allsky_read_data(typHOE *hg){
 	  t0=ghttp_parse_date(hg->allsky_last_date[0]);
 	  hg->allsky_last_time=(t-t0)/60;
 	
-	  //printf(" ALLSKY LAST Pixbuf %d  %s\n",
-	  //	 hg->allsky_last_i-1,
-	  //	 hg->allsky_last_date[hg->allsky_last_i-1]);
 	}
 	else{
 	  printf_log(hg,"[AllSky] Error in reading image.");
@@ -682,10 +675,6 @@ void allsky_read_data(typHOE *hg){
 	hg->allsky_last_time=0;
 	
 	hg->allsky_last_i++;
-	
-	//printf(" ALLSKY LAST File %d  %s\n",
-	//	 hg->allsky_last_i-1,
-	//	 hg->allsky_last_file[hg->allsky_last_i-1]);
 	
       }
       else if( strcmp(tmp_file,hg->allsky_last_file[hg->allsky_last_i-1])!=0 ) {
@@ -731,9 +720,6 @@ void allsky_read_data(typHOE *hg){
 	t0=ghttp_parse_date(hg->allsky_last_date[0]);
 	hg->allsky_last_time=(t-t0)/60;
 	  
-	//printf(" ALLSKY LAST File %d  %s\n",
-	//	 hg->allsky_last_i-1,
-	//    hg->allsky_last_file[hg->allsky_last_i-1]);
       }
       
     }
@@ -2358,7 +2344,6 @@ char* getLine(int fd)
             line = realloc(line, size);
         }
         line[pos++] = c;
-        //printf("%c", c);
 
         if(pre == '\r' && c == '\n')//this is a new line
         {
@@ -2864,14 +2849,12 @@ GdkPixbuf* diff_pixbuf(GdkPixbuf *pixbuf1, GdkPixbuf* pixbuf2,
 
   p_ret = gdk_pixbuf_get_pixels(pixbuf_ret);
 
-  //r2=(gdouble)(diam*diam)/4.;
   r2=((gdouble)diam/2.*80./90.)*((gdouble)diam/2.*80./90.);
 
   if(zero){
     for(h=0;h<h1;h++){
       for(w=0;w<w1;w++){
 	if((w>10)&&(w<w1-10)&&(h>10)&&(h<h1-10)){
-	  ///if((gdouble)((cx-w)*(cx-w)+(cy-h)*(cy-h))>r2*1.05){
 	  if((gdouble)((cx-w)*(cx-w)+(cy-h)*(cy-h))<r2){
 	    lpix=((gdouble)p2[(h*w1+w)*sz]-(gdouble)p1[(h*w1+w)*sz])/3.
 	      +((gdouble)p2[(h*w1+w)*sz+1]-(gdouble)p1[(h*w1+w)*sz+1])/3.

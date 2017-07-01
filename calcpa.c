@@ -63,8 +63,6 @@ gdouble deg_to_ra();
 gdouble deg_to_dec();
 gdouble date_to_jd();
 
-extern void my_gdk_flush();
-extern gboolean my_main_iteration();
 extern void my_signal_connect();
 extern void add_day();
 
@@ -206,13 +204,8 @@ void create_plot_dialog(typHOE *hg)
   GdkPixbuf *icon;
 
 
-  // Win構築は重いので先にExposeイベント等をすべて処理してから
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   hg->plot_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(hg->plot_main), "Sky Monitor : Plot Window");
-  //gtk_widget_set_usize(hg->skymon_main, SKYMON_SIZE, SKYMON_SIZE);
   
   my_signal_connect(hg->plot_main,
 		    "destroy",
@@ -333,7 +326,6 @@ void create_plot_dialog(typHOE *hg)
 			      "Print Out");
 #endif
 
-  //button=gtkut_toggle_button_new_from_stock(NULL,GTK_STOCK_ABOUT);
   icon = gdk_pixbuf_new_from_inline(sizeof(moon_icon), moon_icon, 
 				    FALSE, NULL);
 
@@ -461,8 +453,6 @@ void create_plot_dialog(typHOE *hg)
   gtk_widget_set_app_paintable(hg->plot_dw, TRUE);
   gtk_widget_show(hg->plot_dw);
 
-  //screen_changed(hg->plot_dw,NULL,NULL);
-
   gtk_widget_show_all(hg->plot_main);
 
   hg->plot_timer=g_timeout_add(PLOT_INTERVAL, 
@@ -473,7 +463,6 @@ void create_plot_dialog(typHOE *hg)
   gdk_window_raise(hg->plot_main->window);
 
   draw_plot_cairo(hg->plot_dw,(gpointer)hg);
-  my_gdk_flush();
 }
 
 
@@ -612,18 +601,9 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 				   height,
 				   -1);
   
-    //cr = gdk_cairo_create(widget->window);
     cr = gdk_cairo_create(pixmap_plotbk);
   }
 
-  /*
- if (supports_alpha)
-    cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 0.0); // transparen
-  else
-    cairo_set_source_rgb (cr, 1.0, 1.0, 1.0); // opaque white
-  */
-
-  //cairo_set_source_rgb (cr, 1.0, 1.0, 1.0); /* white */
   if(hg->plot_output==PLOT_OUTPUT_PDF){
     cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
   }
@@ -2081,8 +2061,6 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       gfloat time_label_f = (gint)ihst0+10./60.;
       int num=1;
       
-      //while(time_label_f<ihst0) time_label_f+=0.5;
-      
       cairo_save(cr);
 
       cairo_set_dash (cr, dashes, ndash, offset);
@@ -2517,14 +2495,12 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	
 	//### 3rd step: (AZ,EL+deltaEL) -> (RA1,Dec1)         
 	el0d=el0+M_PI*4./3600./180.;
-	//   write(9,'(10h h_d[rad]=,f10.5)') el0d
 	d1rad=asin(sinphi*sin(el0d)+cosphi*cos(az0)*cos(el0d));
 	d1=d1rad*180./M_PI;
 	ume1=-sin(az0)*cos(el0d);
 	den1=cosphi*sin(el0d)-sinphi*cos(az0)*cos(el0d);
 	ha1rad=atan2(ume1,den1);
 	ha1=ha1rad*12./M_PI;
-	//   write(9,'(5h HA1=,f10.5)')ha1
 
 	ha1=set_ul(-12., ha1, 12.);
 	a1=flst-ha1;
@@ -2570,7 +2546,6 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	phpa[i]=hdspa_deg(phi*M_PI/180.,d0rad,ha1rad);
 	
 	i=i+1;
-	/* }*/
       }
       
       iend=i-1;
@@ -2601,7 +2576,6 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  }
 	  
 	  for(i=1;i<=iend-1;i++){
-	    //if((pel[i]>0)&&(pel[i+1]>0)){
 	    x=dx+lx*(phst[i]-ihst0)/(gfloat)(ihst1-ihst0);
 	    y=dy+ly*(90-pel[i])/90;
 	    cairo_move_to(cr,x,y);
@@ -2611,11 +2585,6 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	    cairo_line_to(cr,x,y);
 	    
 	    cairo_stroke(cr);
-	    
-	    //cairo_arc(cr, x, y, 3, 0, 2*M_PI);
-	    //cairo_fill(cr);
-	    
-	    //}
 	  }
 	  
 	  if((x_tr>ihst0)&&(x_tr<ihst1)){
@@ -2739,7 +2708,6 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  }
 	  for(i=1;i<=iend-1;i++){
 	    if((pad[i]>0) && (pad[i+1]>0) && (pad[i]<10) && (pad[i+1]<10)){
-	      //if((pad[i]>0) && (pad[i+1]>0)){
 	      x=dx+lx*(phst[i]-ihst0)/(gfloat)(ihst1-ihst0);
 	      y=dy+ly*(4-pad[i])/4.;
 	      cairo_move_to(cr,x,y);
@@ -2813,7 +2781,6 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  }
 	  
 	  for(i=1;i<=iend-1;i++){
-	    //if((pel[i]>0)&&(pel[i+1]>0)){
 	    x=dx+lx*(phst[i]-ihst0)/(gfloat)(ihst1-ihst0);
 	    y=dy+ly*(90-pel[i])/90;
 	    cairo_move_to(cr,x,y);
@@ -2823,11 +2790,6 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	    cairo_line_to(cr,x,y);
 	    
 	    cairo_stroke(cr);
-	    
-	    //cairo_arc(cr, x, y, 3, 0, 2*M_PI);
-	    //cairo_fill(cr);
-	    
-	    //}
 	  }
 	  
 	  if((x_tr>ihst0)&&(x_tr<ihst1)){
@@ -2924,7 +2886,6 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  }
 	  
 	  for(i=1;i<=iend-1;i++){
-	    //if((pel[i]>0)&&(pel[i+1]>0)){
 	    x=dx+lx*(phst[i]-ihst0)/(gfloat)(ihst1-ihst0);
 	    y=dy+ly*(90-pel[i])/90;
 	    cairo_move_to(cr,x,y);
@@ -2934,11 +2895,6 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	    cairo_line_to(cr,x,y);
 	    
 	    cairo_stroke(cr);
-	    
-	    //cairo_arc(cr, x, y, 3, 0, 2*M_PI);
-	    //cairo_fill(cr);
-	    
-	    //}
 	  }
 	  
 	  if((x_tr>ihst0)&&(x_tr<ihst1)){
@@ -3389,7 +3345,6 @@ double new_tu(int iyear, int month, int iday){
 
   tmpt.tm_year=iyear-1900;
   tmpt.tm_mon=month-1;
-  //tmpt.tm_mday=iday-1;
   tmpt.tm_mday=iday;
   tmpt.tm_hour=0;
   tmpt.tm_min=0;
@@ -3569,8 +3524,6 @@ void calcpa2_main(typHOE* hg){
 	double ha1_1, a1_1;
 	double delta_a_1, delta_d_1, pa_1, padeg_1;
 
-	//	flst_1 = ln_get_apparent_sidereal_time(JD+1./60./24.)
-	//  + hg->obs_longitude *24/360;
 	flst_1 = ln_get_mean_sidereal_time(JD+1./60./24.)
 	  + hg->obs_longitude *24/360;
 	flst_1=set_ul(0., flst_1, 24.);
@@ -4086,8 +4039,6 @@ void calcpa2_skymon(typHOE* hg){
 	double ha1_1, a1_1;
 	double delta_a_1, delta_d_1, pa_1, padeg_1;
 
-	//	flst_1 = ln_get_apparent_sidereal_time(JD+1./60./24.)
-	//  + hg->obs_longitude *24/360;
 	flst_1 = ln_get_mean_sidereal_time(JD+1./60./24.)
 	  + hg->obs_longitude *24/360;
 	flst_1=set_ul(0., flst_1, 24.);
@@ -4907,10 +4858,6 @@ void calc_moon_skymon(typHOE *hg){
     ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*3600);
     hg->atw18.s_circum=FALSE;
     
-    //printf("Set  %4d/%02d/%02d  %02d:%02d:%02.0f,   Rise  %4d/%02d/%02d  %02d:%02d:%02.0f\n",
-    //	   set.years,set.months,set.days,set.hours,set.minutes,set.seconds,
-    //	   rise.years,rise.months,rise.days,rise.hours,rise.minutes,rise.seconds);
-
     hg->atw18.s_rise.hours=rise.hours;
     hg->atw18.s_rise.minutes=rise.minutes;
     hg->atw18.s_rise.seconds=set.seconds;
@@ -4992,10 +4939,6 @@ gfloat get_meridian_hour(typHOE *hg){
   else{
     get_current_obs_time(hg,&iyear, &month, &iday, &hour, &min, &sec);
   }
-
-  //  if(hour>10){
-  //    add_day(hg, &iyear, &month, &iday, -1);
-  //  }
 
   zonedate.years=iyear;
   zonedate.months=month;
@@ -5138,11 +5081,6 @@ void calc_moon_topocen(typHOE *hg,
   gdouble N, e2;
   gdouble f=1./298.257222101;
   
-  //e2=f*(2-f);
-  // N=r_earth/
-  //  sqrt(1-e2*sin(hg->obs_latitude*M_PI/180.)
-  //	 *sin(hg->obs_latitude*M_PI/180.)); //km
-  
   flst = ln_get_mean_sidereal_time(JD) + hg->obs_longitude *24/360;
   
   d_moon=ln_get_lunar_earth_dist(JD);  //km
@@ -5151,8 +5089,6 @@ void calc_moon_topocen(typHOE *hg,
 	 - 0.1924*sin(2*hg->obs_latitude*M_PI/180.))*M_PI/180.; //rad
   rho  =0.99833 + 0.00167 * cos(2*hg->obs_latitude*M_PI/180.)
         + hg->obs_altitude/1000./r_earth; // r_earth
-  //rho=(N+hg->obs_altitude/1000.)
-  //  *cos(hg->obs_latitude*M_PI/180.)/cos(gclat)/r_earth;
   HA = flst - (equ_geoc->ra * 24./360.); // hour
   g = atan(tan(gclat) / cos(HA*M_PI/12.)); // rad
     
@@ -5166,11 +5102,6 @@ void calc_moon_topocen(typHOE *hg,
     equ->dec = equ_geoc->dec - mpar * rho * sin(gclat) *
       sin(g-equ_geoc->dec*M_PI/180.) / sin(g);  // degree
   }
- 
-
-  //printf("flst = %.2lf, mpar = %.2lf,  dRA = %.2lf,   dDec = %.2lf\n",
-  //	 flst, mpar*60., (equ->ra-equ_geoc->ra)*60.,(equ->dec-equ_geoc->dec)*60.);
-
 }
 
 void geocen_to_topocen(typHOE *hg,

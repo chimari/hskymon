@@ -75,8 +75,6 @@ gchar *rgb_source_txt();
 
 extern int  get_dss();
 extern int get_fcdb();
-extern void my_gdk_flush();
-extern gboolean my_main_iteration();
 extern void popup_message();
 extern void my_signal_connect();
 extern void my_entry_set_width_chars();
@@ -263,7 +261,6 @@ void fc_dl (typHOE *hg)
       GtkTreePath *path;
     
       path = gtk_tree_model_get_path (model, &iter);
-      //i = gtk_tree_path_get_indices (path)[0];
       gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
       i--;
       
@@ -294,9 +291,6 @@ void fc_dl (typHOE *hg)
     flag_getDSS=FALSE;
     return;
   }
-
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   dialog = gtk_dialog_new();
   
@@ -491,8 +485,6 @@ void fc_dl (typHOE *hg)
   
   gtk_widget_show_all(dialog);
 
-  my_gdk_flush();
-  
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
@@ -508,10 +500,9 @@ void fc_dl (typHOE *hg)
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   
   get_dss(hg);
-  //#ifndef USE_WIN32  
 
   gtk_main();
-  //#endif
+
   if(timer!=-1) gtk_timeout_remove(timer);
   gtk_widget_destroy(dialog);
   
@@ -585,9 +576,6 @@ void create_fc_dialog(typHOE *hg)
   GtkWidget *menubar;
   GdkPixbuf *icon;
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   hg->fc_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   //hg->fc_main = gtk_dialog_new();
   gtk_window_set_title(GTK_WINDOW(hg->fc_main), "Sky Monitor : Finding Chart");
@@ -616,7 +604,6 @@ void create_fc_dialog(typHOE *hg)
   gtk_table_set_row_spacings (GTK_TABLE (table), 0);
   gtk_table_set_col_spacings (GTK_TABLE (table), 3);
 
-  //button=gtkut_button_new_from_stock(NULL,GTK_STOCK_NETWORK);
   icon = gdk_pixbuf_new_from_inline(sizeof(icon_dl), icon_dl, 
 				    FALSE, NULL);
 
@@ -626,7 +613,6 @@ void create_fc_dialog(typHOE *hg)
 		     G_CALLBACK (fc_item), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
-  //gtk_box_pack_start(GTK_BOX(hbox2),button,FALSE,FALSE,0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Download & Redraw");
@@ -846,7 +832,6 @@ void create_fc_dialog(typHOE *hg)
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     gtk_table_attach (GTK_TABLE(table), combo, 1, 2, 1, 2,
 		      GTK_FILL|GTK_EXPAND,GTK_SHRINK,0,0);
-    //gtk_container_add (GTK_CONTAINER (hbox2), combo);
     g_object_unref(store);
 	
     renderer = gtk_cell_renderer_text_new();
@@ -865,7 +850,6 @@ void create_fc_dialog(typHOE *hg)
   frame = gtk_frame_new ("Size [min]");
   gtk_table_attach (GTK_TABLE(table), frame, 2, 3, 0, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
-  //gtk_box_pack_start(GTK_BOX(hbox1), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
 
   hbox2 = gtk_hbox_new(FALSE,0);
@@ -888,22 +872,12 @@ void create_fc_dialog(typHOE *hg)
   hg->fc_frame_col = gtk_frame_new ("Scale/Color");
   gtk_table_attach (GTK_TABLE(table), hg->fc_frame_col, 3, 4, 0, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
-  //gtk_box_pack_start(GTK_BOX(hbox1), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->fc_frame_col), 0);
 
   hbox2 = gtk_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (hg->fc_frame_col), hbox2);
 
   set_fc_frame_col(hg);
-  /*
-  button=gtk_check_button_new_with_label("Log");
-  gtk_container_set_border_width (GTK_CONTAINER (button), 0);
-  gtk_box_pack_start(GTK_BOX(hbox2),button,FALSE,FALSE,0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->dss_log);
-  my_signal_connect(button,"toggled",
-		    G_CALLBACK (cc_get_toggle), 
-		    &hg->dss_log);
-  */
 
   {
     GtkWidget *combo;
@@ -981,7 +955,6 @@ void create_fc_dialog(typHOE *hg)
 		     G_CALLBACK (refresh_fc), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
-  //gtk_box_pack_start(GTK_BOX(hbox2),button,FALSE,FALSE,0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Redraw");
@@ -1059,7 +1032,6 @@ void create_fc_dialog(typHOE *hg)
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     gtk_table_attach (GTK_TABLE(table), combo, 1, 2, 1, 2,
 		      GTK_FILL|GTK_EXPAND,GTK_SHRINK,0,0);
-    //gtk_container_add (GTK_CONTAINER (hbox2), combo);
     g_object_unref(store);
 	
     renderer = gtk_cell_renderer_text_new();
@@ -1075,7 +1047,6 @@ void create_fc_dialog(typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (button), 0);
   gtk_table_attach (GTK_TABLE(table), button, 2, 3, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
-  //gtk_box_pack_start(GTK_BOX(hbox2),button,FALSE,FALSE,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->dss_draw_slit);
   my_signal_connect(button,"toggled",
 		    G_CALLBACK (cc_get_toggle), 
@@ -1086,7 +1057,6 @@ void create_fc_dialog(typHOE *hg)
   frame = gtk_frame_new ("PA [deg]");
   gtk_table_attach (GTK_TABLE(table), frame, 3, 4, 0, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
-  //gtk_box_pack_start(GTK_BOX(hbox1), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
 
   hbox2 = gtk_hbox_new(FALSE,0);
@@ -1285,8 +1255,6 @@ void create_fc_dialog(typHOE *hg)
   gtk_container_add(GTK_CONTAINER(ebox), hg->fc_dw);
   gtk_widget_set_app_paintable(hg->fc_dw, TRUE);
 
-  //screen_changed(hg->fc_dw,NULL,NULL);
-
   
   gtk_widget_set_events(hg->fc_dw, GDK_STRUCTURE_MASK | GDK_EXPOSURE_MASK);
   my_signal_connect(hg->fc_dw, 
@@ -1317,8 +1285,6 @@ void create_fc_dialog(typHOE *hg)
   gdk_window_raise(hg->fc_main->window);
 
   draw_fc_cairo(hg->fc_dw,hg);
-
-  my_gdk_flush();
 }
 
 
@@ -1502,7 +1468,6 @@ static gboolean button_draw_fc(GtkWidget *widget,
       }
     }
 
-    //hg->fc_output=FC_OUTPUT_WINDOW;
     draw_fc_cairo(hg->fc_dw,hg);
   }
 
@@ -3999,9 +3964,6 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox, *table;
   GdkPixbuf *icon, *pixbuf;
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Help for Finding Chart");
@@ -4176,14 +4138,10 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
 		    GTK_WIDGET(dialog));
 
   gtk_widget_show_all(dialog);
-
-  //gtk_main();
-
 }
 
 static void close_fc_help(GtkWidget *w, GtkWidget *dialog)
 {
-  //gtk_main_quit();
   gtk_widget_destroy(dialog);
 }
 
@@ -4220,9 +4178,6 @@ void fcdb_dl(typHOE *hg)
   
   if(flag_getFCDB) return;
   flag_getFCDB=TRUE;
-
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   dialog = gtk_dialog_new();
   
@@ -4354,8 +4309,6 @@ void fcdb_dl(typHOE *hg)
   
   gtk_widget_show_all(dialog);
   
-  my_gdk_flush();
-  
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
@@ -4416,9 +4369,6 @@ void addobj_dl(typHOE *hg)
   hg->fcdb_file=g_strconcat(hg->temp_dir,
 			    G_DIR_SEPARATOR_S,
 			    FCDB_FILE_XML,NULL);
-
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   dialog = gtk_dialog_new();
   
@@ -4513,8 +4463,6 @@ void addobj_dl(typHOE *hg)
 #endif
   
   gtk_widget_show_all(dialog);
-  
-  my_gdk_flush();
   
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
@@ -5281,9 +5229,6 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
 
   gtk_list_store_clear (GTK_LIST_STORE(model));
   
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   for (i = 0; i < hg->fcdb_i_max; i++){
     gtk_list_store_append (GTK_LIST_STORE(model), &iter);
     fcdb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);

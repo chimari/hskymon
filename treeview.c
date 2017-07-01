@@ -88,8 +88,6 @@ extern gboolean flagPlot;
 extern gboolean flagADC;
 extern gboolean flagFC;
 
-extern void my_gdk_flush();
-extern gboolean my_main_iteration();
 extern void popup_message();
 extern void my_signal_connect();
 extern void my_entry_set_width_chars();
@@ -1375,7 +1373,6 @@ remove_item (GtkWidget *widget, gpointer data)
     GtkTreePath *path;
     
     path = gtk_tree_model_get_path (model, &iter);
-    //i = gtk_tree_path_get_indices (path)[0];
     gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
     i--;
 
@@ -1406,7 +1403,6 @@ static void plot2_item (GtkWidget *widget, gpointer data)
     GtkTreePath *path;
     
     path = gtk_tree_model_get_path (model, &iter);
-    //i = gtk_tree_path_get_indices (path)[0];
     gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
     i--;
 
@@ -2151,8 +2147,6 @@ up_item (GtkWidget *widget, gpointer data)
       gtk_tree_selection_select_path(selection, path);
     }
     
-    //    make_obj_list(hg,FALSE);
-
     gtk_tree_path_free (path);
   }
 }
@@ -2173,7 +2167,6 @@ down_item (GtkWidget *widget, gpointer data)
     GtkTreePath *path;
     
     path = gtk_tree_model_get_path (model, &iter);
-    //i = gtk_tree_path_get_indices (path)[0];
     gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
     i--;
 
@@ -2209,7 +2202,6 @@ focus_item (GtkWidget *widget, gpointer data)
       GtkTreePath *path;
 
       path = gtk_tree_model_get_path (model, &iter);
-      //i = gtk_tree_path_get_indices (path)[0];
       gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
       i--;
       hg->plot_i=i;
@@ -2229,7 +2221,6 @@ focus_item (GtkWidget *widget, gpointer data)
   {
     if(flagSkymon){
       draw_skymon(hg->skymon_dw,hg, FALSE);
-      //gdk_window_raise(hg->skymon_main->window);
     }
   }
 
@@ -2320,7 +2311,6 @@ cell_edited (GtkCellRendererText *cell,
              gpointer             data)
 {
   typHOE *hg = (typHOE *)data;
-  //GtkTreeModel *model = (GtkTreeModel *)data;
   GtkTreePath *path = gtk_tree_path_new_from_string (path_string);
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
@@ -2485,8 +2475,6 @@ add_columns (typHOE *hg,
 
   /* number column */
   renderer = gtk_cell_renderer_text_new ();
-  //g_object_set_data (G_OBJECT (renderer), "column", 
-  //		     GINT_TO_POINTER (COLUMN_OBJ_NUMBER));
   g_object_set_data (G_OBJECT (renderer), "column", 
   		     GINT_TO_POINTER (COLUMN_OBJ_OPENUM));
   column=gtk_tree_view_column_new_with_attributes ("##",
@@ -2593,7 +2581,6 @@ add_columns (typHOE *hg,
 					    "pixbuf",
 					    COLUMN_OBJ_PIXBUF,
 					    NULL);
-  //gtk_tree_view_column_set_sort_column_id(column,COLUMN_OBJ_EL);
   gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
 
 
@@ -2685,7 +2672,6 @@ add_columns (typHOE *hg,
 					    pos_cell_data_func,
 					    GUINT_TO_POINTER(COLUMN_OBJ_AD),
 					    NULL);
-    //gtk_tree_view_column_set_sort_column_id(column,COLUMN_OBJ_AD);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
   }
 
@@ -2703,7 +2689,6 @@ add_columns (typHOE *hg,
 					    pos_cell_data_func,
 					    GUINT_TO_POINTER(COLUMN_OBJ_ADPA),
 					    NULL);
-    //gtk_tree_view_column_set_sort_column_id(column,COLUMN_OBJ_ADPA);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
   }
 
@@ -4189,9 +4174,6 @@ do_editable_cells (typHOE *hg)
   GtkWidget *all_note, *note_vbox;
   GdkPixbuf *icon;
 
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   if (!window) {
 
     /* create window, etc */
@@ -4212,7 +4194,6 @@ do_editable_cells (typHOE *hg)
     vbox = gtk_vbox_new (FALSE, 5);
     label = gtk_label_new ("Main Target");
     gtk_notebook_append_page (GTK_NOTEBOOK (hg->obj_note), vbox, label);
-    //gtk_container_add (GTK_CONTAINER (window), vbox);
     
     hbox = gtk_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
@@ -4296,7 +4277,6 @@ do_editable_cells (typHOE *hg)
     
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_ADD);
     my_signal_connect (button, "clicked",
-		       //	      G_CALLBACK (add_item), (gpointer)hg);
 		       G_CALLBACK (addobj_dialog), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
     
@@ -4390,11 +4370,6 @@ do_editable_cells (typHOE *hg)
       gtk_list_store_set(store, &iter, 0, "NED",
 			 1, WWWDB_NED, 2, TRUE, -1);
       if(hg->wwwdb_mode==WWWDB_NED) iter_set=iter;
-      
-      //gtk_list_store_append(store, &iter);
-      //gtk_list_store_set(store, &iter, 0, "SDSS(DR8)",
-      //			   1, WWWDB_DR8, 2, TRUE, -1);
-      //if(hg->wwwdb_mode==WWWDB_DR8) iter_set=iter;
       
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, 0, "SDSS (DR13)",
@@ -5112,7 +5087,6 @@ void close_tree(GtkWidget *w, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  //gtk_widget_destroy(GTK_WIDGET(window));
   window = NULL;
   flagTree=FALSE;
 
@@ -5131,9 +5105,6 @@ void remake_tree(typHOE *hg)
   
   gtk_list_store_clear (GTK_LIST_STORE(model));
   
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-  
   hg->tree_search_i=0;
   hg->tree_search_imax=0;
 
@@ -5148,8 +5119,6 @@ void remake_tree(typHOE *hg)
 void rebuild_tree(typHOE *hg)
 {
   close_tree2(NULL,hg);
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   hg->fcdb_i_max=0;
 
@@ -5286,9 +5255,6 @@ void stddb_dl(typHOE *hg)
 #endif
   gint timer=-1;
   
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-
   if(flag_getSTD) return;
   flag_getSTD=TRUE;
   
@@ -5364,8 +5330,6 @@ void stddb_dl(typHOE *hg)
   
   gtk_widget_show_all(dialog);
 
-  my_gdk_flush();
-  
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
@@ -5438,9 +5402,6 @@ void std_make_tree(GtkWidget *widget, gpointer gdata){
   
   gtk_list_store_clear (GTK_LIST_STORE(model));
   
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
-  
   for (i = 0; i < hg->std_i_max; i++){
     gtk_list_store_append (GTK_LIST_STORE(model), &iter);
     stddb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
@@ -5512,9 +5473,6 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
   hg->addobj_ra=0;
   hg->addobj_dec=0;
-
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);

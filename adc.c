@@ -23,8 +23,6 @@ static void refresh_adc();
 gboolean update_adc();
 
 
-extern void my_gdk_flush();
-extern gboolean my_main_iteration();
 extern void my_signal_connect();
 extern void screen_changed();
 extern void cc_get_toggle();
@@ -128,10 +126,6 @@ void create_adc_dialog(typHOE *hg)
   GtkAdjustment *adj;
   GtkWidget *menubar;
   GdkPixbuf *icon;
-
-  // Win構築は重いので先にExposeイベント等をすべて処理してから
-  while (my_main_iteration(FALSE));
-  my_gdk_flush();
 
   hg->adc_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(hg->adc_main), "Sky Monitor : AD Chart");
@@ -373,8 +367,6 @@ void create_adc_dialog(typHOE *hg)
   gtk_widget_set_app_paintable(hg->adc_dw, TRUE);
   gtk_widget_show(hg->adc_dw);
 
-  //screen_changed(hg->adc_dw,NULL,NULL);
-
   gtk_widget_set_events(hg->adc_dw, GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK);
   my_signal_connect(hg->adc_dw, 
 		    "configure-event", 
@@ -393,8 +385,6 @@ void create_adc_dialog(typHOE *hg)
 
   gdk_window_raise(hg->adc_main->window);
   draw_adc_cairo(hg->adc_dw,(gpointer)hg);
-
-  my_gdk_flush();
 }
 
 
