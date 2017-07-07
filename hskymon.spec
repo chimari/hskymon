@@ -1,11 +1,11 @@
 Summary: Sky-Monitor for Subaru Telescope, NAOJ
 Name: hskymon
-Version: 2.9.8
+Version: 2.9.9
 Release: 1%{?_dist_release}
 License: GPL3
 Group: Applications/Engineering
 Packager: Akito Tajitsu <tajitsu@naoj.org>
-URL: https://www.naoj.org/Observing/Insruments/HDS/hskymon-e.html
+URL: https://www.naoj.org/Science/Resources/tools/hskymon/
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Vendor: Subaru Telescope, National Astoronomical Observatory of Japan

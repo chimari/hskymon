@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Akito Tajitsu <tajitsu@naoj.org>
 Build-Depends: debhelper (>= 9), autotools-dev, libgtk2.0-dev (>= 2.10), libssl-dev, libxml2-dev
 Standards-Version: 3.9.5
-Homepage: http://www.naoj.org/Observing/Insruments/HDS/hskymon-e.html
+Homepage: https://www.naoj.org/Science/Resources/tools/hskymon/
 Vcs-Git: https://github.com/chimari/hskymon.git
 #Vcs-Browser: https://github.com/chimari/hskymon.git;a=summary
 

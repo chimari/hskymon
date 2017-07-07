@@ -67,6 +67,8 @@
 
 #define WWW_BROWSER "firefox"
 
+#define DEFAULT_URL "https://www.naoj.org/Science/Resources/tools/hskymon/"
+
 #ifdef USE_WIN32
 #define DSS_URL "http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey"
 #define SIMBAD_URL "http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none&CooEquinox=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML"
@@ -178,6 +180,7 @@
 #define ADDOBJ_SIMBAD_PATH "/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=VOTABLE"
 #define ADDOBJ_NED_PATH "/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES&of=xml_main"
 
+#define FC_MAX_MAG 5
 
 #define FC_HOST_STSCI "archive.stsci.edu"
 #define FC_PATH_STSCI "/cgi-bin/dss_search?v=%s&r=%d+%d+%lf&d=%s%d+%d+%lf&e=J2000&h=%d.0&w=%d.0&f=gif&c=none&fov=NONE&v3="
@@ -314,6 +317,11 @@ enum{ ADC_INST_IMR, ADC_INST_HDSAUTO, ADC_INST_HDSZENITH} ADC_Inst;
 #define SPCAM_SIZE 40
 
 #define HSC_R_ARCMIN 90
+enum{ HSC_DITH_NO, HSC_DITH_5, HSC_DITH_N} HSC_Dith;
+#define HSC_DRA 120
+#define HSC_DDEC 120
+#define HSC_TDITH 15
+#define HSC_RDITH 120
 
 #define FOCAS_R_ARCMIN 6
 #define FOCAS_GAP_ARCSEC 5.
@@ -1549,6 +1557,17 @@ struct _typHOE{
   gint fc_pty1;
   gint fc_ptx2;
   gint fc_pty2;
+
+  gint hsc_dithi;
+  gint hsc_dithp;
+  gint hsc_dra;
+  gint hsc_ddec;
+  gint hsc_ndith;
+  gint hsc_tdith;
+  gint hsc_rdith;
+  gint hsc_offra;
+  gint hsc_offdec;
+  GtkWidget *hsc_label_dith;
 
   gchar *std_file;
   gchar *std_host;

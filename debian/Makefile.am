@@ -6,7 +6,6 @@ EXTRA_DIST = Makefile.am\
              control\
              copyright\
              docs\
-             files\
              hskymon.substvars\
              manpages\
              rules

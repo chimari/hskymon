@@ -706,7 +706,7 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
-  my_signal_connect (popup_button, "activate",show_version, NULL);
+  my_signal_connect (popup_button, "activate",show_version, (gpointer)hg);
 
   image=gtk_image_new_from_stock (GTK_STOCK_HELP, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Help");
@@ -3053,22 +3053,57 @@ void do_merge (GtkWidget *widget, gpointer gdata)
 }
 
 
+static void uri_clicked(GtkButton *button,
+			gpointer data)
+{
+  gchar *cmdline;
+  typHOE *hg=(typHOE *)data;
+
+#ifdef USE_WIN32
+  ShellExecute(NULL, 
+	       "open", 
+	       DEFAULT_URL,
+	       NULL, 
+	       NULL, 
+	       SW_SHOWNORMAL);
+#elif defined(USE_OSX)
+  cmdline=g_strconcat("open ",DEFAULT_URL,NULL);
+
+  if(system("open " DEFAULT_URL)==0){
+    fprintf(stderr, "Error: Could not open the default www browser.");
+  }
+  g_free(cmdline);
+#else
+  cmdline=g_strconcat(hg->www_com," ",DEFAULT_URL,NULL);
+  
+  ext_play(cmdline);
+  g_free(cmdline);
+#endif
+}
 
 
 void show_version (GtkWidget *widget, gpointer gdata)
 {
-  GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox;
+  GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox, *ebox;
   GdkPixbuf *icon;
 #if HAVE_SYS_UTSNAME_H
   struct utsname utsbuf;
 #endif
+  typHOE *hg=(typHOE *)gdata;
   gchar buf[1024];
+  GdkColor col_blue={0,0,0,0xFFFF};
+  GtkWidget *scrolledwin;
+  GtkWidget *text;
+  GtkTextBuffer *buffer;
+  GtkTextIter iter;
 
   flagChildDialog=TRUE;
 
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : About This Program");
+
+  gtk_window_set_default_size (GTK_WINDOW (dialog), 200, 400);
 
   my_signal_connect(dialog,"destroy",
 		    close_child_dialog, 
@@ -3139,10 +3174,11 @@ void show_version (GtkWidget *widget, gpointer gdata)
              "OFF",
 #endif
 #ifdef USE_GTKMACINTEGRATION
-	     "ON");
+	     "ON"
 #else
-             "OFF");
+	     "OFF"
 #endif
+	     );
 #else
   g_snprintf(buf, sizeof(buf),
 	     "Compiled-in features : XmlRPC=%s, OpenSSL=%s", 
@@ -3152,10 +3188,11 @@ void show_version (GtkWidget *widget, gpointer gdata)
 	     "OFF",
 #endif
 #ifdef USE_SSL
-	     "ON");
+	     "ON"
 #else
-             "OFF");
+             "OFF"
 #endif
+	     );
 #endif
   label = gtk_label_new (buf);
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
@@ -3165,13 +3202,9 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
   
-  label = gtk_label_new ("Copyright(C) 2003-17 Akito Tajitsu");
+  label = gtk_label_new ("Copyright (C) 2003-17 Akito Tajitsu <tajitsu@naoj.org>");
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
-
-  label = gtk_label_new ("<tajitsu@naoj.org>");
-  gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
-  gtk_box_pack_start(GTK_BOX(vbox), label,FALSE, FALSE, 0);
 
   label = gtk_label_new ("Subaru Telescope, National Astronomical Observatory of Japan");
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
@@ -3181,12 +3214,64 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox), label,FALSE, FALSE, 0);
 
-  button=gtk_button_new_with_label("OK");
+  button = gtk_button_new_with_label(" "DEFAULT_URL" ");
+  gtk_box_pack_start(GTK_BOX(vbox), 
+		     button, TRUE, FALSE, 0);
+  gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
+  my_signal_connect(button,"clicked",uri_clicked, (gpointer)hg);
+  gtk_widget_modify_fg(gtk_bin_get_child(GTK_BIN(button)),GTK_STATE_NORMAL,&col_blue);
+ 
+  
+  label = gtk_label_new (" ");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
+  gtk_box_pack_start(GTK_BOX(vbox),
+		     label,FALSE, FALSE, 0);
+
+  scrolledwin = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin),
+				 GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+  gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledwin),
+				      GTK_SHADOW_IN);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     scrolledwin, TRUE, TRUE, 0);
+  
+  text = gtk_text_view_new();
+  gtk_text_view_set_editable(GTK_TEXT_VIEW(text), FALSE);
+  gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text), GTK_WRAP_WORD);
+  gtk_text_view_set_left_margin(GTK_TEXT_VIEW(text), 6);
+  gtk_text_view_set_right_margin(GTK_TEXT_VIEW(text), 6);
+  gtk_container_add(GTK_CONTAINER(scrolledwin), text);
+  
+  buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text));
+  gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+  
+  gtk_text_buffer_insert(buffer, &iter,
+			 "This program is free software; you can redistribute it and/or modify "
+			 "it under the terms of the GNU General Public License as published by "
+			 "the Free Software Foundation; either version 3, or (at your option) "
+			 "any later version.\n\n", -1);
+
+  gtk_text_buffer_insert(buffer, &iter,
+			 "This program is distributed in the hope that it will be useful, "
+			 "but WITHOUT ANY WARRANTY; without even the implied warranty of "
+			 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. "
+			 "See the GNU General Public License for more details.\n\n", -1);
+
+  gtk_text_buffer_insert(buffer, &iter,
+			 "You should have received a copy of the GNU General Public License "
+			 "along with this program.  If not, see <http://www.gnu.org/licenses/>.", -1);
+
+  gtk_text_buffer_get_start_iter(buffer, &iter);
+  gtk_text_buffer_place_cursor(buffer, &iter);
+
+
+  button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_child_dialog, 
 		    GTK_WIDGET(dialog));
+  gtk_widget_grab_focus (button);
 
   gtk_widget_show_all(dialog);
 
@@ -3338,7 +3423,7 @@ static void show_help (GtkWidget *widget, gpointer gdata)
 		    GTK_FILL,GTK_SHRINK,0,0);
 
 
-  button=gtk_button_new_with_label("OK");
+  button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -8867,9 +8952,6 @@ void param_init(typHOE *hg){
   hg->telstat_error=FALSE;
 #endif
 
-  //hg->fc_mode_def         =FC_SKYVIEW_DSS2R;
-  //hg->fc_mode             =hg->fc_mode_def;
-  //set_fc_mode(hg);
   hg->dss_arcmin        =DSS_ARCMIN;
   hg->dss_pix             =DSS_PIX;
 
@@ -8891,6 +8973,17 @@ void param_init(typHOE *hg){
 #else
   hg->fc_inst=FC_INST_NONE;
 #endif
+
+  hg->hsc_dithi=1;
+  hg->hsc_dithp=HSC_DITH_NO;
+  hg->hsc_dra=HSC_DRA;
+  hg->hsc_ddec=HSC_DDEC;
+  hg->hsc_tdith=HSC_TDITH;
+  hg->hsc_rdith=HSC_RDITH;
+  hg->hsc_ndith=5;
+  hg->hsc_offra=0;
+  hg->hsc_offdec=0;
+
   hg->std_i_max=0;
   hg->std_file=g_strconcat(hg->temp_dir,
 			   G_DIR_SEPARATOR_S,
