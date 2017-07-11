@@ -1,3 +1,9 @@
+hskymon (3.0.0) unstable; urgency=medium
+
+  * Initial public release. 
+	
+ -- Akito Tajitsu <taji@zekamashi>  Mon, 10 Jul 2017 16:28:12 -1000
+
 hskymon (2.9.9) unstable; urgency=medium
 
   * removed gdk_flush and g_main_context_iteration

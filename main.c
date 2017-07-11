@@ -3951,10 +3951,10 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   
-  table = gtk_table_new(4,2,FALSE);
+  table = gtk_table_new(4,1,FALSE);
   gtk_container_add (GTK_CONTAINER (frame), table);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
-  gtk_table_set_row_spacings (GTK_TABLE (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
 
 
@@ -7674,6 +7674,11 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     if(hg->fc_mode_def==FC_SKYVIEW_WISE22) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: NVSS (1.4GHz)",
+		       1, FC_SKYVIEW_NVSS, 2, TRUE, -1);
+    if(hg->fc_mode_def==FC_SKYVIEW_NVSS) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "SkyView: RGB composite",
 		       1, FC_SKYVIEW_RGB, 2, TRUE, -1);
     if(hg->fc_mode_def==FC_SKYVIEW_RGB) iter_set=iter;
@@ -7884,6 +7889,11 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       gtk_list_store_set(store, &iter, 0, "SkyView: WISE (22um)",
 			 1, FC_SKYVIEW_WISE22, 2, TRUE, -1);
       if(hg->fc_mode_RGB[i]==FC_SKYVIEW_WISE22) iter_set=iter;
+
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "SkyView: NVSS (1.4GHz)",
+			 1, FC_SKYVIEW_NVSS, 2, TRUE, -1);
+      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_NVSS) iter_set=iter;
     
 	
       combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));

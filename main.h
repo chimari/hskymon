@@ -67,7 +67,7 @@
 
 #define WWW_BROWSER "firefox"
 
-#define DEFAULT_URL "https://www.naoj.org/Science/Resources/tools/hskymon/"
+#define DEFAULT_URL "http://www.naoj.org/Observing/tools/hskymon"
 
 #ifdef USE_WIN32
 #define DSS_URL "http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey"
@@ -226,6 +226,7 @@
 #define FC_SRC_SKYVIEW_WISE46 "WISE%204.6"
 #define FC_SRC_SKYVIEW_WISE12 "WISE%2012"
 #define FC_SRC_SKYVIEW_WISE22 "WISE%2022"
+#define FC_SRC_SKYVIEW_NVSS "NVSS"
 
 #define FC_HOST_SDSS "casjobs.sdss.org"
 #define FC_PATH_SDSS "/ImgCutoutDR7/getjpeg.aspx?ra=%lf&dec=%+lf&scale=%f&width=%d&height=%d&opt=%s%s&query=%s%s"
@@ -274,6 +275,7 @@ enum{FC_STSCI_DSS1R,
      FC_SKYVIEW_WISE46,
      FC_SKYVIEW_WISE12,
      FC_SKYVIEW_WISE22,
+     FC_SKYVIEW_NVSS,
      FC_SKYVIEW_RGB,
      FC_SEP3,
      FC_SDSS,

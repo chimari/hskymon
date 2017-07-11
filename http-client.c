@@ -1302,6 +1302,7 @@ int http_c_fc(typHOE *hg){
   case FC_SKYVIEW_WISE46:
   case FC_SKYVIEW_WISE12:
   case FC_SKYVIEW_WISE22:
+  case FC_SKYVIEW_NVSS:
     switch(hg->dss_scale){
     case FC_SCALE_LOG:
       tmp_scale=g_strdup("Log");
@@ -1457,6 +1458,7 @@ int http_c_fc(typHOE *hg){
   case FC_SKYVIEW_WISE46:
   case FC_SKYVIEW_WISE12:
   case FC_SKYVIEW_WISE22:
+  case FC_SKYVIEW_NVSS:
   case FC_SKYVIEW_RGB:
   case FC_PANCOL:
   case FC_PANG:
@@ -1535,6 +1537,7 @@ int http_c_fc(typHOE *hg){
     case FC_SKYVIEW_WISE46:
     case FC_SKYVIEW_WISE12:
     case FC_SKYVIEW_WISE22:
+    case FC_SKYVIEW_NVSS:
     case FC_SKYVIEW_RGB:
       while(!feof(fp_read)){
 	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
@@ -1632,6 +1635,7 @@ int http_c_fc(typHOE *hg){
       case FC_SKYVIEW_WISE46:
       case FC_SKYVIEW_WISE12:
       case FC_SKYVIEW_WISE22:
+      case FC_SKYVIEW_NVSS:
       case FC_SKYVIEW_RGB:
 	sprintf(send_mesg, "GET %s.jpg HTTP/1.1\r\n", cp3);
 	break;
@@ -1878,6 +1882,7 @@ int http_c_fc_ssl(typHOE *hg){
   case FC_SKYVIEW_WISE46:
   case FC_SKYVIEW_WISE12:
   case FC_SKYVIEW_WISE22:
+  case FC_SKYVIEW_NVSS:
     switch(hg->dss_scale){
     case FC_SCALE_LOG:
       tmp_scale=g_strdup("Log");
@@ -2033,6 +2038,7 @@ int http_c_fc_ssl(typHOE *hg){
   case FC_SKYVIEW_WISE46:
   case FC_SKYVIEW_WISE12:
   case FC_SKYVIEW_WISE22:
+  case FC_SKYVIEW_NVSS:
   case FC_SKYVIEW_RGB:
   case FC_PANCOL:
   case FC_PANG:
@@ -2112,6 +2118,7 @@ int http_c_fc_ssl(typHOE *hg){
     case FC_SKYVIEW_WISE46:
     case FC_SKYVIEW_WISE12:
     case FC_SKYVIEW_WISE22:
+    case FC_SKYVIEW_NVSS:
     case FC_SKYVIEW_RGB:
       while(!feof(fp_read)){
 	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
@@ -2228,6 +2235,7 @@ int http_c_fc_ssl(typHOE *hg){
       case FC_SKYVIEW_WISE46:
       case FC_SKYVIEW_WISE12:
       case FC_SKYVIEW_WISE22:
+      case FC_SKYVIEW_NVSS:
       case FC_SKYVIEW_RGB:
 	sprintf(send_mesg, "GET %s.jpg HTTP/1.1\r\n", cp3);
 	break;

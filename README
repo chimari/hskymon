@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 2.9.8    2017/07/05
+#                                  ver 3.0.0    2017/07/10
 #                               Copyright (C) 2003-17 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #      Subaru Telescope, National Astronomical Observatory of Japan
@@ -11,19 +11,23 @@
 
 
 *** Introduction
-This program (hskymon) is a telescope monitoring software for
-SUBARU Telescope. It can be useful for actual observation and
-also for obs preparation as a telescope simulator.
-Basically, hskymon is optimized for SUBARU Telescope. However,
+This program (hskymon) is a GTK+2 based telescope monitoring application
+for SUBARU Telescope, National Astronomical Observatory of Japan.
+It can be useful for actual observation and also for obs preparation 
+as a telescope simulator.
+Basically, hskymon is optimized for Subaru Telescope. However,
 it can be adopted to other telescopes, changing positional parameters.
 
 For target lists to display on the program, you can input OPE
 files for SOSs or CSV text lists.
 
 The latest version (source code and Win/Mac binary packages) can be 
-found in GitHub.
+found  in the official page of NAOJ,
+  http://www.naoj.org/Observing/tools/hskymon
+or in in GitHub,
   https://github.com/chimari/hskymon
-If you want to make a clone of the latest source code, use
+.
+If you want to make a clone of the latest source code via GitHub, use
   git clone https://github.com/chimari/hskymon.git
 in your terminal.
 

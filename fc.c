@@ -428,6 +428,10 @@ void fc_dl (typHOE *hg)
     label=gtk_label_new("Retrieving WISE (22um) image from \"" FC_HOST_SKYVIEW "\" ...");
     break;
     
+  case FC_SKYVIEW_NVSS:
+    label=gtk_label_new("Retrieving NVSS (1.4GHz) image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+    
   case FC_SDSS:
     label=gtk_label_new("Retrieving SDSS (DR7/color) image from \"" FC_HOST_SDSS "\" ...");
     break;
@@ -570,7 +574,7 @@ void close_hsc_dither(GtkWidget *w, GtkWidget *dialog)
 
 void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 {
-  GtkWidget *dialog, *label, *button, *hbox, *hbox2, *frame, *spinner;
+  GtkWidget *dialog, *label, *button, *hbox, *hbox2, *frame, *spinner, *table;
   GtkAdjustment *adj;
   typHOE *hg;
   gint i;
@@ -595,6 +599,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   hbox = gtk_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
 		     hbox,FALSE, FALSE, 0);
+
 
   label=gtk_label_new("Dither Type");
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
@@ -663,12 +668,16 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  hbox = gtk_hbox_new(FALSE,5);
-  gtk_container_add (GTK_CONTAINER (frame), hbox);
+  table = gtk_table_new(4,1,FALSE);
+  gtk_container_add (GTK_CONTAINER (frame), table);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
 
   label=gtk_label_new("d_RA [arcsec]");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_dra,
 					    60, 300,
@@ -677,7 +686,8 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox),spinner,FALSE,FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
@@ -686,7 +696,8 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 
   label=gtk_label_new("    d_Dec [arcsec]");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  gtk_table_attach(GTK_TABLE(table), label, 2, 3, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_ddec,
 					    60, 300,
@@ -695,7 +706,8 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox),spinner,FALSE,FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), spinner, 3, 4, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
@@ -707,12 +719,16 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  hbox = gtk_hbox_new(FALSE,5);
-  gtk_container_add (GTK_CONTAINER (frame), hbox);
+  table = gtk_table_new(6,1,FALSE);
+  gtk_container_add (GTK_CONTAINER (frame), table);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
 
   label=gtk_label_new("TDITH [deg]");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_tdith,
 					    0, 90,
@@ -721,7 +737,8 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox),spinner,FALSE,FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
@@ -730,7 +747,8 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 
   label=gtk_label_new("    RDITH [arcsec]");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  gtk_table_attach(GTK_TABLE(table), label, 2, 3, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_rdith,
 					    60, 300,
@@ -739,7 +757,8 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox),spinner,FALSE,FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), spinner, 3, 4, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
@@ -748,7 +767,8 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 
   label=gtk_label_new("    NDITH");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  gtk_table_attach(GTK_TABLE(table), label, 4, 5, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_ndith,
 					    3, 30,
@@ -757,7 +777,8 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox),spinner,FALSE,FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), spinner, 5, 6, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
@@ -769,12 +790,16 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  hbox = gtk_hbox_new(FALSE,5);
-  gtk_container_add (GTK_CONTAINER (frame), hbox);
+  table = gtk_table_new(4,1,FALSE);
+  gtk_container_add (GTK_CONTAINER (frame), table);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
 
   label=gtk_label_new("RA [arcsec]");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_offra,
 					    -3000, 3000,
@@ -783,7 +808,8 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox),spinner,FALSE,FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
@@ -792,7 +818,8 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 
   label=gtk_label_new("    Dec [arcsec]");
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  gtk_table_attach(GTK_TABLE(table), label, 2, 3, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_offdec,
 					    -3000, 3000,
@@ -801,7 +828,8 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox),spinner,FALSE,FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), spinner, 3, 4, 0, 1,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
@@ -1047,6 +1075,11 @@ void create_fc_dialog(typHOE *hg)
     gtk_list_store_set(store, &iter, 0, "SkyView: WISE (22um)",
 		       1, FC_SKYVIEW_WISE22, 2, TRUE, -1);
     if(hg->fc_mode==FC_SKYVIEW_WISE22) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: NVSS (1.4GHz)",
+		       1, FC_SKYVIEW_NVSS, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_NVSS) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "SkyView: RGB composite",
@@ -2833,6 +2866,11 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
+    case FC_SKYVIEW_NVSS:
+      tmp=g_strdup_printf("NVSS (1.4GHz)  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
     case FC_SKYVIEW_RGB:
       tmp=g_strdup_printf("SkyView RGB composite  %dx%d arcmin",
 			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
@@ -4319,6 +4357,10 @@ void set_dss_src_RGB (typHOE *hg, gint i)
   case FC_SKYVIEW_WISE22:
     hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_WISE22);
     break;
+
+  case FC_SKYVIEW_NVSS:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_NVSS);
+    break;
   }
 }
 
@@ -4412,6 +4454,7 @@ void set_fc_mode (typHOE *hg)
   case FC_SKYVIEW_WISE46:
   case FC_SKYVIEW_WISE12:
   case FC_SKYVIEW_WISE22:
+  case FC_SKYVIEW_NVSS:
     if(hg->dss_host) g_free(hg->dss_host);
     hg->dss_host             =g_strdup(FC_HOST_SKYVIEW);
     if(hg->dss_path) g_free(hg->dss_path);
@@ -4482,6 +4525,9 @@ void set_fc_mode (typHOE *hg)
       break;
     case FC_SKYVIEW_WISE22:
       hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_WISE22);
+      break;
+    case FC_SKYVIEW_NVSS:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_NVSS);
       break;
     }
     break;
@@ -4575,7 +4621,7 @@ void set_fc_mode (typHOE *hg)
 }
 
 void set_fc_frame_col(typHOE *hg){
-  if((hg->fc_mode>=FC_SKYVIEW_GALEXF)&&(hg->fc_mode<=FC_SKYVIEW_WISE22)){
+  if((hg->fc_mode>=FC_SKYVIEW_GALEXF)&&(hg->fc_mode<=FC_SKYVIEW_NVSS)){
     gtk_widget_set_sensitive(hg->fc_frame_col,TRUE);
   }
   else{
@@ -5850,6 +5896,9 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
   GtkTreeModel *model;
   GtkTreeIter iter;
   gchar *db_name;
+  GdkColor col_red={0,0xFFFF,0,0};
+  GdkColor col_black={0,0,0,0};
+
 
   hg=(typHOE *)gdata;
 
@@ -5907,6 +5956,7 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
 		       db_name,
 		       hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
 		       hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+    gtk_widget_modify_fg(hg->fcdb_label,GTK_STATE_NORMAL,&col_red);
   }
   else{
     hg->fcdb_label_text
@@ -5914,6 +5964,7 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
 		       db_name,
 		       hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
 		       hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+    gtk_widget_modify_fg(hg->fcdb_label,GTK_STATE_NORMAL,&col_black);
   }
   gtk_label_set_text(GTK_LABEL(hg->fcdb_label), hg->fcdb_label_text);
   g_free(db_name);
@@ -6122,6 +6173,10 @@ gchar *rgb_source_txt(typHOE *hg, gint i){
     
   case FC_SKYVIEW_WISE22:
     tmp=g_strdup("WISE (22um)");
+    break;
+
+  case FC_SKYVIEW_NVSS:
+    tmp=g_strdup("NVSS (1.4GHz)");
     break;
   }
 

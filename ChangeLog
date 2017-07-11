@@ -1,4 +1,6 @@
-2017.07.XX ver2.9.9 - Added HSC dithering parameters button in FC Window.
+2017.07.10 ver3.0.0 - Initial public release.
+
+2017.07.06 ver2.9.9 - Added HSC dithering parameters button in FC Window.
 	            - Modified HSC's dead chips information.
 
 2017.07.05 ver2.9.8 - Removed gdk_flush() and g_main_context_iteration().

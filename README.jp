@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 2.9.8     2017/07/05
+#                                  ver 3.0.0     2017/07/10
 #                               Copyright (C) 2003-17 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #      Subaru Telescope, National Astronomical Observatory of Japan
@@ -11,19 +11,24 @@
 
 
 ▼はじめに
-このプログラム(hskymon)は、すばる望遠鏡での観測および観測準備で使用す
-ることを目的とした天体位置のモニター用プログラムです。
-いちおう、すばるに特化している部分が多いですが、観測所の位置等のパラメー
-タを適切に設定すれば他の経緯台においても流用できる可能性があります。
+このプログラム(hskymon)は、Gtk+2ベースで開発されたクロスプラットフォームな
+アプリケーションで、国立天文台ハワイ観測所すばる望遠鏡での観測および観測準備で
+使用することを目的とした天体位置のモニター用プログラムです。
+実際の観測時以外にもファインディングチャートの作成や、天体位置の確認等、
+個人の環境での観測準備にも使用することができます。
+すばる望遠鏡に特化している部分が多いですが、観測所の位置等のパラメータを
+適切に設定すれば他の経緯台においても流用できる可能性があります。
 天体リストの入力にはGen2(すばる観測システム)準拠のOPE(観測手順書)ファ
 イルもしくは、CSVテキストのリストを使用できます。
 
-最新版release(source および Win/Mac用バイナリ)はGitHubからダウンロード
-できます。
+最新版release(source および Win/Mac用バイナリ)はNAOJ公式ページ
+  http://www.naoj.org/Observing/tools/hskymon
+もしくは GitHub
   https://github.com/chimari/hskymon/releases
-また、ターミナルから  
+からダウンロードできます。
+また、ターミナルから以下のコマンド
   git clone https://github.com/chimari/hskymon.git
-のコマンドで最新版のsourceクローンをお使いの環境に作成できます。
+で最新版のsourceクローンをお使いの環境に作成できます。
 
 
 ▼環境
