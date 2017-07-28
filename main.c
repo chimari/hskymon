@@ -248,11 +248,14 @@ gchar* fgets_new(FILE *fp){
   gint i=0, j=0;
   gchar *dbuf=NULL;
 
-  while(!feof(fp)){
-    c=fgetc(fp);
-    if((c==0x00)||(c==0x0a)||(c==0x0d)) break;
-    i++;
-  }
+  do{
+    i=0;
+    while(!feof(fp)){
+      c=fgetc(fp);
+      if((c==0x00)||(c==0x0a)||(c==0x0d)) break;
+      i++;
+    }
+  }while((i==0)&&(!feof(fp)));
   if(fseek(fp,(long)(-i-1),SEEK_CUR)!=0) return(NULL);
 
   if((dbuf = (gchar *)g_malloc(sizeof(gchar)*(i+2)))==NULL){

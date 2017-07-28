@@ -1,3 +1,6 @@
+2017.07.28 ver3.0.1 - Bug fix in fgets_new().
+	              [Blank line at the beginning of OPE file.]
+
 2017.07.10 ver3.0.0 - Initial public release.
 
 2017.07.06 ver2.9.9 - Added HSC dithering parameters button in FC Window.

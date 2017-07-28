@@ -1,7 +1,14 @@
+hskymon (3.0.1) unstable; urgency=medium
+
+  *  Bug fix on fgets_new() [The blank line at the begnning of OPE file
+	caused a file read error.].
+
+ -- Akito Tajitsu <taji@zekamashi>  Fri, 28 Jul 2017 04:25:56 -1000
+
 hskymon (3.0.0) unstable; urgency=medium
 
-  * Initial public release. 
-	
+  * Initial public release.
+
  -- Akito Tajitsu <taji@zekamashi>  Mon, 10 Jul 2017 16:28:12 -1000
 
 hskymon (2.9.9) unstable; urgency=medium
