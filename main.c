@@ -256,7 +256,12 @@ gchar* fgets_new(FILE *fp){
       i++;
     }
   }while((i==0)&&(!feof(fp)));
-  if(fseek(fp,(long)(-i-1),SEEK_CUR)!=0) return(NULL);
+  if(feof(fp)){
+    if(fseek(fp,(long)(-i+1),SEEK_CUR)!=0) return(NULL);
+  }
+  else{
+    if(fseek(fp,(long)(-i-1),SEEK_CUR)!=0) return(NULL);
+  }
 
   if((dbuf = (gchar *)g_malloc(sizeof(gchar)*(i+2)))==NULL){
     fprintf(stderr, "!!! Memory allocation error in fgets_new().\n");
@@ -265,13 +270,14 @@ gchar* fgets_new(FILE *fp){
   }
   if(fread(dbuf,1, i, fp)){
     while( (c=fgetc(fp)) !=EOF){
-      if((c==0x00)||(c==0x0a)||(c==0x0d)) j++;
+      if((c==0x00)||(c==0x0a)||(c==0x0d))j++;
       else break;
     }
     if(c!=EOF){
       if(fseek(fp,-1L,SEEK_CUR)!=0) return(NULL);
     }
     dbuf[i]=0x00;
+    //printf("%s\n",dbuf);
     return(dbuf);
   }
   else{
@@ -11187,7 +11193,7 @@ void MergeListPRM(typHOE *hg){
 	      break;
 	    }
 	  }
-	}while(cp);
+	}while((cp)&&(!feof(fp)));
 	
 	// RA
 	if(ok_obj){
@@ -11207,7 +11213,7 @@ void MergeListPRM(typHOE *hg){
 		break;
 	      }
 	    }
-	  }while(cp);
+	  }while((cp)&&(!feof(fp)));
 	}
 	
 	// DEC
@@ -11228,7 +11234,7 @@ void MergeListPRM(typHOE *hg){
 		break;
 	      }
 	    }
-	  }while(cp);
+	  }while((cp)&&(!feof(fp)));
 	}
 	
 	// EQUINOX
@@ -11249,7 +11255,7 @@ void MergeListPRM(typHOE *hg){
 		break;
 	      }
 	    }
-	  }while(cp);
+	  }while((cp)&&(!feof(fp)));
 	}
 	
 	if(ok_obj && ok_ra && ok_dec && ok_equinox){
@@ -11392,7 +11398,7 @@ void MergeListPRM2(typHOE *hg){
 	      break;
 	    }
 	  }
-	}while(cp);
+	}while((cp)&&(!feof(fp)));
 	
 	// RA
 	if(ok_obj){
@@ -11412,7 +11418,7 @@ void MergeListPRM2(typHOE *hg){
 		break;
 	      }
 	    }
-	  }while(cp);
+	  }while((cp)&&(!feof(fp)));
 	}
 	
 	// DEC
@@ -11433,7 +11439,7 @@ void MergeListPRM2(typHOE *hg){
 		break;
 	      }
 	    }
-	  }while(cp);
+	  }while((cp)&&(!feof(fp)));
 	}
 	
 	// EQUINOX
@@ -11454,7 +11460,7 @@ void MergeListPRM2(typHOE *hg){
 		break;
 	      }
 	    }
-	  }while(cp);
+	  }while((cp)&&(!feof(fp)));
 	}
 	
 	if(ok_obj && ok_ra && ok_dec && ok_equinox){

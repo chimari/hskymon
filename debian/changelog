@@ -1,22 +1,29 @@
+hskymon (3.0.2) unstable; urgency=medium
+
+  *  Bug fix on fgets_new() [On EOF management troubled in
+	 MergeListPRM2()].
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Tue, 15 Aug 2017 11:12:21 -1000
+
 hskymon (3.0.1) unstable; urgency=medium
 
   *  Bug fix on fgets_new() [The blank line at the begnning of OPE file
 	caused a file read error.].
 
- -- Akito Tajitsu <taji@zekamashi>  Fri, 28 Jul 2017 04:25:56 -1000
+ -- Akito Tajitsu <tajitsu@naoj.org>  Fri, 28 Jul 2017 04:25:56 -1000
 
 hskymon (3.0.0) unstable; urgency=medium
 
   * Initial public release.
 
- -- Akito Tajitsu <taji@zekamashi>  Mon, 10 Jul 2017 16:28:12 -1000
+ -- Akito Tajitsu <tajitsu@naoj.org>  Mon, 10 Jul 2017 16:28:12 -1000
 
 hskymon (2.9.9) unstable; urgency=medium
 
   * removed gdk_flush and g_main_context_iteration
   * added hsc dithering parameters
 
- -- Akito Tajitsu <taji@zekamashi>  Thu, 06 Jul 2017 18:10:20 -1000
+ -- Akito Tajitsu <tajitsu@naoj.org>  Thu, 06 Jul 2017 18:10:20 -1000
 
 hskymon (2.9.7) unstable; urgency=low
 

@@ -1,3 +1,6 @@
+2017.08.15 ver3.0.2 - Bug fix in fgets_new().
+	              [EOF management troubled in MergeListPRM2().]
+
 2017.07.28 ver3.0.1 - Bug fix in fgets_new().
 	              [Blank line at the beginning of OPE file.]
 
