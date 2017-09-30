@@ -23,21 +23,15 @@
 static GtkWidget *window = NULL;
 void tree_update_azel_item();
 void stddb_tree_update_azel_item();
-void make_tree();
 void std_make_tree();
 void tree_store_update();
-gint tree_update_azel ();
 gint stddb_tree_update_azel ();
 void close_tree2();
 void close_tree();
-void remake_tree();
-void rebuild_tree();
 void stddb_set_label();
-gchar *make_tgt();
 gchar *make_ttgs();
 void make_std_tgt();
 void make_fcdb_tgt();
-gchar *make_simbad_id();
 void copy_stacstd();
 static void add_item();
 static void add_item_fcdb();
@@ -52,12 +46,9 @@ void stddb_signal();
 static void cancel_stddb();
 void clip_copy();
 
-void addobj_dialog();
-
-void raise_tree();
 
 void cc_search_text();
-extern gchar *strip_spc();
+gchar *strip_spc();
 
 #ifdef USE_XMLRPC
 GdkColor col_lock={0,0xFFFF,0xC000,0xC000};
@@ -65,70 +56,6 @@ GdkColor col_sub={0,0xDDDD,0xFFFF,0xFFFF};
 #endif
 
 static void cell_toggled_check();
-
-extern gboolean draw_skymon();
-extern gboolean draw_plot_cairo();
-extern void calcpa2_main();
-extern void calcpa2_skymon();
-extern void make_obj_list();
-extern GtkWidget* gtkut_button_new_from_stock();
-extern GtkWidget* gtkut_button_new_from_pixbuf();
-extern GtkWidget* gtkut_toggle_button_new_from_stock();
-extern GtkWidget* gtkut_toggle_button_new_from_pixbuf();
-extern void cc_get_combo_box ();
-extern void cc_get_entry();
-extern void cc_get_entry_double();
-extern void cc_get_entry_int();
-extern void cc_get_toggle();
-
-extern gboolean flagSkymon;
-extern gboolean flagChildDialog;
-extern gboolean flagTree;
-extern gboolean flagPlot;
-extern gboolean flagADC;
-extern gboolean flagFC;
-
-extern void popup_message();
-extern void my_signal_connect();
-extern void my_entry_set_width_chars();
-
-extern void do_plot();
-extern void do_adc();
-extern gdouble ra_to_deg();
-extern gdouble dec_to_deg();
-extern gdouble deg_to_ra();
-extern gdouble deg_to_dec();
-
-extern void fc_item2 ();
-extern void fcdb_item2();
-extern void adc_item2 ();
-extern gboolean draw_adc_cairo();
-extern gboolean draw_fc_cairo();
-
-extern gfloat get_meridian_hour();
-
-extern double get_julian_day_of_equinox();
-
-extern gboolean is_separator();
-
-extern int get_stddb();
-
-extern void stddb_vo_parse();
-extern void create_std_para_dialog();
-extern void create_fcdb_para_dialog();
-
-extern gdouble deg_sep();
-
-extern void fcdb_tree_update_azel_item();
-extern long get_file_size();
-extern void addobj_dl();
-
-extern gdouble current_yrs();
-
-extern gboolean progress_timeout();
-
-extern pid_t stddb_pid;
-extern gboolean flag_getFCDB;
 
 gboolean Flag_tree_editing=FALSE;
 gboolean flagSTD=FALSE, flag_getSTD=FALSE;
@@ -144,20 +71,6 @@ GdkPixbuf *pix_u0=NULL,
 #ifdef USE_XMLRPC
 GdkPixbuf *pix_lock=NULL;
 #endif
-
-typedef struct
-{
-  gint   number;
-  gchar *name;
-  gchar *c_az;
-  gchar *c_el;
-  gchar *c_ha;
-  gchar *c_ad;
-  gchar *c_pa;
-  gchar *ra;
-  gchar *dec;
-}
-Item;
 
 
 void pos_cell_data_func(GtkTreeViewColumn *col , 
@@ -1803,7 +1716,7 @@ stddb_toggle (GtkWidget *widget, gpointer data)
 
   hg->stddb_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
-  if(flagSkymon) draw_skymon(hg->skymon_dw,hg, FALSE);
+  draw_skymon(hg->skymon_dw,hg, FALSE);
 }
 
 static void
@@ -2000,9 +1913,7 @@ stddb_item (GtkWidget *widget, gpointer data)
 				 TRUE);
     hg->stddb_flag=TRUE;
 
-    if(flagSkymon){
-      draw_skymon(hg->skymon_dw,hg, FALSE);
-    }
+    draw_skymon(hg->skymon_dw,hg, FALSE);
   }
 }
 
@@ -2180,8 +2091,6 @@ down_item (GtkWidget *widget, gpointer data)
       gtk_tree_selection_select_path(selection, path);
     }
     
-    //    make_obj_list(hg,FALSE);
-
     gtk_tree_path_free (path);
   }
 }
@@ -2218,11 +2127,7 @@ focus_item (GtkWidget *widget, gpointer data)
       gtk_tree_path_free (path);
     }
 
-  {
-    if(flagSkymon){
-      draw_skymon(hg->skymon_dw,hg, FALSE);
-    }
-  }
+  draw_skymon(hg->skymon_dw,hg, FALSE);
 
   if(flagPlot){
     draw_plot_cairo(hg->plot_dw,(gpointer)hg);
@@ -2254,9 +2159,7 @@ std_focus_item (GtkWidget *widget, gpointer data)
       
       gtk_tree_path_free (path);
       
-      if(flagSkymon){
-	draw_skymon(hg->skymon_dw,hg, FALSE);
-      }
+      draw_skymon(hg->skymon_dw,hg, FALSE);
     }
 }
 

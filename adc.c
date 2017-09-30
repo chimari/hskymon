@@ -10,41 +10,16 @@
 #include <cairo.h>
 
 void adc_item();
-void adc_item2();
 void cc_get_adc_inst();
-void do_adc();
 void create_adc_dialog();
 void draw_adc_pixmap();
 static gboolean configure_adc();
 static gboolean expose_adc();
 void close_adc();
-gboolean draw_adc_cairo();
 static void refresh_adc();
 gboolean update_adc();
 
 
-extern void my_signal_connect();
-extern void screen_changed();
-extern void cc_get_toggle();
-extern void cc_get_adj();
-extern void cc_get_adj_double();
-extern void my_entry_set_width_chars();
-
-extern void calcpa2_main();
-extern void calcpa2_skymon();
-
-extern GtkWidget* gtkut_button_new_from_stock();
-extern void get_current_obs_time();
-
-extern void calcpa2_main();
-extern gdouble ra_to_deg();
-extern gdouble dec_to_deg();
-extern gdouble deg_to_ra();
-extern gdouble deg_to_dec();
-
-extern void ln_equ_to_hequ();
-
-gboolean flagADC=FALSE;
 
 
 void adc_item2 (GtkWidget *widget, gpointer data)

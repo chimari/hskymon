@@ -9,8 +9,6 @@
 
 #ifdef USE_XMLRPC
 
-extern void printf_log();
-
 
 
 static void

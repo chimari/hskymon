@@ -553,9 +553,9 @@ enum{
 #define PLOT_HST0 17
 #define PLOT_HST1 31
 
-// ポップアップメッセージ
+// popup message
 #define GTK_MSG
-// エラーポップアップのタイムアウト[sec]
+// time out for error popup window [sec]
 #define POPUP_TIMEOUT 2
 
 
@@ -1837,4 +1837,147 @@ typedef struct{
 #define is_num_char(c) ((c>='0' && c<='9')||(c==' ')||(c=='\t')||(c=='.')||(c=='+')||(c=='-')||(c=='\n'))
 
 
+
+
+//// Global args.
+gboolean  flagProp;
+gboolean  flagChildDialog;
+gboolean  flagTree;
+gboolean  flagPlot;
+gboolean  flagFC;
+gboolean  flagADC;
+gboolean  flag_getting_allsky;
+#ifndef USE_WIN32
+pid_t allsky_pid;
+#endif
+pid_t fc_pid;
+pid_t fcdb_pid;
+pid_t stddb_pid;
+
+
+//// Functions' proto-type
+// main.c
+void printf_log(typHOE *hg, const gchar *format, ...);
+void my_signal_connect();
+void cc_get_toggle();
+void cc_get_adj();
+void cc_get_adj_double();
+void cc_get_combo_box();
+void cc_get_entry();
+void cc_get_entry_double();
+void my_entry_set_width_chars();
+GtkWidget* gtkut_button_new_from_stock();
+GtkWidget* gtkut_toggle_button_new_from_stock();
+GtkWidget* gtkut_button_new_from_pixbuf();
+GtkWidget* gtkut_toggle_button_new_from_pixbuf();
+void get_current_obs_time();
+void add_day();
+void do_save_pdf();
+void do_save_fc_pdf();
+void do_quit();
+void do_plot();
+void do_update_azel();
+void popup_message(gint , ...);
+void create_fcdb_para_dialog();
+gboolean is_separator();
+GtkWidget *make_menu();
+gint update_allsky();
+#ifdef USE_XMLRPC
+gint update_telstat();
+#endif
+
+//adc.c
+void do_adc();
+void adc_item2 ();
+gboolean draw_adc_cairo();
+
+//calcpa.c
+void calcpa2_main();
+void calcpa2_skymon();
+void pdf_plot();
+void create_plot_dialog();
+void geocen_to_topocen();
+gdouble ra_to_deg();
+gdouble dec_to_deg();
+gdouble deg_to_ra();
+gdouble deg_to_dec();
+gdouble date_to_jd();
+void calc_moon();
+double get_julian_day_of_equinox();
+gboolean draw_plot_cairo();
+gfloat get_meridian_hour();
+gdouble deg_sep();
+
+//fc.c
+void pdf_fc ();
+void set_fc_mode();
+void fc_item2 ();
+void fcdb_item2();
+gboolean draw_fc_cairo();
+void fcdb_tree_update_azel_item();
+void addobj_dl();
+gdouble current_yrs();
+gboolean progress_timeout();
+
+//http-client.c
+int get_allsky();
+GdkPixbuf* diff_pixbuf();
+int get_dss();
+int get_stddb();
+int get_fcdb();
+void allsky_debug_print (const gchar *format, ...) G_GNUC_PRINTF(1, 2);
+int month_from_string_short();
+
+//julian_day.c
+int get_gmtoff_from_sys ();
+
+//skymon.c
 void skymon_debug_print(const gchar *format, ...);
+gboolean draw_skymon();
+void create_skymon_dialog();
+gboolean draw_skymon_cairo();
+#ifdef USE_XMLRPC
+gboolean draw_skymon_with_telstat_cairo();
+#endif
+
+
+//telstat.c
+#ifdef USE_XMLRPC
+int close_telstat();
+int get_telstat();
+int get_rope();
+#endif
+
+//treeview.c
+void make_tree();
+void remake_tree();
+void rebuild_tree();
+gint tree_update_azel();
+gchar* make_tgt();
+gchar *make_simbad_id();
+void addobj_dialog();
+void raise_tree();
+
+
+//utility.c
+void ln_deg_to_dms();
+double ln_dms_to_deg();
+void ln_equ_to_hequ();
+
+//votable.c
+void fcdb_vo_parse();
+void fcdb_ned_vo_parse();
+void fcdb_gsc_vo_parse();
+void fcdb_ps1_vo_parse();
+void fcdb_sdss_vo_parse();
+void fcdb_usno_vo_parse();
+void fcdb_gaia_vo_parse();
+void fcdb_2mass_vo_parse();
+void fcdb_wise_vo_parse();
+void fcdb_irc_vo_parse();
+void fcdb_fis_vo_parse();
+void addobj_vo_parse();
+void stddb_vo_parse();
+
+
+

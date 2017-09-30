@@ -48,7 +48,6 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/xmlreader.h>
 #include "config.h"
-#include "main.h"
 
 /* --------------------------------- Macros ---------------------------- */
 

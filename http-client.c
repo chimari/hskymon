@@ -29,20 +29,18 @@
 #include <libxml/HTMLparser.h>
 
 #ifdef USE_SSL
-#include<fcntl.h>
-#  include "ssl.h"
+#include <fcntl.h>
+#include "ssl.h"
 #endif
 
 
 // From libghttp-1.0.9
 time_t http_date_to_time(const char *a_date);
-int month_from_string_short(const char *a_month);
 time_t ghttp_parse_date(char *a_date);
 void copy_file();
 #ifndef USE_WIN32
 void allsky_signal();
 #endif
-int get_allsky();
 
 void allsky_read_data();
 
@@ -59,17 +57,12 @@ int http_c_fc();
 int http_c_fc_ssl();
 #endif
 #endif
-int get_dss();
-int get_stddb();
-int get_fcdb();
 
-void allsky_debug_print (const gchar *format, ...) G_GNUC_PRINTF(1, 2);
 gboolean check_allsky();
 
 #ifndef USE_WIN32
 static void cancel_allsky();
 #endif
-GdkPixbuf* diff_pixbuf();
 
 void unchunk();
 
@@ -81,29 +74,18 @@ gint ssl_write();
 #endif
 
 
-extern void printf_log();
-
-extern double get_julian_day_of_equinox();
-extern gboolean draw_skymon_cairo();
-
-extern gdouble ra_to_deg();
-extern gdouble dec_to_deg();
-extern gdouble deg_to_ra();
-extern gdouble deg_to_dec();
-
-gboolean  flag_getting_allsky=FALSE, flag_allsky_finish=FALSE;
-pid_t allsky_pid=0, fc_pid=0, stddb_pid=0, fcdb_pid=0;
+gboolean flag_allsky_finish=FALSE;
 #ifndef USE_WIN32
 gint allsky_repeat=0;
 #endif
 
 #ifdef USE_WIN32
-#define BUF_LEN 65535             /* バッファのサイズ */
+#define BUF_LEN 65535             /* Buffer size */
 #else
-#define BUF_LEN 1023             /* バッファのサイズ */
+#define BUF_LEN 1023             /* Buffer size */
 #endif
 
-int debug_flg = 0;      /* -d オプションを付けると turn on する */
+int debug_flg = 0;
 
 #ifndef USE_WIN32
 int allsky_fd[2];
@@ -198,10 +180,10 @@ char *read_line(int socket, char *p){
 void read_response(int socket, char *p){
     do { 
       //read_line(socket, p);
-    fd_gets(socket,p,BUF_LEN);
-        if ( debug_flg ){
-	  fprintf(stderr, "<-- %s", p);fflush(stderr);
-        }
+      fd_gets(socket,p,BUF_LEN);
+      if ( debug_flg ){
+	fprintf(stderr, "<-- %s", p);fflush(stderr);
+      }
     } while ( isdigit(p[0]) &&
               isdigit(p[1]) && 
               isdigit(p[2]) &&

@@ -41,19 +41,8 @@
 //-------------------------------------------------------------
 
 
+#include "main.h"
 #include "votable.h"
-
-void stddb_vo_parse();
-void fcdb_vo_parse();
-void fcdb_ned_vo_parse();
-extern gdouble deg_sep();
-extern void printf_log();
-
-extern gdouble ra_to_deg();
-extern gdouble dec_to_deg();
-extern gdouble deg_to_ra();
-extern gdouble deg_to_dec();
-
 
 static list_field *insert_field(xmlTextReaderPtr reader, 
 				  list_field *list, 

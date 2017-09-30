@@ -4,7 +4,7 @@
 //
 //                                       2003.10.23  A.Tajitsu
 
-#include"main.h"    // 設定ヘッダ
+#include"main.h"    // Main configuration header
 #include"version.h"
 #include"configfile.h"
 
@@ -22,56 +22,10 @@
 
 #include<locale.h>
 
-extern void calcpa2_main();
-extern void pdf_plot();
-extern void create_plot_dialog();
-
-extern void geocen_to_topocen();
-extern gdouble ra_to_deg();
-extern gdouble dec_to_deg();
-extern gdouble deg_to_ra();
-extern gdouble deg_to_dec();
-extern gdouble date_to_jd();
-
-extern  void create_skymon_dialog();
-extern gboolean draw_skymon_cairo();
-#ifdef USE_XMLRPC
-extern gboolean draw_skymon_with_telstat_cairo();
-extern int close_telstat();
-#endif
-extern void calc_moon();
-
-extern void make_tree();
-extern void remake_tree();
-extern void rebuild_tree();
-extern gint tree_update_azel();
-extern gchar* make_tgt();
-extern void addobj_dialog();
-
-extern int get_allsky();
-
-#ifdef USE_XMLRPC
-extern get_telstat();
-extern get_rope();
-#endif
-
-extern void pdf_fc ();
-extern void set_fc_mode();
-extern GdkPixbuf* diff_pixbuf();
-
-
-extern void ln_deg_to_dms();
-extern double ln_dms_to_deg();
-
-extern gboolean flagFC;
 
 #ifndef USE_WIN32
 void ChildTerm();
 #endif // USE_WIN32
-
-gboolean is_separator();
-
-GtkWidget *make_menu();
 
 static void AddObj();
 static void close_child_dialog();
@@ -79,13 +33,6 @@ static void fs_set_opeext();
 static void fs_set_list1ext();
 static void fs_set_list2ext();
 static void fs_set_list3ext();
-void cc_get_toggle();
-void cc_get_adj();
-void cc_get_adj_double();
-void cc_get_entry();
-void cc_get_entry_int();
-void cc_get_entry_double();
-void cc_get_combo_box ();
 void cc_get_neg ();
 static void cc_std_sptype();
 static void ToggleDiffAllSky();
@@ -105,7 +52,6 @@ void ext_play();
 static void show_dss();
 static void show_simbad();
 
-void do_quit();
 void do_open();
 void do_open_NST();
 void do_open_JPL();
@@ -119,14 +65,11 @@ void do_merge_ope();
 void do_upload();
 void do_merge_prm();
 void do_merge();
-void do_save_pdf();
 void do_save_OpeDef();
 void do_save_TextList();
-void do_save_fc_pdf();
 void show_version();
 static void show_help();
 void show_properties();
-void do_skymon();
 
 void ChangeColorAlpha();
 void ChangeFontButton();
@@ -145,18 +88,12 @@ void create_diff_para_dialog();
 void create_disp_para_dialog();
 void create_std_para_dialog();
 static void fcdb_para_item();
-void create_fcdb_para_dialog();
 
-extern int month_from_string_short();
 
 void InitDefCol();
+void global_init();
 void param_init();
-void do_update_azel();
 gint update_azel_auto();
-#ifdef USE_XMLRPC
-gint update_telstat();
-#endif
-gint update_allsky();
 void update_c_label();
 gchar *cut_spc();
 gchar *make_filehead();
@@ -185,29 +122,19 @@ gboolean is_number();
 
 gchar* to_utf8();
 gchar* to_locale();
-void popup_message(gint , ...);
 gboolean close_popup();
 static void destroy_popup();
 
 void my_file_chooser_add_filter (GtkWidget *dialog, const gchar *name, ...);
-void my_signal_connect();
-void my_entry_set_width_chars();
 
 gchar* make_head();
 
-GtkWidget* gtkut_button_new_from_stock();
-GtkWidget* gtkut_toggle_button_new_from_stock();
-GtkWidget* gtkut_button_new_from_pixbuf();
-GtkWidget* gtkut_toggle_button_new_from_pixbuf();
 
 #ifdef USE_WIN32
 gchar* WindowsVersion();
 #endif
 
-void get_current_obs_time();
 void get_plot_day();
-
-void printf_log(typHOE *hg, const gchar *format, ...);
 
 gchar* get_win_temp();
 
@@ -215,18 +142,6 @@ void get_font_family_size();
 
 void Export_OpeDef();
 void Export_TextList();
-
-gboolean flagProp=FALSE;
-gboolean flagChildDialog=FALSE;
-gboolean flag_make_obj_list=TRUE;
-gboolean flagSkymon=TRUE;
-gboolean flagTree=FALSE;
-gboolean flagFCDBTree=FALSE;
-gboolean flagPlot=FALSE;
-
-GtkWidget *obj_table;
-gint entry_height=SMALL_ENTRY_SIZE;
-
 
 GdkColor init_col [MAX_ROPE]
 = {
@@ -331,7 +246,7 @@ gchar* get_win_temp(void){
 
 
 #ifndef USE_WIN32
-// 子プロセスの処理 
+// Management for Child process 
 void ChildTerm(int dummy)
 {
   int s;
@@ -817,11 +732,6 @@ void cc_get_entry (GtkWidget *widget, gchar **gdata)
   *gdata=g_strdup(gtk_entry_get_text(GTK_ENTRY(widget)));
 }
 
-void cc_get_entry_int (GtkWidget *widget, gint *gdata)
-{
-  *gdata=(gint)g_strtod(gtk_entry_get_text(GTK_ENTRY(widget)),NULL);
-}
-
 void cc_get_entry_double (GtkWidget *widget, gdouble *gdata)
 {
   *gdata=(gdouble)g_strtod(gtk_entry_get_text(GTK_ENTRY(widget)),NULL);
@@ -889,10 +799,8 @@ static void ToggleDiffAllSky (GtkWidget *widget,  gpointer * gdata)
     hg->allsky_diff_flag=FALSE;
   }
 
-  if(flagSkymon){  // Automatic update for current time
-    if(hg->skymon_mode==SKYMON_CUR)
-      draw_skymon_cairo(hg->skymon_dw,hg, TRUE);
-  }
+  if(hg->skymon_mode==SKYMON_CUR) // Automatic update for current time
+    draw_skymon_cairo(hg->skymon_dw,hg, TRUE);
 }
 
 
@@ -2307,7 +2215,6 @@ void do_open (GtkWidget *widget, gpointer gdata)
       if(hg->filehead) g_free(hg->filehead);
       hg->filehead=make_head(dest_file);
       ReadList(hg, 0);
-      //make_obj_list(hg,TRUE);
 
       //// Current Condition
       if(hg->skymon_mode==SKYMON_SET){
@@ -2658,7 +2565,6 @@ void do_reload_ope (GtkWidget *widget, gpointer gdata)
   if(hg->filename_ope){
     if(access(hg->filename_ope,F_OK)==0){
       ReadListOPE(hg, 0);
-      //make_obj_list(hg,TRUE);
       
       //// Current Condition
       if(hg->skymon_mode==SKYMON_SET){
@@ -2751,7 +2657,6 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
       if(hg->filehead) g_free(hg->filehead);
       hg->filehead=make_head(dest_file);
       ReadListOPE(hg, 0);
-      //make_obj_list(hg,TRUE);
 
       //// Current Condition
       if(hg->skymon_mode==SKYMON_SET){
@@ -2840,7 +2745,6 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
       if(hg->filehead) g_free(hg->filehead);
       hg->filehead=make_head(dest_file);
       MergeListOPE(hg, hg->ope_max);
-      //make_obj_list(hg,TRUE);
 
       //// Current Condition
       if(hg->skymon_mode==SKYMON_SET){
@@ -2927,7 +2831,6 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
       if(hg->filename_prm) g_free(hg->filename_prm);
       hg->filename_prm=g_strdup(dest_file);
       MergeListPRM(hg);
-      //make_obj_list(hg,TRUE);
 
       //// Current Condition
       if(hg->skymon_mode==SKYMON_SET){
@@ -3023,7 +2926,6 @@ void do_merge (GtkWidget *widget, gpointer gdata)
       if(hg->filehead) g_free(hg->filehead);
       hg->filehead=make_head(dest_file);
       MergeList(hg, hg->ope_max);
-      //make_obj_list(hg,TRUE);
       
       //// Current Condition
       if(hg->skymon_mode==SKYMON_SET){
@@ -3750,10 +3652,8 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
       }
     }
     
-    if(flagSkymon){  // Automatic update for current time
-      if(hg->skymon_mode==SKYMON_CUR)
-	draw_skymon_cairo(hg->skymon_dw,hg, TRUE);
-    }
+    if(hg->skymon_mode==SKYMON_CUR) // Automatic update for current time
+      draw_skymon_cairo(hg->skymon_dw,hg, TRUE);
   }
 
   flagChildDialog=FALSE;
@@ -3896,10 +3796,8 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
       hg->allsky_sat=1.0;
     }
     
-    if(flagSkymon){  // Automatic update for current time
-      if(hg->skymon_mode==SKYMON_CUR)
-	draw_skymon_cairo(hg->skymon_dw,hg, TRUE);
-    }
+    if(hg->skymon_mode==SKYMON_CUR) // Automatic update for current time
+      draw_skymon_cairo(hg->skymon_dw,hg, TRUE);
   }
 
   flagChildDialog=FALSE;
@@ -8609,22 +8507,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 }
 
 
-void do_skymon(GtkWidget *widget, gpointer gdata){
-  typHOE *hg;
-
-  hg=(typHOE *)gdata;
-
-  if(flagSkymon){
-    gdk_window_raise(hg->skymon_main->window);
-    return;
-  }
-  else{
-    flagSkymon=TRUE;
-  }
-  
-  create_skymon_dialog(hg);
-}
-
 void do_plot(GtkWidget *widget, gpointer gdata){
   typHOE *hg;
 
@@ -8661,7 +8543,6 @@ void ChangeFontButton(GtkWidget *w, gchar **gdata)
 }
 
 
-// ファイル選択ダイアログからListを読み込む
 void ReadListGUI(GtkWidget *w, gpointer gdata)
 { 
   confArg *cdata;
@@ -8682,7 +8563,6 @@ void ReadListGUI(GtkWidget *w, gpointer gdata)
 }
 
 
-// ファイル選択ダイアログで書き込みファイルを選択
 void UpdateFileGUI(GtkWidget *w, gpointer gdata)
 { 
   confArg *cdata;
@@ -8838,11 +8718,29 @@ void InitDefCol(typHOE *hg){
 }
 
 
+void global_init(){
+  flagProp=FALSE;
+  flagChildDialog=FALSE;
+  flagTree=FALSE;
+  flagPlot=FALSE;
+  flagFC=FALSE;
+  flagADC=FALSE;
+  flag_getting_allsky=FALSE;
+  
+#ifndef USE_WIN32
+  allsky_pid=0;
+#endif
+  fc_pid=0;
+  fcdb_pid=0;
+  stddb_pid=0;
+}
+
 void param_init(typHOE *hg){
   time_t t;
   struct tm *tmpt;
   int i;
 
+  global_init();
 
   hg->i_max=0;
   hg->ope_max=0;
@@ -9092,8 +8990,6 @@ void param_init(typHOE *hg){
 void do_update_azel(GtkWidget *widget, gpointer gdata){
   typHOE *hg;
 
-  if(!flag_make_obj_list)  return;
-
   hg=(typHOE *)gdata;
 
   if(hg->skymon_mode==SKYMON_SET){
@@ -9113,8 +9009,6 @@ void do_update_azel(GtkWidget *widget, gpointer gdata){
 
 gboolean update_azel_auto (gpointer gdata){
   typHOE *hg;
-
-  if(!flag_make_obj_list)  return(TRUE);
 
   hg=(typHOE *)gdata;
 
@@ -9204,14 +9098,8 @@ gboolean update_allsky (gpointer gdata){
 
 
 void update_c_label (typHOE *hg){
-  if(!flag_make_obj_list)  return;
-
-  {
-    if(flagSkymon){  // Automatic update for current time
-      if(hg->skymon_mode==SKYMON_CUR)
-	draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
-    }
-  }
+  if(hg->skymon_mode==SKYMON_CUR) // Automatic update for current time
+    draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
 }
 
 
@@ -13416,7 +13304,7 @@ void get_plot_day(typHOE *hg, int *year, int *month, int *day,
   skymon_debug_print("%d/%d/%d  HST=%d:%02d  (TZ=%d)\n",*year,*month,*day,*hour,*min,hg->obs_timezone);
 }
 
-void add_day(typHOE *hg, int *year, int *month, int *day, gint add_day)
+void add_day(typHOE *hg, int *year, int *month, int *day, gint adds)
 {
   double JD;
   struct ln_date date;
@@ -13431,7 +13319,7 @@ void add_day(typHOE *hg, int *year, int *month, int *day, gint add_day)
   
   JD = ln_get_julian_day (&date);
 
-  JD=JD+(gdouble)add_day;
+  JD=JD+(gdouble)adds;
   ln_get_date (JD, &date);
 
   *year=date.years;
@@ -13578,7 +13466,7 @@ int main(int argc, char* argv[]){
 
   get_option(argc, argv, hg);
 
-  // Gdk-Pixbufで使用
+  // Required for Gdk-Pixbuf
   gdk_rgb_init();
 
 #ifndef USE_WIN32  
@@ -13599,14 +13487,11 @@ int main(int argc, char* argv[]){
     }
 #endif
 
-  flagSkymon=TRUE;
   create_skymon_dialog(hg);
   if(hg->filename_list){
     ReadList(hg, 0);
   }
-  //make_obj_list(hg,TRUE);
-  flag_make_obj_list=TRUE;
-  //// Current Condition
+
   if(hg->skymon_mode==SKYMON_SET){
     calcpa2_skymon(hg);
   }

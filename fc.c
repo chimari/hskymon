@@ -5,7 +5,7 @@
 //                                           2010.3.15  A.Tajitsu
 
 
-#include"main.h"    // 設定ヘッダ
+#include"main.h"
 #include"version.h"
 #include "hsc.h"
 #include <cairo.h>
@@ -18,16 +18,13 @@
 
 
 static void fc_item();
-void fc_item2();
 void fc_dl ();
-gboolean progress_timeout();
 void do_fc();
 void create_fc_dialog();
 static void close_fc();
 #ifndef USE_WIN32
 static void cancel_fc();
 #endif
-gboolean draw_fc_cairo();
 void draw_fc_pixmap();
 static gboolean expose_draw_fc();
 static gboolean configure_draw_fc();
@@ -43,7 +40,6 @@ static void hsc_dith_forward();
 static void cc_get_hsc_dith();
 static void cc_get_fc_inst();
 static void cc_get_fc_mode();
-void pdf_fc();
 static void do_print_fc();
 static void draw_page();
 #ifndef USE_WIN32
@@ -53,79 +49,29 @@ void dss_signal();
 glong get_file_size();
 
 void set_dss_src_RGB();
-void set_fc_mode();
 void set_fc_frame_col();
 
 static void show_fc_help();
 static void close_fc_help();
 
 static void fcdb_para_item();
-void fcdb_item2();
 static void fcdb_item();
 void fcdb_dl();
-void addobj_dl();
 #ifndef USE_WIN32
 void fcdb_signal();
 static void cancel_fcdb();
 #endif
-void fcdb_tree_update_azel_item();
 void fcdb_make_tree();
 void fcdb_clear_tree();
 
-gdouble current_yrs();
 static void fcdb_toggle ();
 
 GdkPixbuf* rgb_pixbuf();
 gchar *rgb_source_txt();
 
-extern int  get_dss();
-extern int get_fcdb();
-extern void popup_message();
-extern void my_signal_connect();
-extern void my_entry_set_width_chars();
-extern void cc_get_toggle();
-extern void cc_get_adj();
-extern void cc_get_combo_box();
-extern GtkWidget* gtkut_button_new_from_stock();
-extern GtkWidget* gtkut_button_new_from_pixbuf();
-extern GtkWidget* gtkut_toggle_button_new_from_pixbuf();
-extern void do_save_fc_pdf();
-extern void create_fcdb_para_dialog();
 
-extern void screen_changed();
 
-extern void allsky_debug_print ();
-
-extern gboolean is_separator();
-
-extern void fcdb_vo_parse();
-extern void fcdb_ned_vo_parse();
-extern void fcdb_gsc_vo_parse();
-extern void fcdb_ps1_vo_parse();
-extern void fcdb_sdss_vo_parse();
-extern void fcdb_usno_vo_parse();
-extern void fcdb_gaia_vo_parse();
-extern void fcdb_2mass_vo_parse();
-extern void fcdb_wise_vo_parse();
-extern void fcdb_irc_vo_parse();
-extern void fcdb_fis_vo_parse();
-extern void addobj_vo_parse();
-extern double get_julian_day_of_equinox();
-
-extern gchar *make_simbad_id();
-
-extern void raise_tree();
-
-extern void printf_log();
-
-extern gdouble ra_to_deg();
-extern gdouble dec_to_deg();
-
-extern pid_t fc_pid;
-extern gboolean flagTree;
-extern pid_t fcdb_pid;
-
-gboolean flagFC=FALSE, flag_getDSS=FALSE, flag_getFCDB=FALSE;
+gboolean flag_getDSS=FALSE, flag_getFCDB=FALSE;
 gboolean flagHSCDialog=FALSE;
 GdkPixbuf *pixbuf_fc=NULL, *pixbuf2_fc=NULL;
 

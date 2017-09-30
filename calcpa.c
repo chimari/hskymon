@@ -16,26 +16,18 @@
 
 double adrad(double zrad, double wlnm,double h,double t,double p,double f);
 double new_tu(int iyear, int month, int iday);
-void calcpa2_main(typHOE* hg);
 
-void calcpa2_skymon(typHOE* hg);
 
-void calc_moon();
 void calc_moon_skymon();
 
 void close_plot();
-void create_plot_dialog();
-gboolean draw_plot_cairo();
 gboolean resize_plot_cairo();
 void draw_plot_pixmap();
 static gboolean configure_plot();
 static gboolean expose_plot();
 static gboolean refresh_plot();
-void pdf_plot();
 static void do_plot_moon();
 gboolean update_plot();
-
-extern gboolean flagPlot;
 
 void cc_get_plot_mode();
 void cc_get_plot_all();
@@ -43,7 +35,6 @@ void cc_get_plot_center();
 void get_plot_time();
 void get_plot_time_current(typHOE *hg, gfloat delta_hst);
 
-gfloat get_meridian_hour();
 gdouble set_ul();
 
 gdouble hdspa_deg();
@@ -51,30 +42,7 @@ gdouble hdspa_deg();
 void do_print();
 static void draw_page();
 
-double get_julian_day_of_equinox();
-gdouble deg_sep();
-
 void calc_moon_topocen();
-void geocen_to_topocen();
-
-gdouble ra_to_deg();
-gdouble dec_to_deg();
-gdouble deg_to_ra();
-gdouble deg_to_dec();
-gdouble date_to_jd();
-
-extern void my_signal_connect();
-extern void add_day();
-
-extern void screen_changed();
-
-extern GtkWidget* gtkut_button_new_from_stock();
-extern GtkWidget* gtkut_toggle_button_new_from_stock();
-extern GtkWidget* gtkut_button_new_from_pixbuf();
-extern GtkWidget* gtkut_toggle_button_new_from_pixbuf();
-
-extern void get_current_obs_time();
-extern void do_save_pdf();
 
 void close_plot(GtkWidget *w, gpointer gdata)
 {

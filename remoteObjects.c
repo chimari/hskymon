@@ -40,9 +40,6 @@
 #include <xmlrpc-c/base.h>
 #include <xmlrpc-c/client.h>
 
-extern int close_telstat();
-
-
 #define RO_NAME "XML-RPC C Client remoteObjects"
 #define RO_VERSION "1.0"
 

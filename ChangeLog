@@ -1,3 +1,6 @@
+2017.09.28 ver3.0.3 - Source brushed up
+	              Moved all global args into main.h
+
 2017.08.15 ver3.0.2 - Bug fix in fgets_new().
 	              [EOF management troubled in MergeListPRM2().]
 

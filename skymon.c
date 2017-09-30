@@ -4,7 +4,7 @@
 //                                           2008.5.8  A.Tajitsu
 
 
-#include"main.h"    // 設定ヘッダ
+#include"main.h"    // Main config
 #include"version.h"
 
 #include <cairo.h>
@@ -18,53 +18,13 @@
 #include<sys/time.h>
 #endif
 
-extern void my_signal_connect();
-extern GtkWidget* gtkut_button_new_from_stock();
-extern GtkWidget* gtkut_toggle_button_new_from_stock();
-extern GtkWidget* gtkut_toggle_button_new_from_pixbuf();
-extern GtkWidget *make_menu();
-extern void do_quit();
-extern void my_entry_set_width_chars();
 
-extern void calcpa2_skymon();
 
-extern void get_current_obs_time();
-extern void add_day();
 
-extern int get_allsky();
-extern gint update_allsky();
-extern void allsky_read_data();
 
-#ifdef USE_XMLRPC
-extern gint update_telstat();
-extern int close_telstat();
-extern void cc_get_toggle();
-#endif
-
-extern void allsky_debug_print (const gchar *format, ...) G_GNUC_PRINTF(1, 2);
-
-extern time_t ghttp_parse_date();
-
-extern void do_update_azel();
-
-extern gint tree_update_azel ();
-extern void make_tree();
-extern void raise_tree();
-
-extern int get_gmtoff_from_sys ();
-
-void create_skymon_dialog();
-void close_skymon();
-
-void screen_changed();
 void draw_skymon_pixmap();
 static gboolean configure_skymon();
 static gboolean expose_skymon();
-gboolean draw_skymon();
-gboolean draw_skymon_cairo();
-#ifdef USE_XMLRPC
-gboolean draw_skymon_with_telstat_cairo();
-#endif
 
 void my_cairo_arc_center();
 void my_cairo_arc_center2();
@@ -87,7 +47,6 @@ void my_cairo_telescope_path();
 #endif
 
 static void cc_skymon_mode ();
-static void cc_get_adj ();
 static void skymon_set_and_draw();
 static void skymon_set_noobj();
 static void skymon_set_hide();
@@ -112,19 +71,11 @@ void draw_stderr_graph();
 
 gboolean flagDrawing=FALSE;
 gboolean supports_alpha = FALSE;
-extern gboolean flagSkymon;
-extern gboolean flagTree;
-extern gboolean flag_getting_allsky;
 gint old_width=0, old_height=0, old_w=0, old_h=0;
 gdouble old_r=0;
 
 static gint work_page=0;
 
-#ifndef USE_WIN32
-extern pid_t allsky_pid;
-#endif
-
-extern void printf_log();
 
 // Create Sky Monitor Window
 void create_skymon_dialog(typHOE *hg)
@@ -493,9 +444,6 @@ void create_skymon_dialog(typHOE *hg)
   gtk_widget_set_app_paintable(hg->skymon_dw, TRUE);
   gtk_widget_show(hg->skymon_dw);
 
-  //screen_changed(hg->skymon_dw,NULL,NULL);
-
-
   gtk_widget_set_events(hg->skymon_dw, GDK_STRUCTURE_MASK | GDK_EXPOSURE_MASK);
   my_signal_connect(hg->skymon_dw, 
 		    "configure-event", 
@@ -519,48 +467,6 @@ void create_skymon_dialog(typHOE *hg)
 }
 
 
-void close_skymon(GtkWidget *w, gpointer gdata)
-{
-  typHOE *hg;
-  hg=(typHOE *)gdata;
-
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hg->skymon_button_fwd))){
-    if(hg->skymon_timer!=-1)
-      gtk_timeout_remove(hg->skymon_timer);
-    hg->skymon_timer=-1;
-  }
-  else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hg->skymon_button_rev))){
-    if(hg->skymon_timer!=-1)
-      gtk_timeout_remove(hg->skymon_timer);
-    hg->skymon_timer=-1;
-  }
-
-  gtk_widget_destroy(GTK_WIDGET(w));
-  flagSkymon=FALSE;
-}
-
-
-void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer userdata)
-{
-    /* To check if the display supports alpha channels, get the colormap */
-    GdkScreen *screen = gtk_widget_get_screen(widget);
-    GdkColormap *colormap = gdk_screen_get_rgba_colormap(screen);
-
-    if (!colormap)
-    {
-      colormap = gdk_screen_get_rgb_colormap(screen);
-      supports_alpha = FALSE;
-    }
-    else
-    {
-      supports_alpha = TRUE;
-    }
-    fflush(stdout);
-
-    /* Now we have a colormap appropriate for the screen, use it */
-    gtk_widget_set_colormap(widget, colormap);
-}
-
 void draw_skymon_pixmap(GtkWidget *widget, typHOE *hg){
   if(hg->pixmap_skymon){
     gdk_window_set_back_pixmap(widget->window,
@@ -581,8 +487,6 @@ static gboolean configure_skymon (GtkWidget *widget,
 			   GdkEventConfigure *event, 
 			   gpointer data)
 {
-  if(!flagSkymon) return(TRUE);
-
   typHOE *hg = (typHOE *)data;
   if(!hg->pixmap_skymon) return(TRUE);
 
@@ -597,7 +501,6 @@ static gboolean expose_skymon(GtkWidget *widget,
 		       gpointer userdata){
   typHOE *hg;
 
-  if(!flagSkymon) return (TRUE);
   if(event->count!=0) return(TRUE);
 
   hg=(typHOE *)userdata;
@@ -609,8 +512,6 @@ static gboolean expose_skymon(GtkWidget *widget,
 
 
 gboolean draw_skymon(GtkWidget *widget, typHOE *hg, gboolean force_flag){
-  if(!flagSkymon) return (FALSE);
-
   draw_skymon_cairo(widget, hg, force_flag);
 #ifdef USE_XMLRPC
   draw_skymon_with_telstat_cairo(widget, hg);
@@ -635,8 +536,6 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
   double y_ul, y_bl, y_ur, y_br;
   cairo_status_t cr_stat;
   GdkPixmap *pixmap_skymonbk;
-
-  if(!flagSkymon) return (FALSE);
 
   if(flagDrawing){
     allsky_debug_print("!!! Collision in DrawSkymon, skipped...\n");
@@ -760,7 +659,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	  skymon_debug_print("*** created new pixbuf\n");
 	}
 	else{
-	  printf_log("[AllSky] failed to read allsky image.");
+	  printf_log(hg, "[AllSky] failed to read allsky image.");
 	}
       }
       else{
@@ -786,7 +685,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	    pixbuf_flag=TRUE;
 	  }
 	  else{
-	    printf_log("[AllSky] failed to read allsky image.");
+	    printf_log(hg, "[AllSky] failed to read allsky image.");
 	  }
 	}
 	else{
@@ -2058,8 +1957,6 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
   GdkPixmap *pixmap_skymon_with_telstat=NULL;
   gboolean as_flag=FALSE;
   gchar *tmp;
-
-  if(!flagSkymon) return (FALSE);
 
   if(!hg->telstat_flag) return (FALSE);
 
@@ -3374,15 +3271,13 @@ static void cc_skymon_mode (GtkWidget *widget,  gpointer * gdata)
     gtk_widget_set_sensitive(hg->skymon_button_morn,TRUE);
     gtk_widget_set_sensitive(hg->skymon_button_even,TRUE);
     
-    if(flagSkymon){
-      calcpa2_skymon(hg);
+    calcpa2_skymon(hg);
 
-      if(flagTree){
-	tree_update_azel((gpointer)hg);
-      }
-
-      draw_skymon(hg->skymon_dw,hg, FALSE);
+    if(flagTree){
+      tree_update_azel((gpointer)hg);
     }
+
+    draw_skymon(hg->skymon_dw,hg, FALSE);
   }
   else if(hg->skymon_mode==SKYMON_CUR){
     if(hg->allsky_last_timer!=-1)
@@ -3396,13 +3291,11 @@ static void cc_skymon_mode (GtkWidget *widget,  gpointer * gdata)
     gtk_widget_set_sensitive(hg->skymon_button_morn,FALSE);
     gtk_widget_set_sensitive(hg->skymon_button_even,FALSE);
     
-    if(flagSkymon){
-      if(flagTree){
-	tree_update_azel((gpointer)hg);
-      }
-
-      draw_skymon(hg->skymon_dw,hg, TRUE);
+    if(flagTree){
+      tree_update_azel((gpointer)hg);
     }
+
+    draw_skymon(hg->skymon_dw,hg, TRUE);
   }
   else if(hg->skymon_mode==SKYMON_LAST){
     if(hg->allsky_last_timer!=-1)
@@ -3421,31 +3314,22 @@ static void cc_skymon_mode (GtkWidget *widget,  gpointer * gdata)
     if(hg->allsky_last_i<1){
       hg->skymon_mode=SKYMON_CUR;
       
-      if(flagSkymon){
-	if(flagTree){
-	  tree_update_azel((gpointer)hg);
-	}
-
-	draw_skymon(hg->skymon_dw,hg, FALSE);
+      if(flagTree){
+	tree_update_azel((gpointer)hg);
       }
+
+      draw_skymon(hg->skymon_dw,hg, FALSE);
     }
     else{
       hg->allsky_last_frame=0;
 
-      if(flagSkymon){
-	draw_skymon(hg->skymon_dw,hg, FALSE);
-      }
+      draw_skymon(hg->skymon_dw,hg, FALSE);
 
       hg->allsky_last_timer=g_timeout_add(hg->allsky_last_interval, 
 					  (GSourceFunc)skymon_last_go, 
 					  (gpointer)hg);
     }
   }
-}
-
-static void cc_get_adj (GtkWidget *widget, gint * gdata)
-{
-  *gdata=GTK_ADJUSTMENT(widget)->value;
 }
 
 static void skymon_set_and_draw (GtkWidget *widget,   gpointer gdata)
@@ -3455,28 +3339,26 @@ static void skymon_set_and_draw (GtkWidget *widget,   gpointer gdata)
   hg=(typHOE *)gdata;
 
   
-  if(flagSkymon){
-    if(hg->skymon_mode==SKYMON_SET){
-      calcpa2_skymon(hg);
-
-      if(flagTree){
-	tree_update_azel((gpointer)hg);
-      }
-
-      draw_skymon(hg->skymon_dw,hg, FALSE);
+  if(hg->skymon_mode==SKYMON_SET){
+    calcpa2_skymon(hg);
+    
+    if(flagTree){
+      tree_update_azel((gpointer)hg);
     }
-    else{
-      gchar tmp[6];
+    
+    draw_skymon(hg->skymon_dw,hg, FALSE);
+  }
+  else{
+    gchar tmp[6];
+    
+    skymon_set_time_current(hg);
+    
+    gtk_adjustment_set_value(hg->skymon_adj_year, (gdouble)hg->skymon_year);
+    gtk_adjustment_set_value(hg->skymon_adj_month,(gdouble)hg->skymon_month);
+    gtk_adjustment_set_value(hg->skymon_adj_day,  (gdouble)hg->skymon_day);
+    gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
+    gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_min);
 
-      skymon_set_time_current(hg);
-
-      gtk_adjustment_set_value(hg->skymon_adj_year, (gdouble)hg->skymon_year);
-      gtk_adjustment_set_value(hg->skymon_adj_month,(gdouble)hg->skymon_month);
-      gtk_adjustment_set_value(hg->skymon_adj_day,  (gdouble)hg->skymon_day);
-      gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
-      gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_min);
-
-    }
   }
 }
 
@@ -3611,34 +3493,32 @@ static void skymon_morning (GtkWidget *widget,   gpointer gdata)
   hg=(typHOE *)gdata;
 
   
-  if(flagSkymon){
-    if(hg->skymon_mode==SKYMON_SET){
-
-      if(hg->skymon_hour>10){
-	add_day(hg, &hg->skymon_year, &hg->skymon_month, &hg->skymon_day, +1);
-
-	gtk_adjustment_set_value(hg->skymon_adj_year, (gdouble)hg->skymon_year);
-	gtk_adjustment_set_value(hg->skymon_adj_month,(gdouble)hg->skymon_month);
-	gtk_adjustment_set_value(hg->skymon_adj_day,  (gdouble)hg->skymon_day);
-      }
-      hg->skymon_hour=hg->sun.s_rise.hours;
-      hg->skymon_min=hg->sun.s_rise.minutes-SUNRISE_OFFSET;
-      if(hg->skymon_min<0){
-	hg->skymon_min+=60;
-	hg->skymon_hour-=1;
-      }
-
-      gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
-      gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_min);
-
-      calcpa2_skymon(hg);
-
-      if(flagTree){
-	tree_update_azel((gpointer)hg);
-      }
-
-      draw_skymon(hg->skymon_dw,hg,FALSE);
+  if(hg->skymon_mode==SKYMON_SET){
+    
+    if(hg->skymon_hour>10){
+      add_day(hg, &hg->skymon_year, &hg->skymon_month, &hg->skymon_day, +1);
+      
+      gtk_adjustment_set_value(hg->skymon_adj_year, (gdouble)hg->skymon_year);
+      gtk_adjustment_set_value(hg->skymon_adj_month,(gdouble)hg->skymon_month);
+      gtk_adjustment_set_value(hg->skymon_adj_day,  (gdouble)hg->skymon_day);
     }
+    hg->skymon_hour=hg->sun.s_rise.hours;
+    hg->skymon_min=hg->sun.s_rise.minutes-SUNRISE_OFFSET;
+    if(hg->skymon_min<0){
+      hg->skymon_min+=60;
+      hg->skymon_hour-=1;
+    }
+
+    gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
+    gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_min);
+    
+    calcpa2_skymon(hg);
+    
+    if(flagTree){
+      tree_update_azel((gpointer)hg);
+    }
+    
+    draw_skymon(hg->skymon_dw,hg,FALSE);
   }
 }
 
@@ -3651,34 +3531,32 @@ static void skymon_evening (GtkWidget *widget,   gpointer gdata)
   hg=(typHOE *)gdata;
 
   
-  if(flagSkymon){
-    if(hg->skymon_mode==SKYMON_SET){
-
-      if(hg->skymon_hour<10){
-	add_day(hg, &hg->skymon_year, &hg->skymon_month, &hg->skymon_day, -1);
-
-	gtk_adjustment_set_value(hg->skymon_adj_year, (gdouble)hg->skymon_year);
-	gtk_adjustment_set_value(hg->skymon_adj_month,(gdouble)hg->skymon_month);
-	gtk_adjustment_set_value(hg->skymon_adj_day,  (gdouble)hg->skymon_day);
-      }
-      hg->skymon_hour=hg->sun.s_set.hours;
-      hg->skymon_min=hg->sun.s_set.minutes+SUNSET_OFFSET;
-      if(hg->skymon_min>=60){
-	hg->skymon_min-=60;
-	hg->skymon_hour+=1;
-      }
+  if(hg->skymon_mode==SKYMON_SET){
+    
+    if(hg->skymon_hour<10){
+      add_day(hg, &hg->skymon_year, &hg->skymon_month, &hg->skymon_day, -1);
       
-      gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
-      gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_min);
-
-      calcpa2_skymon(hg);
-
-      if(flagTree){
-	tree_update_azel((gpointer)hg);
-      }
-
-      draw_skymon(hg->skymon_dw,hg,FALSE);
+      gtk_adjustment_set_value(hg->skymon_adj_year, (gdouble)hg->skymon_year);
+      gtk_adjustment_set_value(hg->skymon_adj_month,(gdouble)hg->skymon_month);
+      gtk_adjustment_set_value(hg->skymon_adj_day,  (gdouble)hg->skymon_day);
     }
+    hg->skymon_hour=hg->sun.s_set.hours;
+    hg->skymon_min=hg->sun.s_set.minutes+SUNSET_OFFSET;
+    if(hg->skymon_min>=60){
+      hg->skymon_min-=60;
+      hg->skymon_hour+=1;
+    }
+    
+    gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
+    gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_min);
+    
+    calcpa2_skymon(hg);
+    
+    if(flagTree){
+      tree_update_azel((gpointer)hg);
+    }
+    
+    draw_skymon(hg->skymon_dw,hg,FALSE);
   }
 }
 
@@ -3748,30 +3626,23 @@ gint skymon_go(typHOE *hg){
     return FALSE;
   }
   
-  if(flagSkymon){
-    calcpa2_skymon(hg);
+  calcpa2_skymon(hg);
 
-    if(flagTree){
-      tree_update_azel((gpointer)hg);
-    }
-
-    draw_skymon(hg->skymon_dw,hg,FALSE);
+  if(flagTree){
+    tree_update_azel((gpointer)hg);
   }
 
-  return TRUE;
+  draw_skymon(hg->skymon_dw,hg,FALSE);
 
+  return TRUE;
 }
 
 gint skymon_last_go(typHOE *hg){
   gchar tmp[4];
 
-  
-  if(flagSkymon){
-    draw_skymon(hg->skymon_dw,hg,FALSE);
-  }
+  draw_skymon(hg->skymon_dw,hg,FALSE);
 
   return TRUE;
-
 }
 
 
@@ -3845,18 +3716,15 @@ gint skymon_back(typHOE *hg){
     return FALSE;
   }
   
-  if(flagSkymon){
-    calcpa2_skymon(hg);
+  calcpa2_skymon(hg);
 
-    if(flagTree){
-      tree_update_azel((gpointer)hg);
-    }
-
-    draw_skymon(hg->skymon_dw,hg,FALSE);
+  if(flagTree){
+    tree_update_azel((gpointer)hg);
   }
+  
+  draw_skymon(hg->skymon_dw,hg,FALSE);
 
   return TRUE;
-
 }
 
 void skymon_set_time_current(typHOE *hg){
