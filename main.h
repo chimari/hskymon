@@ -86,6 +86,7 @@
 #define STD_SIMBAD_URL "http://simbad.harvard.edu/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=HTML"
 #define FCDB_NED_URL "http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES"
 #define FCDB_SDSS_URL "http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?id=%s"
+#define FCDB_LAMOST_URL "http://dr3.lamost.org/spectrum/view?obsid=%d"
 #elif defined(USE_OSX)
 #define DSS_URL "open http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick\\&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf\\&SURVEY=Digitized+Sky+Survey"
 #define SIMBAD_URL "open http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none\\&CooEquinox=2000\\&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf\\&submit=submit%%20query\\&Radius.unit=arcmin\\&CooEqui=2000\\&CooFrame=FK5\\&Radius=2\\&output.format=HTML"
@@ -103,6 +104,7 @@
 #define STD_SIMBAD_URL "open http://simbad.harvard.edu/simbad/sim-id?Ident=%s\\&NbIdent=1\\&Radius=2\\&Radius.unit=arcmin\\&submit=submit+id\\&output.format=HTML"
 #define FCDB_NED_URL "open http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s\\&extend=no\\&hconst=73\\&omegam=0.27\\&omegav=0.73\\&corr_z=1\\&out_csys=Equatorial\\&out_equinox=J2000.0\\&obj_sort=RA+or+Longitude\\&of=pre_text\\&zv_breaker=30000.0\\&list_limit=5\\&img_stamp=YES"
 #define FCDB_SDSS_URL "open http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?id=%s"
+#define FCDB_LAMOST_URL "open http://dr3.lamost.org/spectrum/view?obsid=%d"
 #else
 #define DSS_URL "\"http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey\""
 #define SIMBAD_URL "\"http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none&CooEquinox=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML\""
@@ -120,6 +122,7 @@
 #define STD_SIMBAD_URL "\"http://simbad.harvard.edu/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=HTML\""
 #define FCDB_NED_URL "\"http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES\""
 #define FCDB_SDSS_URL "\"http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?id=%s\""
+#define FCDB_LAMOST_URL "\"http://dr3.lamost.org/spectrum/view?obsid=%d\""
 #endif
 
 #ifdef USE_WIN32
@@ -174,6 +177,10 @@
 
 #define FCDB_HOST_FIS "vizier.u-strasbg.fr"
 #define FCDB_FIS_PATH "/viz-bin/votable?-source=II/298/fis&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=500&-out.form=VOTable"
+
+#define FCDB_HOST_LAMOST "vizier.u-strasbg.fr"
+#define FCDB_LAMOST_ALL_PATH "/viz-bin/votable?-source=V/149/dr2&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.all&-out.max=500&-out.form=VOTable"
+#define FCDB_LAMOST_AFGK_PATH "/viz-bin/votable?-source=V/149/stellar2&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.all&-out.max=500&-out.form=VOTable"
 
 
 
@@ -466,6 +473,7 @@ enum
   FCDB_TYPE_GSC,
   FCDB_TYPE_PS1,
   FCDB_TYPE_SDSS,
+  FCDB_TYPE_LAMOST,
   FCDB_TYPE_USNO,
   FCDB_TYPE_GAIA,
   FCDB_TYPE_2MASS,
@@ -513,7 +521,14 @@ enum
   FCDB_NED_OTYPE_SN,
   FCDB_NED_OTYPE_PN,
   FCDB_NED_OTYPE_HII,
-  NUM_NED_FCDB_OTYPE
+  NUM_FCDB_NED_OTYPE
+};
+
+enum
+{
+  FCDB_LAMOST_CAT_ALL,
+  FCDB_LAMOST_CAT_AFGK,
+  NUM_FCDB_LAMOST_CAT
 };
 
 
@@ -1607,6 +1622,7 @@ struct _typHOE{
   gint fcdb_otype;
   gint fcdb_ned_diam;
   gint fcdb_ned_otype;
+  gint fcdb_lamost_cat;
   gboolean fcdb_auto;
   gboolean fcdb_ned_ref;
   gboolean fcdb_gsc_fil;
@@ -1976,6 +1992,8 @@ void fcdb_2mass_vo_parse();
 void fcdb_wise_vo_parse();
 void fcdb_irc_vo_parse();
 void fcdb_fis_vo_parse();
+void fcdb_lamost_all_vo_parse();
+void fcdb_lamost_afgk_vo_parse();
 void addobj_vo_parse();
 void stddb_vo_parse();
 

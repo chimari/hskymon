@@ -4376,9 +4376,10 @@ void create_fcdb_para_dialog (typHOE *hg)
 {
   GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
     *spinner, *combo, *table, *check, *r1, *r2, *r3, *r4, *r5, *r6, 
-    *r7, *r8, *r9, *r10, *r11;
+    *r7, *r8, *r9, *r10, *r11, *r12;
   GtkAdjustment *adj;
   gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, 
+    tmp_lamost_cat,
     tmp_gsc_mag, tmp_gsc_diam, tmp_ps1_mag, tmp_ps1_diam, tmp_ps1_mindet, 
     tmp_sdss_mag, tmp_sdss_diam, tmp_usno_mag, tmp_usno_diam,
     tmp_gaia_mag, tmp_gaia_diam, tmp_2mass_mag, tmp_2mass_diam,
@@ -4414,6 +4415,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_sdss_fil=hg->fcdb_sdss_fil;
   tmp_sdss_mag=hg->fcdb_sdss_mag;
   tmp_sdss_diam=hg->fcdb_sdss_diam;
+  tmp_lamost_cat=hg->fcdb_lamost_cat;
   tmp_usno_fil=hg->fcdb_usno_fil;
   tmp_usno_mag=hg->fcdb_usno_mag;
   tmp_usno_diam=hg->fcdb_usno_diam;
@@ -4464,35 +4466,40 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_widget_show (r5);
   my_signal_connect (r5, "toggled", radio_fcdb, (gpointer)hg);
 
-  r6 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "USNO-B");
+  r6 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "LAMOST");
   gtk_box_pack_start(GTK_BOX(hbox), r6, FALSE, FALSE, 0);
   gtk_widget_show (r6);
   my_signal_connect (r6, "toggled", radio_fcdb, (gpointer)hg);
 
-  r7 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "GAIA");
+  r7 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "USNO-B");
   gtk_box_pack_start(GTK_BOX(hbox), r7, FALSE, FALSE, 0);
   gtk_widget_show (r7);
   my_signal_connect (r7, "toggled", radio_fcdb, (gpointer)hg);
 
-  r8 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "2MASS");
+  r8 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "GAIA");
   gtk_box_pack_start(GTK_BOX(hbox), r8, FALSE, FALSE, 0);
   gtk_widget_show (r8);
   my_signal_connect (r8, "toggled", radio_fcdb, (gpointer)hg);
 
-  r9 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "WISE");
+  r9 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "2MASS");
   gtk_box_pack_start(GTK_BOX(hbox), r9, FALSE, FALSE, 0);
   gtk_widget_show (r9);
   my_signal_connect (r9, "toggled", radio_fcdb, (gpointer)hg);
 
-  r10 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "AKARI/IRC");
+  r10 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "WISE");
   gtk_box_pack_start(GTK_BOX(hbox), r10, FALSE, FALSE, 0);
   gtk_widget_show (r10);
   my_signal_connect (r10, "toggled", radio_fcdb, (gpointer)hg);
 
-  r11 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "AKARI/FIS");
+  r11 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "AKARI/IRC");
   gtk_box_pack_start(GTK_BOX(hbox), r11, FALSE, FALSE, 0);
   gtk_widget_show (r11);
   my_signal_connect (r11, "toggled", radio_fcdb, (gpointer)hg);
+
+  r12 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "AKARI/FIS");
+  gtk_box_pack_start(GTK_BOX(hbox), r12, FALSE, FALSE, 0);
+  gtk_widget_show (r12);
+  my_signal_connect (r12, "toggled", radio_fcdb, (gpointer)hg);
 
   cdata->fcdb_group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(r1));
   cdata->fcdb_type=hg->fcdb_type;
@@ -5012,6 +5019,60 @@ void create_fcdb_para_dialog (typHOE *hg)
 
 
   vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("LAMOST DR2");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
+
+  table = gtk_table_new(3,6,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
+
+  label = gtk_label_new ("Search Area = Finding Chart Area");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 3, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+
+  label = gtk_label_new ("Catalog");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  {
+    GtkListStore *store;
+    GtkTreeIter iter, iter_set;	  
+    GtkCellRenderer *renderer;
+      
+    store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "DR2 All",
+		       1, FCDB_OTYPE_ALL, -1);
+    if(hg->fcdb_lamost_cat==FCDB_LAMOST_CAT_ALL) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "A, F, G & K type Stars",
+		       1, FCDB_OTYPE_STAR, -1);
+    if(hg->fcdb_lamost_cat==FCDB_LAMOST_CAT_AFGK) iter_set=iter;
+
+    combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    gtk_table_attach(GTK_TABLE(table), combo, 1, 2, 1, 2,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+    g_object_unref(store);
+    
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+    	
+    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+    gtk_widget_show(combo);
+    my_signal_connect (combo,"changed",cc_get_combo_box,
+		       &tmp_lamost_cat);
+  }
+
+
+  vbox = gtk_vbox_new (FALSE, 0);
   label = gtk_label_new ("USNO-B");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -5460,18 +5521,20 @@ void create_fcdb_para_dialog (typHOE *hg)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r4),TRUE);
   if(hg->fcdb_type==FCDB_TYPE_SDSS)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r5),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_USNO)
+  if(hg->fcdb_type==FCDB_TYPE_LAMOST)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r6),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_GAIA)
+  if(hg->fcdb_type==FCDB_TYPE_USNO)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r7),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_2MASS)
+  if(hg->fcdb_type==FCDB_TYPE_GAIA)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r8),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_WISE)
+  if(hg->fcdb_type==FCDB_TYPE_2MASS)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r9),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_IRC)
+  if(hg->fcdb_type==FCDB_TYPE_WISE)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r10),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_FIS)
+  if(hg->fcdb_type==FCDB_TYPE_IRC)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r11),TRUE);
+  if(hg->fcdb_type==FCDB_TYPE_FIS)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r12),TRUE);
 
   gtk_main();
 
@@ -5483,6 +5546,9 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_ned_diam = tmp_ned_diam;
       hg->fcdb_ned_otype = tmp_ned_otype;
       if(hg->fcdb_type!=cdata->fcdb_type) rebuild_flag=TRUE;
+      else if((hg->fcdb_type==FCDB_TYPE_LAMOST)
+	      &&(hg->fcdb_lamost_cat!=tmp_lamost_cat)) 
+	rebuild_flag=TRUE;
       hg->fcdb_type  = cdata->fcdb_type;
       hg->fcdb_ned_ref  = tmp_ned_ref;
       hg->fcdb_gsc_fil  = tmp_gsc_fil;
@@ -5495,6 +5561,7 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_sdss_fil  = tmp_sdss_fil;
       hg->fcdb_sdss_mag  = tmp_sdss_mag;
       hg->fcdb_sdss_diam  = tmp_sdss_diam;
+      hg->fcdb_lamost_cat  = tmp_lamost_cat;
       hg->fcdb_usno_fil  = tmp_usno_fil;
       hg->fcdb_usno_mag  = tmp_usno_mag;
       hg->fcdb_usno_diam  = tmp_usno_diam;
@@ -5527,6 +5594,7 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_sdss_fil = TRUE;
       hg->fcdb_sdss_mag = 19;
       hg->fcdb_sdss_diam = 180;
+      hg->fcdb_lamost_cat = FCDB_LAMOST_CAT_AFGK;
       hg->fcdb_usno_fil = TRUE;
       hg->fcdb_usno_mag = 19;
       hg->fcdb_usno_diam = 180;
@@ -5552,6 +5620,8 @@ void create_fcdb_para_dialog (typHOE *hg)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"PanSTARRS-1");
       else if(hg->fcdb_type==FCDB_TYPE_SDSS)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SDSS DR13");
+      else if(hg->fcdb_type==FCDB_TYPE_LAMOST)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"LAMOST DR2");
       else if(hg->fcdb_type==FCDB_TYPE_USNO)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"USNO-B");
       else if(hg->fcdb_type==FCDB_TYPE_GAIA)
@@ -8927,6 +8997,7 @@ void param_init(typHOE *hg){
   hg->fcdb_sdss_fil=TRUE;
   hg->fcdb_sdss_mag=19;
   hg->fcdb_sdss_diam=180;
+  hg->fcdb_lamost_cat=FCDB_LAMOST_CAT_AFGK;
   hg->fcdb_usno_fil=TRUE;
   hg->fcdb_usno_mag=19;
   hg->fcdb_usno_diam=180;

@@ -1,3 +1,8 @@
+2017.11.09 ver3.0.4 - Added LAMOST DR2 (via vizier/CDS) for database query
+	              in FC (A, F, G & K type stars catalog is default.).
+	              Spectrum can be browsed by "Browse" button in Object
+	              list window.
+
 2017.09.28 ver3.0.3 - Source brushed up
 	              Moved all global args into main.h
 
