@@ -138,13 +138,13 @@
 #define DSS_ARCMIN_MAX 120
 #define DSS_PIX 1000
 
-#define STDDB_HOST_SIMBAD "simbad.harvard.edu"
 #define STDDB_PATH_SSLOC "/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&output.max=%d&OutputMode=LIST&output.format=VOTABLE"
 #define STDDB_PATH_RAPID "/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s&submit=submit%%20query&output.max=%d&OutputMode=LIST&output.format=VOTABLE"
 #define STDDB_PATH_MIRSTD "/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26iras.f12>%d%%26iras.f25>%d&submit=submit%%20query&output.max=%d&OutputMode=LIST&output.format=VOTABLE"
 #define STDDB_FILE_XML "simbad.xml"
 
-#define FCDB_HOST_SIMBAD "simbad.harvard.edu"
+#define FCDB_HOST_SIMBAD_STRASBG "simbad.u-strasbg.fr"
+#define FCDB_HOST_SIMBAD_HARVARD "simbad.harvard.edu"
 #define FCDB_PATH "/simbad/sim-sam?Criteria=region%%28box%%2C%lf%s%lf%%2C%+lfm%+lfm%%29%s%s&submit=submit+query&OutputMode=LIST&maxObject=%d&CriteriaFile=&output.format=VOTABLE"
 #define FCDB_FILE_XML "database_fc.xml"
 
@@ -181,6 +181,9 @@
 #define FCDB_HOST_LAMOST "vizier.u-strasbg.fr"
 #define FCDB_LAMOST_ALL_PATH "/viz-bin/votable?-source=V/149/dr2&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.all&-out.max=500&-out.form=VOTable"
 #define FCDB_LAMOST_AFGK_PATH "/viz-bin/votable?-source=V/149/stellar2&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.all&-out.max=500&-out.form=VOTable"
+
+#define FCDB_HOST_LAMOSTP "dr3.lamost.org"
+#define FCDB_LAMOSTP_PATH "/q"
 
 
 
@@ -302,6 +305,8 @@ enum{FC_STSCI_DSS1R,
 enum{ FC_OUTPUT_WINDOW, FC_OUTPUT_PDF, FC_OUTPUT_PRINT} FCOutput;
 enum{ FC_INST_HDS, FC_INST_HDSAUTO, FC_INST_HDSZENITH, FC_INST_NONE, FC_INST_IRCS, FC_INST_COMICS, FC_INST_FOCAS, FC_INST_MOIRCS, FC_INST_FMOS, FC_INST_SPCAM, FC_INST_HSCDET,FC_INST_HSCA, FC_INST_NO_SELECT} FCInst;
 enum{ FC_SCALE_LINEAR, FC_SCALE_LOG, FC_SCALE_SQRT, FC_SCALE_HISTEQ, FC_SCALE_LOGLOG} FCScale;
+
+enum{ FCDB_SIMBAD_STRASBG, FCDB_SIMBAD_HARVARD } FCDBSimbad;
 
 #define ADC_WINSIZE 400
 #define ADC_SLIT_WIDTH 0.4
@@ -473,7 +478,7 @@ enum
   FCDB_TYPE_GSC,
   FCDB_TYPE_PS1,
   FCDB_TYPE_SDSS,
-  FCDB_TYPE_LAMOST,
+  FCDB_TYPE_LAMOSTP,
   FCDB_TYPE_USNO,
   FCDB_TYPE_GAIA,
   FCDB_TYPE_2MASS,
@@ -522,13 +527,6 @@ enum
   FCDB_NED_OTYPE_PN,
   FCDB_NED_OTYPE_HII,
   NUM_FCDB_NED_OTYPE
-};
-
-enum
-{
-  FCDB_LAMOST_CAT_ALL,
-  FCDB_LAMOST_CAT_AFGK,
-  NUM_FCDB_LAMOST_CAT
 };
 
 
@@ -1601,7 +1599,9 @@ struct _typHOE{
 
   gint fcdb_type;
   gint fcdb_type_tmp;
+  gboolean fcdb_post;
   gchar *fcdb_file;
+  gint fcdb_simbad;
   gchar *fcdb_host;
   gchar *fcdb_path;
   gint fcdb_i;
@@ -1622,7 +1622,6 @@ struct _typHOE{
   gint fcdb_otype;
   gint fcdb_ned_diam;
   gint fcdb_ned_otype;
-  gint fcdb_lamost_cat;
   gboolean fcdb_auto;
   gboolean fcdb_ned_ref;
   gboolean fcdb_gsc_fil;
@@ -1992,8 +1991,7 @@ void fcdb_2mass_vo_parse();
 void fcdb_wise_vo_parse();
 void fcdb_irc_vo_parse();
 void fcdb_fis_vo_parse();
-void fcdb_lamost_all_vo_parse();
-void fcdb_lamost_afgk_vo_parse();
+void fcdb_lamostp_vo_parse();
 void addobj_vo_parse();
 void stddb_vo_parse();
 

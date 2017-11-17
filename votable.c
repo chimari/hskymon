@@ -171,7 +171,8 @@ int Move_to_Next_VO_Table (xmlTextReaderPtr reader) {
 
 
 void Extract_Att_VO_Table(xmlTextReaderPtr reader, 
-			  VOTable *votablePtr) {
+			  VOTable *votablePtr,
+			  gchar *fname) {
 
   xmlChar *name;
   int ret;
@@ -195,6 +196,18 @@ void Extract_Att_VO_Table(xmlTextReaderPtr reader,
       xmlFree(name);
     } else {
       ret = xmlTextReaderRead(reader);
+      if(ret==-1){
+#ifdef GTK_MSG
+	popup_message(POPUP_TIMEOUT*2,
+		      "Error : XML table cannot be parsed.",
+		      " ",
+		      fname,
+		      NULL);
+#else
+	g_print ("Cannot parse XML file : \"%s\"\n",
+		 fname);
+#endif
+      }
       if (name!=NULL)
 	xmlFree(name);
     }
@@ -470,7 +483,7 @@ void stddb_vo_parse(typHOE *hg) {
   d_ra0=ra_to_deg(hg->obj[hg->std_i].ra);
   d_dec0=dec_to_deg(hg->obj[hg->std_i].dec);
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->std_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
@@ -710,7 +723,7 @@ void fcdb_vo_parse(typHOE *hg) {
 
   printf_log(hg,"[FCDB] pursing XML.");
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
@@ -948,7 +961,7 @@ void fcdb_ned_vo_parse(typHOE *hg) {
 
   printf_log(hg,"[FCDB] pursing XML.");
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
@@ -1055,7 +1068,7 @@ void fcdb_gsc_vo_parse(typHOE *hg) {
 
   printf_log(hg,"[FCDB] pursing XML.");
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
@@ -1198,7 +1211,7 @@ void fcdb_ps1_vo_parse(typHOE *hg) {
 
   printf_log(hg,"[FCDB] pursing XML.");
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
@@ -1326,7 +1339,7 @@ void fcdb_sdss_vo_parse(typHOE *hg) {
 
   printf_log(hg,"[FCDB] pursing XML.");
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
@@ -1444,7 +1457,7 @@ void fcdb_usno_vo_parse(typHOE *hg) {
 
   printf_log(hg,"[FCDB] pursing XML.");
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
@@ -1584,7 +1597,7 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
 
   printf_log(hg,"[FCDB] pursing XML.");
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
@@ -1687,7 +1700,7 @@ void fcdb_2mass_vo_parse(typHOE *hg) {
 
   printf_log(hg,"[FCDB] pursing XML.");
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
@@ -1779,7 +1792,7 @@ void fcdb_wise_vo_parse(typHOE *hg) {
 
   printf_log(hg,"[FCDB] pursing XML.");
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
@@ -1912,7 +1925,7 @@ void fcdb_irc_vo_parse(typHOE *hg) {
 
   printf_log(hg,"[FCDB] pursing XML.");
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
@@ -2013,7 +2026,7 @@ void fcdb_fis_vo_parse(typHOE *hg) {
 
   printf_log(hg,"[FCDB] pursing XML.");
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
@@ -2142,7 +2155,7 @@ void fcdb_fis_vo_parse(typHOE *hg) {
 }
 
 
-void fcdb_lamost_all_vo_parse(typHOE *hg) {
+void fcdb_lamostp_vo_parse(typHOE *hg) {
   xmlTextReaderPtr reader;
   list_field *vfield_move;
   list_tabledata *vtabledata_move;
@@ -2154,166 +2167,29 @@ void fcdb_lamost_all_vo_parse(typHOE *hg) {
 
   printf_log(hg,"[FCDB] pursing XML.");
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
-    if(xmlStrcmp(vfield_move->name,"Target") == 0) 
+    if(xmlStrcmp(vfield_move->name,"designation") == 0) 
       columns[0] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"RAJ2000") == 0)
+    else if(xmlStrcmp(vfield_move->name,"ra") == 0)
       columns[1] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"DEJ2000") == 0) 
+    else if(xmlStrcmp(vfield_move->name,"dec") == 0) 
       columns[2] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"snru") == 0) 
-      columns[3] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"snrg") == 0) 
-      columns[4] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"snrr") == 0) 
-      columns[5] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"snri") == 0) 
-      columns[6] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"snrz") == 0) 
-      columns[7] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Class") == 0) 
-      columns[8] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"SubClass") == 0) 
-      columns[9] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"ObsID") == 0) 
-      columns[10] = vfield_move->position;
- }
-
-
- Extract_VO_TableData(reader,&votable, nbFields, columns);
- for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
-   if(i_list==MAX_FCDB) break;
-
-   if (vtabledata_move->colomn == columns[0]){
-     if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
-     hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
-   }
-   else if (vtabledata_move->colomn == columns[1]){
-     hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
-     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
-   }
-   else if (vtabledata_move->colomn == columns[2]){
-     hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
-     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
-   }
-   else if (vtabledata_move->colomn == columns[3]){ // snru
-     if(vtabledata_move->value){
-       hg->fcdb[i_list].u=atof(vtabledata_move->value);
-     }
-     else{
-       hg->fcdb[i_list].u=-100;
-     }
-   }
-   else if (vtabledata_move->colomn == columns[4]){ // snrg
-     if(vtabledata_move->value){
-       hg->fcdb[i_list].v=atof(vtabledata_move->value);
-     }
-     else{
-       hg->fcdb[i_list].v=-100;
-     }
-   }
-   else if (vtabledata_move->colomn == columns[5]){  // snrr
-     if(vtabledata_move->value){
-       hg->fcdb[i_list].r=atof(vtabledata_move->value);
-     }
-     else{
-       hg->fcdb[i_list].r=-100;
-     }
-   }
-   else if (vtabledata_move->colomn == columns[6]){  // snri
-     if(vtabledata_move->value){
-       hg->fcdb[i_list].i=atof(vtabledata_move->value);
-       if(hg->fcdb[i_list].i<-900) hg->fcdb[i_list].i=+100;
-     }
-     else{
-       hg->fcdb[i_list].i=-100;
-     }
-   }
-   else if (vtabledata_move->colomn == columns[7]){  // z
-     if(vtabledata_move->value){
-       hg->fcdb[i_list].j=atof(vtabledata_move->value);
-     }
-     else{
-       hg->fcdb[i_list].j=-100;
-     }
-   }
-   else if (vtabledata_move->colomn == columns[8]){
-     if(hg->fcdb[i_list].otype) g_free(hg->fcdb[i_list].otype);
-     hg->fcdb[i_list].otype=g_strdup(vtabledata_move->value);
-   }
-   else if (vtabledata_move->colomn == columns[9]){
-     if(hg->fcdb[i_list].sp) g_free(hg->fcdb[i_list].sp);
-     hg->fcdb[i_list].sp=g_strdup(vtabledata_move->value);
-   }
-   else if (vtabledata_move->colomn == columns[10]){  // ObsID
-     if(vtabledata_move->value){
-       hg->fcdb[i_list].ref=atoi(vtabledata_move->value);
-     }
-     else{
-       hg->fcdb[i_list].ref=0;
-     }
-     i_all++;
-     i_list++;
-   }
-  }
-  hg->fcdb_i_max=i_list;
-  hg->fcdb_i_all=i_all;
-
-  if (Free_VO_Parser(reader,&votable,&columns) == 1)
-    fprintf(stderr,"memory problem\n");
-
-  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
-    if(!hg->fcdb[i_list].otype) hg->fcdb[i_list].otype=g_strdup("---");
-    if(!hg->fcdb[i_list].sp) hg->fcdb[i_list].sp=g_strdup("---");
-
-    hg->fcdb[i_list].equinox=2000.00;
-    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
-				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
-    hg->fcdb[i_list].pmra=0;
-    hg->fcdb[i_list].pmdec=0;
-    hg->fcdb[i_list].pm=FALSE;
-  }
-}
-
-
-void fcdb_lamost_afgk_vo_parse(typHOE *hg) {
-  xmlTextReaderPtr reader;
-  list_field *vfield_move;
-  list_tabledata *vtabledata_move;
-  VOTable votable;
-  int nbFields, process_column;
-  int *columns;
-  reader = Init_VO_Parser(hg->fcdb_file,&votable);
-  int i_list=0, i_all=0;
-
-  printf_log(hg,"[FCDB] pursing XML.");
-
-  Extract_Att_VO_Table(reader,&votable);
-
-  Extract_VO_Fields(reader,&votable,&nbFields,&columns);
-  for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
-    if(xmlStrcmp(vfield_move->name,"Target") == 0) 
-      columns[0] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"RAJ2000") == 0)
-      columns[1] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"DEJ2000") == 0) 
-      columns[2] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Teff") == 0) 
+    else if(xmlStrcmp(vfield_move->name,"teff") == 0) 
       columns[3] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,"logg") == 0) 
       columns[4] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"[Fe/H]") == 0) 
+    else if(xmlStrcmp(vfield_move->name,"feh") == 0) 
       columns[5] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"HRV") == 0) 
+    else if(xmlStrcmp(vfield_move->name,"rv") == 0) 
       columns[6] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Class") == 0) 
+    else if(xmlStrcmp(vfield_move->name,"class") == 0) 
       columns[7] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"SubClass") == 0) 
+    else if(xmlStrcmp(vfield_move->name,"subclass") == 0) 
       columns[8] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"ObsID") == 0) 
+    else if(xmlStrcmp(vfield_move->name,"obsid") == 0) 
       columns[9] = vfield_move->position;
  }
 
@@ -2342,6 +2218,8 @@ void fcdb_lamost_afgk_vo_parse(typHOE *hg) {
      else{
        hg->fcdb[i_list].u=-1;
      }
+     i_all++;
+     i_list++;
    }
    else if (vtabledata_move->colomn == columns[4]){ // log g
      if(vtabledata_move->value){
@@ -2384,8 +2262,6 @@ void fcdb_lamost_afgk_vo_parse(typHOE *hg) {
      else{
        hg->fcdb[i_list].ref=0;
      }
-     i_all++;
-     i_list++;
    }
   }
   hg->fcdb_i_max=i_list;
@@ -2424,7 +2300,7 @@ void addobj_vo_parse(typHOE *hg) {
   if(hg->addobj_voname) g_free(hg->addobj_voname);
   hg->addobj_voname=NULL;
 
-  Extract_Att_VO_Table(reader,&votable);
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   if(hg->addobj_type==FCDB_TYPE_SIMBAD){

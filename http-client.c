@@ -33,6 +33,8 @@
 #include "ssl.h"
 #endif
 
+#include "post_lamost.h"
+
 
 // From libghttp-1.0.9
 time_t http_date_to_time(const char *a_date);
@@ -91,6 +93,31 @@ int debug_flg = 0;
 int allsky_fd[2];
 #endif
 
+
+gchar *make_rand16(){
+  int i;
+  gchar retc[17] ,*ret;
+  gchar ch;
+
+  srand ( time(NULL) );
+  for ( i = 0 ; i < 16 ; i++ ) {
+    ch = rand () % 62;
+    if (ch>=52){
+      retc[i]='0'+ch-52;
+    }
+    else if (ch>=26){
+      retc[i]='A'+ch-26;
+    }
+    else{
+      retc[i]='a'+ch;
+    }
+  }
+  retc[i]=0x00;
+
+  ret=g_strdup(retc);
+
+  return(ret);
+}
 
 static gint fd_check_io(gint fd, GIOCondition cond)
 {
@@ -2468,6 +2495,74 @@ int http_c_std(typHOE *hg){
 #endif
 }
 
+int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
+  char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
+  gint ip, plen;
+
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_LAMOSTP:
+    ip=0;
+    plen=0;
+
+    while(1){
+      if(lamost_post[ip].key==NULL) break;
+      switch(lamost_post[ip].flg){
+      case POST_NULL:
+	sprintf(send_mesg,
+		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n\r\n",
+		rand16,
+		lamost_post[ip].key);
+	break;
+
+      case POST_CONST:
+	sprintf(send_mesg,
+		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		rand16,
+		lamost_post[ip].key,
+		lamost_post[ip].prm);
+	break;
+	
+      case POST_INPUT:
+	if(strcmp(lamost_post[ip].key,"pos.racenter")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  rand16,
+		  lamost_post[ip].key,
+		    hg->fcdb_d_ra0);
+	}
+	else if(strcmp(lamost_post[ip].key,"pos.deccenter")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  rand16,
+		  lamost_post[ip].key,
+		  hg->fcdb_d_dec0);
+	}
+	else if(strcmp(lamost_post[ip].key,"pos.radius")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.1lf\r\n",
+		  rand16,
+		  lamost_post[ip].key,
+		  hg->dss_arcmin*30.0);
+	}
+	break;
+      }	
+      plen+=strlen(send_mesg);
+      if(wflag)  write_to_server(command_socket, send_mesg);
+      ip++;
+    }
+    
+    sprintf(send_mesg,
+	    "------WebKitFormBoundary%s--\r\n\r\n",
+	    rand16);
+    plen+=strlen(send_mesg);
+    if(wflag)  write_to_server(command_socket, send_mesg);
+
+    break;
+  }
+
+  return(plen);
+}
+ 
 
 #ifdef USE_WIN32
 unsigned __stdcall http_c_fcdb(LPVOID lpvPipe)
@@ -2491,6 +2586,16 @@ int http_c_fcdb(typHOE *hg){
 
   gboolean chunked_flag=FALSE;
   gchar *cp;
+
+  gchar *rand16=NULL;
+  gint plen;
+
+  // Calculate Content-Length
+  if(hg->fcdb_post){
+    rand16=make_rand16();
+
+    plen=post_body(hg, FALSE, 0, rand16);
+  }
    
   /* ホストの情報 (IP アドレスなど) を取得 */
   memset(&hints, 0, sizeof(hints));
@@ -2530,7 +2635,12 @@ int http_c_fcdb(typHOE *hg){
   freeaddrinfo(res);
 
   // HTTP/1.1 ではchunked対策が必要
-  sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->fcdb_path);
+  if(hg->fcdb_post){
+    sprintf(send_mesg, "POST %s HTTP/1.1\r\n", hg->fcdb_path);
+  }
+  else{
+    sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->fcdb_path);
+  }
   write_to_server(command_socket, send_mesg);
 
   sprintf(send_mesg, "Accept: application/xml\r\n");
@@ -2545,9 +2655,23 @@ int http_c_fcdb(typHOE *hg){
   sprintf(send_mesg, "Connection: close\r\n");
   write_to_server(command_socket, send_mesg);
 
+  if(hg->fcdb_post){
+    sprintf(send_mesg, "Content-Length: %d\r\n", plen);
+    write_to_server(command_socket, send_mesg);
+
+    sprintf(send_mesg, "Content-Type:multipart/form-data; boundary=----WebKitFormBoundary%s\r\n", rand16);
+    write_to_server(command_socket, send_mesg);
+  }
+
   sprintf(send_mesg, "\r\n");
   write_to_server(command_socket, send_mesg);
-  
+
+  // POST body
+  if(hg->fcdb_post){
+    plen=post_body(hg, TRUE, command_socket, rand16);
+    if(rand16) g_free(rand16);
+  }
+
   if((fp_write=fopen(hg->fcdb_file,"w"))==NULL){
     fprintf(stderr," File Write Error  \"%s\" \n", hg->fcdb_file);
     return(HSKYMON_HTTP_ERROR_TEMPFILE);
@@ -2587,6 +2711,7 @@ int http_c_fcdb(typHOE *hg){
   return 0;
 #endif
 }
+
 
 
 int get_dss(typHOE *hg){

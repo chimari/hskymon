@@ -2944,9 +2944,9 @@ void do_merge (GtkWidget *widget, gpointer gdata)
 #ifdef GTK_MSG
       popup_message(POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
-		  " ",
-		  fname,
-		  NULL);
+		    " ",
+		    fname,
+		    NULL);
 #else
       g_print ("Cannot Open %s\n",
 	       fname);
@@ -4379,7 +4379,6 @@ void create_fcdb_para_dialog (typHOE *hg)
     *r7, *r8, *r9, *r10, *r11, *r12;
   GtkAdjustment *adj;
   gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, 
-    tmp_lamost_cat,
     tmp_gsc_mag, tmp_gsc_diam, tmp_ps1_mag, tmp_ps1_diam, tmp_ps1_mindet, 
     tmp_sdss_mag, tmp_sdss_diam, tmp_usno_mag, tmp_usno_diam,
     tmp_gaia_mag, tmp_gaia_diam, tmp_2mass_mag, tmp_2mass_diam,
@@ -4415,7 +4414,6 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_sdss_fil=hg->fcdb_sdss_fil;
   tmp_sdss_mag=hg->fcdb_sdss_mag;
   tmp_sdss_diam=hg->fcdb_sdss_diam;
-  tmp_lamost_cat=hg->fcdb_lamost_cat;
   tmp_usno_fil=hg->fcdb_usno_fil;
   tmp_usno_mag=hg->fcdb_usno_mag;
   tmp_usno_diam=hg->fcdb_usno_diam;
@@ -5019,7 +5017,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 
 
   vbox = gtk_vbox_new (FALSE, 0);
-  label = gtk_label_new ("LAMOST DR2");
+  label = gtk_label_new ("LAMOST DR3");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
   table = gtk_table_new(3,6,FALSE);
@@ -5028,49 +5026,10 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
   gtk_container_add (GTK_CONTAINER (vbox), table);
 
-  label = gtk_label_new ("Search Area = Finding Chart Area");
+  label = gtk_label_new ("Search Diameter = Finding Chart Diameter");
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(table), label, 0, 3, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
-
-
-  label = gtk_label_new ("Catalog");
-  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2,
-		   GTK_FILL,GTK_SHRINK,0,0);
-
-  {
-    GtkListStore *store;
-    GtkTreeIter iter, iter_set;	  
-    GtkCellRenderer *renderer;
-      
-    store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
-    
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "DR2 All",
-		       1, FCDB_OTYPE_ALL, -1);
-    if(hg->fcdb_lamost_cat==FCDB_LAMOST_CAT_ALL) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "A, F, G & K type Stars",
-		       1, FCDB_OTYPE_STAR, -1);
-    if(hg->fcdb_lamost_cat==FCDB_LAMOST_CAT_AFGK) iter_set=iter;
-
-    combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
-    gtk_table_attach(GTK_TABLE(table), combo, 1, 2, 1, 2,
-		     GTK_SHRINK,GTK_SHRINK,0,0);
-    g_object_unref(store);
-    
-    renderer = gtk_cell_renderer_text_new();
-    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
-    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
-    	
-    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
-    gtk_widget_show(combo);
-    my_signal_connect (combo,"changed",cc_get_combo_box,
-		       &tmp_lamost_cat);
-  }
-
 
   vbox = gtk_vbox_new (FALSE, 0);
   label = gtk_label_new ("USNO-B");
@@ -5521,7 +5480,7 @@ void create_fcdb_para_dialog (typHOE *hg)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r4),TRUE);
   if(hg->fcdb_type==FCDB_TYPE_SDSS)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r5),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_LAMOST)
+  if(hg->fcdb_type==FCDB_TYPE_LAMOSTP)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r6),TRUE);
   if(hg->fcdb_type==FCDB_TYPE_USNO)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r7),TRUE);
@@ -5546,9 +5505,6 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_ned_diam = tmp_ned_diam;
       hg->fcdb_ned_otype = tmp_ned_otype;
       if(hg->fcdb_type!=cdata->fcdb_type) rebuild_flag=TRUE;
-      else if((hg->fcdb_type==FCDB_TYPE_LAMOST)
-	      &&(hg->fcdb_lamost_cat!=tmp_lamost_cat)) 
-	rebuild_flag=TRUE;
       hg->fcdb_type  = cdata->fcdb_type;
       hg->fcdb_ned_ref  = tmp_ned_ref;
       hg->fcdb_gsc_fil  = tmp_gsc_fil;
@@ -5561,7 +5517,6 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_sdss_fil  = tmp_sdss_fil;
       hg->fcdb_sdss_mag  = tmp_sdss_mag;
       hg->fcdb_sdss_diam  = tmp_sdss_diam;
-      hg->fcdb_lamost_cat  = tmp_lamost_cat;
       hg->fcdb_usno_fil  = tmp_usno_fil;
       hg->fcdb_usno_mag  = tmp_usno_mag;
       hg->fcdb_usno_diam  = tmp_usno_diam;
@@ -5594,7 +5549,6 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_sdss_fil = TRUE;
       hg->fcdb_sdss_mag = 19;
       hg->fcdb_sdss_diam = 180;
-      hg->fcdb_lamost_cat = FCDB_LAMOST_CAT_AFGK;
       hg->fcdb_usno_fil = TRUE;
       hg->fcdb_usno_mag = 19;
       hg->fcdb_usno_diam = 180;
@@ -5620,8 +5574,8 @@ void create_fcdb_para_dialog (typHOE *hg)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"PanSTARRS-1");
       else if(hg->fcdb_type==FCDB_TYPE_SDSS)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SDSS DR13");
-      else if(hg->fcdb_type==FCDB_TYPE_LAMOST)
-	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"LAMOST DR2");
+      else if(hg->fcdb_type==FCDB_TYPE_LAMOSTP)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"LAMOST DR3");
       else if(hg->fcdb_type==FCDB_TYPE_USNO)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"USNO-B");
       else if(hg->fcdb_type==FCDB_TYPE_GAIA)
@@ -5968,6 +5922,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   guint tmp_pres;
   gint  tmp_temp;
   gint  tmp_sz_skymon, tmp_sz_plot, tmp_sz_fc, tmp_sz_adc;
+  gint  tmp_fcdb_simbad;
   gint  tmp_fc_mode_def;
   gint  tmp_fc_mode_RGB[3];
   gint  tmp_dss_scale_RGB[3];
@@ -6038,6 +5993,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   tmp_sz_plot      =hg->sz_plot;
   tmp_sz_fc        =hg->sz_fc;
   tmp_sz_adc       =hg->sz_adc;
+  tmp_fcdb_simbad  =hg->fcdb_simbad;
   tmp_fc_mode_def  =hg->fc_mode_def;
   tmp_fc_mode_RGB[0]  =hg->fc_mode_RGB[0];
   tmp_fc_mode_RGB[1]  =hg->fc_mode_RGB[1];
@@ -7941,6 +7897,59 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     }
   }
 
+  // Database access host
+  frame = gtk_frame_new ("Database Access Host");
+  gtk_box_pack_start(GTK_BOX(note_vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+  
+  table1 = gtk_table_new(2,2,FALSE);
+  gtk_container_add (GTK_CONTAINER (frame), table1);
+  gtk_container_set_border_width (GTK_CONTAINER (table1), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table1), 5);
+  gtk_table_set_col_spacings (GTK_TABLE (table1), 5);
+  
+  label = gtk_label_new ("SIMBAD");
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table1), label, 0, 1, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  
+  {
+    GtkWidget *combo;
+    GtkListStore *store;
+    GtkTreeIter iter, iter_set;	  
+    GtkCellRenderer *renderer;
+    
+    store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "Strasbourg (FR)",
+		       1, FCDB_SIMBAD_STRASBG, 2, TRUE, -1);
+    if(hg->fcdb_simbad==FCDB_SIMBAD_STRASBG) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "Harvard (US)",
+		       1, FCDB_SIMBAD_HARVARD, 2, TRUE, -1);
+    if(hg->fcdb_simbad==FCDB_SIMBAD_HARVARD) iter_set=iter;
+	
+
+    combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    gtk_table_attach(GTK_TABLE(table1), combo, 1, 2, 0, 1,
+		     GTK_FILL,GTK_SHRINK,0,0);
+    g_object_unref(store);
+	
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+	
+    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+    gtk_widget_show(combo);
+    my_signal_connect (combo,"changed",cc_get_combo_box,
+		       &tmp_fcdb_simbad);
+  }
+
+
+
 
   /*
   // Environment for Pixel Size for Finding Charts
@@ -8312,6 +8321,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->sz_plot	            =tmp_sz_plot;        
     hg->sz_fc	            =tmp_sz_fc;        
     hg->sz_adc	            =tmp_sz_adc;        
+    hg->fcdb_simbad         =tmp_fcdb_simbad;
     hg->fc_mode_def         =tmp_fc_mode_def;
     hg->fc_mode_RGB[0]      =tmp_fc_mode_RGB[0];
     hg->fc_mode_RGB[1]      =tmp_fc_mode_RGB[1];
@@ -8459,6 +8469,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->temp=TEMP_SUBARU;
     hg->pres=PRES_SUBARU;
 
+    hg->fcdb_simbad         =FCDB_SIMBAD_HARVARD;
     hg->fc_mode_def         =FC_SKYVIEW_DSS2R;
     hg->fc_mode_RGB[0]      =FC_SKYVIEW_DSS2IR;
     hg->fc_mode_RGB[1]      =FC_SKYVIEW_DSS2R;
@@ -8997,7 +9008,6 @@ void param_init(typHOE *hg){
   hg->fcdb_sdss_fil=TRUE;
   hg->fcdb_sdss_mag=19;
   hg->fcdb_sdss_diam=180;
-  hg->fcdb_lamost_cat=FCDB_LAMOST_CAT_AFGK;
   hg->fcdb_usno_fil=TRUE;
   hg->fcdb_usno_mag=19;
   hg->fcdb_usno_diam=180;
@@ -12118,6 +12128,7 @@ void WriteConf(typHOE *hg){
   xmms_cfg_write_int(cfgfile, "DSS", "RedS",(gint)hg->dss_scale_RGB[0]);
   xmms_cfg_write_int(cfgfile, "DSS", "GreenS",(gint)hg->dss_scale_RGB[1]);
   xmms_cfg_write_int(cfgfile, "DSS", "BlueS",(gint)hg->dss_scale_RGB[2]);
+  xmms_cfg_write_int(cfgfile, "DSS", "SIMBAD",(gint)hg->fcdb_simbad);
 
   // Observatory
   xmms_cfg_write_boolean(cfgfile, "Obs", "PresetFlag", hg->obs_preset_flag);
@@ -12332,6 +12343,11 @@ void ReadConf(typHOE *hg)
       hg->dss_scale_RGB[2]=FC_SCALE_LINEAR;
     hg->fc_mode=hg->fc_mode_def;
     set_fc_mode(hg);
+
+    if(xmms_cfg_read_int  (cfgfile, "DSS", "SIMBAD",  &i_buf))
+      hg->fcdb_simbad=i_buf;
+    else
+      hg->fcdb_simbad=FCDB_SIMBAD_HARVARD;
 
     // Observatory
     if(xmms_cfg_read_boolean(cfgfile, "Obs", "PresetFlag", &b_buf))
@@ -12631,6 +12647,7 @@ void ReadConf(typHOE *hg)
 
     hg->dss_arcmin=DSS_ARCMIN;
     hg->dss_pix=DSS_PIX;
+    hg->fcdb_simbad         =FCDB_SIMBAD_HARVARD;
     hg->fc_mode_def         =FC_SKYVIEW_DSS2R;
     hg->fc_mode             =hg->fc_mode_def;
     hg->fc_mode_RGB[0]      =FC_SKYVIEW_DSS2IR;

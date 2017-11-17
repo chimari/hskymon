@@ -1,3 +1,9 @@
+2017.11.16 ver3.0.5 - Changed LAMOST FCDB server to dr3.lamost.org .
+	              Now POST method is avairable for DB access.
+	            - SIMBAD DB host is selectable in "Browsing" panel of
+	              the properties window, Strasbourg/Haravard
+	              (Default is Haravard).
+
 2017.11.09 ver3.0.4 - Added LAMOST DR2 (via vizier/CDS) for database query
 	              in FC (A, F, G & K type stars catalog is default.).
 	              Spectrum can be browsed by "Browse" button in Object

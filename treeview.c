@@ -444,36 +444,6 @@ void fcdb_double_cell_data_func(GtkTreeViewColumn *col ,
   if(str)g_free(str);
 }
 
-void fcdb_lamost_all_cell_data_func(GtkTreeViewColumn *col , 
-				    GtkCellRenderer *renderer,
-				    GtkTreeModel *model, 
-				    GtkTreeIter *iter,
-				    gpointer user_data)
-{
-  const guint index = GPOINTER_TO_UINT(user_data);
-  guint64 size;
-  gdouble value;
-  gchar *str;
-
-  gtk_tree_model_get (model, iter, 
-		      index, &value,
-		      -1);
-
-  switch (index) {
-  case COLUMN_FCDB_U:
-  case COLUMN_FCDB_V:
-  case COLUMN_FCDB_R:
-  case COLUMN_FCDB_I:
-  case COLUMN_FCDB_J:
-    if(value<0) str=g_strdup_printf("---");
-    else str=g_strdup_printf("%4.0lf",value);
-    break;
-  }
-
-  g_object_set(renderer, "text", str, NULL);
-  if(str)g_free(str);
-}
-
 void fcdb_lamost_afgk_cell_data_func(GtkTreeViewColumn *col , 
 				     GtkCellRenderer *renderer,
 				     GtkTreeModel *model, 
@@ -1217,7 +1187,7 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
     tmp_obj.ope=ADDTYPE_TTGS;
     break;
     
-  case FCDB_TYPE_LAMOST:
+  case FCDB_TYPE_LAMOSTP:
   case FCDB_TYPE_GAIA:
   case FCDB_TYPE_2MASS:
   case FCDB_TYPE_WISE:
@@ -1668,7 +1638,7 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
   gchar *tgt;
 
   if((hg->fcdb_tree_focus>=0)&&(hg->fcdb_tree_focus<hg->fcdb_i_max)){
-    if(hg->fcdb_type==FCDB_TYPE_LAMOST){
+    if(hg->fcdb_type==FCDB_TYPE_LAMOSTP){
       tmp=g_strdup_printf(FCDB_LAMOST_URL,
 			  hg->fcdb[hg->fcdb_tree_focus].ref);
     }
@@ -1834,7 +1804,12 @@ stddb_item (GtkWidget *widget, gpointer data)
     switch(hg->stddb_mode){
     case STDDB_SSLOC:
       if(hg->std_host) g_free(hg->std_host);
-      hg->std_host=g_strdup(STDDB_HOST_SIMBAD);
+      if(hg->fcdb_simbad==FCDB_SIMBAD_HARVARD){
+	hg->std_host=g_strdup(FCDB_HOST_SIMBAD_HARVARD);
+      }
+      else{
+	hg->std_host=g_strdup(FCDB_HOST_SIMBAD_STRASBG);
+      }
       if(hg->std_file) g_free(hg->std_file);
       hg->std_file=g_strconcat(hg->temp_dir,
 			       G_DIR_SEPARATOR_S,
@@ -1879,7 +1854,12 @@ stddb_item (GtkWidget *widget, gpointer data)
       break;
     case STDDB_RAPID:
       if(hg->std_host) g_free(hg->std_host);
-      hg->std_host=g_strdup(STDDB_HOST_SIMBAD);
+      if(hg->fcdb_simbad==FCDB_SIMBAD_HARVARD){
+	hg->std_host=g_strdup(FCDB_HOST_SIMBAD_HARVARD);
+      }
+      else{
+	hg->std_host=g_strdup(FCDB_HOST_SIMBAD_STRASBG);
+      }
       if(hg->std_file) g_free(hg->std_file);
       hg->std_file=g_strconcat(hg->temp_dir,
 			       G_DIR_SEPARATOR_S,
@@ -1918,7 +1898,12 @@ stddb_item (GtkWidget *widget, gpointer data)
       break;
     case STDDB_MIRSTD:
       if(hg->std_host) g_free(hg->std_host);
-      hg->std_host=g_strdup(STDDB_HOST_SIMBAD);
+      if(hg->fcdb_simbad==FCDB_SIMBAD_HARVARD){
+	hg->std_host=g_strdup(FCDB_HOST_SIMBAD_HARVARD);
+      }
+      else{
+	hg->std_host=g_strdup(FCDB_HOST_SIMBAD_STRASBG);
+      }
       if(hg->std_file) g_free(hg->std_file);
       hg->std_file=g_strconcat(hg->temp_dir,
 			       G_DIR_SEPARATOR_S,
@@ -3671,158 +3656,70 @@ fcdb_add_columns (typHOE *hg,
     gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_J);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
   }
-  else if(hg->fcdb_type==FCDB_TYPE_LAMOST){
-    switch(hg->fcdb_lamost_cat){
-    case FCDB_LAMOST_CAT_ALL:
-      /* u */
-      renderer = gtk_cell_renderer_text_new ();
-      g_object_set_data (G_OBJECT (renderer), "column", 
-			 GINT_TO_POINTER (COLUMN_FCDB_U));
-      column=gtk_tree_view_column_new_with_attributes ("snru",
-						       renderer,
-						       "text",
-						       COLUMN_FCDB_U,
-						       NULL);
-      gtk_tree_view_column_set_cell_data_func(column, renderer,
-					      fcdb_lamost_all_cell_data_func,
-					      GUINT_TO_POINTER(COLUMN_FCDB_U),
-					      NULL);
-      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_U);
-      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+  else if(hg->fcdb_type==FCDB_TYPE_LAMOSTP){
+    /* Teff */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_U));
+    column=gtk_tree_view_column_new_with_attributes ("Teff",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_U,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_lamost_afgk_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_U),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_U);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
     
-      /* g */
-      renderer = gtk_cell_renderer_text_new ();
-      g_object_set_data (G_OBJECT (renderer), "column", 
-			 GINT_TO_POINTER (COLUMN_FCDB_V));
-      column=gtk_tree_view_column_new_with_attributes ("snrg",
-						       renderer,
-						       "text",
-						       COLUMN_FCDB_V,
-						       NULL);
-      gtk_tree_view_column_set_cell_data_func(column, renderer,
-					      fcdb_lamost_all_cell_data_func,
-					      GUINT_TO_POINTER(COLUMN_FCDB_V),
-					      NULL);
-      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_V);
-      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+    /* log g */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_B));
+    column=gtk_tree_view_column_new_with_attributes ("log g",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_B,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_lamost_afgk_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_B),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_B);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
     
-      /* r */
-      renderer = gtk_cell_renderer_text_new ();
-      g_object_set_data (G_OBJECT (renderer), "column", 
-			 GINT_TO_POINTER (COLUMN_FCDB_R));
-      column=gtk_tree_view_column_new_with_attributes ("snrr",
-						       renderer,
-						       "text",
-						       COLUMN_FCDB_R,
-						       NULL);
-      gtk_tree_view_column_set_cell_data_func(column, renderer,
-					      fcdb_lamost_all_cell_data_func,
-					      GUINT_TO_POINTER(COLUMN_FCDB_R),
-					      NULL);
-      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_R);
-      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
-    
-      /* i */
-      renderer = gtk_cell_renderer_text_new ();
-      g_object_set_data (G_OBJECT (renderer), "column", 
-			 GINT_TO_POINTER (COLUMN_FCDB_I));
-      column=gtk_tree_view_column_new_with_attributes ("snri",
-						       renderer,
-						       "text",
-						       COLUMN_FCDB_I,
-						       NULL);
-      gtk_tree_view_column_set_cell_data_func(column, renderer,
-					      fcdb_lamost_all_cell_data_func,
-					      GUINT_TO_POINTER(COLUMN_FCDB_I),
-					      NULL);
-      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_I);
-      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+    /* [Fe/H] */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_V));
+    column=gtk_tree_view_column_new_with_attributes ("[Fe/H]",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_V,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_lamost_afgk_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_V),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_V);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
       
-      /* z */
-      renderer = gtk_cell_renderer_text_new ();
-      g_object_set_data (G_OBJECT (renderer), "column", 
-			 GINT_TO_POINTER (COLUMN_FCDB_J));
-      column=gtk_tree_view_column_new_with_attributes ("snrz",
-						       renderer,
-						       "text",
-						       COLUMN_FCDB_J,
-						       NULL);
-      gtk_tree_view_column_set_cell_data_func(column, renderer,
-					      fcdb_lamost_all_cell_data_func,
-					      GUINT_TO_POINTER(COLUMN_FCDB_J),
-					      NULL);
-      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_J);
-      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
-      
-      break;
-
-    case FCDB_LAMOST_CAT_AFGK:
-      /* Teff */
-      renderer = gtk_cell_renderer_text_new ();
-      g_object_set_data (G_OBJECT (renderer), "column", 
-			 GINT_TO_POINTER (COLUMN_FCDB_U));
-      column=gtk_tree_view_column_new_with_attributes ("Teff",
-						       renderer,
-						       "text",
-						       COLUMN_FCDB_U,
-						       NULL);
-      gtk_tree_view_column_set_cell_data_func(column, renderer,
-					      fcdb_lamost_afgk_cell_data_func,
-					      GUINT_TO_POINTER(COLUMN_FCDB_U),
-					      NULL);
-      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_U);
-      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
-    
-      /* log g */
-      renderer = gtk_cell_renderer_text_new ();
-      g_object_set_data (G_OBJECT (renderer), "column", 
-			 GINT_TO_POINTER (COLUMN_FCDB_B));
-      column=gtk_tree_view_column_new_with_attributes ("log g",
-						       renderer,
-						       "text",
-						       COLUMN_FCDB_B,
-						       NULL);
-      gtk_tree_view_column_set_cell_data_func(column, renderer,
-					      fcdb_lamost_afgk_cell_data_func,
-					      GUINT_TO_POINTER(COLUMN_FCDB_B),
-					      NULL);
-      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_B);
-      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
-    
-      /* [Fe/H] */
-      renderer = gtk_cell_renderer_text_new ();
-      g_object_set_data (G_OBJECT (renderer), "column", 
-			 GINT_TO_POINTER (COLUMN_FCDB_V));
-      column=gtk_tree_view_column_new_with_attributes ("[Fe/H]",
-						       renderer,
-						       "text",
-						       COLUMN_FCDB_V,
-						       NULL);
-      gtk_tree_view_column_set_cell_data_func(column, renderer,
-					      fcdb_lamost_afgk_cell_data_func,
-					      GUINT_TO_POINTER(COLUMN_FCDB_V),
-					      NULL);
-      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_V);
-      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
-      
-      /* HRV */
-      renderer = gtk_cell_renderer_text_new ();
-      g_object_set_data (G_OBJECT (renderer), "column", 
-			 GINT_TO_POINTER (COLUMN_FCDB_R));
-      column=gtk_tree_view_column_new_with_attributes ("HRV",
-						       renderer,
-						       "text",
-						       COLUMN_FCDB_R,
-						       NULL);
-      gtk_tree_view_column_set_cell_data_func(column, renderer,
-					      fcdb_lamost_afgk_cell_data_func,
-					      GUINT_TO_POINTER(COLUMN_FCDB_R),
-					      NULL);
-      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_R);
-      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
-      
-      break;
-    }
+    /* HRV */
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_FCDB_R));
+    column=gtk_tree_view_column_new_with_attributes ("HRV",
+						     renderer,
+						     "text",
+						     COLUMN_FCDB_R,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    fcdb_lamost_afgk_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_FCDB_R),
+					    NULL);
+    gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_R);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
 
     /* Obj Type */
     renderer = gtk_cell_renderer_text_new ();
@@ -4889,7 +4786,7 @@ do_editable_cells (typHOE *hg)
     case FCDB_TYPE_SIMBAD:
     case FCDB_TYPE_NED:
     case FCDB_TYPE_SDSS:
-    case FCDB_TYPE_LAMOST:
+    case FCDB_TYPE_LAMOSTP:
 #ifdef USE_OSX
       icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
 					FALSE, NULL);
@@ -5122,7 +5019,7 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
       tgt=make_ttgs(hg->obj[hg->fcdb_i].name,hg->obj[hg->fcdb_i].def);
       break;
 
-    case FCDB_TYPE_LAMOST:
+    case FCDB_TYPE_LAMOSTP:
     case FCDB_TYPE_GAIA:
     case FCDB_TYPE_2MASS:
     case FCDB_TYPE_WISE:
@@ -5153,7 +5050,7 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
 			    new_ra,new_dec,2000.00);
 	break;
 
-      case FCDB_TYPE_LAMOST:
+      case FCDB_TYPE_LAMOSTP:
       case FCDB_TYPE_GAIA:
       case FCDB_TYPE_2MASS:
       case FCDB_TYPE_WISE:
@@ -5179,7 +5076,7 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
 			    hg->fcdb[hg->fcdb_tree_focus].equinox);
 	break;
 	
-      case FCDB_TYPE_LAMOST:
+      case FCDB_TYPE_LAMOSTP:
       case FCDB_TYPE_GAIA:
       case FCDB_TYPE_2MASS:
       case FCDB_TYPE_WISE:
