@@ -4374,9 +4374,9 @@ static void fcdb_para_item (GtkWidget *widget, gpointer data)
 
 void create_fcdb_para_dialog (typHOE *hg)
 {
-  GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
+  GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox, 
     *spinner, *combo, *table, *check, *r1, *r2, *r3, *r4, *r5, *r6, 
-    *r7, *r8, *r9, *r10, *r11, *r12;
+    *r7, *r8, *r9, *r10, *r11, *r12, *r13, *r14, *r15, *table1, *hbox1;
   GtkAdjustment *adj;
   gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, 
     tmp_gsc_mag, tmp_gsc_diam, tmp_ps1_mag, tmp_ps1_diam, tmp_ps1_mindet, 
@@ -4384,9 +4384,21 @@ void create_fcdb_para_dialog (typHOE *hg)
     tmp_gaia_mag, tmp_gaia_diam, tmp_2mass_mag, tmp_2mass_diam,
     tmp_wise_mag, tmp_wise_diam;
   gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_sdss_fil, tmp_usno_fil,
-    tmp_gaia_fil, tmp_2mass_fil, tmp_wise_fil;
+    tmp_gaia_fil, tmp_2mass_fil, tmp_wise_fil,
+    tmp_smoka_inst[NUM_SMOKA_INST],
+    tmp_hst_image[NUM_HST_IMAGE],
+    tmp_hst_spec[NUM_HST_SPEC],
+    tmp_hst_other[NUM_HST_OTHER],
+    tmp_eso_image[NUM_ESO_IMAGE],
+    tmp_eso_spec[NUM_ESO_SPEC],
+    tmp_eso_vlti[NUM_ESO_VLTI],
+    tmp_eso_pola[NUM_ESO_POLA],
+    tmp_eso_coro[NUM_ESO_CORO],
+    tmp_eso_other[NUM_ESO_OTHER],
+    tmp_eso_sam[NUM_ESO_SAM];
   confPropFCDB *cdata;
   gboolean rebuild_flag=FALSE;
+  gint i;
 
   if(flagChildDialog){
     return;
@@ -4426,6 +4438,39 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_wise_fil=hg->fcdb_wise_fil;
   tmp_wise_mag=hg->fcdb_wise_mag;
   tmp_wise_diam=hg->fcdb_wise_diam;
+  for(i=0;i<NUM_SMOKA_INST;i++){
+    tmp_smoka_inst[i]=hg->fcdb_smoka_inst[i];
+  }
+  for(i=0;i<NUM_HST_IMAGE;i++){
+    tmp_hst_image[i]=hg->fcdb_hst_image[i];
+  }
+  for(i=0;i<NUM_HST_SPEC;i++){
+    tmp_hst_spec[i]=hg->fcdb_hst_spec[i];
+  }
+  for(i=0;i<NUM_HST_OTHER;i++){
+    tmp_hst_other[i]=hg->fcdb_hst_other[i];
+  }
+  for(i=0;i<NUM_ESO_IMAGE;i++){
+    tmp_eso_image[i]=hg->fcdb_eso_image[i];
+  }
+  for(i=0;i<NUM_ESO_SPEC;i++){
+    tmp_eso_spec[i]=hg->fcdb_eso_spec[i];
+  }
+  for(i=0;i<NUM_ESO_VLTI;i++){
+    tmp_eso_vlti[i]=hg->fcdb_eso_vlti[i];
+  }
+  for(i=0;i<NUM_ESO_POLA;i++){
+    tmp_eso_pola[i]=hg->fcdb_eso_pola[i];
+  }
+  for(i=0;i<NUM_ESO_CORO;i++){
+    tmp_eso_coro[i]=hg->fcdb_eso_coro[i];
+  }
+  for(i=0;i<NUM_ESO_OTHER;i++){
+    tmp_eso_other[i]=hg->fcdb_eso_other[i];
+  }
+  for(i=0;i<NUM_ESO_SAM;i++){
+    tmp_eso_sam[i]=hg->fcdb_eso_sam[i];
+  }
 
   dialog = gtk_dialog_new();
   cdata->dialog=dialog;
@@ -4435,10 +4480,18 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect(dialog, "destroy",
 		    close_disp_para,GTK_WIDGET(dialog));
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox1 = gtk_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-		     hbox,FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+		     hbox1,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox1), 0);
+
+  frame = gtk_frame_new ("Database");
+  gtk_container_add (GTK_CONTAINER (hbox1), frame);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), hbox);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   r1 = gtk_radio_button_new_with_label_from_widget (NULL, "SIMBAD");
   gtk_box_pack_start(GTK_BOX(hbox), r1, FALSE, FALSE, 0);
@@ -4448,6 +4501,14 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_box_pack_start(GTK_BOX(hbox), r2, FALSE, FALSE, 0);
   gtk_widget_show (r2);
   my_signal_connect (r2, "toggled", radio_fcdb, (gpointer)hg);
+
+  frame = gtk_frame_new ("Optical");
+  gtk_container_add (GTK_CONTAINER (hbox1), frame);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  hbox = gtk_hbox_new(FALSE,2);
+  gtk_container_add (GTK_CONTAINER (frame), hbox);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
   r3 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "GSC");
   gtk_box_pack_start(GTK_BOX(hbox), r3, FALSE, FALSE, 0);
@@ -4479,6 +4540,19 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_widget_show (r8);
   my_signal_connect (r8, "toggled", radio_fcdb, (gpointer)hg);
 
+  hbox1 = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     hbox1,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox1), 0);
+
+  frame = gtk_frame_new ("Infrared");
+  gtk_container_add (GTK_CONTAINER (hbox1), frame);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), hbox);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
   r9 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "2MASS");
   gtk_box_pack_start(GTK_BOX(hbox), r9, FALSE, FALSE, 0);
   gtk_widget_show (r9);
@@ -4498,6 +4572,29 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_box_pack_start(GTK_BOX(hbox), r12, FALSE, FALSE, 0);
   gtk_widget_show (r12);
   my_signal_connect (r12, "toggled", radio_fcdb, (gpointer)hg);
+
+  frame = gtk_frame_new ("Data Archive");
+  gtk_container_add (GTK_CONTAINER (hbox1), frame);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  hbox = gtk_hbox_new(FALSE,2);
+  gtk_container_add (GTK_CONTAINER (frame), hbox);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+
+  r13 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "SMOKA");
+  gtk_box_pack_start(GTK_BOX(hbox), r13, FALSE, FALSE, 0);
+  gtk_widget_show (r13);
+  my_signal_connect (r13, "toggled", radio_fcdb, (gpointer)hg);
+
+  r14 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "HST");
+  gtk_box_pack_start(GTK_BOX(hbox), r14, FALSE, FALSE, 0);
+  gtk_widget_show (r14);
+  my_signal_connect (r14, "toggled", radio_fcdb, (gpointer)hg);
+
+  r15 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "ESO");
+  gtk_box_pack_start(GTK_BOX(hbox), r15, FALSE, FALSE, 0);
+  gtk_widget_show (r15);
+  my_signal_connect (r15, "toggled", radio_fcdb, (gpointer)hg);
 
   cdata->fcdb_group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(r1));
   cdata->fcdb_type=hg->fcdb_type;
@@ -5454,6 +5551,265 @@ void create_fcdb_para_dialog (typHOE *hg)
 		    default_disp_para, 
 		    (gpointer)cdata);
 
+  vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("SMOKA");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
+
+  table = gtk_table_new(2,2, FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
+
+  label = gtk_label_new ("Search Area = Finding Chart Area");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 2, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+
+  frame = gtk_frame_new ("Subaru Instruments");
+  gtk_table_attach(GTK_TABLE(table), frame, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  vbox = gtk_vbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+
+  for(i=0;i<NUM_SMOKA_INST;i++){
+    check = gtk_check_button_new_with_label(smoka_inst[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_smoka_inst[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_smoka_inst[i]);
+  }
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("HST");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
+
+  table = gtk_table_new(3,2,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
+
+  label = gtk_label_new ("Search Area = Finding Chart Area");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 3, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+
+  frame = gtk_frame_new ("Imaging");
+  gtk_table_attach(GTK_TABLE(table), frame, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  vbox = gtk_vbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+
+  for(i=0;i<NUM_HST_IMAGE;i++){
+    check = gtk_check_button_new_with_label(hst_image[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_hst_image[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_hst_image[i]);
+  }
+
+  frame = gtk_frame_new ("Spectroscopy");
+  gtk_table_attach(GTK_TABLE(table), frame, 1, 2, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  vbox = gtk_vbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+
+  for(i=0;i<NUM_HST_SPEC;i++){
+    check = gtk_check_button_new_with_label(hst_spec[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_hst_spec[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_hst_spec[i]);
+  }
+
+  frame = gtk_frame_new ("Other");
+  gtk_table_attach(GTK_TABLE(table), frame, 2, 3, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  vbox = gtk_vbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+
+  for(i=0;i<NUM_HST_OTHER;i++){
+    check = gtk_check_button_new_with_label(hst_other[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_hst_other[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_hst_other[i]);
+  }
+
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("ESO");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
+
+  table = gtk_table_new(4,6,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 5);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
+
+  label = gtk_label_new ("Search Area = Finding Chart Area");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 4, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  frame = gtk_frame_new ("Imaging");
+  gtk_table_attach(GTK_TABLE(table), frame, 0, 1, 1, 6,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  vbox = gtk_vbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+
+  for(i=0;i<NUM_ESO_IMAGE;i++){
+    check = gtk_check_button_new_with_label(eso_image[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_eso_image[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_eso_image[i]);
+  }
+
+  frame = gtk_frame_new ("Spectroscopy");
+  gtk_table_attach(GTK_TABLE(table), frame, 1, 2, 1, 6,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  vbox = gtk_vbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+
+  for(i=0;i<NUM_ESO_SPEC;i++){
+    check = gtk_check_button_new_with_label(eso_spec[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_eso_spec[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_eso_spec[i]);
+  }
+
+  frame = gtk_frame_new ("Interferometry");
+  gtk_table_attach(GTK_TABLE(table), frame, 2, 3, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  vbox = gtk_vbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+
+  for(i=0;i<NUM_ESO_VLTI;i++){
+    check = gtk_check_button_new_with_label(eso_vlti[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_eso_vlti[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_eso_vlti[i]);
+  }
+
+  frame = gtk_frame_new ("Polarimetry");
+  gtk_table_attach(GTK_TABLE(table), frame, 2, 3, 2, 5,
+		   GTK_FILL,GTK_SHRINK,0, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  vbox = gtk_vbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+
+  for(i=0;i<NUM_ESO_POLA;i++){
+    check = gtk_check_button_new_with_label(eso_pola[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_eso_pola[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_eso_pola[i]);
+  }
+
+  frame = gtk_frame_new ("Coronagraphy");
+  gtk_table_attach(GTK_TABLE(table), frame, 2, 3, 5, 6,
+		   GTK_FILL,GTK_SHRINK,0, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  vbox = gtk_vbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+
+  for(i=0;i<NUM_ESO_CORO;i++){
+    check = gtk_check_button_new_with_label(eso_coro[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_eso_coro[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_eso_coro[i]);
+  }
+
+  frame = gtk_frame_new ("Other");
+  gtk_table_attach(GTK_TABLE(table), frame, 3, 4, 1, 3,
+		   GTK_FILL,GTK_SHRINK,0, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  vbox = gtk_vbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+
+  for(i=0;i<NUM_ESO_OTHER;i++){
+    check = gtk_check_button_new_with_label(eso_other[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_eso_other[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_eso_other[i]);
+  }
+
+  frame = gtk_frame_new ("SAM");
+  gtk_table_attach(GTK_TABLE(table), frame, 3, 4, 3, 4,
+		   GTK_FILL,GTK_SHRINK,0, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  vbox = gtk_vbox_new(FALSE,0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+
+  for(i=0;i<NUM_ESO_SAM;i++){
+    check = gtk_check_button_new_with_label(eso_sam[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_eso_sam[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_eso_sam[i]);
+  }
+
+
+
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
@@ -5480,7 +5836,7 @@ void create_fcdb_para_dialog (typHOE *hg)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r4),TRUE);
   if(hg->fcdb_type==FCDB_TYPE_SDSS)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r5),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_LAMOSTP)
+  if(hg->fcdb_type==FCDB_TYPE_LAMOST)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r6),TRUE);
   if(hg->fcdb_type==FCDB_TYPE_USNO)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r7),TRUE);
@@ -5494,6 +5850,12 @@ void create_fcdb_para_dialog (typHOE *hg)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r11),TRUE);
   if(hg->fcdb_type==FCDB_TYPE_FIS)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r12),TRUE);
+  if(hg->fcdb_type==FCDB_TYPE_SMOKA)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r13),TRUE);
+  if(hg->fcdb_type==FCDB_TYPE_HST)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r14),TRUE);
+  if(hg->fcdb_type==FCDB_TYPE_ESO)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r15),TRUE);
 
   gtk_main();
 
@@ -5529,6 +5891,39 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_wise_fil  = tmp_wise_fil;
       hg->fcdb_wise_mag  = tmp_wise_mag;
       hg->fcdb_wise_diam  = tmp_wise_diam;
+      for(i=0;i<NUM_SMOKA_INST;i++){
+	hg->fcdb_smoka_inst[i]  = tmp_smoka_inst[i];
+      }
+      for(i=0;i<NUM_HST_IMAGE;i++){
+	hg->fcdb_hst_image[i]  = tmp_hst_image[i];
+      }
+      for(i=0;i<NUM_HST_SPEC;i++){
+	hg->fcdb_hst_spec[i]  = tmp_hst_spec[i];
+      }
+      for(i=0;i<NUM_HST_OTHER;i++){
+	hg->fcdb_hst_other[i]  = tmp_hst_other[i];
+      }
+      for(i=0;i<NUM_ESO_IMAGE;i++){
+	hg->fcdb_eso_image[i]  = tmp_eso_image[i];
+      }
+      for(i=0;i<NUM_ESO_SPEC;i++){
+	hg->fcdb_eso_spec[i]  = tmp_eso_spec[i];
+      }
+      for(i=0;i<NUM_ESO_VLTI;i++){
+	hg->fcdb_eso_vlti[i]  = tmp_eso_vlti[i];
+      }
+      for(i=0;i<NUM_ESO_POLA;i++){
+	hg->fcdb_eso_pola[i]  = tmp_eso_pola[i];
+      }
+      for(i=0;i<NUM_ESO_CORO;i++){
+	hg->fcdb_eso_coro[i]  = tmp_eso_coro[i];
+      }
+      for(i=0;i<NUM_ESO_OTHER;i++){
+	hg->fcdb_eso_other[i]  = tmp_eso_other[i];
+      }
+      for(i=0;i<NUM_ESO_SAM;i++){
+	hg->fcdb_eso_sam[i]  = tmp_eso_sam[i];
+      }
     }
     else{
       hg->fcdb_band  = FCDB_BAND_NOP;
@@ -5561,6 +5956,39 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_wise_fil = TRUE;
       hg->fcdb_wise_mag = 15;
       hg->fcdb_wise_diam = 25;
+      for(i=0;i<NUM_SMOKA_INST;i++){
+	hg->fcdb_smoka_inst[i]  = TRUE;
+      }
+      for(i=0;i<NUM_HST_IMAGE;i++){
+	hg->fcdb_hst_image[i]  = TRUE;
+      }
+      for(i=0;i<NUM_HST_SPEC;i++){
+	hg->fcdb_hst_spec[i]  = TRUE;
+      }
+      for(i=0;i<NUM_HST_OTHER;i++){
+	hg->fcdb_hst_other[i]  = TRUE;
+      }
+      for(i=0;i<NUM_ESO_IMAGE;i++){
+	hg->fcdb_eso_image[i]  = TRUE;
+      }
+      for(i=0;i<NUM_ESO_SPEC;i++){
+	hg->fcdb_eso_spec[i]  = TRUE;
+      }
+      for(i=0;i<NUM_ESO_VLTI;i++){
+	hg->fcdb_eso_vlti[i]  = TRUE;
+      }
+      for(i=0;i<NUM_ESO_POLA;i++){
+	hg->fcdb_eso_pola[i]  = TRUE;
+      }
+      for(i=0;i<NUM_ESO_CORO;i++){
+	hg->fcdb_eso_coro[i]  = TRUE;
+      }
+      for(i=0;i<NUM_ESO_OTHER;i++){
+	hg->fcdb_eso_other[i]  = TRUE;
+      }
+      for(i=0;i<NUM_ESO_SAM;i++){
+	hg->fcdb_eso_sam[i]  = TRUE;
+      }
     }
 
     if(flagFC){
@@ -5574,7 +6002,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"PanSTARRS-1");
       else if(hg->fcdb_type==FCDB_TYPE_SDSS)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SDSS DR13");
-      else if(hg->fcdb_type==FCDB_TYPE_LAMOSTP)
+      else if(hg->fcdb_type==FCDB_TYPE_LAMOST)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"LAMOST DR3");
       else if(hg->fcdb_type==FCDB_TYPE_USNO)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"USNO-B");
@@ -5588,6 +6016,12 @@ void create_fcdb_para_dialog (typHOE *hg)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"AKARI/IRC");
       else if(hg->fcdb_type==FCDB_TYPE_FIS)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"AKARI/FIS");
+      else if(hg->fcdb_type==FCDB_TYPE_SMOKA)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SMOKA");
+      else if(hg->fcdb_type==FCDB_TYPE_HST)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"HST archive");
+      else if(hg->fcdb_type==FCDB_TYPE_ESO)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"ESO archive");
     }
 
     if((rebuild_flag)&&(flagTree)) rebuild_tree(hg);
@@ -9020,6 +9454,39 @@ void param_init(typHOE *hg){
   hg->fcdb_wise_fil=TRUE;
   hg->fcdb_wise_mag=15;
   hg->fcdb_wise_diam=25;
+  for(i=0;i<NUM_SMOKA_INST;i++){
+    hg->fcdb_smoka_inst[i]  = TRUE;
+  }
+  for(i=0;i<NUM_HST_IMAGE;i++){
+    hg->fcdb_hst_image[i]  = TRUE;
+  }
+  for(i=0;i<NUM_HST_SPEC;i++){
+    hg->fcdb_hst_spec[i]  = TRUE;
+  }
+  for(i=0;i<NUM_HST_OTHER;i++){
+    hg->fcdb_hst_other[i]  = TRUE;
+  }
+  for(i=0;i<NUM_ESO_IMAGE;i++){
+    hg->fcdb_eso_image[i]  = TRUE;
+  }
+  for(i=0;i<NUM_ESO_SPEC;i++){
+    hg->fcdb_eso_spec[i]  = TRUE;
+  }
+  for(i=0;i<NUM_ESO_VLTI;i++){
+    hg->fcdb_eso_vlti[i]  = TRUE;
+  }
+  for(i=0;i<NUM_ESO_POLA;i++){
+    hg->fcdb_eso_pola[i]  = TRUE;
+  }
+  for(i=0;i<NUM_ESO_CORO;i++){
+    hg->fcdb_eso_coro[i]  = TRUE;
+  }
+  for(i=0;i<NUM_ESO_OTHER;i++){
+    hg->fcdb_eso_other[i]  = TRUE;
+  }
+  for(i=0;i<NUM_ESO_SAM;i++){
+    hg->fcdb_eso_sam[i]  = TRUE;
+  }
 
   hg->adc_inst=ADC_INST_IMR;
   hg->adc_flip=FALSE;

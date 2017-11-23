@@ -1352,7 +1352,7 @@ void create_fc_dialog(typHOE *hg)
   else if(hg->fcdb_type==FCDB_TYPE_SDSS){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "SDSS DR13");
   }
-  else if(hg->fcdb_type==FCDB_TYPE_LAMOSTP){
+  else if(hg->fcdb_type==FCDB_TYPE_LAMOST){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "LAMOST DR3");
   }
   else if(hg->fcdb_type==FCDB_TYPE_USNO){
@@ -1372,6 +1372,15 @@ void create_fc_dialog(typHOE *hg)
   }
   else if(hg->fcdb_type==FCDB_TYPE_FIS){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "AKARI/FIS");
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_SMOKA){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "SMOKA");
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_HST){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "HST");
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_ESO){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "ESO");
   }
   gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_frame), 3);
@@ -4812,11 +4821,17 @@ void fcdb_dl(typHOE *hg)
   
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
 
-  if(hg->fcdb_type==FCDB_TYPE_LAMOSTP){
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_LAMOST:
+  case FCDB_TYPE_SMOKA:
+  case FCDB_TYPE_HST:
+  case FCDB_TYPE_ESO:
     hg->fcdb_post=TRUE;
-  }
-  else{
+    break;
+
+  default:
     hg->fcdb_post=FALSE;
+    break;
   }
   
   switch(hg->fcdb_type){
@@ -4840,7 +4855,7 @@ void fcdb_dl(typHOE *hg)
     label=gtk_label_new("Searching objects in SDSS ...");
     break;
 
-  case FCDB_TYPE_LAMOSTP:
+  case FCDB_TYPE_LAMOST:
     label=gtk_label_new("Searching objects in LAMOST DR3 ...");
     break;
 
@@ -4866,6 +4881,18 @@ void fcdb_dl(typHOE *hg)
 
   case FCDB_TYPE_FIS:
     label=gtk_label_new("Searching objects in AKARI/FIS ...");
+    break;
+
+  case FCDB_TYPE_SMOKA:
+    label=gtk_label_new("Searching objects in SMOKA ...");
+    break;
+
+  case FCDB_TYPE_HST:
+    label=gtk_label_new("Searching objects in HST archive ...");
+    break;
+
+  case FCDB_TYPE_ESO:
+    label=gtk_label_new("Searching objects in ESO archive ...");
     break;
   }
 
@@ -4908,7 +4935,7 @@ void fcdb_dl(typHOE *hg)
     hg->plabel=gtk_label_new("Searching objects in USNO-B ...");
     break;
 
-  case FCDB_TYPE_LAMOSTP:
+  case FCDB_TYPE_LAMOST:
     hg->plabel=gtk_label_new("Searching objects in LAMOST DR3 ...");
     break;
 
@@ -4930,6 +4957,18 @@ void fcdb_dl(typHOE *hg)
 
   case FCDB_TYPE_FIS:
     hg->plabel=gtk_label_new("Searching objects in AKARI/FIS ...");
+    break;
+
+  case FCDB_TYPE_SMOKA:
+    hg->plabel=gtk_label_new("Searching objects in SMOKA ...");
+    break;
+
+  case FCDB_TYPE_HST:
+    hg->plabel=gtk_label_new("Searching objects in HST archive ...");
+    break;
+
+  case FCDB_TYPE_ESO:
+    hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
@@ -5068,7 +5107,7 @@ void addobj_dl(typHOE *hg)
     hg->plabel=gtk_label_new("Searching objects in SDSS ...");
     break;
 
-  case FCDB_TYPE_LAMOSTP:
+  case FCDB_TYPE_LAMOST:
     hg->plabel=gtk_label_new("Searching objects in LAMOST DR3 ...");
     break;
 
@@ -5094,6 +5133,18 @@ void addobj_dl(typHOE *hg)
 
   case FCDB_TYPE_FIS:
     hg->plabel=gtk_label_new("Searching objects in AKARI/FIS ...");
+    break;
+
+  case FCDB_TYPE_SMOKA:
+    hg->plabel=gtk_label_new("Searching objects in SMOKA ...");
+    break;
+
+  case FCDB_TYPE_HST:
+    hg->plabel=gtk_label_new("Searching objects in HST archive ...");
+    break;
+
+  case FCDB_TYPE_ESO:
+    hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
@@ -5486,13 +5537,13 @@ void fcdb_item2 (typHOE *hg)
 
     break;
 
-  case FCDB_TYPE_LAMOSTP:
+  case FCDB_TYPE_LAMOST:
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     if(hg->fcdb_host) g_free(hg->fcdb_host);
-    hg->fcdb_host=g_strdup(FCDB_HOST_LAMOSTP);
+    hg->fcdb_host=g_strdup(FCDB_HOST_LAMOST);
 
     if(hg->fcdb_path) g_free(hg->fcdb_path);
-    hg->fcdb_path=g_strdup(FCDB_LAMOSTP_PATH);
+    hg->fcdb_path=g_strdup(FCDB_LAMOST_PATH);
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
@@ -5504,7 +5555,7 @@ void fcdb_item2 (typHOE *hg)
 
     fcdb_dl(hg);
 
-    fcdb_lamostp_vo_parse(hg);
+    fcdb_lamost_vo_parse(hg);
 
     break;
 
@@ -5695,6 +5746,72 @@ void fcdb_item2 (typHOE *hg)
     fcdb_fis_vo_parse(hg);
 
     break;
+
+  case FCDB_TYPE_SMOKA:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_SMOKA);
+
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+    hg->fcdb_path=g_strdup(FCDB_SMOKA_PATH);
+
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_TXT,NULL);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+
+    fcdb_dl(hg);
+
+    fcdb_smoka_txt_parse(hg);
+
+    break;
+
+  case FCDB_TYPE_HST:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_HST);
+
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+    hg->fcdb_path=g_strdup(FCDB_HST_PATH);
+
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+
+    fcdb_dl(hg);
+
+    fcdb_hst_vo_parse(hg);
+
+    break;
+
+  case FCDB_TYPE_ESO:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_ESO);
+
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+    hg->fcdb_path=g_strdup(FCDB_ESO_PATH);
+
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+
+    fcdb_dl(hg);
+
+    fcdb_eso_vo_parse(hg);
+
+    break;
   }
 
   if(flagTree) fcdb_make_tree(NULL, hg);
@@ -5828,7 +5945,7 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       COLUMN_FCDB_J, hg->fcdb[i_list].j,  // z
 		       -1);
   }
-  else if(hg->fcdb_type==FCDB_TYPE_LAMOSTP){
+  else if(hg->fcdb_type==FCDB_TYPE_LAMOST){
     // Stellar params
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 		       COLUMN_FCDB_U, hg->fcdb[i_list].u,  // Teff
@@ -5904,6 +6021,40 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       COLUMN_FCDB_K, hg->fcdb[i_list].k,
 		       -1);
   }
+  else if(hg->fcdb_type==FCDB_TYPE_SMOKA){
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_FID, hg->fcdb[i_list].fid,
+		       COLUMN_FCDB_DATE, hg->fcdb[i_list].date,
+		       COLUMN_FCDB_MODE, hg->fcdb[i_list].mode,
+		       COLUMN_FCDB_U, hg->fcdb[i_list].u,
+		       COLUMN_FCDB_TYPE, hg->fcdb[i_list].type,
+		       COLUMN_FCDB_FIL, hg->fcdb[i_list].fil,
+		       COLUMN_FCDB_WV, hg->fcdb[i_list].wv,
+		       COLUMN_FCDB_OBS, hg->fcdb[i_list].obs,
+		       -1);
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_HST){
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_FID, hg->fcdb[i_list].fid,
+		       COLUMN_FCDB_DATE, hg->fcdb[i_list].date,
+		       COLUMN_FCDB_MODE, hg->fcdb[i_list].mode,
+		       COLUMN_FCDB_TYPE, hg->fcdb[i_list].type,
+		       COLUMN_FCDB_U, hg->fcdb[i_list].u,
+		       COLUMN_FCDB_V, hg->fcdb[i_list].v,
+		       COLUMN_FCDB_FIL, hg->fcdb[i_list].fil,
+		       COLUMN_FCDB_OBS, hg->fcdb[i_list].obs,
+		       -1);
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_ESO){
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_FID, hg->fcdb[i_list].fid,
+		       COLUMN_FCDB_DATE, hg->fcdb[i_list].date,
+		       COLUMN_FCDB_MODE, hg->fcdb[i_list].mode,
+		       COLUMN_FCDB_TYPE, hg->fcdb[i_list].type,
+		       COLUMN_FCDB_U, hg->fcdb[i_list].u,
+		       COLUMN_FCDB_OBS, hg->fcdb[i_list].obs,
+		       -1);
+  }
 }
 
 
@@ -5944,7 +6095,7 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
   case FCDB_TYPE_SDSS:
     db_name=g_strdup("SDSS");
     break;
-  case FCDB_TYPE_LAMOSTP:
+  case FCDB_TYPE_LAMOST:
     db_name=g_strdup("LAMOST");
     break;
   case FCDB_TYPE_USNO:
@@ -5965,25 +6116,62 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
   case FCDB_TYPE_FIS:
     db_name=g_strdup("AKARI/FIS");
     break;
+  case FCDB_TYPE_SMOKA:
+    db_name=g_strdup("Subaru (SMOKA)");
+    break;
+  case FCDB_TYPE_HST:
+    db_name=g_strdup("HST archive");
+    break;
+  case FCDB_TYPE_ESO:
+    db_name=g_strdup("ESO archive");
+    break;
   default:
     db_name=g_strdup("Database queried");
     break;
   }
   if(hg->fcdb_label_text) g_free(hg->fcdb_label_text);
   if(hg->fcdb_i_all>=500){
-    hg->fcdb_label_text
-      =g_strdup_printf("%s Objects around [%d-%d] %s [%d objects (over max.)]",
-		       db_name,
-		       hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
-		       hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+    switch(hg->fcdb_type){
+    case FCDB_TYPE_SMOKA:
+    case FCDB_TYPE_HST:
+    case FCDB_TYPE_ESO:
+      hg->fcdb_label_text
+	=g_strdup_printf("%s data around [%d-%d] %s [%d frames (over max.)]",
+			 db_name,
+			 hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
+			 hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+      break;
+
+    default:
+      hg->fcdb_label_text
+	=g_strdup_printf("%s Objects around [%d-%d] %s [%d objects (over max.)]",
+			 db_name,
+			 hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
+			 hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+    break;
+    }
     gtk_widget_modify_fg(hg->fcdb_label,GTK_STATE_NORMAL,&col_red);
   }
   else{
-    hg->fcdb_label_text
-      =g_strdup_printf("%s Objects around [%d-%d] %s (%d objects found)",
-		       db_name,
-		       hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
-		       hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+    switch(hg->fcdb_type){
+    case FCDB_TYPE_SMOKA:
+    case FCDB_TYPE_HST:
+    case FCDB_TYPE_ESO:
+      hg->fcdb_label_text
+	=g_strdup_printf("%s data around [%d-%d] %s (%d frames found)",
+			 db_name,
+			 hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
+			 hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+      break;
+
+    default:
+      hg->fcdb_label_text
+	=g_strdup_printf("%s Objects around [%d-%d] %s (%d objects found)",
+			 db_name,
+			 hg->obj[hg->fcdb_i].ope+1,hg->obj[hg->fcdb_i].ope_i+1,
+			 hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
+      break;
+    }
     gtk_widget_modify_fg(hg->fcdb_label,GTK_STATE_NORMAL,&col_black);
   }
   gtk_label_set_text(GTK_LABEL(hg->fcdb_label), hg->fcdb_label_text);

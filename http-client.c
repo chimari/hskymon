@@ -33,8 +33,6 @@
 #include "ssl.h"
 #endif
 
-#include "post_lamost.h"
-
 
 // From libghttp-1.0.9
 time_t http_date_to_time(const char *a_date);
@@ -84,10 +82,14 @@ gint allsky_repeat=0;
 #ifdef USE_WIN32
 #define BUF_LEN 65535             /* Buffer size */
 #else
-#define BUF_LEN 1023             /* Buffer size */
+#define BUF_LEN 65535             /* Buffer size */
 #endif
 
+#ifdef HTTP_DEBUG
+int debug_flg = 1;
+#else
 int debug_flg = 0;
+#endif
 
 #ifndef USE_WIN32
 int allsky_fd[2];
@@ -2497,10 +2499,13 @@ int http_c_std(typHOE *hg){
 
 int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
   char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
-  gint ip, plen;
+  char ins_mesg[BUF_LEN];
+  gint ip, plen, i;
+  gchar *send_buf1=NULL, *send_buf2=NULL;
+  gboolean init_flag=FALSE;
 
   switch(hg->fcdb_type){
-  case FCDB_TYPE_LAMOSTP:
+  case FCDB_TYPE_LAMOST:
     ip=0;
     plen=0;
 
@@ -2543,6 +2548,446 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 		  rand16,
 		  lamost_post[ip].key,
 		  hg->dss_arcmin*30.0);
+	}
+	break;
+      }	
+      plen+=strlen(send_mesg);
+      if(wflag)  write_to_server(command_socket, send_mesg);
+      ip++;
+    }
+    
+    sprintf(send_mesg,
+	    "------WebKitFormBoundary%s--\r\n\r\n",
+	    rand16);
+    plen+=strlen(send_mesg);
+    if(wflag)  write_to_server(command_socket, send_mesg);
+
+    break;
+
+  case FCDB_TYPE_SMOKA:
+    ip=0;
+    plen=0;
+
+    while(1){
+      if(smoka_post[ip].key==NULL) break;
+
+      switch(smoka_post[ip].flg){
+      case POST_NULL:
+	sprintf(send_mesg,
+		"%s=&",
+		smoka_post[ip].key);
+	break;
+
+      case POST_CONST:
+	sprintf(send_mesg,
+		"%s=%s&",
+		smoka_post[ip].key,
+		smoka_post[ip].prm);
+	break;
+	
+      case POST_INPUT:
+	if(strcmp(smoka_post[ip].key,"longitudeC")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  smoka_post[ip].key,
+		    hg->fcdb_d_ra0);
+	}
+	else if(strcmp(smoka_post[ip].key,"latitudeC")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  smoka_post[ip].key,
+		  hg->fcdb_d_dec0);
+	}
+	else if(strcmp(smoka_post[ip].key,"radius")==0){
+	  sprintf(send_mesg,
+		  "%s=%.1lf&",
+		  smoka_post[ip].key,
+		  hg->dss_arcmin/2.0);
+	}
+	break;
+
+      case POST_INST1:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_SMOKA_INST;i++){
+	  if(hg->fcdb_smoka_inst[i]) {
+	    sprintf(ins_mesg, "%s=%s&", 
+		    smoka_post[ip].key, 
+		    smoka_inst[i].prm);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+      }
+
+      plen+=strlen(send_mesg);
+
+      if(send_buf1) g_free(send_buf1);
+      if(send_buf2) send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+      else send_buf1=g_strdup(send_mesg);
+      if(send_buf2) g_free(send_buf2);
+      send_buf2=g_strdup(send_buf1);
+
+      ip++;
+    }
+
+    sprintf(send_mesg,"\r\n\r\n");
+    if(send_buf1) g_free(send_buf1);
+    send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+
+    plen+=strlen(send_mesg);
+
+    if(wflag)  write_to_server(command_socket, send_buf1);
+
+    if(send_buf1) g_free(send_buf1);
+    if(send_buf2) g_free(send_buf2);
+
+    break;
+
+
+  case FCDB_TYPE_HST:
+    ip=0;
+    plen=0;
+
+    while(1){
+      if(hst_post[ip].key==NULL) break;
+
+      switch(hst_post[ip].flg){
+      case POST_NULL:
+	sprintf(send_mesg,
+		"%s=&",
+		hst_post[ip].key);
+	break;
+
+      case POST_CONST:
+	sprintf(send_mesg,
+		"%s=%s&",
+		hst_post[ip].key,
+		hst_post[ip].prm);
+	break;
+	
+      case POST_INPUT:
+	if(strcmp(hst_post[ip].key,"ra")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  hst_post[ip].key,
+		  hg->fcdb_d_ra0);
+	}
+	else if(strcmp(hst_post[ip].key,"dec")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  hst_post[ip].key,
+		  hg->fcdb_d_dec0);
+	}
+	else if(strcmp(hst_post[ip].key,"radius")==0){
+	  sprintf(send_mesg,
+		  "%s=%.1lf&",
+		  hst_post[ip].key,
+		  hg->dss_arcmin/2.0);
+	}
+	break;
+
+      case POST_INST1:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_HST_IMAGE;i++){
+	  if(hg->fcdb_hst_image[i]) {
+	    sprintf(ins_mesg, "%s=%s&", hst_post[ip].key, hst_image[i].name);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_INST2:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_HST_SPEC;i++){
+	  if(hg->fcdb_hst_spec[i]) {
+	    sprintf(ins_mesg, "%s=%s&", hst_post[ip].key, hst_spec[i].name);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_INST3:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_HST_OTHER;i++){
+	  if(hg->fcdb_hst_other[i]) {
+	    sprintf(ins_mesg, "%s=%s&", hst_post[ip].key, hst_other[i].name);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+      }
+
+      plen+=strlen(send_mesg);
+
+      if(send_buf1) g_free(send_buf1);
+      if(send_buf2) send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+      else send_buf1=g_strdup(send_mesg);
+      if(send_buf2) g_free(send_buf2);
+      send_buf2=g_strdup(send_buf1);
+
+      ip++;
+    }
+
+    sprintf(send_mesg,"\r\n\r\n");
+    if(send_buf1) g_free(send_buf1);
+    send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+
+    plen+=strlen(send_mesg);
+
+    if(wflag)  write_to_server(command_socket, send_buf1);
+
+    if(send_buf1) g_free(send_buf1);
+    if(send_buf2) g_free(send_buf2);
+
+    break;
+
+
+  case FCDB_TYPE_ESO:
+    ip=0;
+    plen=0;
+
+    while(1){
+      if(eso_post[ip].key==NULL) break;
+      switch(eso_post[ip].flg){
+      case POST_NULL:
+	sprintf(send_mesg,
+		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n\r\n",
+		rand16,
+		eso_post[ip].key);
+	break;
+
+      case POST_CONST:
+	sprintf(send_mesg,
+		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		rand16,
+		eso_post[ip].key,
+		eso_post[ip].prm);
+	break;
+	
+      case POST_INPUT:
+	if(strcmp(eso_post[ip].key,"ra")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  rand16,
+		  eso_post[ip].key,
+		  hg->fcdb_d_ra0);
+	}
+	else if(strcmp(eso_post[ip].key,"dec")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  rand16,
+		  eso_post[ip].key,
+		  hg->fcdb_d_dec0);
+	}
+	else if(strcmp(eso_post[ip].key,"box")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n00 %02d %02d\r\n",
+		  rand16,
+		  eso_post[ip].key,
+		  hg->dss_arcmin/2,
+		  hg->dss_arcmin*30-(hg->dss_arcmin/2)*60);
+	}
+	break;
+
+      case POST_INST1:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_ESO_IMAGE;i++){
+	  if(hg->fcdb_eso_image[i]) {
+	    sprintf(ins_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		    rand16,
+		    eso_post[ip].key,
+		    eso_image[i].prm);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_INST2:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_ESO_SPEC;i++){
+	  if(hg->fcdb_eso_spec[i]) {
+	    sprintf(ins_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		    rand16,
+		    eso_post[ip].key,
+		    eso_spec[i].prm);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_INST3:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_ESO_VLTI;i++){
+	  if(hg->fcdb_eso_vlti[i]) {
+	    sprintf(ins_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		    rand16,
+		    eso_post[ip].key,
+		    eso_vlti[i].prm);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_INST4:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_ESO_POLA;i++){
+	  if(hg->fcdb_eso_pola[i]) {
+	    sprintf(ins_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		    rand16,
+		    eso_post[ip].key,
+		    eso_pola[i].prm);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_INST5:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_ESO_CORO;i++){
+	  if(hg->fcdb_eso_coro[i]) {
+	    sprintf(ins_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		    rand16,
+		    eso_post[ip].key,
+		    eso_coro[i].prm);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_INST6:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_ESO_OTHER;i++){
+	  if(hg->fcdb_eso_other[i]) {
+	    sprintf(ins_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		    rand16,
+		    eso_post[ip].key,
+		    eso_other[i].prm);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_INST7:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_ESO_SAM;i++){
+	  if(hg->fcdb_eso_sam[i]) {
+	    sprintf(ins_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		    rand16,
+		    eso_post[ip].key,
+		    eso_sam[i].prm);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_ADD:
+	sprintf(send_mesg,
+		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n",
+		rand16,
+		eso_post[ip].key);
+	for(i=0;i<NUM_ESO_IMAGE;i++){
+	  if(hg->fcdb_eso_image[i]) {
+	    if(init_flag){
+	      strcat(send_mesg," or ");
+	      strcat(send_mesg,eso_image[i].add);
+	    }
+	    else{
+	      strcat(send_mesg,"(");
+	      strcat(send_mesg,eso_image[i].add);
+	      init_flag=TRUE;
+	    }
+	  }
+	}
+	for(i=0;i<NUM_ESO_SPEC;i++){
+	  if(hg->fcdb_eso_spec[i]) {
+	    if(init_flag){
+	      strcat(send_mesg," or ");
+	      strcat(send_mesg,eso_spec[i].add);
+	    }
+	    else{
+	      strcat(send_mesg,"(");
+	      strcat(send_mesg,eso_spec[i].add);
+	      init_flag=TRUE;
+	    }
+	  }
+	}
+	for(i=0;i<NUM_ESO_VLTI;i++){
+	  if(hg->fcdb_eso_vlti[i]) {
+	    if(init_flag){
+	      strcat(send_mesg," or ");
+	      strcat(send_mesg,eso_vlti[i].add);
+	    }
+	    else{
+	      strcat(send_mesg,"(");
+	      strcat(send_mesg,eso_vlti[i].add);
+	      init_flag=TRUE;
+	    }
+	  }
+	}
+	for(i=0;i<NUM_ESO_POLA;i++){
+	  if(hg->fcdb_eso_pola[i]) {
+	    if(init_flag){
+	      strcat(send_mesg," or ");
+	      strcat(send_mesg,eso_pola[i].add);
+	    }
+	    else{
+	      strcat(send_mesg,"(");
+	      strcat(send_mesg,eso_pola[i].add);
+	      init_flag=TRUE;
+	    }
+	  }
+	}
+	for(i=0;i<NUM_ESO_CORO;i++){
+	  if(hg->fcdb_eso_coro[i]) {
+	    if(init_flag){
+	      strcat(send_mesg," or ");
+	      strcat(send_mesg,eso_coro[i].add);
+	    }
+	    else{
+	      strcat(send_mesg,"(");
+	      strcat(send_mesg,eso_coro[i].add);
+	      init_flag=TRUE;
+	    }
+	  }
+	}
+	for(i=0;i<NUM_ESO_OTHER;i++){
+	  if(hg->fcdb_eso_other[i]) {
+	    if(init_flag){
+	      strcat(send_mesg," or ");
+	      strcat(send_mesg,eso_other[i].add);
+	    }
+	    else{
+	      strcat(send_mesg,"(");
+	      strcat(send_mesg,eso_other[i].add);
+	      init_flag=TRUE;
+	    }
+	  }
+	}
+	for(i=0;i<NUM_ESO_SAM;i++){
+	  if(hg->fcdb_eso_sam[i]) {
+	    if(init_flag){
+	      strcat(send_mesg," or ");
+	      strcat(send_mesg,eso_sam[i].add);
+	    }
+	    else{
+	      strcat(send_mesg,"(");
+	      strcat(send_mesg,eso_sam[i].add);
+	      init_flag=TRUE;
+	    }
+	  }
+	}
+	if(init_flag){
+	  strcat(send_mesg,")\r\n");
+	}
+	else{
+	  strcat(send_mesg,"\r\n");
 	}
 	break;
       }	
@@ -2659,7 +3104,17 @@ int http_c_fcdb(typHOE *hg){
     sprintf(send_mesg, "Content-Length: %d\r\n", plen);
     write_to_server(command_socket, send_mesg);
 
-    sprintf(send_mesg, "Content-Type:multipart/form-data; boundary=----WebKitFormBoundary%s\r\n", rand16);
+    switch(hg->fcdb_type){
+    case FCDB_TYPE_LAMOST:
+    case FCDB_TYPE_ESO:
+      sprintf(send_mesg, "Content-Type:multipart/form-data; boundary=----WebKitFormBoundary%s\r\n", rand16);
+      break;
+
+    case FCDB_TYPE_SMOKA:
+    case FCDB_TYPE_HST:
+      sprintf(send_mesg, "Content-Type: application/x-www-form-urlencoded\r\n");
+      break;
+    }
     write_to_server(command_socket, send_mesg);
   }
 

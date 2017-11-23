@@ -2155,7 +2155,7 @@ void fcdb_fis_vo_parse(typHOE *hg) {
 }
 
 
-void fcdb_lamostp_vo_parse(typHOE *hg) {
+void fcdb_lamost_vo_parse(typHOE *hg) {
   xmlTextReaderPtr reader;
   list_field *vfield_move;
   list_tabledata *vtabledata_move;
@@ -2284,6 +2284,532 @@ void fcdb_lamostp_vo_parse(typHOE *hg) {
 }
 
 
+void fcdb_smoka_txt_parse(typHOE *hg) {
+  FILE *fp;
+  gchar *buf=NULL, *cp, *cpp, *buf_tmp1=NULL, *buf_tmp2=NULL;
+  int i_list=0, i_all=0;
+  gint pos_fid,pos_date,pos_mode,pos_type,pos_obj,pos_fil,pos_wv,
+    pos_ra,pos_dec,pos_exp,pos_obs;
+  gint len_fid,len_date,len_mode,len_type,len_obj,len_fil,len_wv,
+    len_ra,len_dec,len_exp,len_obs;
+  struct lnh_equ_posn equ;
+
+
+  printf_log(hg,"[FCDB] pursing TXT.");
+
+  if((fp=fopen(hg->fcdb_file,"rb"))==NULL){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: File cannot be opened.",
+		  " ",
+		  hg->fcdb_file,
+		  NULL);
+#else
+    fprintf(stderr," File Open Error  \"%s\".\n",hg->fcdb_file);
+#endif
+    printf_log(hg,"[FCDB] File Open Error  \"%s\".", hg->fcdb_file);
+    return;
+  }
+  
+  while(!feof(fp)){
+    if((buf=fgets_new(fp))==NULL){
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: File cannot be read.",
+		    " ",
+		    hg->fcdb_file,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->fcdb_file);
+#endif
+      printf_log(hg,"[FCDB] File Read Error  \"%s\".", hg->fcdb_file);
+      fclose(fp);
+      return;
+    }
+    else{
+      if(strncmp(buf,"<pre>",strlen("<pre>"))==0){
+	if(buf) g_free(buf);
+	break;
+      }
+      else{
+	if(buf) g_free(buf);
+      }
+    }
+  }
+
+  if((buf=fgets_new(fp))==NULL){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: File cannot be read.",
+		  " ",
+		  hg->fcdb_file,
+		  NULL);
+#else
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->fcdb_file);
+#endif
+    printf_log(hg,"[FCDB] File Read Error  \"%s\".", hg->fcdb_file);
+    fclose(fp);
+    return;
+  }
+  else if(strncmp(buf,"FRAMEID",strlen("FRAMEID"))==0){
+    cpp=buf;
+    pos_fid=0;
+    if((cp = strstr(cpp, "DATE_OBS")) != NULL){
+      len_fid=strlen(cpp)-strlen(cp);
+      pos_date=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "FITS_SIZE")) != NULL){
+      len_date=strlen(cpp)-strlen(cp)-pos_date;
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "OBS_MODE")) != NULL){
+      pos_mode=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "DATA_TYPE")) != NULL){
+      len_mode=strlen(cpp)-strlen(cp)-pos_mode;
+      pos_type=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "OBJECT")) != NULL){
+      len_type=strlen(cpp)-strlen(cp)-pos_type;
+      pos_obj=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "FILTER")) != NULL){
+      len_obj=strlen(cpp)-strlen(cp)-pos_obj;
+      pos_fil=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "WVLEN")) != NULL){
+      len_fil=strlen(cpp)-strlen(cp)-pos_fil;
+      pos_wv=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "DISPERSER")) != NULL){
+      len_wv=strlen(cpp)-strlen(cp)-pos_wv;
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "RA2000")) != NULL){
+      pos_ra=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "DEC2000")) != NULL){
+      len_ra=strlen(cpp)-strlen(cp)-pos_ra;
+      pos_dec=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "GALLONG")) != NULL){
+      len_dec=strlen(cpp)-strlen(cp)-pos_dec;
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "EXPTIME")) != NULL){
+      pos_exp=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "OBSERVER")) != NULL){
+      len_exp=strlen(cpp)-strlen(cp)-pos_exp;
+      pos_obs=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "EXP_ID")) != NULL){
+      len_obs=strlen(cpp)-strlen(cp)-pos_obs;
+    }
+
+    if(buf) g_free(buf);
+  }
+  else{
+    if(buf) g_free(buf);
+    fclose(fp);
+
+    hg->fcdb_i_max=0;
+    hg->fcdb_i_all=0;
+
+    return;
+  }
+
+  while(!feof(fp)){
+    if((buf=fgets_new(fp))==NULL){
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: File cannot be read.",
+		    " ",
+		    hg->fcdb_file,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->fcdb_file);
+#endif
+      printf_log(hg,"[FCDB] File Read Error  \"%s\".", hg->fcdb_file);
+      fclose(fp);
+      return;
+    }
+    else if(strncmp(buf,"</pre>",strlen("</pre>"))==0){
+      if(buf) g_free(buf);
+      break;
+    }
+    else{
+
+      // FRAMEID
+      cp=buf;
+      cp+=pos_fid;
+      if(hg->fcdb[i_list].fid) g_free(hg->fcdb[i_list].fid);
+      hg->fcdb[i_list].fid=g_strstrip(g_strndup(cp,len_fid));
+
+      // DATE_OBS
+      cp=buf;
+      cp+=pos_date;
+      if(hg->fcdb[i_list].date) g_free(hg->fcdb[i_list].date);
+      hg->fcdb[i_list].date=g_strstrip(g_strndup(cp,len_date));
+
+      // OBS_MODE
+      cp=buf;
+      cp+=pos_mode;
+      if(hg->fcdb[i_list].mode) g_free(hg->fcdb[i_list].mode);
+      hg->fcdb[i_list].mode=g_strstrip(g_strndup(cp,len_mode));
+
+      // DATA_TYPE
+      cp=buf;
+      cp+=pos_type;
+      if(hg->fcdb[i_list].type) g_free(hg->fcdb[i_list].type);
+      hg->fcdb[i_list].type=g_strstrip(g_strndup(cp,len_type));
+
+      // OBJECT
+      cp=buf;
+      cp+=pos_obj;
+      if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+      hg->fcdb[i_list].name=g_strstrip(g_strndup(cp,len_obj));
+
+      // FILTER
+      cp=buf;
+      cp+=pos_fil;
+      if(hg->fcdb[i_list].fil) g_free(hg->fcdb[i_list].fil);
+      hg->fcdb[i_list].fil=g_strstrip(g_strndup(cp,len_fil));
+
+      // WV_LEN
+      cp=buf;
+      cp+=pos_wv;
+      if(hg->fcdb[i_list].wv) g_free(hg->fcdb[i_list].wv);
+      hg->fcdb[i_list].wv=g_strstrip(g_strndup(cp,len_wv));
+
+      // RA2000
+      cp=buf;
+      cp+=pos_ra;
+      buf_tmp1=g_strstrip(g_strndup(cp,len_ra));
+      cpp=buf_tmp1;
+      buf_tmp2=g_strndup(cpp,2);
+      equ.ra.hours=(gint)g_strtod(buf_tmp2,NULL);
+      if(buf_tmp2) g_free(buf_tmp2);
+      cpp+=3;
+      buf_tmp2=g_strndup(cpp,2);
+      equ.ra.minutes=(gint)g_strtod(buf_tmp2,NULL);
+      if(buf_tmp2) g_free(buf_tmp2);
+      cpp+=3;
+      buf_tmp2=g_strndup(cpp,strlen(buf_tmp1)-6);
+      equ.ra.seconds=(gdouble)g_strtod(buf_tmp2,NULL);
+      if(buf_tmp2) g_free(buf_tmp2);
+      if(buf_tmp1) g_free(buf_tmp1);
+      hg->fcdb[i_list].d_ra=ln_hms_to_deg(&equ.ra);
+      hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
+
+      
+      // DEC2000
+      cp=buf;
+      cp+=pos_dec;
+      buf_tmp1=g_strstrip(g_strndup(cp,len_dec));
+      cpp=buf_tmp1;
+      if(cpp[0]==0x2d){
+	equ.dec.neg=1;
+      }
+      else{
+	equ.dec.neg=0;
+      }
+      cpp+=1;
+      buf_tmp2=g_strndup(cpp,2);
+      equ.dec.degrees=(gint)g_strtod(buf_tmp2,NULL);
+      if(buf_tmp2) g_free(buf_tmp2);
+      cpp+=3;
+      buf_tmp2=g_strndup(cpp,2);
+      equ.dec.minutes=(gint)g_strtod(buf_tmp2,NULL);
+      if(buf_tmp2) g_free(buf_tmp2);
+      cpp+=3;
+      buf_tmp2=g_strndup(cpp,strlen(buf_tmp1)-7);
+      equ.dec.seconds=(gdouble)g_strtod(buf_tmp2,NULL);
+      if(buf_tmp2) g_free(buf_tmp2);
+      if(buf_tmp1) g_free(buf_tmp1);
+      hg->fcdb[i_list].d_dec=ln_dms_to_deg(&equ.dec);
+      hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
+      
+      // EXPTIME
+      cp=buf;
+      cp+=pos_exp;
+      buf_tmp1=g_strstrip(g_strndup(cp,len_exp));
+      hg->fcdb[i_list].u=(gdouble)g_strtod(buf_tmp1,NULL);
+      if(buf_tmp1) g_free(buf_tmp1);
+
+      // OBSERVER
+      cp=buf;
+      cp+=pos_obs;
+      if(hg->fcdb[i_list].obs) g_free(hg->fcdb[i_list].obs);
+      hg->fcdb[i_list].obs=g_strstrip(g_strndup(cp,len_obs));
+
+      if(buf) g_free(buf);
+      i_list++;
+      if(i_list==MAX_FCDB) break;
+    }
+  }  
+  i_all=i_list;
+  hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
+
+  fclose(fp);
+
+  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    hg->fcdb[i_list].equinox=2000.00;
+    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
+				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+    hg->fcdb[i_list].pmra=0;
+    hg->fcdb[i_list].pmdec=0;
+    hg->fcdb[i_list].pm=FALSE;
+  }
+
+  return;
+}
+
+
+void fcdb_hst_vo_parse(typHOE *hg) {
+  xmlTextReaderPtr reader;
+  list_field *vfield_move;
+  list_tabledata *vtabledata_move;
+  VOTable votable;
+  int nbFields, process_column;
+  int *columns;
+  reader = Init_VO_Parser(hg->fcdb_file,&votable);
+  int i_list=0, i_all=0;
+
+  printf_log(hg,"[FCDB] pursing XML.");
+
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
+
+  Extract_VO_Fields(reader,&votable,&nbFields,&columns);
+  for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
+    if(xmlStrcmp(vfield_move->name,"Dataset") == 0) 
+      columns[0] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Target Name") == 0)
+      columns[1] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"RA (J2000)") == 0) 
+      columns[2] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Dec (J2000)") == 0) 
+      columns[3] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Start Time") == 0) 
+      columns[4] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Exp Time") == 0) 
+      columns[5] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Instrument") == 0) 
+      columns[6] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Filters/Gratings") == 0) 
+      columns[7] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Central Wavelength") == 0) 
+      columns[8] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Proposal ID") == 0) 
+      columns[9] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Apertures") == 0) 
+      columns[10] = vfield_move->position;
+ }
+
+
+ Extract_VO_TableData(reader,&votable, nbFields, columns);
+ for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+   if(i_list==MAX_FCDB) break;
+
+   if (vtabledata_move->colomn == columns[0]){
+     if(hg->fcdb[i_list].fid) g_free(hg->fcdb[i_list].fid);
+     hg->fcdb[i_list].fid=g_strdup(vtabledata_move->value);
+     i_all++;
+     i_list++;
+   }
+   else if (vtabledata_move->colomn == columns[1]){
+     if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+     hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[2]){
+     hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
+     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
+   }
+   else if (vtabledata_move->colomn == columns[3]){
+     hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
+     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
+   }
+   else if (vtabledata_move->colomn == columns[4]){  // StartDate
+     if(hg->fcdb[i_list].date) g_free(hg->fcdb[i_list].date);
+     hg->fcdb[i_list].date=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[5]){ // ExpTime
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].u=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].u<0) hg->fcdb[i_list].u=-1;
+     }
+     else{
+       hg->fcdb[i_list].u=-1;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[6]){  // Instrument
+     if(hg->fcdb[i_list].mode) g_free(hg->fcdb[i_list].mode);
+     hg->fcdb[i_list].mode=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[7]){  // Filters
+     if(hg->fcdb[i_list].fil) g_free(hg->fcdb[i_list].fil);
+     hg->fcdb[i_list].fil=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[8]){ // Central Wv
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].v=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].v<0) hg->fcdb[i_list].v=-1;
+     }
+     else{
+       hg->fcdb[i_list].v=-1;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[9]){  // Prop ID
+     if(hg->fcdb[i_list].obs) g_free(hg->fcdb[i_list].obs);
+     hg->fcdb[i_list].obs=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[10]){  // Apertures
+     if(hg->fcdb[i_list].type) g_free(hg->fcdb[i_list].type);
+     hg->fcdb[i_list].type=g_strdup(vtabledata_move->value);
+   }
+  }
+  hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
+
+  if (Free_VO_Parser(reader,&votable,&columns) == 1)
+    fprintf(stderr,"memory problem\n");
+
+  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    hg->fcdb[i_list].equinox=2000.00;
+    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
+				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+    hg->fcdb[i_list].pmra=0;
+    hg->fcdb[i_list].pmdec=0;
+    hg->fcdb[i_list].pm=FALSE;
+  }
+
+}
+
+void fcdb_eso_vo_parse(typHOE *hg) {
+  xmlTextReaderPtr reader;
+  list_field *vfield_move;
+  list_tabledata *vtabledata_move;
+  VOTable votable;
+  int nbFields, process_column;
+  int *columns;
+  reader = Init_VO_Parser(hg->fcdb_file,&votable);
+  int i_list=0, i_all=0;
+
+  printf_log(hg,"[FCDB] pursing XML.");
+
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
+
+  Extract_VO_Fields(reader,&votable,&nbFields,&columns);
+  for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
+    if(xmlStrcmp(vfield_move->name,"object") == 0) 
+      columns[0] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"ra") == 0)
+      columns[1] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"dec") == 0) 
+      columns[2] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"exptime") == 0) 
+      columns[3] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"prog_id") == 0) 
+      columns[4] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"dp_id") == 0) 
+      columns[5] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"dp_tech") == 0) 
+      columns[6] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"ins_id") == 0) 
+      columns[7] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"data_release_date") == 0) 
+      columns[8] = vfield_move->position;
+ }
+
+
+ Extract_VO_TableData(reader,&votable, nbFields, columns);
+ for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+   if(i_list==MAX_FCDB) break;
+
+   if (vtabledata_move->colomn == columns[0]){  // Name
+     if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+     hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
+     i_all++;
+     i_list++;
+   }
+   else if (vtabledata_move->colomn == columns[1]){  // RA
+     hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
+     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
+   }
+   else if (vtabledata_move->colomn == columns[2]){  // DEC
+     hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
+     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
+   }
+   else if (vtabledata_move->colomn == columns[3]){ // ExpTime
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].u=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].u<0) hg->fcdb[i_list].u=-1;
+     }
+     else{
+       hg->fcdb[i_list].u=-1;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[4]){  // Prop ID
+     if(hg->fcdb[i_list].obs) g_free(hg->fcdb[i_list].obs);
+     hg->fcdb[i_list].obs=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[5]){  // Frame ID
+     if(hg->fcdb[i_list].fid) g_free(hg->fcdb[i_list].fid);
+     hg->fcdb[i_list].fid=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[6]){  // Mode
+     if(hg->fcdb[i_list].type) g_free(hg->fcdb[i_list].type);
+     hg->fcdb[i_list].type=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[7]){ // Instrument
+     if(hg->fcdb[i_list].mode) g_free(hg->fcdb[i_list].mode);
+     hg->fcdb[i_list].mode=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[8]){  // Release Date
+     if(hg->fcdb[i_list].date) g_free(hg->fcdb[i_list].date);
+     hg->fcdb[i_list].date=g_strdup(vtabledata_move->value);
+   }
+  }
+  hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
+
+  if (Free_VO_Parser(reader,&votable,&columns) == 1)
+    fprintf(stderr,"memory problem\n");
+
+  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    hg->fcdb[i_list].equinox=2000.00;
+    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
+				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+    hg->fcdb[i_list].pmra=0;
+    hg->fcdb[i_list].pmdec=0;
+    hg->fcdb[i_list].pm=FALSE;
+  }
+
+}
 
 void addobj_vo_parse(typHOE *hg) {
   xmlTextReaderPtr reader;

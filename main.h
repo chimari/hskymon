@@ -10,6 +10,7 @@
 
 #undef ALLSKY_DEBUG
 #undef SKYMON_DEBUG
+#undef HTTP_DEBUG
 
 #include<glib.h>
 #include<gtk/gtk.h>
@@ -47,6 +48,11 @@
 
 #include "gen2.h"
 
+#include "post_lamost.h"
+#include "post_smoka.h"
+#include "post_hst.h"
+#include "post_eso.h"
+
 
 #ifdef USE_WIN32
 #define USER_CONFFILE "hskymon.ini"
@@ -77,6 +83,7 @@
 #define NED_URL "http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=2.0&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES"
 #define MAST_URL "http://archive.stsci.edu/xcorr.php?target=%.5lf%s%.10lf&max_records=10&action=Search&resolver=SIMBAD&missions[]=EUVE&missions[]=WFC3-IMAGE&missions[]=WFPC1&missions[]=WFPC2&missions[]=FOC&missions[]=ACS-IMAGE&missions[]=UIT&missions[]=STIS-IMAGE&missions[]=COS-IMAGE&missions[]=GALEX&missions[]=XMM-OM&missions[]=NICMOS-IMAGE&missions[]=FUSE&missions[]=IMAPS&missions[]=BEFS&missions[]=TUES&missions[]=IUE&missions[]=COPERNICUS&missions[]=HUT&missions[]=WUPPE&missions[]=GHRS&missions[]=STIS-SPECTRUM&missions[]=COS-SPECTRUM&missions[]=WFC3-SPECTRUM&missions[]=ACS-SPECTRUM&missions[]=FOS&missions[]=HPOL&missions[]=NICMOS-SPECTRUM&missions[]=FGS&missions[]=HSP&missions[]=KEPLER"
 #define MASTP_URL "https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html?searchQuery=%lf%%20%s%lf"
+#define GEMINI_URL "https://archive.gemini.edu/searchform/sr=120/cols=CTOWEQ/notengineering/ra=%.6lf/dec=%+.6lf/NotFail/OBJECT"
 #define IRSA_URL "http://irsa.ipac.caltech.edu/cgi-bin/Radar/nph-estimation?mission=All&objstr=%d%%3A%d%%3A%.2lf+%s%d%%3A%d%%3A%.2lf&mode=cone&radius=2&radunits=arcmin&range=6.25+Deg.&data=Data+Set+Type&radnum=2222&irsa=IRSA+Only&submit=Get+Inventory&output=%%2Firsa%%2Fcm%%2Fops_2.0%%2Firsa%%2Fshare%%2Fwsvc%%2FRadar%%2Fcatlist.tbl_type&url=%%2Fworkspace%%2FTMP_3hX3SO_29666&dir=%%2Fwork%%2FTMP_3hX3SO_29666&snull=matches+only&datav=Data+Set+Type"
 #define SPITZER_URL "http://sha.ipac.caltech.edu/applications/Spitzer/SHA/#id=SearchByPosition&DoSearch=true&SearchByPosition.field.radius=0.033333333&UserTargetWorldPt=%.5lf;%.10lf;EQ_J2000&SimpleTargetPanel.field.resolvedBy=nedthensimbad&MoreOptions.field.prodtype=aor,pbcd&startIdx=0&pageSize=0&shortDesc=Position&isBookmarkAble=true&isDrillDownRoot=true&isSearchResult=true"
 #define CASIS_URL "http://cassis.astro.cornell.edu/atlas/cgi/radec6.py?ra=%.5lf&dec=%.6lf&radius=20"
@@ -87,6 +94,10 @@
 #define FCDB_NED_URL "http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES"
 #define FCDB_SDSS_URL "http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?id=%s"
 #define FCDB_LAMOST_URL "http://dr3.lamost.org/spectrum/view?obsid=%d"
+#define FCDB_SMOKA_URL "http://smoka.nao.ac.jp/info.jsp?frameid=%s&date_obs=%s&i=%d"
+#define FCDB_HST_URL "http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst&dataid=%s"
+#define FCDB_ESO_URL "http://archive.eso.org/wdb/wdb/eso/eso_archive_main/query?dp_id=%s&format=DecimDeg&tab_stat_plot=on&aladin_colour=aladin_instrument"
+
 #elif defined(USE_OSX)
 #define DSS_URL "open http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick\\&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf\\&SURVEY=Digitized+Sky+Survey"
 #define SIMBAD_URL "open http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none\\&CooEquinox=2000\\&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf\\&submit=submit%%20query\\&Radius.unit=arcmin\\&CooEqui=2000\\&CooFrame=FK5\\&Radius=2\\&output.format=HTML"
@@ -95,6 +106,7 @@
 #define NED_URL "open http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search\\&in_csys=Equatorial\\&in_equinox=J2000.0\\&lon=%d%%3A%d%%3A%.2lf\\&lat=%s%d%%3A%d%%3A%.2lf\\&radius=2.0\\&hconst=73\\&omegam=0.27\\&omegav=0.73\\&corr_z=1\\&z_constraint=Unconstrained\\&z_value1=\\&z_value2=\\&z_unit=z\\&ot_include=ANY\\&nmp_op=ANY\\&out_csys=Equatorial\\&out_equinox=J2000.0\\&obj_sort=Distance+to+search+center\\&of=pre_text\\&zv_breaker=30000.0\\&list_limit=5\\&img_stamp=YES"
 #define MAST_URL "open http://archive.stsci.edu/xcorr.php?target=%.5lf%s%.10lf\\&max_records=10\\&action=Search\\&resolver=SIMBAD\\&missions[]=EUVE\\&missions[]=WFC3-IMAGE\\&missions[]=WFPC1\\&missions[]=WFPC2\\&missions[]=FOC\\&missions[]=ACS-IMAGE\\&missions[]=UIT\\&missions[]=STIS-IMAGE\\&missions[]=COS-IMAGE\\&missions[]=GALEX\\&missions[]=XMM-OM\\&missions[]=NICMOS-IMAGE\\&missions[]=FUSE\\&missions[]=IMAPS\\&missions[]=BEFS\\&missions[]=TUES\\&missions[]=IUE\\&missions[]=COPERNICUS\\&missions[]=HUT\\&missions[]=WUPPE\\&missions[]=GHRS\\&missions[]=STIS-SPECTRUM\\&missions[]=COS-SPECTRUM\\&missions[]=WFC3-SPECTRUM\\&missions[]=ACS-SPECTRUM\\&missions[]=FOS\\&missions[]=HPOL\\&missions[]=NICMOS-SPECTRUM\\&missions[]=FGS\\&missions[]=HSP\\&missions[]=KEPLER"
 #define MASTP_URL "open https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html?searchQuery=%lf%%20%s%lf"
+#define GEMINI_URL "open https://archive.gemini.edu/searchform/sr=120/cols=CTOWEQ/notengineering/ra=%.6lf/dec=%+.6lf/NotFail/OBJECT"
 #define IRSA_URL "open http://irsa.ipac.caltech.edu/cgi-bin/Radar/nph-estimation?mission=All\\&objstr=%d%%3A%d%%3A%.2lf+%s%d%%3A%d%%3A%.2lf\\&mode=cone\\&radius=2\\&radunits=arcmin\\&range=6.25+Deg.\\&data=Data+Set+Type\\&radnum=2222\\&irsa=IRSA+Only\\&submit=Get+Inventory\\&output=%%2Firsa%%2Fcm%%2Fops_2.0%%2Firsa%%2Fshare%%2Fwsvc%%2FRadar%%2Fcatlist.tbl_type\\&url=%%2Fworkspace%%2FTMP_3hX3SO_29666\\&dir=%%2Fwork%%2FTMP_3hX3SO_29666\\&snull=matches+only\\&datav=Data+Set+Type"
 #define SPITZER_URL "open http://sha.ipac.caltech.edu/applications/Spitzer/SHA/#id=SearchByPosition\\&DoSearch=true\\&SearchByPosition.field.radius=0.033333333\\&UserTargetWorldPt=%.5lf;%.10lf;EQ_J2000\\&SimpleTargetPanel.field.resolvedBy=nedthensimbad\\&MoreOptions.field.prodtype=aor,pbcd\\&startIdx=0\\&pageSize=0\\&shortDesc=Position\\&isBookmarkAble=true\\&isDrillDownRoot=true\\&isSearchResult=true"
 #define CASIS_URL "open http://cassis.astro.cornell.edu/atlas/cgi/radec6.py?ra=%.5lf\\&dec=%.6lf&radius=20"
@@ -105,6 +117,10 @@
 #define FCDB_NED_URL "open http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s\\&extend=no\\&hconst=73\\&omegam=0.27\\&omegav=0.73\\&corr_z=1\\&out_csys=Equatorial\\&out_equinox=J2000.0\\&obj_sort=RA+or+Longitude\\&of=pre_text\\&zv_breaker=30000.0\\&list_limit=5\\&img_stamp=YES"
 #define FCDB_SDSS_URL "open http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?id=%s"
 #define FCDB_LAMOST_URL "open http://dr3.lamost.org/spectrum/view?obsid=%d"
+#define FCDB_SMOKA_URL "open http://smoka.nao.ac.jp/info.jsp?frameid=%s&date_obs=%s&i=%d"
+#define FCDB_HST_URL "open http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst&dataid=%s"
+#define FCDB_ESO_URL "open http://archive.eso.org/wdb/wdb/eso/eso_archive_main/query?dp_id=%s&format=DecimDeg&tab_stat_plot=on&aladin_colour=aladin_instrument"
+
 #else
 #define DSS_URL "\"http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey\""
 #define SIMBAD_URL "\"http://simbad.harvard.edu/simbad/sim-coo?CooDefinedFrames=none&CooEquinox=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML\""
@@ -113,6 +129,7 @@
 #define NED_URL "\"http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=2.0&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES\""
 #define MAST_URL "\"http://archive.stsci.edu/xcorr.php?target=%.5lf%s%.10lf&max_records=10&action=Search&resolver=SIMBAD&missions[]=EUVE&missions[]=WFC3-IMAGE&missions[]=WFPC1&missions[]=WFPC2&missions[]=FOC&missions[]=ACS-IMAGE&missions[]=UIT&missions[]=STIS-IMAGE&missions[]=COS-IMAGE&missions[]=GALEX&missions[]=XMM-OM&missions[]=NICMOS-IMAGE&missions[]=FUSE&missions[]=IMAPS&missions[]=BEFS&missions[]=TUES&missions[]=IUE&missions[]=COPERNICUS&missions[]=HUT&missions[]=WUPPE&missions[]=GHRS&missions[]=STIS-SPECTRUM&missions[]=COS-SPECTRUM&missions[]=WFC3-SPECTRUM&missions[]=ACS-SPECTRUM&missions[]=FOS&missions[]=HPOL&missions[]=NICMOS-SPECTRUM&missions[]=FGS&missions[]=HSP&missions[]=KEPLER\""
 #define MASTP_URL "\"https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html?searchQuery=%lf%%20%s%lf\""
+#define GEMINI_URL "\"https://archive.gemini.edu/searchform/sr=120/cols=CTOWEQ/notengineering/ra=%.6lf/dec=%+.6lf/NotFail/OBJECT\""
 #define IRSA_URL "\"http://irsa.ipac.caltech.edu/cgi-bin/Radar/nph-estimation?mission=All&objstr=%d%%3A%d%%3A%.2lf+%s%d%%3A%d%%3A%.2lf&mode=cone&radius=2&radunits=arcmin&range=6.25+Deg.&data=Data+Set+Type&radnum=2222&irsa=IRSA+Only&submit=Get+Inventory&output=%%2Firsa%%2Fcm%%2Fops_2.0%%2Firsa%%2Fshare%%2Fwsvc%%2FRadar%%2Fcatlist.tbl_type&url=%%2Fworkspace%%2FTMP_3hX3SO_29666&dir=%%2Fwork%%2FTMP_3hX3SO_29666&snull=matches+only&datav=Data+Set+Type\""
 #define SPITZER_URL "\"http://sha.ipac.caltech.edu/applications/Spitzer/SHA/#id=SearchByPosition&DoSearch=true&SearchByPosition.field.radius=0.033333333&UserTargetWorldPt=%.5lf;%.10lf;EQ_J2000&SimpleTargetPanel.field.resolvedBy=nedthensimbad&MoreOptions.field.prodtype=aor,pbcd&startIdx=0&pageSize=0&shortDesc=Position&isBookmarkAble=true&isDrillDownRoot=true&isSearchResult=true\""
 #define CASIS_URL "\"http://cassis.astro.cornell.edu/atlas/cgi/radec6.py?ra=%.5lf&dec=%.6lf&radius=20\""
@@ -123,6 +140,9 @@
 #define FCDB_NED_URL "\"http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES\""
 #define FCDB_SDSS_URL "\"http://skyserver.sdss.org/dr13/en/tools/quicklook/summary.aspx?id=%s\""
 #define FCDB_LAMOST_URL "\"http://dr3.lamost.org/spectrum/view?obsid=%d\""
+#define FCDB_SMOKA_URL "\"http://smoka.nao.ac.jp/info.jsp?frameid=%s&date_obs=%s&i=%d\""
+#define FCDB_HST_URL "\"http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst&dataid=%s\""
+#define FCDB_ESO_URL "\"http://archive.eso.org/wdb/wdb/eso/eso_archive_main/query?dp_id=%s&format=DecimDeg&tab_stat_plot=on&aladin_colour=aladin_instrument\""
 #endif
 
 #ifdef USE_WIN32
@@ -147,6 +167,7 @@
 #define FCDB_HOST_SIMBAD_HARVARD "simbad.harvard.edu"
 #define FCDB_PATH "/simbad/sim-sam?Criteria=region%%28box%%2C%lf%s%lf%%2C%+lfm%+lfm%%29%s%s&submit=submit+query&OutputMode=LIST&maxObject=%d&CriteriaFile=&output.format=VOTABLE"
 #define FCDB_FILE_XML "database_fc.xml"
+#define FCDB_FILE_TXT "database_fc.txt"
 
 #define FCDB_HOST_NED "ned.ipac.caltech.edu"
 #define FCDB_NED_PATH "/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=%.2lf&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY%sout_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=0&img_stamp=YES&of=xml_main"
@@ -178,12 +199,17 @@
 #define FCDB_HOST_FIS "vizier.u-strasbg.fr"
 #define FCDB_FIS_PATH "/viz-bin/votable?-source=II/298/fis&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=500&-out.form=VOTable"
 
-#define FCDB_HOST_LAMOST "vizier.u-strasbg.fr"
-#define FCDB_LAMOST_ALL_PATH "/viz-bin/votable?-source=V/149/dr2&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.all&-out.max=500&-out.form=VOTable"
-#define FCDB_LAMOST_AFGK_PATH "/viz-bin/votable?-source=V/149/stellar2&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.all&-out.max=500&-out.form=VOTable"
+#define FCDB_HOST_LAMOST "dr3.lamost.org"
+#define FCDB_LAMOST_PATH "/q"
 
-#define FCDB_HOST_LAMOSTP "dr3.lamost.org"
-#define FCDB_LAMOSTP_PATH "/q"
+#define FCDB_HOST_SMOKA "smoka.nao.ac.jp"
+#define FCDB_SMOKA_PATH "/fssearch"
+
+#define FCDB_HOST_HST "archive.stsci.edu"
+#define FCDB_HST_PATH "/hst/search.php"
+
+#define FCDB_HOST_ESO "archive.eso.org"
+#define FCDB_ESO_PATH "/wdb/wdb/eso/eso_archive_main/query"
 
 
 
@@ -467,6 +493,13 @@ enum
   COLUMN_FCDB_NEDZ,
   COLUMN_FCDB_REF,
   COLUMN_FCDB_PLX,
+  COLUMN_FCDB_FID,
+  COLUMN_FCDB_DATE,
+  COLUMN_FCDB_MODE,
+  COLUMN_FCDB_TYPE,
+  COLUMN_FCDB_FIL,
+  COLUMN_FCDB_WV,
+  COLUMN_FCDB_OBS,
   NUM_COLUMN_FCDB
 };
 
@@ -478,13 +511,16 @@ enum
   FCDB_TYPE_GSC,
   FCDB_TYPE_PS1,
   FCDB_TYPE_SDSS,
-  FCDB_TYPE_LAMOSTP,
+  FCDB_TYPE_LAMOST,
   FCDB_TYPE_USNO,
   FCDB_TYPE_GAIA,
   FCDB_TYPE_2MASS,
   FCDB_TYPE_WISE,
   FCDB_TYPE_IRC,
-  FCDB_TYPE_FIS
+  FCDB_TYPE_FIS,
+  FCDB_TYPE_SMOKA,
+  FCDB_TYPE_HST,
+  FCDB_TYPE_ESO
 };
 
 enum
@@ -610,7 +646,7 @@ enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
 
 enum{ AZEL_NORMAL, AZEL_POSI, AZEL_NEGA} AZElMode;
 
-enum{ WWWDB_SIMBAD, WWWDB_NED, WWWDB_DR8, WWWDB_DR13, WWWDB_MAST, WWWDB_MASTP, WWWDB_IRSA, WWWDB_SPITZER, WWWDB_CASIS, WWWDB_SEP1, WWWDB_SSLOC, WWWDB_RAPID, WWWDB_MIRSTD} WWWDBMode;
+enum{ WWWDB_SIMBAD, WWWDB_NED, WWWDB_DR8, WWWDB_DR13, WWWDB_MAST, WWWDB_MASTP,WWWDB_GEMINI, WWWDB_IRSA, WWWDB_SPITZER, WWWDB_CASIS, WWWDB_SEP1, WWWDB_SSLOC, WWWDB_RAPID, WWWDB_MIRSTD} WWWDBMode;
 
 enum{ STDDB_SSLOC, STDDB_RAPID, STDDB_MIRSTD, STDDB_ESOSTD, STDDB_IRAFSTD, STDDB_CALSPEC, STDDB_HDSSTD} STDDBMode;
 
@@ -1262,14 +1298,13 @@ struct _FCDBpara{
   gdouble j;
   gdouble h;
   gdouble k;
-  gchar *f12;
-  gchar *f25;
-  gchar *f60;
-  gchar *f100;
-  gchar *q12;
-  gchar *q25;
-  gchar *q60;
-  gchar *q100;
+  gchar *fid;
+  gchar *date;
+  gchar *mode;
+  gchar *type;
+  gchar *fil;
+  gchar *wv;
+  gchar *obs;
   gdouble x;
   gdouble y;
   gint ref;
@@ -1646,6 +1681,17 @@ struct _typHOE{
   gint fcdb_wise_mag;
   gint fcdb_wise_diam;
   gboolean fcdb_wise_fil;
+  gboolean fcdb_smoka_inst[NUM_SMOKA_INST];
+  gboolean fcdb_hst_image[NUM_HST_IMAGE];
+  gboolean fcdb_hst_spec[NUM_HST_SPEC];
+  gboolean fcdb_hst_other[NUM_HST_OTHER];
+  gboolean fcdb_eso_image[NUM_ESO_IMAGE];
+  gboolean fcdb_eso_spec[NUM_ESO_SPEC];
+  gboolean fcdb_eso_vlti[NUM_ESO_VLTI];
+  gboolean fcdb_eso_pola[NUM_ESO_POLA];
+  gboolean fcdb_eso_coro[NUM_ESO_CORO];
+  gboolean fcdb_eso_other[NUM_ESO_OTHER];
+  gboolean fcdb_eso_sam[NUM_ESO_SAM];
 
   gint addobj_type;
   gchar *addobj_name;
@@ -1872,6 +1918,7 @@ pid_t stddb_pid;
 
 //// Functions' proto-type
 // main.c
+gchar* fgets_new();
 void printf_log(typHOE *hg, const gchar *format, ...);
 void my_signal_connect();
 void cc_get_toggle();
@@ -1991,7 +2038,10 @@ void fcdb_2mass_vo_parse();
 void fcdb_wise_vo_parse();
 void fcdb_irc_vo_parse();
 void fcdb_fis_vo_parse();
-void fcdb_lamostp_vo_parse();
+void fcdb_lamost_vo_parse();
+void fcdb_smoka_txt_parse();
+void fcdb_hst_vo_parse();
+void fcdb_eso_vo_parse();
 void addobj_vo_parse();
 void stddb_vo_parse();
 
