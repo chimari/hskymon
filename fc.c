@@ -472,11 +472,12 @@ gboolean progress_timeout( gpointer data ){
 
   if(GTK_WIDGET_REALIZED(hg->pbar)){
 
+    sz=get_file_size(hg->dss_file);
     gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
 
-    sz=get_file_size(hg->dss_file);
     if(sz>1024){
       sz=sz/1024;
+      
       if(sz>1024){
 	tmp=g_strdup_printf("Downloaded %.2f MB",(gfloat)sz/1024.);
       }

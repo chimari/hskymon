@@ -10,9 +10,13 @@ struct _PARAMsmokainst{
   gchar *prm;
 };
 
-#define NUM_SMOKA_INST 12
+#define NUM_SMOKA_SUBARU 12
+#define NUM_SMOKA_KISO 3
+#define NUM_SMOKA_OAO 5
+#define NUM_SMOKA_MTM 2
+#define NUM_SMOKA_KANATA 2
 
-static const PARAMsmokainst smoka_inst[NUM_SMOKA_INST] = {
+static const PARAMsmokainst smoka_subaru[NUM_SMOKA_SUBARU] = {
   {"Suprime-Cam","SUP"},  
   {"FOCAS",      "FOC"},  
   {"HDS",        "HDS"},  
@@ -25,6 +29,30 @@ static const PARAMsmokainst smoka_inst[NUM_SMOKA_INST] = {
   {"HiCIAO",     "HIC"},  
   {"FMOS",       "FMS"},  
   {"Hyper Suprime-Cam", "HSC"}
+};
+
+static const PARAMsmokainst smoka_kiso[NUM_SMOKA_KISO] = {
+  {"1k CCD",      "KCC"},  
+  {"2k CCD",      "KCD"},  
+  {"KWFC",        "KWF"}  
+};
+
+static const PARAMsmokainst smoka_oao[NUM_SMOKA_OAO] = {
+  {"ISLE",   "ISL"},  
+  {"KOOLS",  "KLS"},  
+  {"HIDES",  "HID"},
+  {"OASIS",  "OAS"},
+  {"SNG",    "CSD"},
+};
+
+static const PARAMsmokainst smoka_mtm[NUM_SMOKA_MTM] = {
+  {"AKENO",   "MTA"},  
+  {"OAO",     "MTO"}
+};
+
+static const PARAMsmokainst smoka_kanata[NUM_SMOKA_KANATA] = {
+  {"HOWPol",   "HWP"},  
+  {"HONIR",    "HNR"}
 };
 
 static const PARAMpost smoka_post[] = { 
@@ -53,7 +81,15 @@ static const PARAMpost smoka_post[] = {
   {POST_CONST,  "frameorshot",   "Frame"},
   {POST_CONST,  "action",        "Search"},
   {POST_INST1,  "instruments",   NULL},
+  {POST_INST2,  "instruments",   NULL},
+  {POST_INST3,  "instruments",   NULL},
+  {POST_INST4,  "instruments",   NULL},
+  {POST_INST5,  "instruments",   NULL},
   {POST_INST1,  "multiselect_0",   NULL},
+  {POST_INST2,  "multiselect_0",   NULL},
+  {POST_INST3,  "multiselect_0",   NULL},
+  {POST_INST4,  "multiselect_0",   NULL},
+  {POST_INST5,  "multiselect_0",   NULL},
   {POST_CONST,  "obs_mod",   "IMAG"},
   {POST_CONST,  "obs_mod",   "SPEC"},
   {POST_CONST,  "obs_mod",   "IPOL"},

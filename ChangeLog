@@ -1,6 +1,6 @@
 2017.11.?? ver3.0.6 - Added SMOKA/HST/ESO data archive for database query
 	              in FC.
-	            - Added GEMINI data archive for web database access.
+	            - Added GEMINI/KECK data archive for web browser access.
 
 2017.11.16 ver3.0.5 - Changed LAMOST FCDB server to dr3.lamost.org .
 	              Now POST method is avairable for DB access.

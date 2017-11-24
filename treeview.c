@@ -1490,6 +1490,12 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 			  fabs(ln_dms_to_deg(&hobject_prec.dec)));
       break;
 
+    case WWWDB_KECK:
+      tmp=g_strdup_printf(KECK_URL,
+			  ln_hms_to_deg(&hobject_prec.ra),
+			  ln_dms_to_deg(&hobject_prec.dec));
+      break;
+
     case WWWDB_GEMINI:
       tmp=g_strdup_printf(GEMINI_URL,
 			  ln_hms_to_deg(&hobject_prec.ra),
@@ -4891,6 +4897,11 @@ do_editable_cells (typHOE *hg)
       gtk_list_store_set(store, &iter, 0, "MAST Portal",
 			 1, WWWDB_MASTP, 2, TRUE, -1);
       if(hg->wwwdb_mode==WWWDB_MASTP) iter_set=iter;
+	
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "KECK archive",
+			 1, WWWDB_KECK, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_KECK) iter_set=iter;
 	
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, 0, "GEMINI archive",

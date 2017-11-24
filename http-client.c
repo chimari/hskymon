@@ -1702,7 +1702,7 @@ int http_c_fc(typHOE *hg){
       fprintf(stderr," File Write Error  \"%s\" \n", hg->dss_file);
       return(HSKYMON_HTTP_ERROR_TEMPFILE);
     }
-    
+
     while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
       // header lines
       if(debug_flg){
@@ -2608,11 +2608,59 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 
       case POST_INST1:
 	send_mesg[0]=0x00;
-	for(i=0;i<NUM_SMOKA_INST;i++){
-	  if(hg->fcdb_smoka_inst[i]) {
+	for(i=0;i<NUM_SMOKA_SUBARU;i++){
+	  if(hg->fcdb_smoka_subaru[i]) {
 	    sprintf(ins_mesg, "%s=%s&", 
 		    smoka_post[ip].key, 
-		    smoka_inst[i].prm);
+		    smoka_subaru[i].prm);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_INST2:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_SMOKA_KISO;i++){
+	  if(hg->fcdb_smoka_kiso[i]) {
+	    sprintf(ins_mesg, "%s=%s&", 
+		    smoka_post[ip].key, 
+		    smoka_kiso[i].prm);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_INST3:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_SMOKA_OAO;i++){
+	  if(hg->fcdb_smoka_oao[i]) {
+	    sprintf(ins_mesg, "%s=%s&", 
+		    smoka_post[ip].key, 
+		    smoka_oao[i].prm);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_INST4:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_SMOKA_MTM;i++){
+	  if(hg->fcdb_smoka_mtm[i]) {
+	    sprintf(ins_mesg, "%s=%s&", 
+		    smoka_post[ip].key, 
+		    smoka_mtm[i].prm);
+	    strcat(send_mesg,ins_mesg);
+	  }	
+	}
+	break;
+
+      case POST_INST5:
+	send_mesg[0]=0x00;
+	for(i=0;i<NUM_SMOKA_KANATA;i++){
+	  if(hg->fcdb_smoka_kanata[i]) {
+	    sprintf(ins_mesg, "%s=%s&", 
+		    smoka_post[ip].key, 
+		    smoka_kanata[i].prm);
 	    strcat(send_mesg,ins_mesg);
 	  }	
 	}
@@ -3038,7 +3086,6 @@ int http_c_fcdb(typHOE *hg){
   // Calculate Content-Length
   if(hg->fcdb_post){
     rand16=make_rand16();
-
     plen=post_body(hg, FALSE, 0, rand16);
   }
    
