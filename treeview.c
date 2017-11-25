@@ -1464,6 +1464,7 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
   struct ln_equ_posn object;
   struct lnh_equ_posn hobject_prec;
   struct ln_equ_posn object_prec;
+  gint fcdb_type_old;
 
 
   if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
@@ -1658,6 +1659,7 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
       break;
 
     case WWWDB_SMOKA:
+      fcdb_type_old=hg->fcdb_type;
       hg->fcdb_type=FCDB_TYPE_WWWDB_SMOKA;
 
       if(hg->fcdb_host) g_free(hg->fcdb_host);
@@ -1675,6 +1677,7 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
       hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
 
       fcdb_dl(hg);
+      hg->fcdb_type=fcdb_type_old;
       str_replace(hg->fcdb_file,
 		  "href=\"/",
 		  "href=\"http://" FCDB_HOST_SMOKA "/");
@@ -1698,6 +1701,7 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
       break;
 
     case WWWDB_HST:
+      fcdb_type_old=hg->fcdb_type;
       hg->fcdb_type=FCDB_TYPE_WWWDB_HST;
 
       if(hg->fcdb_host) g_free(hg->fcdb_host);
@@ -1715,6 +1719,7 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
       hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
 
       fcdb_dl(hg);
+      hg->fcdb_type=fcdb_type_old;
       str_replace(hg->fcdb_file,
 		  "href=\"/",
 		  "href=\"http://" FCDB_HOST_HST "/");
@@ -1738,6 +1743,7 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
       break;
 
     case WWWDB_ESO:
+      fcdb_type_old=hg->fcdb_type;
       hg->fcdb_type=FCDB_TYPE_WWWDB_ESO;
 
       if(hg->fcdb_host) g_free(hg->fcdb_host);
@@ -1755,6 +1761,7 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
       hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
 
       fcdb_dl(hg);
+      hg->fcdb_type=fcdb_type_old;
       str_replace(hg->fcdb_file,
 		  "href=\"/",
 		  "href=\"http://" FCDB_HOST_ESO "/");
