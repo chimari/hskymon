@@ -74,7 +74,7 @@ static const PARAMpost hst_post[] = {
   {POST_CONST,   "ordercolumn2",       "sci_targname"},
   {POST_CONST,   "ordercolumn3",       "sci_data_set_name"},
   {POST_CONST,   "coordformat",       "dec"},
-  {POST_CONST,   "outputformat",       "VOTable"},
-  {POST_CONST,   "max_records",       "501"},
+  {POST_INPUT,   "outputformat",       NULL},  // VOTable or HTML_Table
+  {POST_CONST,   "max_records",      "5001"},
   {POST_CONST,   "max_rpp",       "500"},
   {POST_NULL,  NULL, NULL}};

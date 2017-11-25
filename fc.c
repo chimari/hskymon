@@ -4827,6 +4827,9 @@ void fcdb_dl(typHOE *hg)
   case FCDB_TYPE_SMOKA:
   case FCDB_TYPE_HST:
   case FCDB_TYPE_ESO:
+  case FCDB_TYPE_WWWDB_SMOKA:
+  case FCDB_TYPE_WWWDB_HST:
+  case FCDB_TYPE_WWWDB_ESO:
     hg->fcdb_post=TRUE;
     break;
 
@@ -4885,14 +4888,17 @@ void fcdb_dl(typHOE *hg)
     break;
 
   case FCDB_TYPE_SMOKA:
+  case FCDB_TYPE_WWWDB_SMOKA:
     label=gtk_label_new("Searching objects in SMOKA ...");
     break;
 
   case FCDB_TYPE_HST:
+  case FCDB_TYPE_WWWDB_HST:
     label=gtk_label_new("Searching objects in HST archive ...");
     break;
 
   case FCDB_TYPE_ESO:
+  case FCDB_TYPE_WWWDB_ESO:
     label=gtk_label_new("Searching objects in ESO archive ...");
     break;
   }
@@ -4961,14 +4967,17 @@ void fcdb_dl(typHOE *hg)
     break;
 
   case FCDB_TYPE_SMOKA:
+  case FCDB_TYPE_WWWDB_SMOKA:
     hg->plabel=gtk_label_new("Searching objects in SMOKA ...");
     break;
 
   case FCDB_TYPE_HST:
+  case FCDB_TYPE_WWWDB_HST:
     hg->plabel=gtk_label_new("Searching objects in HST archive ...");
     break;
 
   case FCDB_TYPE_ESO:
+  case FCDB_TYPE_WWWDB_ESO:
     hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
     break;
   }
@@ -5137,14 +5146,17 @@ void addobj_dl(typHOE *hg)
     break;
 
   case FCDB_TYPE_SMOKA:
+  case FCDB_TYPE_WWWDB_SMOKA:
     hg->plabel=gtk_label_new("Searching objects in SMOKA ...");
     break;
 
   case FCDB_TYPE_HST:
+  case FCDB_TYPE_WWWDB_HST:
     hg->plabel=gtk_label_new("Searching objects in HST archive ...");
     break;
 
   case FCDB_TYPE_ESO:
+  case FCDB_TYPE_WWWDB_ESO:
     hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
     break;
   }

@@ -10,7 +10,7 @@
 
 #undef ALLSKY_DEBUG
 #undef SKYMON_DEBUG
-#define HTTP_DEBUG
+#undef HTTP_DEBUG
 
 #include<glib.h>
 #include<gtk/gtk.h>
@@ -171,6 +171,7 @@
 #define FCDB_PATH "/simbad/sim-sam?Criteria=region%%28box%%2C%lf%s%lf%%2C%+lfm%+lfm%%29%s%s&submit=submit+query&OutputMode=LIST&maxObject=%d&CriteriaFile=&output.format=VOTABLE"
 #define FCDB_FILE_XML "database_fc.xml"
 #define FCDB_FILE_TXT "database_fc.txt"
+#define FCDB_FILE_HTML "database_fc.html"
 
 #define FCDB_HOST_NED "ned.ipac.caltech.edu"
 #define FCDB_NED_PATH "/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=%.2lf&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY%sout_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=0&img_stamp=YES&of=xml_main"
@@ -523,7 +524,10 @@ enum
   FCDB_TYPE_FIS,
   FCDB_TYPE_SMOKA,
   FCDB_TYPE_HST,
-  FCDB_TYPE_ESO
+  FCDB_TYPE_ESO,
+  FCDB_TYPE_WWWDB_SMOKA,
+  FCDB_TYPE_WWWDB_HST,
+  FCDB_TYPE_WWWDB_ESO
 };
 
 enum
@@ -649,7 +653,7 @@ enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
 
 enum{ AZEL_NORMAL, AZEL_POSI, AZEL_NEGA} AZElMode;
 
-enum{ WWWDB_SIMBAD, WWWDB_NED, WWWDB_DR8, WWWDB_DR13, WWWDB_MAST, WWWDB_MASTP,WWWDB_KECK, WWWDB_GEMINI, WWWDB_IRSA, WWWDB_SPITZER, WWWDB_CASIS, WWWDB_SEP1, WWWDB_SSLOC, WWWDB_RAPID, WWWDB_MIRSTD} WWWDBMode;
+enum{ WWWDB_SIMBAD, WWWDB_NED, WWWDB_DR8, WWWDB_DR13, WWWDB_MAST, WWWDB_MASTP,WWWDB_KECK, WWWDB_GEMINI, WWWDB_IRSA, WWWDB_SPITZER, WWWDB_CASIS, WWWDB_SEP1, WWWDB_SSLOC, WWWDB_RAPID, WWWDB_MIRSTD, WWWDB_SEP2, WWWDB_SMOKA, WWWDB_HST, WWWDB_ESO} WWWDBMode;
 
 enum{ STDDB_SSLOC, STDDB_RAPID, STDDB_MIRSTD, STDDB_ESOSTD, STDDB_IRAFSTD, STDDB_CALSPEC, STDDB_HDSSTD} STDDBMode;
 

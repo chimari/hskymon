@@ -192,7 +192,7 @@ static const PARAMpost lamost_post[] = {
   {POST_NULL,  "mstellar.na_max",NULL},
   {POST_CONST, "sBtn",     "Search"},
   {POST_CONST, "output.collection","typical"},
-  {POST_CONST, "output.fmt","vot"},
+  {POST_CONST, "output.fmt","vot"},  // vot or html
   {POST_CONST, "output.catalogue.obsid",   "on"},
   {POST_CONST, "output.catalogue.designation","on"},
   {POST_CONST, "output.catalogue.obsdate", "on"},

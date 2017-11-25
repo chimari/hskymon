@@ -1407,9 +1407,50 @@ static void plot2_item (GtkWidget *widget, gpointer data)
   }
 }
 
+void strchg(gchar *buf, const gchar *str1, const gchar *str2)
+{
+  gchar tmp[BUFFSIZE+1];
+  gchar *p;
 
-static void
-wwwdb_item (GtkWidget *widget, gpointer data)
+  while ((p = strstr(buf, str1)) != NULL) {
+    *p = '\0'; 
+    p += strlen(str1);	
+    strcpy(tmp, p);
+    strcat(buf, str2);
+    strcat(buf, tmp);
+  }
+}
+
+void str_replace(gchar *in_file, const gchar *str1, const gchar *str2){
+  gchar buf[BUFFSIZE +1];
+  FILE *fp_r, *fp_w;
+  gchar *out_file;
+
+  fp_r=fopen(in_file,"r");
+  out_file=g_strconcat(in_file,"_tmp",NULL);
+  fp_w=fopen(out_file,"w");
+
+  while(!feof(fp_r)){
+    if((fgets(buf,BUFFSIZE,fp_r))==NULL){
+      break;
+    }
+    else{
+      strchg(buf,str1,str2);
+      fprintf(fp_w,"%s",buf);
+    }
+  }
+
+  fclose(fp_r);
+  fclose(fp_w);
+
+  unlink(in_file);
+  rename(out_file,in_file);
+
+  if(out_file) g_free(out_file);
+}
+
+
+static wwwdb_item (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
   gchar *tmp;
@@ -1615,6 +1656,126 @@ wwwdb_item (GtkWidget *widget, gpointer data)
 			    hg->std_iras12,hg->std_iras25,MAX_STD);
       }
       break;
+
+    case WWWDB_SMOKA:
+      hg->fcdb_type=FCDB_TYPE_WWWDB_SMOKA;
+
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_SMOKA);
+
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      hg->fcdb_path=g_strdup(FCDB_SMOKA_PATH);
+
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_HTML,NULL);
+
+      hg->fcdb_d_ra0=ln_hms_to_deg(&hobject_prec.ra);
+      hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
+
+      fcdb_dl(hg);
+      str_replace(hg->fcdb_file,
+		  "href=\"/",
+		  "href=\"http://" FCDB_HOST_SMOKA "/");
+      str_replace(hg->fcdb_file,
+		  "HREF=\"/",
+		  "HREF=\"http://" FCDB_HOST_SMOKA "/");
+      str_replace(hg->fcdb_file,
+		  "src=\"/",
+		  "src=\"http://" FCDB_HOST_SMOKA "/");
+      str_replace(hg->fcdb_file,
+		  "SRC=\"/",
+		  "SRC=\"http://" FCDB_HOST_SMOKA "/");
+
+#ifdef USE_WIN32      
+      tmp=g_strdup(hg->fcdb_file);
+#elif defined(USE_OSX)
+      tmp=g_strconcat("open ", hg->fcdb_file, NULL);
+#else
+      tmp=g_strconcat("\"",hg->fcdb_file,"\"",NULL);
+#endif
+      break;
+
+    case WWWDB_HST:
+      hg->fcdb_type=FCDB_TYPE_WWWDB_HST;
+
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_HST);
+
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      hg->fcdb_path=g_strdup(FCDB_HST_PATH);
+
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_HTML,NULL);
+
+      hg->fcdb_d_ra0=ln_hms_to_deg(&hobject_prec.ra);
+      hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
+
+      fcdb_dl(hg);
+      str_replace(hg->fcdb_file,
+		  "href=\"/",
+		  "href=\"http://" FCDB_HOST_HST "/");
+      str_replace(hg->fcdb_file,
+		  "HREF=\"/",
+		  "HREF=\"http://" FCDB_HOST_HST "/");
+      str_replace(hg->fcdb_file,
+		  "src=\"/",
+		  "src=\"http://" FCDB_HOST_HST "/");
+      str_replace(hg->fcdb_file,
+		  "SRC=\"/",
+		  "SRC=\"http://" FCDB_HOST_HST "/");
+
+#ifdef USE_WIN32      
+      tmp=g_strdup(hg->fcdb_file);
+#elif defined(USE_OSX)
+      tmp=g_strconcat("open ", hg->fcdb_file, NULL);
+#else
+      tmp=g_strconcat("\"",hg->fcdb_file,"\"",NULL);
+#endif
+      break;
+
+    case WWWDB_ESO:
+      hg->fcdb_type=FCDB_TYPE_WWWDB_ESO;
+
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_ESO);
+
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      hg->fcdb_path=g_strdup(FCDB_ESO_PATH);
+
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_HTML,NULL);
+
+      hg->fcdb_d_ra0=ln_hms_to_deg(&hobject_prec.ra);
+      hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
+
+      fcdb_dl(hg);
+      str_replace(hg->fcdb_file,
+		  "href=\"/",
+		  "href=\"http://" FCDB_HOST_ESO "/");
+      str_replace(hg->fcdb_file,
+		  "HREF=\"/",
+		  "HREF=\"http://" FCDB_HOST_ESO "/");
+      str_replace(hg->fcdb_file,
+		  "src=\"/",
+		  "src=\"http://" FCDB_HOST_ESO "/");
+      str_replace(hg->fcdb_file,
+		  "SRC=\"/",
+		  "SRC=\"http://" FCDB_HOST_ESO "/");
+
+#ifdef USE_WIN32      
+      tmp=g_strdup(hg->fcdb_file);
+#elif defined(USE_OSX)
+      tmp=g_strconcat("open ", hg->fcdb_file, NULL);
+#else
+      tmp=g_strconcat("\"",hg->fcdb_file,"\"",NULL);
+#endif
+      break;
     }
 
 #ifdef USE_WIN32
@@ -1639,6 +1800,7 @@ wwwdb_item (GtkWidget *widget, gpointer data)
     gtk_tree_path_free (path);
   }
 }
+
 
 static void
 std_simbad (GtkWidget *widget, gpointer data)
@@ -4943,6 +5105,27 @@ do_editable_cells (typHOE *hg)
       gtk_list_store_set(store, &iter, 0, "Mid-IR Standard",
 			 1, WWWDB_MIRSTD, 2, TRUE, -1);
       if(hg->wwwdb_mode==WWWDB_MIRSTD) iter_set=iter;
+      
+      gtk_list_store_append (store, &iter);
+      gtk_list_store_set (store, &iter,
+			  0, NULL,
+			  1, WWWDB_SEP2,2, FALSE, 
+			  -1);
+	
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "SMOKA",
+			 1, WWWDB_SMOKA, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_SMOKA) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "HST Archive",
+			 1, WWWDB_HST, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_HST) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "ESO Archive",
+			 1, WWWDB_ESO, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_ESO) iter_set=iter;
       
       combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
       gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);

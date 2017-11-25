@@ -1,3 +1,9 @@
+hskymon (3.0.6) unstable; urgency=medium
+
+  * Support SMOKA, HST, ESO data archive for database query both in FC and web browser.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Fri, 24 Nov 2017 15:56:06 -1000
+
 hskymon (3.0.5) unstable; urgency=medium
 
    * Support LAMOST DR3 for database query in FC (Method=POST).

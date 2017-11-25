@@ -2565,6 +2565,7 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
     break;
 
   case FCDB_TYPE_SMOKA:
+  case FCDB_TYPE_WWWDB_SMOKA:
     ip=0;
     plen=0;
 
@@ -2599,10 +2600,29 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 		  hg->fcdb_d_dec0);
 	}
 	else if(strcmp(smoka_post[ip].key,"radius")==0){
-	  sprintf(send_mesg,
-		  "%s=%.1lf&",
-		  smoka_post[ip].key,
-		  hg->dss_arcmin/2.0);
+	  if(hg->fcdb_type==FCDB_TYPE_WWWDB_SMOKA){
+	    sprintf(send_mesg,
+		    "%s=2.0&",
+		    smoka_post[ip].key);
+	  }
+	  else{
+	    sprintf(send_mesg,
+		    "%s=%.1lf&",
+		    smoka_post[ip].key,
+		    hg->dss_arcmin/2.0);
+	  }
+	}
+	else if(strcmp(smoka_post[ip].key,"asciitable")==0){
+	  if(hg->fcdb_type==FCDB_TYPE_WWWDB_SMOKA){
+	    sprintf(send_mesg,
+		    "%s=Table&",
+		    smoka_post[ip].key);
+	  }
+	  else{
+	    sprintf(send_mesg,
+		    "%s=Ascii&",
+		    smoka_post[ip].key);
+	  }
 	}
 	break;
 
@@ -2693,6 +2713,7 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 
 
   case FCDB_TYPE_HST:
+  case FCDB_TYPE_WWWDB_HST:
     ip=0;
     plen=0;
 
@@ -2727,11 +2748,31 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 		  hg->fcdb_d_dec0);
 	}
 	else if(strcmp(hst_post[ip].key,"radius")==0){
-	  sprintf(send_mesg,
-		  "%s=%.1lf&",
-		  hst_post[ip].key,
-		  hg->dss_arcmin/2.0);
+	  if(hg->fcdb_type==FCDB_TYPE_WWWDB_HST){
+	    sprintf(send_mesg,
+		    "%s=2.0&",
+		    hst_post[ip].key);
+	  }
+	  else{
+	    sprintf(send_mesg,
+		    "%s=%.1lf&",
+		    hst_post[ip].key,
+		    hg->dss_arcmin/2.0);
+	  }
 	}
+	else if(strcmp(hst_post[ip].key,"outputformat")==0){
+	  if(hg->fcdb_type==FCDB_TYPE_WWWDB_HST){
+	    sprintf(send_mesg,
+		    "%s=HTML_Table&",
+		    hst_post[ip].key);
+	  }
+	  else{
+	    sprintf(send_mesg,
+		    "%s=VOTable&",
+		    hst_post[ip].key);
+	  }
+	}
+
 	break;
 
       case POST_INST1:
@@ -2791,6 +2832,7 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 
 
   case FCDB_TYPE_ESO:
+  case FCDB_TYPE_WWWDB_ESO:
     ip=0;
     plen=0;
 
@@ -2828,12 +2870,34 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 		  hg->fcdb_d_dec0);
 	}
 	else if(strcmp(eso_post[ip].key,"box")==0){
-	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n00 %02d %02d\r\n",
-		  rand16,
-		  eso_post[ip].key,
-		  hg->dss_arcmin/2,
-		  hg->dss_arcmin*30-(hg->dss_arcmin/2)*60);
+	  if(hg->fcdb_type==FCDB_TYPE_WWWDB_ESO){
+	    sprintf(send_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n00 04 00\r\n",
+		    rand16,
+		    eso_post[ip].key);
+	  }
+	  else{
+	    sprintf(send_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n00 %02d %02d\r\n",
+		    rand16,
+		    eso_post[ip].key,
+		    hg->dss_arcmin/2,
+		    hg->dss_arcmin*30-(hg->dss_arcmin/2)*60);
+	  }
+	}
+	else if(strcmp(eso_post[ip].key,"wdbo")==0){
+	  if(hg->fcdb_type==FCDB_TYPE_WWWDB_ESO){
+	    sprintf(send_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\nhtml/display\r\n",
+		    rand16,
+		    eso_post[ip].key);
+	  }
+	  else{
+	    sprintf(send_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\nvotable/display\r\n",
+		    rand16,
+		    eso_post[ip].key);
+	  }
 	}
 	break;
 
@@ -3154,11 +3218,14 @@ int http_c_fcdb(typHOE *hg){
     switch(hg->fcdb_type){
     case FCDB_TYPE_LAMOST:
     case FCDB_TYPE_ESO:
+    case FCDB_TYPE_WWWDB_ESO:
       sprintf(send_mesg, "Content-Type:multipart/form-data; boundary=----WebKitFormBoundary%s\r\n", rand16);
       break;
 
     case FCDB_TYPE_SMOKA:
+    case FCDB_TYPE_WWWDB_SMOKA:
     case FCDB_TYPE_HST:
+    case FCDB_TYPE_WWWDB_HST:
       sprintf(send_mesg, "Content-Type: application/x-www-form-urlencoded\r\n");
       break;
     }
