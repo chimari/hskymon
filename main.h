@@ -1693,6 +1693,7 @@ struct _typHOE{
   gint fcdb_wise_mag;
   gint fcdb_wise_diam;
   gboolean fcdb_wise_fil;
+  gboolean fcdb_smoka_shot;
   gboolean fcdb_smoka_subaru[NUM_SMOKA_SUBARU];
   gboolean fcdb_smoka_kiso[NUM_SMOKA_KISO];
   gboolean fcdb_smoka_oao[NUM_SMOKA_OAO];

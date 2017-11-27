@@ -2624,6 +2624,18 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 		    smoka_post[ip].key);
 	  }
 	}
+	else if(strcmp(smoka_post[ip].key,"frameorshot")==0){
+	  if(hg->fcdb_smoka_shot){
+	    sprintf(send_mesg,
+		    "%s=Shot&",
+		    smoka_post[ip].key);
+	  }
+	  else{
+	    sprintf(send_mesg,
+		    "%s=Frame&",
+		    smoka_post[ip].key);
+	  }
+	}
 	break;
 
       case POST_INST1:

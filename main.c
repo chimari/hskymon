@@ -4386,6 +4386,7 @@ void create_fcdb_para_dialog (typHOE *hg)
     tmp_wise_mag, tmp_wise_diam;
   gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_sdss_fil, tmp_usno_fil,
     tmp_gaia_fil, tmp_2mass_fil, tmp_wise_fil,
+    tmp_smoka_shot,
     tmp_smoka_subaru[NUM_SMOKA_SUBARU],
     tmp_smoka_kiso[NUM_SMOKA_KISO],
     tmp_smoka_oao[NUM_SMOKA_OAO],
@@ -4443,6 +4444,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_wise_fil=hg->fcdb_wise_fil;
   tmp_wise_mag=hg->fcdb_wise_mag;
   tmp_wise_diam=hg->fcdb_wise_diam;
+  tmp_smoka_shot=hg->fcdb_smoka_shot;
   for(i=0;i<NUM_SMOKA_SUBARU;i++){
     tmp_smoka_subaru[i]=hg->fcdb_smoka_subaru[i];
   }
@@ -5583,9 +5585,17 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 4, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
+  check = gtk_check_button_new_with_label("Shot (Suprime-Cam, Hyper Suprime-Cam, and KWFC ONLY)");
+  gtk_table_attach(GTK_TABLE(table), check, 0, 4, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_smoka_shot);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       hg->fcdb_smoka_shot);
 
   vbox1 = gtk_vbox_new(FALSE,0);
-  gtk_table_attach(GTK_TABLE(table), vbox1, 0, 1, 1, 4,
+  gtk_table_attach(GTK_TABLE(table), vbox1, 0, 1, 2, 5,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
 
@@ -5608,7 +5618,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   }
 
   vbox1 = gtk_vbox_new(FALSE,0);
-  gtk_table_attach(GTK_TABLE(table), vbox1, 1, 2, 1, 3,
+  gtk_table_attach(GTK_TABLE(table), vbox1, 1, 2, 2, 4,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
 
@@ -5649,7 +5659,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   }
 
   vbox1 = gtk_vbox_new(FALSE,0);
-  gtk_table_attach(GTK_TABLE(table), vbox1, 2, 3, 1, 2,
+  gtk_table_attach(GTK_TABLE(table), vbox1, 2, 3, 2, 3,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
 
@@ -5689,7 +5699,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   }
 
   vbox1 = gtk_vbox_new(FALSE,0);
-  gtk_table_attach(GTK_TABLE(table), vbox1, 3, 4, 1, 2,
+  gtk_table_attach(GTK_TABLE(table), vbox1, 3, 4, 2, 3,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
 
 
@@ -6027,6 +6037,7 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_wise_fil  = tmp_wise_fil;
       hg->fcdb_wise_mag  = tmp_wise_mag;
       hg->fcdb_wise_diam  = tmp_wise_diam;
+      hg->fcdb_smoka_shot  = tmp_smoka_shot;
       for(i=0;i<NUM_SMOKA_SUBARU;i++){
 	hg->fcdb_smoka_subaru[i]  = tmp_smoka_subaru[i];
       }
@@ -6104,6 +6115,7 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_wise_fil = TRUE;
       hg->fcdb_wise_mag = 15;
       hg->fcdb_wise_diam = 25;
+      hg->fcdb_smoka_shot  = FALSE;
       for(i=0;i<NUM_SMOKA_SUBARU;i++){
 	hg->fcdb_smoka_subaru[i]  = TRUE;
       }
@@ -9614,6 +9626,7 @@ void param_init(typHOE *hg){
   hg->fcdb_wise_fil=TRUE;
   hg->fcdb_wise_mag=15;
   hg->fcdb_wise_diam=25;
+  hg->fcdb_smoka_shot  = FALSE;
   for(i=0;i<NUM_SMOKA_SUBARU;i++){
     hg->fcdb_smoka_subaru[i]  = TRUE;
   }

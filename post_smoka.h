@@ -78,7 +78,7 @@ static const PARAMpost smoka_post[] = {
   {POST_NULL,   "dataset",       NULL},
   {POST_NULL,   "dataset",       NULL},
   {POST_INPUT,  "asciitable",    NULL},  // "Table" or "Ascii"
-  {POST_CONST,  "frameorshot",   "Frame"},
+  {POST_INPUT,  "frameorshot",   NULL}, // "Frame" or "Shot"
   {POST_CONST,  "action",        "Search"},
   {POST_INST1,  "instruments",   NULL},
   {POST_INST2,  "instruments",   NULL},

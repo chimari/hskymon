@@ -1785,6 +1785,12 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
       break;
     }
 
+#ifndef USE_WIN32
+    if((chmod(hg->fcdb_file,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
+    g_print("Cannot Chmod Temporary File %s!  Please check!!!\n",hg->fcdb_file);
+  }
+#endif
+
 #ifdef USE_WIN32
     ShellExecute(NULL, 
 		 "open", 

@@ -1,3 +1,7 @@
+2017.11.27 ver3.0.7 - Shot only button (SUP, HSC, and KWFC only) for SMOKA
+	              frame search.
+                    - Chmod 666 for /tmp/database_fc.html .
+
 2017.11.24 ver3.0.6 - Added SMOKA/HST/ESO data archive for database query
 	              in FC.
 	            - Added GEMINI/KECK data archive for web browser access.
