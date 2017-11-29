@@ -1,0 +1,431 @@
+<HEADER>
+######  Observer : Sokendai ######
+OBSERVATION_PERIOD=2015-10-26-17:00:00 - 2015-10-27-08:00:00
+PROPOSALID=o15417
+OBE_ID=HDS
+</HEADER>
+
+<PARAMETER_LIST>
+DEF_SPEC=OBE_ID=HDS OBE_MODE=SPEC
+DEF_PROTO=OBE_ID=HDS OBE_MODE=PROTO
+DEF_COMMON=OBE_ID=COMMON OBE_MODE=TOOL
+
+###### M2-Z POSITION for I2-Cell ######
+# I2-Cell In  :  SETI2 $DEF_SPEC I2_POSITION="IN"  $I2_Z
+# I2-Cell Out :  SETI2 $DEF_SPEC I2_POSITION="OUT" $I2_Z
+## w/Slit
+I2_Z=Z_IN=0.15 Z_OUT=0.0
+## w/IS
+##  I2_Z=Z_IN=0.65 Z_OUT=0.5
+
+###### SLIT CENTER POSITION ######
+## Slit
+SV_X=SV_SLIT_X=315.0
+SV_Y=SV_SLIT_Y=315.0
+## Image Slicer #1 and #2
+SV_IS_X=SV_SLIT_X=411.0
+SV_IS_Y=SV_SLIT_Y=332.0 CALC_MODE=CTR SV_COUNT=(-160)
+## Image Slicer #3
+SV_IS3_X=SV_SLIT_X=446.0
+SV_IS3_Y=SV_SLIT_Y=346.0 CALC_MODE=CTR SV_COUNT=(-160)
+
+###### CAMERA Z POSITION ######
+## See the most recent values in http://hds.skr.jp/wiki/index.php?%B8%BD%BA%DF%A4%CECamZ%C3%CD
+CAMZ_B=CAM_Z=-370
+CAMZ_R=CAM_Z=-347
+
+###### GUIDE PARAMETER only for bad weather ######
+G_PARA=Exptime_Factor=1 Brightness=2000 SVIntegrate=1
+
+###### LIST of OBJECTS ######
+TGT_HD179821=OBJECT="HD179821" RA=191358.61 DEC=+000731.93 EQUINOX=2000.00
+TGT_HD187885=OBJECT="HD187885" RA=195252.70 DEC=-170150.30 EQUINOX=2000.00
+TGT_IRAS222234327=OBJECT="IRAS 22223+4327" RA=222431.43 DEC=+434310.90 EQUINOX=2000.00
+TGT_IRAS222725435=OBJECT="IRAS 22272+5435" RA=222910.37 DEC=+545106.35 EQUINOX=2000.00
+TGT_IRAS233046147=OBJECT="IRAS 23304+6147" RA=233244.79 DEC=+620349.10 EQUINOX=2000.00
+TGT_IRASZ022296208=OBJECT="IRAS Z02229+6208" RA=022641.79 DEC=+622122.00 EQUINOX=2000.00
+TGT_IRAS053410852=OBJECT="IRAS 05341+0852" RA=053655.05 DEC=+085408.68 EQUINOX=2000.00
+TGT_IRAS180952704=OBJECT="IRAS 18095+2704" RA=181130.67 DEC=+270515.61 EQUINOX=2000.00
+TGT_IRAS180622410=OBJECT="IRAS 18062+2410" RA=180820.09 DEC=+241043.36 EQUINOX=2000.00
+TGT_IRAS220235249=OBJECT="IRAS 22023+5249" RA=220412.30 DEC=+530401.37 EQUINOX=2000.00
+TGT_HD37303=OBJECT="HD 37303" RA=053727.40 DEC=-055618.20 EQUINOX=2000.00
+TGT_HD37519=OBJECT="HD 37519" RA=054035.90 DEC=+312129.50 EQUINOX=2000.00
+TGT_HD43285=OBJECT="HD 43285" RA=061540.20 DEC=+060358.20 EQUINOX=2000.00
+TGT_HD44766=OBJECT="HD 44766" RA=062452.80 DEC=+294225.40 EQUINOX=2000.00
+TGT_HD60855=OBJECT="HD 60855" RA=073603.90 DEC=-142934.00 EQUINOX=2000.00
+TGT_HD78556=OBJECT="HD 78556" RA=090842.20 DEC=-083522.30 EQUINOX=2000.00
+TGT_HD100600=OBJECT="HD100600" RA=113442.50 DEC=+164748.90 EQUINOX=2000.00
+TGT_HD115612=OBJECT="HD115612" RA=131628.60 DEC=+682428.80 EQUINOX=2000.00
+TGT_HD157741=OBJECT="HD157741" RA=172433.80 DEC=+153621.80 EQUINOX=2000.00
+TGT_HD169578=OBJECT="HD169578" RA=182508.90 DEC=+050504.40 EQUINOX=2000.00
+TGT_HD183144=OBJECT="HD183144" RA=192733.90 DEC=+141656.90 EQUINOX=2000.00
+TGT_HD191610=OBJECT="HD191610" RA=200925.60 DEC=+365022.60 EQUINOX=2000.00
+
+</PARAMETER_LIST>
+
+<COMMAND>
+
+
+# Focusing/ShowImage
+FocusSVSequence $DEF_COMMON
+FocusSV $DEF_COMMON
+FocusAGSequence $DEF_PROTO
+FocusAG $DEF_PROTO
+SetStarSize $DEF_PROTO SEEING=0.60
+MoveToStar $DEF_COMMON
+ShowImage $DEF_PROTO
+ShowImage $DEF_PROTO Display_Frame=HDSA00000000
+
+
+## Setup (If changed the number of filters, MOVE Collimator from UI)
+
+# Setup-1  :  StdYd
+SetupOBE $DEF_SPEC SLIT_LENGTH=2200 FILTER_1=Free FILTER_2=Free CROSS=Red CROSS_SCAN=StdYd COLLIMATOR=Red $CAMZ_R
+## w/o Color Change
+SetupOBE $DEF_SPEC SLIT_LENGTH=2200 FILTER_1=Free FILTER_2=Free CROSS_SCAN=StdYd
+
+
+
+
+
+#################### 10/26/2015 Obs Sequence ####################
+###### ========== Evening Calibration ========== #####
+
+###### Setup Change (Full), Setup-1 : StdYd 1x1bin #####
+SetupOBE $DEF_SPEC SLIT_LENGTH=2200
+SetupOBE $DEF_SPEC FILTER_1=Free FILTER_2=Free CROSS=Red CROSS_SCAN=StdYd COLLIMATOR=Red $CAMZ_R
+
+
+###### BIAS x5, Setup-1 : 1x1bin #####
+GetBias $DEF_SPEC OBJECT=BIAS
+GetBias $DEF_SPEC OBJECT=BIAS NFILES=4
+
+
+###### Flat x10, Setup-1 : StdYd 1x1bin #####
+SetupOBE $DEF_SPEC SLIT_WIDTH=200 SLIT_LENGTH=2200
+
+# CCD1 Flat for Yd (1x1binning)
+SETUPCOMPARISON_HAL $DEF_PROTO OBJECT=HAL LAMP=HAL1 AMP=3.0 FILTER01=2 FILTER02=1 FILTER03=1 FILTER04=2 F_SELECT=NS_OPT
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=12
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=12 NFILES=9
+
+# CCD2 Flat for Yd (1x1binning)
+SETUPCOMPARISON_HAL $DEF_PROTO OBJECT=HAL LAMP=HAL1 AMP=4.0 FILTER01=2 FILTER02=1 FILTER03=1 FILTER04=2 F_SELECT=NS_OPT
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=8 Display_CCD=2
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=8 NFILES=9 Display_CCD=2
+
+#  for order trace
+SetupOBE $DEF_SPEC SLIT_LENGTH=1000
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=8 Display_CCD=2
+SetupOBE $DEF_SPEC SLIT_LENGTH=2200
+
+### [LAUNCHER/HDS] ShutdownComparison HAL Retract/LampOff #####
+
+
+
+###### Comparison, Setup-1 : StdYd 1x1bin #####
+SetupOBE $DEF_SPEC SLIT_LENGTH=2200 SLIT_WIDTH=200
+SETUPCOMPARISON_HCT $DEF_PROTO OBJECT=HCT LAMP=HCT1 AMP=15.0 FILTER01=1 FILTER02=1 FILTER03=1 FILTER04=1 F_SELECT=NS_OPT
+GetComparison $DEF_SPEC OBJECT=Comparison Exptime=20
+### [LAUNCHER/HDS] ShutdownComparison HCT Retract/LampOff #####
+
+
+###### ========== Evening Focus ========== #####
+
+### SunSet 18:00, Twilight(18deg) 19:05   10/26/2015 ###
+
+## [18:25]
+###### Focus SV #####
+FocusSVSequence $DEF_COMMON
+SetStarSize $DEF_PROTO SEEING=0.60
+
+
+## [18:30]
+###### "HD187885", 900sec x1,  Setup-1 : StdYd 1x1bin, 0.20x4.00 slit, [SV Guide] #####
+# 8.68 900 slit=0.2
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD187885 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2000 Slit_Width=100 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=900 SVIntegrate=1 $TGT_HD187885
+
+## [18:50]
+###### "IRAS 18095+2704", 1800sec x1,  Setup-1 : StdYd 1x1bin, 0.20x4.00 slit, [SV Guide] #####
+# 10.65 1800 slit=0.4
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS180952704 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2000 Slit_Width=100 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS180952704
+
+## [19:26]
+###### "HD179821", 900sec x1,  Setup-1 : StdYd 1x1bin, 0.20x4.00 slit, [SV Guide] #####
+# 8.19 900 slit=0.2
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD179821 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2000 Slit_Width=100 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=900 SVIntegrate=1 $TGT_HD179821
+
+## [19:47]
+###### "IRAS 22223+4327", 1200sec x1,  Setup-1 : StdYd 1x1bin, 0.20x4.00 slit, [SV Guide] #####
+# 9.69 1200 slit=0.2
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS222234327 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2000 Slit_Width=100 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1200 SVIntegrate=1 $TGT_IRAS222234327
+
+## [20:12]
+###### "IRAS 22272+5435", 1200sec x1,  Setup-1 : StdYd 1x1bin, 0.20x4.00 slit, [SV Guide] #####
+# 9.52 1200 slit=0.2
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS222725435 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2000 Slit_Width=100 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1200 SVIntegrate=1 $TGT_IRAS222725435
+
+## [20:38]
+###### "IRAS 22023+5249", 1800sec x1,  Setup-1 : StdYd 1x1bin, [SV Guide] #####
+# 12.59 1800 slit=0.4
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS220235249 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS220235249
+
+## [21:14]
+###### "IRAS 23304+6147", 1800sec x2,  Setup-1 : StdYd 1x1bin, [SV Guide] #####
+# 13.15 3600 slit=0.4
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS233046147 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS233046147
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS233046147
+
+## [22:20]
+###### "IRAS Z02229+6208", 1800sec x1,  Setup-1 : StdYd 1x1bin, [SV Guide] #####
+# 12.09 1800 slit=0.4
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRASZ022296208 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRASZ022296208
+
+## *** BackUp ***
+###### (Back Up)  "IRAS 22023+5249", 1800sec x1,  Setup-1 : StdYd 1x1bin, [SV Guide] #####
+# 12.59 1800 slit=0.4
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS220235249 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS220235249
+
+## [22:56]
+###### "IRAS 05341+0852", 1800sec x2,  Setup-1 : StdYd 1x1bin, [SV Guide] #####
+# 13.55 3600 slit=0.4
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS053410852 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS053410852
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS053410852
+
+### Twilight(18deg) 5:04,  SunRise 6:10 ###
+
+###### ========== Morning Focus ========== #####
+
+## [0:03]
+###### Focus SV #####
+FocusSVSequence $DEF_COMMON
+SetStarSize $DEF_PROTO SEEING=0.60
+
+
+###### ========== Morning Calibration ========== #####
+
+###### Comparison, Setup-1 : StdYd 1x1bin #####
+SetupOBE $DEF_SPEC SLIT_LENGTH=2200 SLIT_WIDTH=200
+SETUPCOMPARISON_HCT $DEF_PROTO OBJECT=HCT LAMP=HCT1 AMP=15.0 FILTER01=1 FILTER02=1 FILTER03=1 FILTER04=1 F_SELECT=NS_OPT
+GetComparison $DEF_SPEC OBJECT=Comparison Exptime=20
+### [LAUNCHER/HDS] ShutdownComparison HCT Retract/LampOff #####
+
+
+###### Flat x10, Setup-1 : StdYd 1x1bin #####
+SetupOBE $DEF_SPEC SLIT_WIDTH=200 SLIT_LENGTH=2200
+
+# CCD1 Flat for Yd (1x1binning)
+SETUPCOMPARISON_HAL $DEF_PROTO OBJECT=HAL LAMP=HAL1 AMP=3.0 FILTER01=2 FILTER02=1 FILTER03=1 FILTER04=2 F_SELECT=NS_OPT
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=12
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=12 NFILES=9
+
+# CCD2 Flat for Yd (1x1binning)
+SETUPCOMPARISON_HAL $DEF_PROTO OBJECT=HAL LAMP=HAL1 AMP=4.0 FILTER01=2 FILTER02=1 FILTER03=1 FILTER04=2 F_SELECT=NS_OPT
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=8 Display_CCD=2
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=8 NFILES=9 Display_CCD=2
+
+#  for order trace
+SetupOBE $DEF_SPEC SLIT_LENGTH=1000
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=8 Display_CCD=2
+SetupOBE $DEF_SPEC SLIT_LENGTH=2200
+
+### [LAUNCHER/HDS] ShutdownComparison HAL Retract/LampOff #####
+
+
+
+###### BIAS x5, Setup-1 : 1x1bin #####
+GetBias $DEF_SPEC OBJECT=BIAS
+GetBias $DEF_SPEC OBJECT=BIAS NFILES=4
+
+
+###### ========== End of Observation ========== #####
+
+
+
+
+
+#################### Reserved Targets ####################
+### Guide = NO  : No Guide
+### Guide = AG  : AG Guide
+### Guide = SV  : SV Guide
+
+
+
+########  StdYd 1x1binning  #######
+# [1] HD179821    ,    8.19 900 slit=0.2
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD179821 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=900 SVIntegrate=1 $TGT_HD179821
+
+# [2] HD187885    ,    8.68 900 slit=0.2
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD187885 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=900 SVIntegrate=1 $TGT_HD187885
+
+# [3] IRAS 22223+4327    ,    9.69 1200 slit=0.2
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS222234327 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1200 SVIntegrate=1 $TGT_IRAS222234327
+
+# [4] IRAS 22272+5435    ,    9.52 1200 slit=0.2
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS222725435 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1200 SVIntegrate=1 $TGT_IRAS222725435
+
+# [5] IRAS 23304+6147    ,    13.15 3600 slit=0.4
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS233046147 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS233046147
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS233046147
+
+# [6] IRAS Z02229+6208    ,    12.09 1800 slit=0.4
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRASZ022296208 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRASZ022296208
+
+# [7] IRAS 05341+0852    ,    13.55 3600 slit=0.4
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS053410852 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS053410852
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS053410852
+
+# [8] IRAS 18095+2704    ,    10.65 1800 slit=0.4
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS180952704 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS180952704
+
+# [9] IRAS 18062+2410    ,    11.39 1800 slit=0.4
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS180622410 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS180622410
+
+# [10] IRAS 22023+5249    ,    12.59 1800 slit=0.4
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_IRAS220235249 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=1800 SVIntegrate=1 $TGT_IRAS220235249
+
+# [11] HD 37303    ,    B=5.808  V=6.014      B1Vv
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD37303 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD37303
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD37303
+
+# [12] HD 37519    ,    B=6.063  V=6.033      B9.5III-IVp
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD37519 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD37519
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD37519
+
+# [13] HD 43285    ,    B=5.936  V=6.050      B6Ve
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD43285 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD43285
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD43285
+
+# [14] HD 44766    ,    B=6.647  V=6.702      B8IIIn     OBSERV
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD44766 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD44766
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD44766
+
+# [15] HD 60855    ,    B=5.589  V=5.656      B2/B3V     OBSERV
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD60855 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD60855
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD60855
+
+# [16] HD 78556    ,    B=5.551  V=5.609      B9.5III
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD78556 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD78556
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD78556
+
+# [17] HD100600    ,    B=5.79   V=5.95       B4V
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD100600 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD100600
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD100600
+
+# [18] HD115612    ,    20sec x2 B=6.146   V=6.194      B9.5V
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD115612 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD115612
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD115612
+
+# [19] HD157741    ,    20sec x2 B=6.355   V=6.383      B9V
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD157741 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD157741
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD157741
+
+# [20] HD169578    ,    20sec x2 B=6.738   V=6.729      B9V
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD169578 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD169578
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD169578
+
+# [21] HD183144    ,    20sec x2 B=6.239   V=6.307      B4III
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD183144 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD183144
+GetObject $DEF_SPEC Exptime=20 SVIntegrate=1 $TGT_HD183144
+
+# [22] HD191610    ,    5sec x2 B=4.793   V=4.929      B2.5Ve
+#    StdYd 1x1binning / SV Guide / ImR=No
+SetupField Guide=SV Mode=SemiAuto $DEF_PROTO $TGT_HD191610 ReadRegion=200 CalcRegion=60 Exptime_SV=1000 IMGROT_FLAG=0 Slit_Length=2200 Slit_Width=200 $SV_X $SV_Y $G_PARA ReadArea=Part
+GetObject $DEF_SPEC Exptime=5 SVIntegrate=1 $TGT_HD191610
+GetObject $DEF_SPEC Exptime=5 SVIntegrate=1 $TGT_HD191610
+
+
+
+##########   Calibration   ###########
+
+### BIAS
+GetBias $DEF_SPEC OBJECT=BIAS
+GetBias $DEF_SPEC OBJECT=BIAS NFILES=4
+
+
+##### COMPARISON #####
+
+### COMPARISON  for StdYd  1x1BINNING
+SetupOBE $DEF_SPEC SLIT_LENGTH=2200 SLIT_WIDTH=200
+SETUPCOMPARISON_HCT $DEF_PROTO OBJECT=HCT LAMP=HCT1 AMP=15.0 FILTER01=1 FILTER02=1 FILTER03=1 FILTER04=1 F_SELECT=NS_OPT
+GetComparison $DEF_SPEC OBJECT=Comparison Exptime=20
+
+
+
+##### FLAT #####
+
+## FLAT  Yd 1x1
+SetupOBE $DEF_SPEC SLIT_WIDTH=200 SLIT_LENGTH=2200
+
+# CCD1 Flat for Yd (1x1binning)
+SETUPCOMPARISON_HAL $DEF_PROTO OBJECT=HAL LAMP=HAL1 AMP=3.0 FILTER01=2 FILTER02=1 FILTER03=1 FILTER04=2 F_SELECT=NS_OPT
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=12
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=12 NFILES=4
+
+# CCD2 Flat for Yd (1x1binning)
+SETUPCOMPARISON_HAL $DEF_PROTO OBJECT=HAL LAMP=HAL1 AMP=4.0 FILTER01=2 FILTER02=1 FILTER03=1 FILTER04=2 F_SELECT=NS_OPT
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=8 Display_CCD=2
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=8 NFILES=4 Display_CCD=2
+
+#  for order trace
+SetupOBE $DEF_SPEC SLIT_LENGTH=1000
+GetOBEFlat $DEF_SPEC OBJECT=Flat Exptime=8 Display_CCD=2
+SetupOBE $DEF_SPEC SLIT_LENGTH=2200
+
+
+
+
+
+</Command>

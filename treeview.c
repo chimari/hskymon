@@ -476,7 +476,7 @@ void fcdb_lamost_afgk_cell_data_func(GtkTreeViewColumn *col ,
     break;
 
   case COLUMN_FCDB_R:
-    if(value>9999) str=g_strdup_printf("---");
+    if(value<-99990) str=g_strdup_printf("---");
     else str=g_strdup_printf("%+5.1lf",value);
     break;
   }
@@ -5400,7 +5400,15 @@ do_editable_cells (typHOE *hg)
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (fcdb_item), (gpointer)hg);
 #ifdef __GTK_TOOLTIP_H__
-    gtk_widget_set_tooltip_text(button,"Catalog query in SIMBAD");
+    gtk_widget_set_tooltip_text(button,"Database query");
+#endif
+    
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_SAVE);
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (do_save_FCDB_List), (gpointer)hg);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,"Save queried List to CSV file");
 #endif
     
     hg->fcdb_label= gtk_label_new (hg->fcdb_label_text);

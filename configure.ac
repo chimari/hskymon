@@ -5,7 +5,7 @@ PACKAGE=hskymon
 dnl version number
 MAJOR_VERSION=3
 MINOR_VERSION=0
-MICRO_VERSION=7
+MICRO_VERSION=8
 BUILD_REVISION=0
 EXTRA_VERSION=
 VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION$EXTRA_VERSION
@@ -193,6 +193,7 @@ hskymon_res.rc
 libnova/Makefile
 std_data/Makefile
 debian/Makefile
+sample/Makefile
 ])
 
 

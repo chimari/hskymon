@@ -6420,6 +6420,149 @@ void do_save_TextList (GtkWidget *widget, gpointer gdata)
   }
 }
 
+gchar *fcdb_csv_name (typHOE *hg){
+  gchar *fname;
+  gchar *oname;
+
+  oname=cut_spc(hg->obj[hg->fcdb_i].name);
+		
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_SIMBAD:
+    fname=g_strconcat("FCDB_", oname, "_by_SIMBAD." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_NED:
+    fname=g_strconcat("FCDB_", oname, "_by_NED." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_GSC:
+    fname=g_strconcat("FCDB_", oname, "_by_GSC." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_PS1:
+    fname=g_strconcat("FCDB_", oname, "_by_PanSTARRS." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_LAMOST:
+    fname=g_strconcat("FCDB_", oname, "_by_LAMOST." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_USNO:
+    fname=g_strconcat("FCDB_", oname, "_by_USNO." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_GAIA:
+    fname=g_strconcat("FCDB_", oname, "_by_GAIA." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_2MASS:
+    fname=g_strconcat("FCDB_", oname, "_by_2MASS." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_WISE:
+    fname=g_strconcat("FCDB_", oname, "_by_WISE." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_IRC:
+    fname=g_strconcat("FCDB_", oname, "_by_AKARI_IRC." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_FIS:
+    fname=g_strconcat("FCDB_", oname, "_by_AKARI_FIS." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_SMOKA:
+    fname=g_strconcat("FCDB_", oname, "_by_SMOKA." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_HST:
+    fname=g_strconcat("FCDB_", oname, "_by_HSTarchive." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_ESO:
+    fname=g_strconcat("FCDB_", oname, "_by_ESOarchive." CSV_EXTENSION,NULL);
+    break;
+
+  default:
+    fname=g_strconcat("FCDB_", oname, "_by_hskymon." CSV_EXTENSION,NULL);
+    break;
+  }
+
+  if(oname) g_free(oname);
+
+  return(fname);
+}
+
+
+void do_save_FCDB_List (GtkWidget *widget, gpointer gdata)
+{
+  GtkWidget *fdialog;
+  typHOE *hg;
+
+  hg=(typHOE *)gdata;
+
+
+  fdialog = gtk_file_chooser_dialog_new("HOE : FCDB List File to be Saved",
+					NULL,
+					GTK_FILE_CHOOSER_ACTION_SAVE,
+					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+					NULL);
+  
+  gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
+  if(hg->filename_fcdb) g_free(hg->filename_fcdb);
+  hg->filename_fcdb=fcdb_csv_name(hg);
+
+  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (fdialog), 
+				       to_utf8(g_path_get_dirname(hg->filename_fcdb)));
+  gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (fdialog), 
+				     to_utf8(g_path_get_basename(hg->filename_fcdb)));
+
+  my_file_chooser_add_filter(fdialog,"CSV File","*." CSV_EXTENSION,NULL);
+  my_file_chooser_add_filter(fdialog,"All File","*", NULL);
+
+  gtk_widget_show_all(fdialog);
+
+
+  if (gtk_dialog_run(GTK_DIALOG(fdialog)) == GTK_RESPONSE_ACCEPT) {
+    char *fname;
+    gchar *dest_file;
+    FILE *fp_test;
+    
+    fname = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog)));
+    gtk_widget_destroy(fdialog);
+
+    dest_file=to_locale(fname);
+
+    if((fp_test=fopen(dest_file,"w"))!=NULL){
+      fclose(fp_test);
+
+      if(hg->filename_fcdb) g_free(hg->filename_fcdb);
+      hg->filename_fcdb=g_strdup(dest_file);
+      
+      Export_FCDB_List(hg);
+    }
+    else{
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: File cannot be opened.",
+		    " ",
+		    fname,
+		    NULL);
+#else
+      g_print ("Cannot Open %s\n",
+	       fname);
+#endif
+    }
+    
+    g_free(dest_file);
+    g_free(fname);
+  } else {
+    gtk_widget_destroy(fdialog);
+  }
+}
+
+
 
 void do_save_fc_pdf (GtkWidget *widget, gpointer gdata)
 {

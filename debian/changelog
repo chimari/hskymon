@@ -1,8 +1,14 @@
+hskymon (3.0.8) unstable; urgency=medium
+
+  * CSV output for FCDB query results.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Tue, 28 Nov 2017 13:49:14 -1000
+
 hskymon (3.0.7) unstable; urgency=medium
 
   * Added Shot only search for SMOKA.
 
- -- Akito Tajitsu <taji@zekamashi>  Mon, 27 Nov 2017 09:16:56 -1000
+ -- Akito Tajitsu <tajitsu@naoj.org>  Mon, 27 Nov 2017 09:16:56 -1000
 
 hskymon (3.0.6) unstable; urgency=medium
 

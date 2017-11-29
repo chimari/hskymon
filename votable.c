@@ -1013,7 +1013,7 @@ void fcdb_ned_vo_parse(typHOE *hg) {
        hg->fcdb[i_list].nedvel=atof(vtabledata_move->value);
      }
      else{
-       hg->fcdb[i_list].nedvel=-1.1e+15;
+       hg->fcdb[i_list].nedvel=-99999;
      }
    }
    else if (vtabledata_move->colomn == columns[5]){
@@ -2244,7 +2244,7 @@ void fcdb_lamost_vo_parse(typHOE *hg) {
        hg->fcdb[i_list].r=atof(vtabledata_move->value);
      }
      else{
-       hg->fcdb[i_list].r=+10000;
+       hg->fcdb[i_list].r=-99999;
      }
    }
    else if (vtabledata_move->colomn == columns[7]){

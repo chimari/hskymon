@@ -1,3 +1,5 @@
+2017.11.28 ver3.0.8 - CSV output for FCDB query results.
+
 2017.11.27 ver3.0.7 - Shot only button (SUP, HSC, and KWFC only) for SMOKA
 	              frame search.
                     - Chmod 666 for /tmp/database_fc.html .

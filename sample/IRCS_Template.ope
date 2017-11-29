@@ -1,0 +1,225 @@
+<Header>
+Observation_File_Name=Template.ope
+Observation_File_Type=OPE
+Observation_Start_Date=2012.12.12
+Observation_Start_Time=18:00:00
+Observation_End_Date=2012.12.13
+Observation_End_Time=05:00:00
+</Header>
+ 
+<Parameter_List>
+*load "ircs_mod.prm"
+*load "ircs_mec.prm"
+ 
+DEF_AOLN=OBE_ID=AO188 OBE_MODE=LAUNCHER
+DEF_AOST=OBE_ID=AO188 OBE_MODE=AO188_SETUP
+  
+#=== User Mode =========================================##
+# If you want to set your mode customized
+# please contact support astronomer who will help you.
+# eg)
+#DEF_ECLAPP_N=SLW=2 SPW=7 ECH=-2500 XDS=-800
+#DEF_IMJwSN=CW1=1 CW2=3 CW3=1 SLW=4 CAMFOC=1000 SCALE=L
+#=======================================================##
+ 
+##==== OBJECT LIST ========================================================================##
+#IMAGING
+#    AliasNAME=OBJECT="objectname" RA=hhmmss.sss DEC=sDDmmss.ss EQUINOX=yyyy.y FIELD_PA=<PAangle>
+#Spectroscopy
+#    AliasNAME=OBJECT="objectname" RA=hhmmss.sss DEC=sDDmmss.ss EQUINOX=yyyy.y SLIT_PA=<PAangle>
+#Select Guide Star Mode (GSMODE)  of AO observation for AO188+IRCS observation
+#Natural Guide Star : GSMODE="NGS", Laser Guide Star : GSMODE="LGS"
+# for examples  
+# Vega RA= 18:36:56.34 DEC=+38:47:01.29 (2000.0) PA=0 degree
+# with AO188/NGS
+#    VEGAIM=OBJECT="Vega" RA=183656.34 DEC=+384701.29 EQUINOX=2000.0 FIELD_PA=0.0 GSMODE="NGS"
+#    VEGASP=OBJECT="Vega" RA=183656.34 DEC=+384701.29 EQUINOX=2000.0 SLIT_PA=0.0  GSMODE="NGS"
+# with AO188/LGS
+#    VEGAIM=OBJECT="Vega" RA=183656.34 DEC=+384701.29 EQUINOX=2000.0 FIELD_PA=0.0 GSMODE="LGS"
+#    VEGASP=OBJECT="Vega" RA=183656.34 DEC=+384701.29 EQUINOX=2000.0 SLIT_PA=0.0  GSMODE="LGS"
+#==========================================================================================##
+
+# for IMAGING
+NGS_IM=OBJECT="NGS_IM"  RA=144346.440 DEC=-023020.00 EQUINOX=2000.0 FIELD_PA=0.0 GSMODE="NGS"
+LGS_IM=OBJECT="LGS_IM"   RA=184051.860 DEC=+010212.90 EQUINOX=2000.0 FIELD_PA=147.70 GSMODE="LGS"
+LGS_IM_TT=OBJECT="LGS_IM TT guide star" RA=184054.225 DEC=+010252.26 EQUINOX=2000.0 FIELD_PA=147.70 GSMODE="LGS"
+ 
+# for SPECTROSCOPY (GRISM, PRISM, ECHELLE)
+NGS_SP=OBJECT="NGS_SP"  RA=144346.440 DEC=-023020.00 EQUINOX=2000.0 SLIT_PA=0.0 GSMODE="NGS"
+LGS_SP=OBJECT="LGS_SP"   RA=184051.860 DEC=+010212.90 EQUINOX=2000.0 SLIT_PA=147.70 GSMODE="LGS"
+LGS_SP_TT=OBJECT="LGS_SP TT Guide star" RA=184054.225 DEC=+010252.26 EQUINOX=2000.0 SLIT_PA=147.70 GSMODE="LGS"
+
+#For non-sidereal targets#
+# Object for IMAGING
+MOON_IM=OBJECT="Moon" RA=053514.200 DEC=-052218.00 EQUINOX=2000.0 FIELD_PA=0.0 COORD=FILE TARGET="08 Moon.dat"
+# Object for SPECTROSCOPY
+MOON_SP=OBJECT="Moon" RA=053514.200 DEC=-052218.00 EQUINOX=2000.0 SLIT_PA=0.0 COORD=FILE TARGET="08 Moon.dat"
+   
+</Parameter_List>
+ 
+<Command>
+###==== SetUp ====###
+        CheckOBE $DEF_IRST
+        BootQDAS $DEF_IRST
+        BootVGW  $DEF_CMNT
+###==== Choose a bright star
+        MoveToStar $DEF_CMNV
+###==== Focusing/IRCS ====###
+        FocusOBE_WO_AG  $DEF_IRST  $DEF_IMKP EXPTIME=0.5 COADDS=5 Z=!TSCL.Z DELTAZ=0.07
+
+###==== LGS Calibration (required only for LGS) ====### 
+        AO188_LGSCOL $DEF_AOST EXPTIME=10 MODE=MANUAL
+        AO188_M2CNT $DEF_AOST MODE=LGS INS=IRCS IMR=DEFAULT LGSH=DEFAULT MODECHANGE=YES
+
+
+#############
+## IMAGING ##
+#############
+# DEF_????N : no-guiding DEF_???A: with AO
+
+# for no-AutoGuider without AO #
+SetupField  $DEF_IMSTA $DEF_IMK $OBJim 
+CheckField  $DEF_IMSTA $DEF_IMK EXPTIME=5
+GetObject   $DEF_IMS5N EXPTIME=60 DITH=10.0 COADDS=1 NDUMMYREAD=0
+
+# for with AO #
+# Setup field TMODE: [SID] for sidereal object [ADI] for ADI mode [NON-SID] for non-sidereal  
+# GetObject MODE: [AOP] AO point mode (default) 
+
+# for NGS and LGS when TT guide star == target center
+SetupField $DEF_IMSTA $DEF_IMK $NGS_IM
+
+# for LGS: when TT guide star != target center
+SetupField $DEF_IMSTA $DEF_IMK $LGS_IM_TT
+AO188_OFFSET_RADEC $DEF_AOLN $LGS_IM 
+
+# Common for all AO modes
+CheckField $DEF_IMSTA $DEF_IMK EXPTIME=5
+GetObject  $DEF_IMS9A EXPTIME=60 DITH=3.0 COADDS=1 PIXSCALE=20MAS NDUMMYREAD=0 MODE=AOP
+
+# for LGS operation with high priority of stable PSF sampling
+# Please notice that this sequence requires additional overheads.
+SetupField $DEF_IMSTA $DEF_IMK $LGS_IM_TT
+AO188_M2CNT_QUICK $DEF_AOST LOOPSTAT=HOWFS
+AO188_OFFSET_RADEC $DEF_AOLN $LGS_IM
+CheckField $DEF_IMSTA $DEF_IMK EXPTIME=5 
+GetObject_LGSFIX $DEF_IMS9A EXPTIME=60 DITH=3.0 COADDS=1 PIXSCALE=20MAS NDUMMYREAD=0 TTOFFSKIP=NO
+GetObject_LGSFIX $DEF_IMS9A EXPTIME=60 DITH=3.0 COADDS=1 PIXSCALE=20MAS NDUMMYREAD=0 
+
+### For non-sidereal targets#
+# for without AO #  
+# Please select "no-guiding" and add "COORD=FILE" as follows.
+SetupField $DEF_IMSTA $DEF_IMK $MOON 
+CheckField $DEF_IMSTA $DEF_IMK EXPTIME=5
+GetObject $DEF_IMS5N EXPTIME=60 DITH=10.0 COORD=FILE
+
+# with AO #
+SetupField $DEF_IMSTA $DEF_IMK $MOON TMODE="NON-SID"
+CheckField $DEF_IMSTA $DEF_IMK EXPTIME=10
+GetObject $DEF_IMS9A COORD=FILE EXPTIME=60 DITH=3.0 COADDS=1 PIXSCALE=52MAS NDUMMYREAD=0 MODE=AOP
+##For L' band imaging ##
+SetClock    $DEF_IRST  SLWCNT=1
+SetClock    $DEF_IRST  SLWCNT=16
+
+###########
+## GRISM ##
+###########
+## for without AO # 
+SetupField $DEF_GRSTA $DEF_IMK $OBJsp
+CheckField $DEF_GRSTA $DEF_GRK EXPTIME=10
+#for 2 points nodding along the slit with 7 arcsec offset (DITH) between 2 points.
+GetObject  $DEF_GRD2N EXPTIME=120 DITH=7.0 COADDS=1 SLIT_PA=90.0
+#for obj-sky-obj sequence with sky offset from the object (RA_OFFSET=30 arcsec DEC_OFFSET=1800 arcsec)
+GetObject  $DEF_GRD2XS1N EXPTIME=120 DITH=0.0 SLIT_PA=90.0 RA_OFFSET=30 DEC_OFFSET=1800
+
+# for with AO #
+#NGS case
+SetupField $DEF_GRSTA $DEF_IMKP $NGS_SP 
+CheckField $DEF_GRSTA $DEF_GRL_N EXPTIME=5
+GetObject $DEF_GRD2A EXPTIME=5 COADDS=12 DITH=1.5 NDUMMYREAD=0 PIXSCALE=52MAS MODE=AOP
+
+##<<< LGS >>>## 
+#when TT guide star = target center
+SetupField $DEF_GRSTA $DEF_IMKP $LGS_SP 
+#when TT guide star != target center
+SetupField $DEF_GRSTA $DEF_IMKP $LGS_SP_TT 
+AO188_OFFSET_RADEC $DEF_AOLN $LGS_SP 
+
+CheckField $DEF_GRSTA $DEF_GRL_N EXPTIME=5
+
+#for 2 points nodding along the slit with 7 arcsec offset (DITH) between 2 points.
+GetObject $DEF_GRD2A EXPTIME=120 DITH=7.0 COADDS=1 PIXSCALE=52MAS MODE=AOP
+
+#for obj-sky-obj sequence with sky offset from the object (RA_OFFSET=30 arcsec DEC_OFFSET=1800 arcsec)
+GetObject  $DEF_GRD2XS1A EXPTIME=120 DITH=3.0 RA_OFFSET=30 DEC_OFFSET=1800 MODE=AOP
+
+#for slit scanning 
+GetObject  $DEF_GRSSA SCAN_PAT=[-0.3 120 1 0.15 120 1 0.15 120 1 0.15 120 1 0.15 120 1 -0.3 0 1] EXPTIME_SV=0.5  MODE=AOP
+
+# For non-sidereal targets #
+# for without AO #
+Please select "no-guiding" and add "COORD=FILE" as follows.
+
+SetupField $DEF_GRSTA $DEF_IMK $MOON 
+CheckField $DEF_GRSTA $DEF_GRK EXPTIME=10
+#for 2 points nodding along the slit with 7 arcsec offset (DITH) between 2 points.
+GetObject  $DEF_GRD2N EXPTIME=120 DITH=7.0 SLIT_PA=90.0 COORD=FILE
+
+# for with AO
+SetupField $DEF_GRSTA $DEF_IMK $MOON TMODE="NON-SID"
+CheckField $DEF_GRSTA $DEF_GRK EXPTIME=10
+#for 2 points nodding along the slit with 7 arcsec offset (DITH) between 2 points.
+GetObject  $DEF_GRD2A EXPTIME=120 DITH=7.0 COORD=FILE MODE=AOP
+
+#############
+## ECHELLE ##
+#############
+
+# for without AO #
+SetupField $DEF_ECSTA $DEF_ECJ_N $DEF_IMK  $OBJsp
+CheckField $DEF_ECSTA $DEF_ECJ_N EXPTIME=10
+#for 2 points nodding along the slit with 4 arcsec offset (DITH) between 2 points.
+GetObject  $DEF_ECD2N EXPTIME=300 DITH=4.0 SLIT_PA=90.0
+#for obj-sky-obj sequence with sky offset from the object (RA_OFFSET=30 arcsec DEC_OFFSET=1800 arcsec)
+GetObject  $DEF_ECD2XS2N EXPTIME=300 DITH=0.0 SLIT_PA=90.0 RA_OFFSET=30 DEC_OFFSET=1800
+
+# for with AO #
+# NGS
+SetupField $DEF_ECSTA $DEF_IMK $OBJsp TMODE=SID
+
+# LGS 
+#when TT guide star = target center
+SetupField $DEF_ECSTA $DEF_IM20KP $DEF_ECLC2H6_N $LGS_SP 
+#when TT guide star != target center
+SetupField $DEF_ECSTA $DEF_IM20KP $DEF_ECLC2H6_N $LGS_SP_TT 
+AO188_OFFSET_RADEC $DEF_AOLN $LGS_SP PIXSCALE=20MAS
+
+CheckField $DEF_ECSTA $DEF_ECLC2H6_N EXPTIME_SV=0.5 EXPTIME=10
+
+#for 2 points nodding along the slit with 4 arcsec offset (DITH) between 2 points.
+GetObject $DEF_ECD2A EXPTIME=120 DITH=7.0 COADDS=1  PIXSCALE=52MAS MODE=AOP
+
+#for obj-sky-obj sequence with sky offset from the object (RA_OFFSET=30 arcsec DEC_OFFSET=1800 arcsec)
+GetObject  $DEF_ECD2XS1A EXPTIME=120 DITH=3.0 RA_OFFSET=30 DEC_OFFSET=1800 MODE=AOP
+
+#for slit scanning 
+GetObject  $DEF_ECSSA SCAN_PAT=[-0.3 120 1 0.15 120 1 0.15 120 1 0.15 120 1 0.15 120 1 -0.3 0 1] EXPTIME_SV=0.5  
+
+# For non-sidereal targets #
+# for without AO #
+Please select "no-guiding" and add "COORD=FILE" as follows.
+
+SetupField $DEF_ECSTA $DEF_IMK $MOON
+CheckField $DEF_ECSTA $DEF_GRK EXPTIME=10
+GetObject  $DEF_ECD2N EXPTIME=120 DITH=7.0 SLIT_PA=90.0 COORD=FILE
+
+# for with AO
+SetupField $DEF_ECSTA $DEF_IMK $MOON TMODE="NON-SID"
+CheckField $DEF_ECSTA $DEF_GRK EXPTIME=10
+GetObject  $DEF_ECD2A EXPTIME=120 DITH=7.0 COORD=FILE
+
+##==== Shutdown ====##
+        ShutdownQDAS $DEF_IRST
+        ShutdownVGW  $DEF_CMNT
+        ShutdownOBE  $DEF_IRST
+</Command>

@@ -687,6 +687,7 @@ enum{ STDDB_SSLOC, STDDB_RAPID, STDDB_MIRSTD, STDDB_ESOSTD, STDDB_IRAFSTD, STDDB
 #define LIST1_EXTENSION "list"
 #define LIST2_EXTENSION "lst"
 #define LIST3_EXTENSION "txt"
+#define CSV_EXTENSION "csv"
 #define NST1_EXTENSION "dat"
 #define NST2_EXTENSION "tsc"
 #define NST3_EXTENSION "eph"
@@ -1431,6 +1432,7 @@ struct _typHOE{
   gchar *filename_prm;
   gchar *filename_pdf;
   gchar *filename_txt;
+  gchar *filename_fcdb;
   gchar *filename_nst;
   gchar *filename_jpl;
   gchar *filename_tscconv;
@@ -1951,6 +1953,7 @@ GtkWidget* gtkut_button_new_from_pixbuf();
 GtkWidget* gtkut_toggle_button_new_from_pixbuf();
 void get_current_obs_time();
 void add_day();
+void do_save_FCDB_List();
 void do_save_pdf();
 void do_save_fc_pdf();
 void do_quit();
@@ -1997,6 +2000,9 @@ void fcdb_tree_update_azel_item();
 void addobj_dl();
 gdouble current_yrs();
 gboolean progress_timeout();
+
+//fc_output.c
+void Export_FCDB_List();
 
 //http-client.c
 int get_allsky();
