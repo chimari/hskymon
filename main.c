@@ -4381,10 +4381,11 @@ void create_fcdb_para_dialog (typHOE *hg)
   GtkAdjustment *adj;
   gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, 
     tmp_gsc_mag, tmp_gsc_diam, tmp_ps1_mag, tmp_ps1_diam, tmp_ps1_mindet, 
-    tmp_sdss_mag, tmp_sdss_diam, tmp_usno_mag, tmp_usno_diam,
+    tmp_sdss_mag[NUM_SDSS_BAND], tmp_sdss_diam, tmp_usno_mag, tmp_usno_diam,
     tmp_gaia_mag, tmp_gaia_diam, tmp_2mass_mag, tmp_2mass_diam,
     tmp_wise_mag, tmp_wise_diam;
-  gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_sdss_fil, tmp_usno_fil,
+  gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_usno_fil,
+    tmp_sdss_fil[NUM_SDSS_BAND], 
     tmp_gaia_fil, tmp_2mass_fil, tmp_wise_fil,
     tmp_smoka_shot,
     tmp_smoka_subaru[NUM_SMOKA_SUBARU],
@@ -4405,6 +4406,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   confPropFCDB *cdata;
   gboolean rebuild_flag=FALSE;
   gint i;
+  gchar tmp[BUFFSIZE];
 
   if(flagChildDialog){
     return;
@@ -4429,8 +4431,10 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_ps1_mag=hg->fcdb_ps1_mag;
   tmp_ps1_diam=hg->fcdb_ps1_diam;
   tmp_ps1_mindet=hg->fcdb_ps1_mindet;
-  tmp_sdss_fil=hg->fcdb_sdss_fil;
-  tmp_sdss_mag=hg->fcdb_sdss_mag;
+  for(i=0;i<NUM_SDSS_BAND;i++){
+    tmp_sdss_fil[i]=hg->fcdb_sdss_fil[i];
+    tmp_sdss_mag[i]=hg->fcdb_sdss_mag[i];
+  }
   tmp_sdss_diam=hg->fcdb_sdss_diam;
   tmp_usno_fil=hg->fcdb_usno_fil;
   tmp_usno_mag=hg->fcdb_usno_mag;
@@ -5069,7 +5073,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 
 
   vbox = gtk_vbox_new (FALSE, 0);
-  label = gtk_label_new ("SDSS DR13");
+  label = gtk_label_new ("SDSS DR14");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
   table = gtk_table_new(2,2,FALSE);
@@ -5089,7 +5093,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_sdss_diam,
-					    20, 600, 10, 10, 0);
+					    3, 120, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -5098,38 +5102,45 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_sdss_diam);
 
-  label = gtk_label_new ("[arcsec]"); 
- gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  label = gtk_label_new ("[arcmin]"); 
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
 
-
-  check = gtk_check_button_new_with_label("Mag. filter");
-  gtk_table_attach(GTK_TABLE(table), check, 0, 1, 1, 2,
+  
+  frame = gtk_frame_new ("Mag. filter");
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+  gtk_table_attach(GTK_TABLE(table), frame, 0, 1, 1, 2,
 		   GTK_FILL,GTK_SHRINK,0,0);
-  my_signal_connect (check, "toggled",
-		     cc_get_toggle,
-		     &tmp_sdss_fil);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
-			       hg->fcdb_sdss_fil);
 
-  hbox = gtk_hbox_new(FALSE,0);
-  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+  table1= gtk_table_new(2,NUM_SDSS_BAND,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table1), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table1), 5);
+  gtk_table_set_col_spacings (GTK_TABLE (table1), 5);
+  gtk_container_add (GTK_CONTAINER (frame), table1);
 
-  label = gtk_label_new ("r < ");
-  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+  for(i=0;i<NUM_SDSS_BAND;i++){
+    sprintf(tmp, "%s-band  <", sdss_band[i]);
 
-  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_sdss_mag,
-					    12, 26, 1, 1, 0);
-  spinner =  gtk_spin_button_new (adj, 0, 0);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
-			 FALSE);
-  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
-  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_sdss_mag);
+    check = gtk_check_button_new_with_label(tmp);
+    gtk_table_attach(GTK_TABLE(table1), check, 0, 1, i, i+1,
+		     GTK_FILL,GTK_SHRINK,0,0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_sdss_fil[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_sdss_fil[i]);
+
+    adj = (GtkAdjustment *)gtk_adjustment_new(tmp_sdss_mag[i],
+					      12, 26, 1, 1, 0);
+    spinner =  gtk_spin_button_new (adj, 0, 0);
+    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+    gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			   FALSE);
+    gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, i, i+1,
+		     GTK_FILL,GTK_SHRINK,0,0);
+    my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+    my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_sdss_mag[i]);
+  }
 
 
   vbox = gtk_vbox_new (FALSE, 0);
@@ -6022,8 +6033,10 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_ps1_mag  = tmp_ps1_mag;
       hg->fcdb_ps1_diam  = tmp_ps1_diam;
       hg->fcdb_ps1_mindet  = tmp_ps1_mindet;
-      hg->fcdb_sdss_fil  = tmp_sdss_fil;
-      hg->fcdb_sdss_mag  = tmp_sdss_mag;
+      for(i=0;i<NUM_SDSS_BAND;i++){
+	hg->fcdb_sdss_fil[i]  = tmp_sdss_fil[i];
+	hg->fcdb_sdss_mag[i]  = tmp_sdss_mag[i];
+      }
       hg->fcdb_sdss_diam  = tmp_sdss_diam;
       hg->fcdb_usno_fil  = tmp_usno_fil;
       hg->fcdb_usno_mag  = tmp_usno_mag;
@@ -6100,9 +6113,11 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_ps1_mag = 19;
       hg->fcdb_ps1_diam = 180;
       hg->fcdb_ps1_mindet = 2;
-      hg->fcdb_sdss_fil = TRUE;
-      hg->fcdb_sdss_mag = 19;
-      hg->fcdb_sdss_diam = 180;
+      for(i=0;i<NUM_SDSS_BAND;i++){
+	hg->fcdb_sdss_fil[i] = TRUE;
+	hg->fcdb_sdss_mag[i] = 20;
+      }
+      hg->fcdb_sdss_diam = 110;
       hg->fcdb_usno_fil = TRUE;
       hg->fcdb_usno_mag = 19;
       hg->fcdb_usno_diam = 180;
@@ -6173,7 +6188,7 @@ void create_fcdb_para_dialog (typHOE *hg)
       else if(hg->fcdb_type==FCDB_TYPE_PS1)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"PanSTARRS-1");
       else if(hg->fcdb_type==FCDB_TYPE_SDSS)
-	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SDSS DR13");
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SDSS DR14");
       else if(hg->fcdb_type==FCDB_TYPE_LAMOST)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"LAMOST DR3");
       else if(hg->fcdb_type==FCDB_TYPE_USNO)
@@ -8376,7 +8391,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     if(hg->fc_mode_def==FC_SDSS) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SDSS DR13 (color)",
+    gtk_list_store_set(store, &iter, 0, "SDSS DR14 (color)",
 		       1, FC_SDSS13, 2, TRUE, -1);
     if(hg->fc_mode_def==FC_SDSS13) iter_set=iter;
 	
@@ -9754,9 +9769,11 @@ void param_init(typHOE *hg){
   hg->fcdb_ps1_mag=19;
   hg->fcdb_ps1_diam=180;
   hg->fcdb_ps1_mindet=2;
-  hg->fcdb_sdss_fil=TRUE;
-  hg->fcdb_sdss_mag=19;
-  hg->fcdb_sdss_diam=180;
+  for(i=0;i<NUM_SDSS_BAND;i++){
+    hg->fcdb_sdss_fil[i]=TRUE;
+    hg->fcdb_sdss_mag[i]=20;
+  }
+  hg->fcdb_sdss_diam=110;
   hg->fcdb_usno_fil=TRUE;
   hg->fcdb_usno_mag=19;
   hg->fcdb_usno_diam=180;

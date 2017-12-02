@@ -3275,6 +3275,13 @@ int http_c_fcdb(typHOE *hg){
   fclose(fp_write);
 
   if(chunked_flag) unchunk(hg->fcdb_file);
+  // This is a bug fix for SDSS DR14 VOTable output
+  if(hg->fcdb_type==FCDB_TYPE_SDSS){ 
+    str_replace(hg->fcdb_file, 
+		"encoding=\"utf-16\"",
+		" encoding=\"utf-8\"");
+  }    
+  
 
 #ifndef USE_WIN32
     if((chmod(hg->fcdb_file,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){

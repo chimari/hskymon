@@ -1343,11 +1343,11 @@ void fcdb_sdss_vo_parse(typHOE *hg) {
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
-    if(xmlStrcmp(vfield_move->name,"objID") == 0) 
+    if(xmlStrcmp(vfield_move->name,"objid") == 0) 
       columns[0] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"RA") == 0)
+    else if(xmlStrcmp(vfield_move->name,"ra") == 0)
       columns[1] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"DEC") == 0) 
+    else if(xmlStrcmp(vfield_move->name,"dec") == 0) 
       columns[2] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,"u") == 0) 
       columns[3] = vfield_move->position;
@@ -1367,12 +1367,13 @@ void fcdb_sdss_vo_parse(typHOE *hg) {
    if(i_list==MAX_FCDB) break;
 
    if (vtabledata_move->colomn == columns[0]){
-     if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
-     hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
-     if((!hg->fcdb_sdss_fil)||(hg->fcdb[i_list].r<=hg->fcdb_sdss_mag)){
+     if (strncmp(vtabledata_move->value, "SELECT TOP 500", 
+		 strlen("SELECT TOP 500")) != 0){
+       if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+       hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
        i_list++;
+       i_all++;
      }
-     i_all++;
    }
    else if (vtabledata_move->colomn == columns[1]){
      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);

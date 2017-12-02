@@ -383,7 +383,7 @@ void fc_dl (typHOE *hg)
     break;
     
   case FC_SDSS13:
-    label=gtk_label_new("Retrieving SDSS (DR13/color) image from \"" FC_HOST_SDSS13 "\" ...");
+    label=gtk_label_new("Retrieving SDSS (DR14/color) image from \"" FC_HOST_SDSS13 "\" ...");
     break;
     
   case FC_PANCOL:
@@ -459,6 +459,7 @@ void fc_dl (typHOE *hg)
 
   gtk_main();
 
+  gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
   if(timer!=-1) gtk_timeout_remove(timer);
   gtk_widget_destroy(dialog);
   
@@ -1043,7 +1044,7 @@ void create_fc_dialog(typHOE *hg)
     if(hg->fc_mode==FC_SDSS) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SDSS DR13 (color)",
+    gtk_list_store_set(store, &iter, 0, "SDSS DR14 (color)",
 		       1, FC_SDSS13, 2, TRUE, -1);
     if(hg->fc_mode==FC_SDSS13) iter_set=iter;
 
@@ -1351,7 +1352,7 @@ void create_fc_dialog(typHOE *hg)
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "PanSTARRS1");
   }
   else if(hg->fcdb_type==FCDB_TYPE_SDSS){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "SDSS DR13");
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "SDSS DR14");
   }
   else if(hg->fcdb_type==FCDB_TYPE_LAMOST){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "LAMOST DR3");
@@ -2841,7 +2842,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
       break;
       
     case FC_SDSS13:
-      tmp=g_strdup_printf("SDSS DR13 (color)  %dx%d arcmin",
+      tmp=g_strdup_printf("SDSS DR14 (color)  %dx%d arcmin",
 			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
       
@@ -5013,6 +5014,7 @@ void fcdb_dl(typHOE *hg)
   get_fcdb(hg);
   gtk_main();
 
+  gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
   if(timer!=-1) gtk_timeout_remove(timer);
   gtk_widget_destroy(dialog);
 
@@ -5192,6 +5194,7 @@ void addobj_dl(typHOE *hg)
   get_fcdb(hg);
   gtk_main();
 
+  gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
   if(timer!=-1) gtk_timeout_remove(timer);
   gtk_widget_destroy(dialog);
 
@@ -5250,11 +5253,13 @@ void fcdb_item2 (typHOE *hg)
 {
   gdouble ra_0, dec_0, d_ra0, d_dec0;
   gchar *mag_str, *otype_str;
+  gchar *sdss_str1[NUM_SDSS_BAND], *sdss_str2[NUM_SDSS_BAND];
   struct lnh_equ_posn hobject;
   struct ln_equ_posn object;
   struct ln_equ_posn object_prec;
   struct lnh_equ_posn hobject_prec;
   gdouble ned_arcmin;
+  gint i;
 
   hg->fcdb_i=hg->dss_i;
 
@@ -5525,24 +5530,71 @@ void fcdb_item2 (typHOE *hg)
 
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
-    
-    if((double)hg->dss_arcmin<(double)hg->fcdb_sdss_diam/60.){
+
+    for(i=0;i<NUM_SDSS_BAND;i++){
+      if(hg->fcdb_sdss_fil[i]){
+	sdss_str1[i]=g_strdup_printf("%sband=0%%2C%d",
+				     sdss_band[i],
+				     hg->fcdb_sdss_mag[i]);
+	sdss_str2[i]=g_strdup_printf("check_%s=%s&min_%s=0&max_%s=%d",
+				     sdss_band[i],
+				     sdss_band[i],
+				     sdss_band[i],
+				     sdss_band[i],
+				     hg->fcdb_sdss_mag[i]);
+      }
+      else{
+	sdss_str1[i]=g_strdup_printf("%sband=",
+				     sdss_band[i]);
+	sdss_str2[i]=g_strdup_printf("min_%s=0&max_%s=%d",
+				     sdss_band[i],
+				     sdss_band[i],
+				     hg->fcdb_sdss_mag[i]);
+      }
+    }
+
+    if((double)hg->dss_arcmin<(double)hg->fcdb_sdss_diam){
       hg->fcdb_path=g_strdup_printf(FCDB_SDSS_PATH,
+				    sdss_str1[0],
+				    sdss_str1[1],
+				    sdss_str1[2],
+				    sdss_str1[3],
+				    sdss_str1[4],
 				    hg->fcdb_d_ra0,
 				    hg->fcdb_d_dec0,
-				    (double)hg->dss_arcmin/2./60.);
+				    (double)hg->dss_arcmin/2.,
+				    sdss_str2[0],
+				    sdss_str2[1],
+				    sdss_str2[2],
+				    sdss_str2[3],
+				    sdss_str2[4]);
     }
     else{
       hg->fcdb_path=g_strdup_printf(FCDB_SDSS_PATH,
+				    sdss_str1[0],
+				    sdss_str1[1],
+				    sdss_str1[2],
+				    sdss_str1[3],
+				    sdss_str1[4],
 				    hg->fcdb_d_ra0,
 				    hg->fcdb_d_dec0,
-				    (double)hg->fcdb_sdss_diam/2./60./60.);
+				    (double)hg->fcdb_sdss_diam/2.,
+				    sdss_str2[0],
+				    sdss_str2[1],
+				    sdss_str2[2],
+				    sdss_str2[3],
+				    sdss_str2[4]);
     }
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
 			      G_DIR_SEPARATOR_S,
 			      FCDB_FILE_XML,NULL);
+
+    for(i=0;i<NUM_SDSS_BAND;i++){
+      if(sdss_str1[i]) g_free(sdss_str1[i]);
+      if(sdss_str2[i]) g_free(sdss_str2[i]);
+    }
 
     fcdb_dl(hg);
 

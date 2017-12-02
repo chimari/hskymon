@@ -1511,8 +1511,8 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
 			  hobject_prec.dec.seconds);
       break;
 
-    case WWWDB_DR13:
-      tmp=g_strdup_printf(DR13_URL,
+    case WWWDB_DR14:
+      tmp=g_strdup_printf(DR14_URL,
 			  ln_hms_to_deg(&hobject_prec.ra),
 			  (hobject_prec.dec.neg) ? "-" : "+", 
 			  fabs(ln_dms_to_deg(&hobject_prec.dec)));
@@ -1559,8 +1559,8 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
 			  ln_dms_to_deg(&hobject_prec.dec));
       break;
       
-    case WWWDB_CASIS:
-      tmp=g_strdup_printf(CASIS_URL,
+    case WWWDB_CASSIS:
+      tmp=g_strdup_printf(CASSIS_URL,
 			  ln_hms_to_deg(&hobject_prec.ra),
 			  ln_dms_to_deg(&hobject_prec.dec));
       break; 
@@ -5059,9 +5059,9 @@ do_editable_cells (typHOE *hg)
       if(hg->wwwdb_mode==WWWDB_NED) iter_set=iter;
       
       gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SDSS (DR13)",
-			 1, WWWDB_DR13, 2, TRUE, -1);
-      if(hg->wwwdb_mode==WWWDB_DR13) iter_set=iter;
+      gtk_list_store_set(store, &iter, 0, "SDSS (DR14)",
+			 1, WWWDB_DR14, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_DR14) iter_set=iter;
       
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, 0, "MAST",
@@ -5094,9 +5094,9 @@ do_editable_cells (typHOE *hg)
       if(hg->wwwdb_mode==WWWDB_SPITZER) iter_set=iter;
       
       gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "CASIS",
-			 1, WWWDB_CASIS, 2, TRUE, -1);
-      if(hg->wwwdb_mode==WWWDB_CASIS) iter_set=iter;
+      gtk_list_store_set(store, &iter, 0, "CASSIS",
+			 1, WWWDB_CASSIS, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_CASSIS) iter_set=iter;
       
       gtk_list_store_append (store, &iter);
       gtk_list_store_set (store, &iter,
@@ -6090,6 +6090,7 @@ void stddb_dl(typHOE *hg)
   //#ifndef USE_WIN32  
   gtk_main();
   //#endif
+  gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
   if(timer!=-1) gtk_timeout_remove(timer);
   gtk_widget_destroy(dialog);
 
