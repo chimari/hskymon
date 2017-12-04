@@ -48,6 +48,8 @@
 
 #include "gen2.h"
 
+#include "post.h"
+#include "post_sdss.h"
 #include "post_lamost.h"
 #include "post_smoka.h"
 #include "post_hst.h"
@@ -188,7 +190,7 @@
 #define FCDB_PS1_PATH  "/webservices/vo/CatalogSearch.aspx?CAT=PS1V3OBJECTS&RA=%lf&DEC=%+lf&SR=%lf&MINDET=%d&MAXOBJ=500"
 
 #define FCDB_HOST_SDSS "skyserver.sdss.org"
-#define FCDB_SDSS_PATH "/dr14/en/tools/search/x_results.aspx?searchtool=Radial&%s&%s&%s&%s&%s&jband=&hband=&kband=&TaskName=Skyserver.Search.Radial&ReturnHtml=true&whichphotometry=optical&coordtype=equatorial&ra=%lf&dec=%lf&radius=%lf&%s&%s&%s&%s&%s&min_j=0&max_j=20&min_h=0&max_h=20&min_k=0&max_k=20&format=votable&TableName=&limit=500"
+#define FCDB_SDSS_PATH "/dr14/en/tools/search/x_results.aspx"
 
 #define FCDB_HOST_USNO "www.nofs.navy.mil"
 #define FCDB_USNO_PATH "/cgi-bin/vo_cone.cgi?CAT=USNO-B1&RA=%lf&DEC=%+lf&SR=%lf&VERB=1"
@@ -1285,13 +1287,6 @@ struct _STDpara{
   gdouble y;
 };
 
-#define NUM_SDSS_BAND 5
-
-static gchar *sdss_band[NUM_SDSS_BAND]=
-{
-  "u", "g", "r", "i", "z"
-};
-
 typedef struct _FCDBpara FCDBpara;
 struct _FCDBpara{
   gchar *name;
@@ -1687,7 +1682,9 @@ struct _typHOE{
   gint fcdb_ps1_mag;
   gint fcdb_ps1_diam;
   gint fcdb_ps1_mindet;
-  gint fcdb_sdss_mag[NUM_SDSS_BAND];
+  gint fcdb_sdss_search;
+  gint fcdb_sdss_magmin[NUM_SDSS_BAND];
+  gint fcdb_sdss_magmax[NUM_SDSS_BAND];
   gboolean fcdb_sdss_fil[NUM_SDSS_BAND];
   gint fcdb_sdss_diam;
   gint fcdb_usno_mag;

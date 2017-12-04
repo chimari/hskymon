@@ -2505,6 +2505,119 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
   gboolean init_flag=FALSE;
 
   switch(hg->fcdb_type){
+  case FCDB_TYPE_SDSS:
+    ip=0;
+    plen=0;
+
+    while(1){
+      if(sdss_post[ip].key==NULL) break;
+      switch(sdss_post[ip].flg){
+      case POST_NULL:
+	sprintf(send_mesg,
+		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n\r\n",
+		rand16,
+		sdss_post[ip].key);
+	break;
+
+      case POST_CONST:
+	sprintf(send_mesg,
+		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		rand16,
+		sdss_post[ip].key,
+		sdss_post[ip].prm);
+	break;
+	
+      case POST_INPUT:
+	if(strcmp(sdss_post[ip].key,"searchtool")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  (hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG) ? 
+		  "Imaging" : "Spectro");
+	}
+	else if(strcmp(sdss_post[ip].key,"TaskName")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  (hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG) ? 
+		  "Skyserver.Search.IQS" : "Skyserver.Search.SQS");
+	}
+	else if(strcmp(sdss_post[ip].key,"ra")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  hg->fcdb_d_ra0);
+	}
+	else if(strcmp(sdss_post[ip].key,"dec")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  hg->fcdb_d_dec0);
+	}
+	else if(strcmp(sdss_post[ip].key,"radius")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.1lf\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  (hg->dss_arcmin<60) ? (gdouble)hg->dss_arcmin/2.0 : 30.0);
+	}
+	else if(strcmp(sdss_post[ip].key,"magMin")==0){
+	  send_mesg[0]=0x00;
+	  for(i=0;i<NUM_SDSS_BAND;i++){
+	    if(hg->fcdb_sdss_fil[i]){
+	      sprintf(ins_mesg,
+		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMin\"\r\n\r\n%d\r\n",
+		      rand16,
+		      sdss_band[i],
+		      hg->fcdb_sdss_magmin[i]);
+	    }
+	    else{
+	      sprintf(ins_mesg,
+		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMin\"\r\n\r\n\r\n",
+		      rand16,
+		      sdss_band[i]);
+	    }
+	    strcat(send_mesg,ins_mesg);
+	  }
+	}
+	else if(strcmp(sdss_post[ip].key,"magMax")==0){
+	  send_mesg[0]=0x00;
+	  for(i=0;i<NUM_SDSS_BAND;i++){
+	    if(hg->fcdb_sdss_fil[i]){
+	      sprintf(ins_mesg,
+		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMax\"\r\n\r\n%d\r\n",
+		      rand16,
+		      sdss_band[i],
+		      hg->fcdb_sdss_magmax[i]);
+	    }
+	    else{
+	      sprintf(ins_mesg,
+		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMax\"\r\n\r\n\r\n",
+		      rand16,
+		      sdss_band[i]);
+	    }
+	    strcat(send_mesg,ins_mesg);
+	  }
+	}
+	break;
+      }	
+      plen+=strlen(send_mesg);
+      if(wflag)  write_to_server(command_socket, send_mesg);
+      ip++;
+    }
+    
+    sprintf(send_mesg,
+	    "------WebKitFormBoundary%s--\r\n\r\n",
+	    rand16);
+    plen+=strlen(send_mesg);
+    if(wflag)  write_to_server(command_socket, send_mesg);
+
+    break;
+
   case FCDB_TYPE_LAMOST:
     ip=0;
     plen=0;
@@ -3228,6 +3341,7 @@ int http_c_fcdb(typHOE *hg){
     write_to_server(command_socket, send_mesg);
 
     switch(hg->fcdb_type){
+    case FCDB_TYPE_SDSS:
     case FCDB_TYPE_LAMOST:
     case FCDB_TYPE_ESO:
     case FCDB_TYPE_WWWDB_ESO:

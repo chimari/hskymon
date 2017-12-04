@@ -1343,99 +1343,157 @@ void fcdb_sdss_vo_parse(typHOE *hg) {
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
-    if(xmlStrcmp(vfield_move->name,"objid") == 0) 
-      columns[0] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"ra") == 0)
-      columns[1] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"dec") == 0) 
-      columns[2] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"u") == 0) 
-      columns[3] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"g") == 0) 
-      columns[4] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"r") == 0) 
-      columns[5] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"i") == 0) 
-      columns[6] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"z") == 0) 
-      columns[7] = vfield_move->position;
+    if(hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG){
+      if(xmlStrcmp(vfield_move->name,"objID") == 0) 
+	columns[0] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"ra") == 0)
+	columns[1] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"dec") == 0) 
+	columns[2] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"u") == 0) 
+	columns[3] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"g") == 0) 
+	columns[4] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"r") == 0) 
+	columns[5] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"i") == 0) 
+	columns[6] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"z") == 0) 
+	columns[7] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"redshift") == 0) 
+	columns[8] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"class") == 0) 
+	columns[9] = vfield_move->position;
+    }
+    else{ // SPEC
+      if(xmlStrcmp(vfield_move->name,"objID") == 0) 
+	columns[0] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"ra") == 0)
+	columns[1] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"dec") == 0) 
+	columns[2] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"u") == 0) 
+	columns[3] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"g") == 0) 
+	columns[4] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"r") == 0) 
+	columns[5] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"i") == 0) 
+	columns[6] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"z1") == 0) 
+	columns[7] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"z") == 0) 
+	columns[8] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,"class") == 0) 
+	columns[9] = vfield_move->position;
+    }
  }
 
 
- Extract_VO_TableData(reader,&votable, nbFields, columns);
- for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
-   if(i_list==MAX_FCDB) break;
-
-   if (vtabledata_move->colomn == columns[0]){
-     if (strncmp(vtabledata_move->value, "SELECT TOP 500", 
-		 strlen("SELECT TOP 500")) != 0){
-       if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
-       hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
-       i_list++;
-       i_all++;
-     }
-   }
-   else if (vtabledata_move->colomn == columns[1]){
-     hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
-     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
-   }
-   else if (vtabledata_move->colomn == columns[2]){
-     hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
-     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
-   }
-   else if (vtabledata_move->colomn == columns[3]){ // u
-     if(vtabledata_move->value){
-       hg->fcdb[i_list].u=atof(vtabledata_move->value);
-       if(hg->fcdb[i_list].u<-900) hg->fcdb[i_list].u=+100;
-     }
-     else{
-       hg->fcdb[i_list].u=+100;
-     }
-   }
-   else if (vtabledata_move->colomn == columns[4]){ // g
-     if(vtabledata_move->value){
-       hg->fcdb[i_list].v=atof(vtabledata_move->value);
-       if(hg->fcdb[i_list].v<-900) hg->fcdb[i_list].v=+100;
-     }
-     else{
-       hg->fcdb[i_list].v=+100;
-     }
-   }
-   else if (vtabledata_move->colomn == columns[5]){  // r
-     if(vtabledata_move->value){
-       hg->fcdb[i_list].r=atof(vtabledata_move->value);
-       if(hg->fcdb[i_list].r<-900) hg->fcdb[i_list].r=+100;
-     }
-     else{
-       hg->fcdb[i_list].r=+100;
-     }
-   }
-   else if (vtabledata_move->colomn == columns[6]){  // i
-     if(vtabledata_move->value){
-       hg->fcdb[i_list].i=atof(vtabledata_move->value);
-       if(hg->fcdb[i_list].i<-900) hg->fcdb[i_list].i=+100;
-     }
-     else{
-       hg->fcdb[i_list].i=+100;
-     }
-   }
-   else if (vtabledata_move->colomn == columns[7]){  // z
-     if(vtabledata_move->value){
-       hg->fcdb[i_list].j=atof(vtabledata_move->value);
-       if(hg->fcdb[i_list].j<-900) hg->fcdb[i_list].j=+100;
-     }
-     else{
-       hg->fcdb[i_list].j=+100;
-     }
-   }
+  Extract_VO_TableData(reader,&votable, nbFields, columns);
+  for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+    if(i_list==MAX_FCDB) break;
+    
+    if (vtabledata_move->colomn == columns[0]){
+      if (strncmp(vtabledata_move->value, "SELECT TOP 500", 
+		  strlen("SELECT TOP 500")) != 0){
+	if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+	hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
+      }
+    }
+    else if (vtabledata_move->colomn == columns[1]){
+      hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
+      hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
+      if(hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG){
+	i_list++;
+	i_all++;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[2]){
+      hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
+      hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
+    }
+    else if (vtabledata_move->colomn == columns[3]){ // u
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].u=atof(vtabledata_move->value);
+	if(hg->fcdb[i_list].u<-900) hg->fcdb[i_list].u=+100;
+      }
+      else{
+	hg->fcdb[i_list].u=+100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[4]){ // g
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].v=atof(vtabledata_move->value);
+	if(hg->fcdb[i_list].v<-900) hg->fcdb[i_list].v=+100;
+      }
+      else{
+	hg->fcdb[i_list].v=+100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[5]){  // r
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].r=atof(vtabledata_move->value);
+	if(hg->fcdb[i_list].r<-900) hg->fcdb[i_list].r=+100;
+      }
+      else{
+	hg->fcdb[i_list].r=+100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[6]){  // i
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].i=atof(vtabledata_move->value);
+	if(hg->fcdb[i_list].i<-900) hg->fcdb[i_list].i=+100;
+      }
+      else{
+	hg->fcdb[i_list].i=+100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[7]){  // z
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].j=atof(vtabledata_move->value);
+	if(hg->fcdb[i_list].j<-900) hg->fcdb[i_list].j=+100;
+      }
+      else{
+	hg->fcdb[i_list].j=+100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[8]){  // redshift
+      if(vtabledata_move->value){
+	if(strcmp(vtabledata_move->value,"0")==0){
+	  hg->fcdb[i_list].nedz=-100;
+	}
+	else{
+	  hg->fcdb[i_list].nedz=atof(vtabledata_move->value);
+	}
+      }
+      else{
+	hg->fcdb[i_list].nedz=-100;
+      }
+      if(hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_SPEC){
+	i_list++;
+	i_all++;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[9]){  // class
+      if(hg->fcdb[i_list].otype) g_free(hg->fcdb[i_list].otype);
+      if(strcmp(vtabledata_move->value,"0")==0){
+	hg->fcdb[i_list].otype=g_strdup("---");
+      }
+      else{
+	hg->fcdb[i_list].otype=g_strdup(vtabledata_move->value);
+      }
+    }
   }
   hg->fcdb_i_max=i_list;
   hg->fcdb_i_all=i_all;
-
+ 
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
 
   for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    if(!hg->fcdb[i_list].otype) hg->fcdb[i_list].otype=g_strdup("---");
+
     hg->fcdb[i_list].equinox=2000.00;
     hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
 				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);

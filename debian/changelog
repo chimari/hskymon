@@ -1,3 +1,9 @@
+hskymon (3.1.0) stable; urgency=medium
+
+  * Updated SDSS server to POST type one.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Mon, 04 Dec 2017 13:30:58 -1000
+
 hskymon (3.0.9) unstable; urgency=medium
 
   * Updated SDSS cite to DR14.

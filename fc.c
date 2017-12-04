@@ -4824,6 +4824,7 @@ void fcdb_dl(typHOE *hg)
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
 
   switch(hg->fcdb_type){
+  case FCDB_TYPE_SDSS:
   case FCDB_TYPE_LAMOST:
   case FCDB_TYPE_SMOKA:
   case FCDB_TYPE_HST:
@@ -5253,7 +5254,6 @@ void fcdb_item2 (typHOE *hg)
 {
   gdouble ra_0, dec_0, d_ra0, d_dec0;
   gchar *mag_str, *otype_str;
-  gchar *sdss_str1[NUM_SDSS_BAND], *sdss_str2[NUM_SDSS_BAND];
   struct lnh_equ_posn hobject;
   struct ln_equ_posn object;
   struct ln_equ_posn object_prec;
@@ -5527,74 +5527,16 @@ void fcdb_item2 (typHOE *hg)
     if(hg->fcdb_host) g_free(hg->fcdb_host);
     hg->fcdb_host=g_strdup(FCDB_HOST_SDSS);
     if(hg->fcdb_path) g_free(hg->fcdb_path);
+    hg->fcdb_path=g_strdup(FCDB_SDSS_PATH);
+
 
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
-
-    for(i=0;i<NUM_SDSS_BAND;i++){
-      if(hg->fcdb_sdss_fil[i]){
-	sdss_str1[i]=g_strdup_printf("%sband=0%%2C%d",
-				     sdss_band[i],
-				     hg->fcdb_sdss_mag[i]);
-	sdss_str2[i]=g_strdup_printf("check_%s=%s&min_%s=0&max_%s=%d",
-				     sdss_band[i],
-				     sdss_band[i],
-				     sdss_band[i],
-				     sdss_band[i],
-				     hg->fcdb_sdss_mag[i]);
-      }
-      else{
-	sdss_str1[i]=g_strdup_printf("%sband=",
-				     sdss_band[i]);
-	sdss_str2[i]=g_strdup_printf("min_%s=0&max_%s=%d",
-				     sdss_band[i],
-				     sdss_band[i],
-				     hg->fcdb_sdss_mag[i]);
-      }
-    }
-
-    if((double)hg->dss_arcmin<(double)hg->fcdb_sdss_diam){
-      hg->fcdb_path=g_strdup_printf(FCDB_SDSS_PATH,
-				    sdss_str1[0],
-				    sdss_str1[1],
-				    sdss_str1[2],
-				    sdss_str1[3],
-				    sdss_str1[4],
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    (double)hg->dss_arcmin/2.,
-				    sdss_str2[0],
-				    sdss_str2[1],
-				    sdss_str2[2],
-				    sdss_str2[3],
-				    sdss_str2[4]);
-    }
-    else{
-      hg->fcdb_path=g_strdup_printf(FCDB_SDSS_PATH,
-				    sdss_str1[0],
-				    sdss_str1[1],
-				    sdss_str1[2],
-				    sdss_str1[3],
-				    sdss_str1[4],
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    (double)hg->fcdb_sdss_diam/2.,
-				    sdss_str2[0],
-				    sdss_str2[1],
-				    sdss_str2[2],
-				    sdss_str2[3],
-				    sdss_str2[4]);
-    }
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
 			      G_DIR_SEPARATOR_S,
 			      FCDB_FILE_XML,NULL);
-
-    for(i=0;i<NUM_SDSS_BAND;i++){
-      if(sdss_str1[i]) g_free(sdss_str1[i]);
-      if(sdss_str2[i]) g_free(sdss_str2[i]);
-    }
 
     fcdb_dl(hg);
 
@@ -5964,15 +5906,9 @@ void fcdb_tree_update_azel_item(typHOE *hg,
   else if(hg->fcdb_type==FCDB_TYPE_NED){
     // O-Type
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
-		       COLUMN_FCDB_OTYPE, hg->fcdb[i_list].otype, -1);
-
-    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_OTYPE, hg->fcdb[i_list].otype, 
 		       COLUMN_FCDB_NEDMAG, hg->fcdb[i_list].nedmag, 
-		       -1);
-    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 		       COLUMN_FCDB_NEDZ,   hg->fcdb[i_list].nedz, 
-		       -1);
-    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 		       COLUMN_FCDB_REF, hg->fcdb[i_list].ref, 
 		       -1);
   }
@@ -6008,6 +5944,8 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       COLUMN_FCDB_R, hg->fcdb[i_list].r,  // r
 		       COLUMN_FCDB_I, hg->fcdb[i_list].i,  // i
 		       COLUMN_FCDB_J, hg->fcdb[i_list].j,  // z
+		       COLUMN_FCDB_NEDZ,   hg->fcdb[i_list].nedz, 
+		       COLUMN_FCDB_OTYPE, hg->fcdb[i_list].otype, 
 		       -1);
   }
   else if(hg->fcdb_type==FCDB_TYPE_LAMOST){
@@ -6017,15 +5955,9 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       COLUMN_FCDB_B, hg->fcdb[i_list].b,  // log g
 		       COLUMN_FCDB_V, hg->fcdb[i_list].v,  // [Fe/H]
 		       COLUMN_FCDB_R, hg->fcdb[i_list].r,  // HRV
+		       COLUMN_FCDB_SP, hg->fcdb[i_list].sp, // SpType
+		       COLUMN_FCDB_OTYPE, hg->fcdb[i_list].otype, //Obj Type
 		       -1);
-    
-    // O-Type
-    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
-		       COLUMN_FCDB_OTYPE, hg->fcdb[i_list].otype, -1);
-    
-    // SpType
-    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
-		       COLUMN_FCDB_SP, hg->fcdb[i_list].sp, -1);
   }
   else if(hg->fcdb_type==FCDB_TYPE_USNO){
     // B1 R1 B2 R2 I2
