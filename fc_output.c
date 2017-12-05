@@ -96,9 +96,9 @@ void fcdb_out_ps1(typHOE *hg, FILE *fp){
 void fcdb_out_sdss(typHOE *hg, FILE *fp){
   int i_list;
 
-  fprintf(fp, "\"Object ID\", \"RA (deg)\", \"Dec (deg)\", \"mag_u\", \"mag_g\", \"mag_r\", \"mag_i\", \"mag_z\", \"Dist. (arcmin)\"\n");
+  fprintf(fp, "\"Object ID\", \"RA (deg)\", \"Dec (deg)\", \"mag_u\", \"mag_g\", \"mag_r\", \"mag_i\", \"mag_z\", \"class\", \"Redshift\", \"Dist. (arcmin)\"\n");
   for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
-    fprintf(fp,"\"%s\", %.5lf, %.5lf, %.2lf, %.2lf, %.2lf, %.2lf, %.2lf, %.5lf\n",
+    fprintf(fp,"\"%s\", %.5lf, %.5lf, %.2lf, %.2lf, %.2lf, %.2lf, %.2lf, \"%s\", %.6lf, %.5lf\n",
 	    hg->fcdb[i_list].name,
 	    hg->fcdb[i_list].d_ra,
 	    hg->fcdb[i_list].d_dec,
@@ -107,6 +107,8 @@ void fcdb_out_sdss(typHOE *hg, FILE *fp){
 	    hg->fcdb[i_list].r,
 	    hg->fcdb[i_list].i,
 	    hg->fcdb[i_list].j,
+	    hg->fcdb[i_list].otype,
+	    hg->fcdb[i_list].nedz,
 	    hg->fcdb[i_list].sep*60.);
   }
 }

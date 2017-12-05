@@ -3109,6 +3109,14 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox), label,FALSE, FALSE, 0);
 
+#ifdef USE_XMLRPC
+  g_snprintf(buf, sizeof(buf),
+	     "Default Tel-Stat server = " DEFAULT_RO_NAMSERVER); 
+  label = gtk_label_new (buf);
+  gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
+  gtk_box_pack_start(GTK_BOX(vbox), label,FALSE, FALSE, 0);
+#endif
+
   label = gtk_label_new ("");
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
@@ -6518,6 +6526,10 @@ gchar *fcdb_csv_name (typHOE *hg){
 
   case FCDB_TYPE_PS1:
     fname=g_strconcat("FCDB_", oname, "_by_PanSTARRS." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_SDSS:
+    fname=g_strconcat("FCDB_", oname, "_by_SDSS." CSV_EXTENSION,NULL);
     break;
 
   case FCDB_TYPE_LAMOST:
