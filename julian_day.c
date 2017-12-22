@@ -444,16 +444,8 @@ void ln_zonedate_to_date (struct ln_zonedate * zonedate, struct ln_date * date)
 	ln_get_date (jd, date);
 }
 
-int get_gmtoff_from_sys (typHOE *hg)
+int get_gmtoff_from_sys ()
 {
-  /*
-  struct timeval tv;
-  struct timezone tz;
-  
-  gettimeofday (&tv, &tz);
-
-  return(tz.tz_minuteswest);
-  */
 #ifdef _BSD_SOURCE
   time_t curtime;
   struct tm *lotime;
@@ -463,6 +455,11 @@ int get_gmtoff_from_sys (typHOE *hg)
   
   return(-(int)(lotime->tm_gmtoff/60));
 #else
-  return(hg->obs_timezone);
+  struct timeval tv;
+  struct timezone tz;
+  
+  gettimeofday (&tv, &tz);
+
+  return(tz.tz_minuteswest);
 #endif
 }

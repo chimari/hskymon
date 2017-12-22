@@ -18,7 +18,7 @@ struct _PARAMsmokainst{
 
 static const PARAMsmokainst smoka_subaru[NUM_SMOKA_SUBARU] = {
   {"Suprime-Cam","SUP"},  
-  {"FOCAS",      "FOC"},  
+  {"FOCAS",      "FCS"},  
   {"HDS",        "HDS"},  
   {"OHS/CISCO",  "OHS"},  
   {"IRCS",       "IRC"},  

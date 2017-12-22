@@ -1532,7 +1532,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
       ln_get_timet_from_julian (JD0, &t0);
       
       if(hg->skymon_mode==SKYMON_CUR){
-	int sys_gmtoff=get_gmtoff_from_sys(hg);
+	int sys_gmtoff=get_gmtoff_from_sys();
 
 	if(hg->allsky_last_t[hg->allsky_last_i-1]>0){
 	  ago=(t0-hg->allsky_last_t[hg->allsky_last_i-1])/60
@@ -1568,7 +1568,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	
       }
       else if(hg->skymon_mode==SKYMON_LAST){
-	int sys_gmtoff=get_gmtoff_from_sys(hg);
+	int sys_gmtoff=get_gmtoff_from_sys();
 
 	if(hg->allsky_last_t[hg->allsky_last_frame]>0){
 	  ago=(t0-hg->allsky_last_t[hg->allsky_last_frame])/60
