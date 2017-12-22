@@ -1,3 +1,12 @@
+2017.12.21 ver3.2.0 - Added "List Query" mode in Main Menu (Database).
+	              Objects listed in Object List Window can be
+	              queried in SMOKA, HST, and ESO archive.
+	              Each query must be done for single instruments/mode.
+                    - Observatory time zones are changed into minutes.
+	            - Fixed timezone failures in AllSky images' time stamps.
+	            - Added HASH PN Database in web browsing.
+	              It requires "HashID=XXXX" in Note section of the list.
+
 2017.12.04 ver3.1.0 - Changed SDSS FCDB server to POST type one.
 	              Imaging/Spectro queries are available.
 

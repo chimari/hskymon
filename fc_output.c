@@ -391,3 +391,42 @@ void Export_FCDB_List(typHOE *hg){
   fclose(fp);
 }
 
+
+void trdb_out(typHOE *hg, FILE *fp){
+  int i_list;
+
+  fprintf(fp, "\"Object\", \"RA\", \"Dec\", \"Note\",  \"Data\"\n");
+  for(i_list=0;i_list<hg->i_max;i_list++){
+    if(hg->obj[i_list].trdb_band_max>0){
+      fprintf(fp,"\"%s\", \"%09.2lf\", \"%+010.2lf\", \"%s\", \"%s\"\n",
+	      hg->obj[i_list].name,
+	      hg->obj[i_list].ra,
+	      hg->obj[i_list].dec,
+	      hg->obj[i_list].note,
+	      hg->obj[i_list].trdb_str);
+    }
+    else{
+      fprintf(fp,"\"%s\", \"%09.2lf\", \"%+010.2lf\", \"%s\"\n",
+	      hg->obj[i_list].name,
+	      hg->obj[i_list].ra,
+	      hg->obj[i_list].dec,
+	      hg->obj[i_list].note);
+    }
+  }
+}
+
+void Export_TRDB_CSV(typHOE *hg){
+  FILE *fp;
+
+  if(hg->i_max<=0) return;
+
+  if((fp=fopen(hg->filename_trdb,"w"))==NULL){
+    fprintf(stderr," File Write Error  \"%s\" \n", hg->filename_trdb);
+    exit(1);
+  }
+
+  trdb_out(hg, fp);
+  
+  fclose(fp);
+}
+

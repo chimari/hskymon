@@ -19,6 +19,18 @@ struct _PARAMesoinst{
 #define NUM_ESO_OTHER 6
 #define NUM_ESO_SAM 2
 
+// ESO Obs mode
+enum
+{
+  TRDB_ESO_MODE_IMAGE,
+  TRDB_ESO_MODE_SPEC,
+  TRDB_ESO_MODE_VLTI,
+  TRDB_ESO_MODE_POLA,
+  TRDB_ESO_MODE_CORO,
+  TRDB_ESO_MODE_OTHER,
+  TRDB_ESO_MODE_SAM
+};
+
 static const PARAMesoinst eso_image[NUM_ESO_IMAGE] = {
   {"EFOSC2/Lasilla",  
    "EFOSC;\'IMA%\'", 
@@ -234,9 +246,9 @@ static const PARAMpost eso_post[] = {
   {POST_CONST, "tab_target_coord",  "on"},
   {POST_CONST, "format",            "DecimDeg"},
   {POST_NULL,  "night",             NULL},
-  {POST_NULL,  "stime",             NULL},
+  {POST_INPUT, "stime",             NULL},
   {POST_CONST, "starttime",         "12"},
-  {POST_NULL,  "etime",             NULL},
+  {POST_INPUT, "etime",             NULL},
   {POST_CONST, "endtime",           "12"},
   {POST_CONST, "tab_prog_id",       "on"},
   {POST_NULL,  "prog_id",           NULL},

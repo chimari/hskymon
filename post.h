@@ -21,5 +21,8 @@ enum{ POST_NULL,
       POST_INST5,
       POST_INST6,
       POST_INST7,
+      POST_IMAG,
+      POST_SPEC,
+      POST_IPOL,
       POST_ADD
 } POST_num;

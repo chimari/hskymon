@@ -98,8 +98,10 @@
 #define FCDB_SDSS_URL "http://skyserver.sdss.org/dr14/en/tools/quicklook/summary.aspx?id=%s"
 #define FCDB_LAMOST_URL "http://dr3.lamost.org/spectrum/view?obsid=%d"
 #define FCDB_SMOKA_URL "http://smoka.nao.ac.jp/info.jsp?frameid=%s&date_obs=%s&i=%d"
+#define FCDB_SMOKA_SHOT_URL "http://smoka.nao.ac.jp/fssearch?frameid=%s*&instruments=%s&obs_mod=all&data_typ=all&dispcol=default&diff=1000&action=Search&asciitable=table&obs_cat=all"
 #define FCDB_HST_URL "http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst&dataid=%s"
 #define FCDB_ESO_URL "http://archive.eso.org/wdb/wdb/eso/eso_archive_main/query?dp_id=%s&format=DecimDeg&tab_stat_plot=on&aladin_colour=aladin_instrument"
+#define HASH_URL "http://202.189.117.101:8999/gpne/objectInfoPage.php?id=%d"
 
 #elif defined(USE_OSX)
 // in OSX    
@@ -125,8 +127,10 @@
 #define FCDB_SDSS_URL "open http://skyserver.sdss.org/dr14/en/tools/quicklook/summary.aspx?id=%s"
 #define FCDB_LAMOST_URL "open http://dr3.lamost.org/spectrum/view?obsid=%d"
 #define FCDB_SMOKA_URL "open http://smoka.nao.ac.jp/info.jsp?frameid=%s\\&date_obs=%s\\&i=%d"
+#define FCDB_SMOKA_SHOT_URL "open http://smoka.nao.ac.jp/fssearch?frameid=%s*\\&instruments=%s\\&obs_mod=all\\&data_typ=all\\&dispcol=default\\&diff=1000\\&action=Search\\&asciitable=table\\&obs_cat=all"
 #define FCDB_HST_URL "open http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst\\&dataid=%s"
 #define FCDB_ESO_URL "open http://archive.eso.org/wdb/wdb/eso/eso_archive_main/query?dp_id=%s\\&format=DecimDeg\\&tab_stat_plot=on\\&aladin_colour=aladin_instrument"
+#define HASH_URL "open http://202.189.117.101:8999/gpne/objectInfoPage.php?id=%d"
 
 #else
 // in UNIX    
@@ -151,8 +155,10 @@
 #define FCDB_SDSS_URL "\"http://skyserver.sdss.org/dr14/en/tools/quicklook/summary.aspx?id=%s\""
 #define FCDB_LAMOST_URL "\"http://dr3.lamost.org/spectrum/view?obsid=%d\""
 #define FCDB_SMOKA_URL "\"http://smoka.nao.ac.jp/info.jsp?frameid=%s&date_obs=%s&i=%d\""
+#define FCDB_SMOKA_SHOT_URL "\"http://smoka.nao.ac.jp/fssearch?frameid=%s*&instruments=%s&obs_mod=all&data_typ=all&dispcol=default&diff=1000&action=Search&asciitable=table&obs_cat=all\""
 #define FCDB_HST_URL "\"http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst&dataid=%s\""
 #define FCDB_ESO_URL "\"http://archive.eso.org/wdb/wdb/eso/eso_archive_main/query?dp_id=%s&format=DecimDeg&tab_stat_plot=on&aladin_colour=aladin_instrument\""
+#define HASH_URL "\"http://202.189.117.101:8999/gpne/objectInfoPage.php?id=%d\""
 #endif
 
 #ifdef USE_WIN32
@@ -514,6 +520,17 @@ enum
   NUM_COLUMN_FCDB
 };
 
+
+// Tree DataBase
+enum
+{
+  COLUMN_TRDB_NUMBER,
+  COLUMN_TRDB_OPENUM,
+  COLUMN_TRDB_NAME,
+  COLUMN_TRDB_DATA,
+  NUM_COLUMN_TRDB
+};
+
 // FCDB_TYPE
 enum
 {
@@ -534,7 +551,16 @@ enum
   FCDB_TYPE_ESO,
   FCDB_TYPE_WWWDB_SMOKA,
   FCDB_TYPE_WWWDB_HST,
-  FCDB_TYPE_WWWDB_ESO
+  FCDB_TYPE_WWWDB_ESO,
+  TRDB_TYPE_SMOKA,
+  TRDB_TYPE_HST,
+  TRDB_TYPE_ESO,
+  TRDB_TYPE_WWWDB_SMOKA,
+  TRDB_TYPE_WWWDB_HST,
+  TRDB_TYPE_WWWDB_ESO,
+  TRDB_TYPE_FCDB_SMOKA,
+  TRDB_TYPE_FCDB_HST,
+  TRDB_TYPE_FCDB_ESO
 };
 
 enum
@@ -578,8 +604,6 @@ enum
   FCDB_NED_OTYPE_HII,
   NUM_FCDB_NED_OTYPE
 };
-
-
 
 #define DEF_TREE_WIDTH 320
 #define DEF_TREE_HEIGHT 360
@@ -633,10 +657,11 @@ enum{
 #define SKYMON_INTERVAL 200
 #define SKYMON_STEP 5
 
-#define MAX_OBJECT 2000
+#define MAX_OBJECT 5000
 #define MAX_ROPE 32
 #define MAX_STD 100
-#define MAX_FCDB 500
+#define MAX_FCDB 5000
+#define MAX_TRDB_BAND 100
 
 #ifdef USE_XMLRPC
 enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
@@ -661,9 +686,34 @@ enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
 
 enum{ AZEL_NORMAL, AZEL_POSI, AZEL_NEGA} AZElMode;
 
-enum{ WWWDB_SIMBAD, WWWDB_NED, WWWDB_DR8, WWWDB_DR14, WWWDB_MAST, WWWDB_MASTP,WWWDB_KECK, WWWDB_GEMINI, WWWDB_IRSA, WWWDB_SPITZER, WWWDB_CASSIS, WWWDB_SEP1, WWWDB_SSLOC, WWWDB_RAPID, WWWDB_MIRSTD, WWWDB_SEP2, WWWDB_SMOKA, WWWDB_HST, WWWDB_ESO} WWWDBMode;
+enum{ WWWDB_SIMBAD, 
+      WWWDB_NED, 
+      WWWDB_DR8, 
+      WWWDB_DR14, 
+      WWWDB_MAST, 
+      WWWDB_MASTP,
+      WWWDB_KECK, 
+      WWWDB_GEMINI, 
+      WWWDB_IRSA, 
+      WWWDB_SPITZER, 
+      WWWDB_CASSIS, 
+      WWWDB_HASH, 
+      WWWDB_SEP1, 
+      WWWDB_SSLOC, 
+      WWWDB_RAPID, 
+      WWWDB_MIRSTD, 
+      WWWDB_SEP2, 
+      WWWDB_SMOKA, 
+      WWWDB_HST, 
+      WWWDB_ESO} WWWDBMode;
 
-enum{ STDDB_SSLOC, STDDB_RAPID, STDDB_MIRSTD, STDDB_ESOSTD, STDDB_IRAFSTD, STDDB_CALSPEC, STDDB_HDSSTD} STDDBMode;
+enum{ STDDB_SSLOC, 
+      STDDB_RAPID, 
+      STDDB_MIRSTD, 
+      STDDB_ESOSTD, 
+      STDDB_IRAFSTD, 
+      STDDB_CALSPEC, 
+      STDDB_HDSSTD} STDDBMode;
 
 #define STD_DRA 20
 #define STD_DDEC 10
@@ -695,6 +745,7 @@ enum{ STDDB_SSLOC, STDDB_RAPID, STDDB_MIRSTD, STDDB_ESOSTD, STDDB_IRAFSTD, STDDB
 #define NST2_EXTENSION "tsc"
 #define NST3_EXTENSION "eph"
 #define PDF_EXTENSION "pdf"
+#define HSKYMON_EXTENSION "hsk"
 
 
 // SKYMON Mode
@@ -747,91 +798,91 @@ OBS_AAT
 #define OBS_SUBARU_LONGITUDE -155.4760278 //[deg] 155 28 33.7
 #define OBS_SUBARU_LATITUDE 19.8255    //[deg] 19 49 31.8
 #define OBS_SUBARU_ALTITUDE 4163    //[m]
-#define OBS_SUBARU_TIMEZONE -10
+#define OBS_SUBARU_TIMEZONE -600
 #define OBS_SUBARU_TZNAME "HST"
 
 #define OBS_PALOMAR_NAME "USA/CA: Palomar Observatory"
 #define OBS_PALOMAR_LONGITUDE -116.864944
 #define OBS_PALOMAR_LATITUDE 33.356278
 #define OBS_PALOMAR_ALTITUDE 1706
-#define OBS_PALOMAR_TIMEZONE -8
+#define OBS_PALOMAR_TIMEZONE -480
 #define OBS_PALOMAR_TZNAME "PST"
 
 #define OBS_LICK_NAME "USA/CA: Lick Observatory"
 #define OBS_LICK_LONGITUDE -121.637256
 #define OBS_LICK_LATITUDE 37.343022
 #define OBS_LICK_ALTITUDE 1290
-#define OBS_LICK_TIMEZONE -8
+#define OBS_LICK_TIMEZONE -480
 #define OBS_LICK_TZNAME "PST"
 
 #define OBS_KPNO_NAME "USA/AZ: Kitt Peak National Observatory"
 #define OBS_KPNO_LONGITUDE -111.599997 //[deg] 111 36.0
 #define OBS_KPNO_LATITUDE 31.964133    //[deg] 31 57.8
 #define OBS_KPNO_ALTITUDE 2120    //[m]
-#define OBS_KPNO_TIMEZONE -7
+#define OBS_KPNO_TIMEZONE -420
 #define OBS_KPNO_TZNAME "MST"
 
 #define OBS_MMT_NAME "USA/AZ: Mt. Hopkins (MMT)"
 #define OBS_MMT_LONGITUDE -110.885156
 #define OBS_MMT_LATITUDE 31.688889
 #define OBS_MMT_ALTITUDE 2606    //[m]
-#define OBS_MMT_TIMEZONE -7
+#define OBS_MMT_TIMEZONE -420
 #define OBS_MMT_TZNAME "MST"
 
 #define OBS_LBT_NAME "USA/AZ: Mt. Graham (LBT)"
 #define OBS_LBT_LONGITUDE -109.88906
 #define OBS_LBT_LATITUDE 32.70131
 #define OBS_LBT_ALTITUDE 3221    //[m]
-#define OBS_LBT_TIMEZONE -7
+#define OBS_LBT_TIMEZONE -420
 #define OBS_LBT_TZNAME "MST"
 
 #define OBS_APACHE_NAME "USA/NM: Apache Point Observatory (SDSS)"
 #define OBS_APACHE_LONGITUDE -105.82
 #define OBS_APACHE_LATITUDE 32.78
 #define OBS_APACHE_ALTITUDE 2798    //[m]
-#define OBS_APACHE_TIMEZONE -7
+#define OBS_APACHE_TIMEZONE -420
 #define OBS_APACHE_TZNAME "MST"
 
 #define OBS_HET_NAME "USA/TX: McDonald Observatory (HET)"
 #define OBS_HET_LONGITUDE -104.01472
 #define OBS_HET_LATITUDE 30.68144
 #define OBS_HET_ALTITUDE 2026
-#define OBS_HET_TIMEZONE -6
+#define OBS_HET_TIMEZONE -360
 #define OBS_HET_TZNAME "CST"
 
 #define OBS_CTIO_NAME "Chile: Cerro Tololo Interamerican Observatory"
 #define OBS_CTIO_LONGITUDE -70.806525
 #define OBS_CTIO_LATITUDE -30.169661
 #define OBS_CTIO_ALTITUDE 2241
-#define OBS_CTIO_TIMEZONE -4
+#define OBS_CTIO_TIMEZONE -240
 #define OBS_CTIO_TZNAME "PRT"
 
 #define OBS_GEMINIS_NAME "Chile: Cerro Pachon (Gemini South)"
 #define OBS_GEMINIS_LONGITUDE -70.736683
 #define OBS_GEMINIS_LATITUDE -30.240742
 #define OBS_GEMINIS_ALTITUDE 2750
-#define OBS_GEMINIS_TIMEZONE -4
+#define OBS_GEMINIS_TIMEZONE -240
 #define OBS_GEMINIS_TZNAME "PRT"
 
 #define OBS_LASILLA_NAME "Chile: La Silla (NTT)"
 #define OBS_LASILLA_LONGITUDE -70.7317
 #define OBS_LASILLA_LATITUDE -29.261211
 #define OBS_LASILLA_ALTITUDE 2375
-#define OBS_LASILLA_TIMEZONE -4
+#define OBS_LASILLA_TIMEZONE -240
 #define OBS_LASILLA_TZNAME "PRT"
 
 #define OBS_MAGELLAN_NAME "Chile: Las Campanus (Magellan)"
 #define OBS_MAGELLAN_LONGITUDE -70.69239
 #define OBS_MAGELLAN_LATITUDE -29.01418
 #define OBS_MAGELLAN_ALTITUDE 2282
-#define OBS_MAGELLAN_TIMEZONE -4
+#define OBS_MAGELLAN_TIMEZONE -240
 #define OBS_MAGELLAN_TZNAME "PRT"
 
 #define OBS_PARANAL_NAME "Chile: Cerro Paranal (VLT)"
 #define OBS_PARANAL_LONGITUDE -70.404267
 #define OBS_PARANAL_LATITUDE -24.627328
 #define OBS_PARANAL_ALTITUDE 2635
-#define OBS_PARANAL_TIMEZONE -4
+#define OBS_PARANAL_TIMEZONE -240
 #define OBS_PARANAL_TZNAME "PRT"
 
 #define OBS_GTC_NAME "Canary: La Palma (GTC)"
@@ -845,63 +896,63 @@ OBS_AAT
 #define OBS_CAO_LONGITUDE -2.54625
 #define OBS_CAO_LATITUDE 37.2236
 #define OBS_CAO_ALTITUDE 2168
-#define OBS_CAO_TIMEZONE 1
+#define OBS_CAO_TIMEZONE 60
 #define OBS_CAO_TZNAME "ECT"
 
 #define OBS_SALT_NAME "South Africa: SAAO (SALT)"
 #define OBS_SALT_LONGITUDE 20.8107
 #define OBS_SALT_LATITUDE -32.3760
 #define OBS_SALT_ALTITUDE 1798
-#define OBS_SALT_TIMEZONE 2
+#define OBS_SALT_TIMEZONE 120
 #define OBS_SALT_TZNAME "EET"
 
 #define OBS_LAMOST_NAME "China: Xinglong (LAMOST)"
 #define OBS_LAMOST_LONGITUDE 117.489433
 #define OBS_LAMOST_LATITUDE 40.389094
 #define OBS_LAMOST_ALTITUDE 656
-#define OBS_LAMOST_TIMEZONE 8
+#define OBS_LAMOST_TIMEZONE 480
 #define OBS_LAMOST_TZNAME "CST"
 
 #define OBS_KANATA_NAME "Japan: Higashi-Hiroshima (Kanata)"
 #define OBS_KANATA_LONGITUDE 132.7767
 #define OBS_KANATA_LATITUDE 34.3775
 #define OBS_KANATA_ALTITUDE 511
-#define OBS_KANATA_TIMEZONE 9
+#define OBS_KANATA_TIMEZONE 540
 #define OBS_KANATA_TZNAME "JST"
 
 #define OBS_OAO_NAME "Japan: Okayama Astrophysical Observatory"
 #define OBS_OAO_LONGITUDE 133.5940
 #define OBS_OAO_LATITUDE 34.5771
 #define OBS_OAO_ALTITUDE 370
-#define OBS_OAO_TIMEZONE 9
+#define OBS_OAO_TIMEZONE 540
 #define OBS_OAO_TZNAME "JST"
 
 #define OBS_NHAO_NAME "Japan: Nishi-Harima (Nayuta)"
 #define OBS_NHAO_LONGITUDE 134.33556
 #define OBS_NHAO_LATITUDE 35.025272
 #define OBS_NHAO_ALTITUDE 418
-#define OBS_NHAO_TIMEZONE 9
+#define OBS_NHAO_TIMEZONE 540
 #define OBS_NHAO_TZNAME "JST"
 
 #define OBS_KISO_NAME "Japan: Kiso Observatory (Univ. of Tokyo)"
 #define OBS_KISO_LONGITUDE 137.625352
 #define OBS_KISO_LATITUDE 35.797290
 #define OBS_KISO_ALTITUDE 1130
-#define OBS_KISO_TIMEZONE 9
+#define OBS_KISO_TIMEZONE 540
 #define OBS_KISO_TZNAME "JST"
 
 #define OBS_GAO_NAME "Japan: Gunma Astronomical Observatory"
 #define OBS_GAO_LONGITUDE 138.972917
 #define OBS_GAO_LATITUDE 36.596806
 #define OBS_GAO_ALTITUDE 885
-#define OBS_GAO_TIMEZONE 9
+#define OBS_GAO_TIMEZONE 540
 #define OBS_GAO_TZNAME "JST"
 
 #define OBS_AAT_NAME "Australia: Anglo-Australian Observatory"
 #define OBS_AAT_LONGITUDE 149.067222
 #define OBS_AAT_LATITUDE -31.275558
 #define OBS_AAT_ALTITUDE 1164
-#define OBS_AAT_TIMEZONE 10
+#define OBS_AAT_TIMEZONE 600
 #define OBS_AAT_TZNAME "AEST"
 
 
@@ -1195,6 +1246,7 @@ struct _OBJpara{
   gdouble dec;
   gdouble equinox;
 
+  gint hash;
   gint i_nst;
 
   /*
@@ -1243,6 +1295,13 @@ struct _OBJpara{
   gdouble y;
 
   gint type;
+
+  gchar *trdb_str;
+  gchar *trdb_mode[MAX_TRDB_BAND];
+  gchar *trdb_band[MAX_TRDB_BAND];
+  gdouble trdb_exp[MAX_TRDB_BAND];
+  gint trdb_shot[MAX_TRDB_BAND];
+  gint trdb_band_max;
 };
 
 typedef struct _STDpara STDpara;
@@ -1412,6 +1471,7 @@ struct _typHOE{
   GtkWidget *scrwin;
 
   GtkWidget *pbar;
+  GtkWidget *pbar2;
   GtkWidget *plabel;
 
   GtkPrintContext *context;
@@ -1435,6 +1495,8 @@ struct _typHOE{
   gchar *filename_pdf;
   gchar *filename_txt;
   gchar *filename_fcdb;
+  gchar *filename_trdb;
+  gchar *filename_trdb_save;
   gchar *filename_nst;
   gchar *filename_jpl;
   gchar *filename_tscconv;
@@ -1716,6 +1778,65 @@ struct _typHOE{
   gboolean fcdb_eso_other[NUM_ESO_OTHER];
   gboolean fcdb_eso_sam[NUM_ESO_SAM];
 
+  GtkWidget *trdb_tree;
+  GtkWidget *trdb_label;
+  gint trdb_i;
+  gint trdb_tree_focus;
+  gchar *trdb_label_text;
+  GtkWidget *trdb_search_label;
+  gchar *trdb_search_text;
+  guint trdb_search_i;
+  guint trdb_search_iobj[MAX_OBJECT];
+  guint trdb_search_imax;
+  gint trdb_used;
+  gint trdb_arcmin;
+  gint trdb_arcmin_used;
+
+  gint trdb_smoka_inst;
+  gint trdb_smoka_inst_used;
+  gchar *trdb_smoka_date;
+  gchar *trdb_smoka_date_used;
+  gboolean trdb_smoka_shot;
+  gboolean trdb_smoka_shot_used;
+  gboolean trdb_smoka_imag;
+  gboolean trdb_smoka_imag_used;
+  gboolean trdb_smoka_spec;
+  gboolean trdb_smoka_spec_used;
+  gboolean trdb_smoka_ipol;
+  gboolean trdb_smoka_ipol_used;
+
+  gint trdb_hst_mode;
+  gint trdb_hst_mode_used;
+  gchar *trdb_hst_date;
+  gchar *trdb_hst_date_used;
+  gint trdb_hst_image;
+  gint trdb_hst_image_used;
+  gint trdb_hst_spec;
+  gint trdb_hst_spec_used;
+  gint trdb_hst_other;
+  gint trdb_hst_other_used;
+
+  gint trdb_eso_mode;
+  gint trdb_eso_mode_used;
+  gchar *trdb_eso_stdate;
+  gchar *trdb_eso_stdate_used;
+  gchar *trdb_eso_eddate;
+  gchar *trdb_eso_eddate_used;
+  gint trdb_eso_image;
+  gint trdb_eso_image_used;
+  gint trdb_eso_spec;
+  gint trdb_eso_spec_used;
+  gint trdb_eso_vlti;
+  gint trdb_eso_vlti_used;
+  gint trdb_eso_pola;
+  gint trdb_eso_pola_used;
+  gint trdb_eso_coro;
+  gint trdb_eso_coro_used;
+  gint trdb_eso_other;
+  gint trdb_eso_other_used;
+  gint trdb_eso_sam;
+  gint trdb_eso_sam_used;
+
   gint addobj_type;
   gchar *addobj_name;
   gchar *addobj_voname;
@@ -1958,6 +2079,7 @@ GtkWidget* gtkut_toggle_button_new_from_pixbuf();
 void get_current_obs_time();
 void add_day();
 void do_save_FCDB_List();
+void do_save_TRDB_CSV();
 void do_save_pdf();
 void do_save_fc_pdf();
 void do_quit();
@@ -1999,14 +2121,18 @@ void pdf_fc ();
 void set_fc_mode();
 void fc_item2 ();
 void fcdb_item2();
+void trdb_run();
 gboolean draw_fc_cairo();
 void fcdb_tree_update_azel_item();
+void trdb_tree_update_azel_item();
 void addobj_dl();
 gdouble current_yrs();
 gboolean progress_timeout();
+void make_trdb_label();
 
 //fc_output.c
 void Export_FCDB_List();
+void Export_TRDB_List();
 
 //http-client.c
 int get_allsky();
@@ -2021,6 +2147,7 @@ int month_from_string_short();
 int get_gmtoff_from_sys ();
 
 //skymon.c
+void skymon_set_time_current();
 void skymon_debug_print(const gchar *format, ...);
 gboolean draw_skymon();
 void create_skymon_dialog();
@@ -2055,6 +2182,7 @@ double ln_dms_to_deg();
 void ln_equ_to_hequ();
 
 //votable.c
+void make_band_str();
 void fcdb_vo_parse();
 void fcdb_ned_vo_parse();
 void fcdb_gsc_vo_parse();
@@ -2068,8 +2196,11 @@ void fcdb_irc_vo_parse();
 void fcdb_fis_vo_parse();
 void fcdb_lamost_vo_parse();
 void fcdb_smoka_txt_parse();
+void trdb_smoka_txt_parse();
 void fcdb_hst_vo_parse();
+void trdb_hst_vo_parse();
 void fcdb_eso_vo_parse();
+void trdb_eso_vo_parse();
 void addobj_vo_parse();
 void stddb_vo_parse();
 

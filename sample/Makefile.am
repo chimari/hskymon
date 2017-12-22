@@ -8,4 +8,6 @@ EXTRA_DIST = \
 	messier.lst\
 	sample.list\
 	samplePS.list\
-	standard.list
+	standard.list\
+	PN_Acker_J2000.lst
+

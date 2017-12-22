@@ -59,9 +59,12 @@ static void fcdb_item();
 void fcdb_dl();
 #ifndef USE_WIN32
 void fcdb_signal();
+void trdb_signal();
 static void cancel_fcdb();
+static void cancel_trdb();
 #endif
 void fcdb_make_tree();
+void trdb_make_tree();
 void fcdb_clear_tree();
 
 static void fcdb_toggle ();
@@ -73,6 +76,8 @@ gchar *rgb_source_txt();
 
 gboolean flag_getDSS=FALSE, flag_getFCDB=FALSE;
 gboolean flagHSCDialog=FALSE;
+gboolean flag_trdb_kill=FALSE;
+gboolean  flag_trdb_finish=FALSE;
 GdkPixbuf *pixbuf_fc=NULL, *pixbuf2_fc=NULL;
 
 
@@ -473,7 +478,12 @@ gboolean progress_timeout( gpointer data ){
 
   if(GTK_WIDGET_REALIZED(hg->pbar)){
 
-    sz=get_file_size(hg->dss_file);
+    if(flag_getDSS){
+      sz=get_file_size(hg->dss_file);
+    }
+    else{
+      sz=get_file_size(hg->fcdb_file);
+    }
     gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
 
     if(sz>1024){
@@ -1774,6 +1784,18 @@ void fcdb_signal(int sig){
     int child_ret;
     child_pid=waitpid(fcdb_pid, &child_ret,WNOHANG);
   } while((child_pid>0)||(child_pid!=-1));
+}
+
+void trdb_signal(int sig){
+  pid_t child_pid=0;
+
+  flag_trdb_finish=TRUE;
+
+  do{
+    int child_ret;
+    child_pid=waitpid(fcdb_pid, &child_ret,WNOHANG);
+  } while((child_pid>0)||(child_pid!=-1));
+  
 }
 #endif
 
@@ -3476,7 +3498,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	      if(i_tag==i_tag_max){
 		ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
 				  &zonedate, 
-				  hg->obs_timezone);
+				  hg->obs_timezone/60);
 		tmp=g_strdup_printf("%d/%d %d:%02d",
 				    zonedate.months,
 				    zonedate.days,
@@ -3501,7 +3523,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	      if(i_tag==i_tag_max){
 		ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
 				  &zonedate, 
-				  hg->obs_timezone);
+				  hg->obs_timezone/60);
 		tmp=g_strdup_printf("%d/%d %d:%02d",
 				    zonedate.months,
 				    zonedate.days,
@@ -3533,7 +3555,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	    if(i_tag==i_tag_max){
 	      ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
 				&zonedate, 
-				hg->obs_timezone);
+				hg->obs_timezone/60);
 	      tmp=g_strdup_printf("%d/%d %d:%02d",
 				  zonedate.months,
 				  zonedate.days,
@@ -3558,7 +3580,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 	    if(i_tag==i_tag_max){
 	      ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
 				&zonedate, 
-				hg->obs_timezone);
+				hg->obs_timezone/60);
 	      tmp=g_strdup_printf("%d/%d %d:%02d",
 				  zonedate.months,
 				  zonedate.days,
@@ -4799,6 +4821,29 @@ static void cancel_fcdb(GtkWidget *w, gpointer gdata)
     fcdb_pid=0;
   }
 }
+
+static void cancel_trdb(GtkWidget *w, gpointer gdata)
+{
+  typHOE *hg;
+  pid_t child_pid=0;
+  hg=(typHOE *)gdata;
+
+  flag_trdb_kill=TRUE;
+
+  if(fcdb_pid){
+    kill(fcdb_pid, SIGKILL);
+    gtk_main_quit();
+
+    do{
+      int child_ret;
+      child_pid=waitpid(fcdb_pid, &child_ret,WNOHANG);
+    } while((child_pid>0)||(child_pid!=-1));
+    fcdb_pid=0;
+  }
+  else{
+    gtk_main_quit();
+  }
+}
 #endif
 
 void fcdb_dl(typHOE *hg)
@@ -4832,6 +4877,12 @@ void fcdb_dl(typHOE *hg)
   case FCDB_TYPE_WWWDB_SMOKA:
   case FCDB_TYPE_WWWDB_HST:
   case FCDB_TYPE_WWWDB_ESO:
+  case TRDB_TYPE_WWWDB_SMOKA:
+  case TRDB_TYPE_WWWDB_HST:
+  case TRDB_TYPE_WWWDB_ESO:
+  case TRDB_TYPE_FCDB_SMOKA:
+  case TRDB_TYPE_FCDB_HST:
+  case TRDB_TYPE_FCDB_ESO:
     hg->fcdb_post=TRUE;
     break;
 
@@ -4891,16 +4942,22 @@ void fcdb_dl(typHOE *hg)
 
   case FCDB_TYPE_SMOKA:
   case FCDB_TYPE_WWWDB_SMOKA:
+  case TRDB_TYPE_WWWDB_SMOKA:
+  case TRDB_TYPE_FCDB_SMOKA:
     label=gtk_label_new("Searching objects in SMOKA ...");
     break;
 
   case FCDB_TYPE_HST:
   case FCDB_TYPE_WWWDB_HST:
+  case TRDB_TYPE_WWWDB_HST:
+  case TRDB_TYPE_FCDB_HST:
     label=gtk_label_new("Searching objects in HST archive ...");
     break;
 
   case FCDB_TYPE_ESO:
   case FCDB_TYPE_WWWDB_ESO:
+  case TRDB_TYPE_WWWDB_ESO:
+  case TRDB_TYPE_FCDB_ESO:
     label=gtk_label_new("Searching objects in ESO archive ...");
     break;
   }
@@ -4970,16 +5027,22 @@ void fcdb_dl(typHOE *hg)
 
   case FCDB_TYPE_SMOKA:
   case FCDB_TYPE_WWWDB_SMOKA:
+  case TRDB_TYPE_WWWDB_SMOKA:
+  case TRDB_TYPE_FCDB_SMOKA:
     hg->plabel=gtk_label_new("Searching objects in SMOKA ...");
     break;
 
   case FCDB_TYPE_HST:
   case FCDB_TYPE_WWWDB_HST:
+  case TRDB_TYPE_WWWDB_HST:
+  case TRDB_TYPE_FCDB_HST:
     hg->plabel=gtk_label_new("Searching objects in HST archive ...");
     break;
 
   case FCDB_TYPE_ESO:
   case FCDB_TYPE_WWWDB_ESO:
+  case TRDB_TYPE_WWWDB_ESO:
+  case TRDB_TYPE_FCDB_ESO:
     hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
     break;
   }
@@ -5150,16 +5213,25 @@ void addobj_dl(typHOE *hg)
 
   case FCDB_TYPE_SMOKA:
   case FCDB_TYPE_WWWDB_SMOKA:
+  case TRDB_TYPE_SMOKA:
+  case TRDB_TYPE_WWWDB_SMOKA:
+  case TRDB_TYPE_FCDB_SMOKA:
     hg->plabel=gtk_label_new("Searching objects in SMOKA ...");
     break;
 
   case FCDB_TYPE_HST:
   case FCDB_TYPE_WWWDB_HST:
+  case TRDB_TYPE_HST:
+  case TRDB_TYPE_WWWDB_HST:
+  case TRDB_TYPE_FCDB_HST:
     hg->plabel=gtk_label_new("Searching objects in HST archive ...");
     break;
 
   case FCDB_TYPE_ESO:
   case FCDB_TYPE_WWWDB_ESO:
+  case TRDB_TYPE_ESO:
+  case TRDB_TYPE_WWWDB_ESO:
+  case TRDB_TYPE_FCDB_ESO:
     hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
     break;
   }
@@ -5249,6 +5321,296 @@ void addobj_dl(typHOE *hg)
   
 }
 
+gboolean check_trdb (gpointer gdata){
+  if(flag_trdb_finish){
+    flag_trdb_finish=FALSE;
+      gtk_main_quit();
+  }
+  return(TRUE);
+}
+
+void trdb_run (typHOE *hg)
+{
+  struct lnh_equ_posn hobject;
+  struct ln_equ_posn object;
+  struct ln_equ_posn object_prec;
+  struct lnh_equ_posn hobject_prec;
+  gint i_list;
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+  GtkWidget *dialog, *vbox, *label, *button, *sep, *time_label, *stat_label;
+#ifndef USE_WIN32
+  static struct sigaction act;
+#endif
+  gint fcdb_tree_check_timer;
+  gint timer=-1;
+  gchar tmp[BUFFSIZE];
+  GdkColor col_red={0,0xFFFF,0,0};
+  GdkColor col_black={0,0,0,0};
+  time_t start_time;
+  double elapsed_sec, remaining_sec;
+  
+  if(hg->i_max<=0) return;
+  if(flag_getFCDB) return;
+  flag_getFCDB=TRUE;
+
+  dialog = gtk_dialog_new();
+  
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
+
+  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
+  gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
+  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+  
+  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
+
+  switch(hg->fcdb_type){
+  case TRDB_TYPE_SMOKA:
+    hg->fcdb_post=TRUE;
+    label=gtk_label_new("Searching objects in SMOKA ...");
+    break;
+    
+  case TRDB_TYPE_HST:
+    hg->fcdb_post=TRUE;
+    label=gtk_label_new("Searching objects in HST archive ...");
+    break;
+    
+  case TRDB_TYPE_ESO:
+    hg->fcdb_post=TRUE;
+    label=gtk_label_new("Searching objects in ESO archive ...");
+    break;
+  }
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
+  gtk_widget_show(label);
+
+  hg->pbar=gtk_progress_bar_new();
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar,TRUE,TRUE,0);
+  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
+  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
+				    GTK_PROGRESS_RIGHT_TO_LEFT);
+  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
+  gtk_widget_show(hg->pbar);
+
+  hg->pbar2=gtk_progress_bar_new();
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar2,TRUE,TRUE,0);
+  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar2), 
+				    GTK_PROGRESS_LEFT_TO_RIGHT);
+  sprintf(tmp,"Searching [ 1 / %d ] Objects", hg->i_max);
+  gtk_progress_bar_set_text(GTK_PROGRESS_BAR(hg->pbar2),tmp);
+  gtk_widget_show(hg->pbar2);
+
+  sprintf(tmp,"Estimated time left : ---");
+  time_label=gtk_label_new(tmp);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     time_label,TRUE,TRUE,5);
+
+  sep=gtk_hseparator_new();
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     sep,FALSE,TRUE,5);
+
+  sprintf(tmp,"%s : hit ---", hg->obj[0].name);
+  stat_label=gtk_label_new(tmp);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     stat_label,TRUE,TRUE,5);
+
+  switch(hg->fcdb_type){
+  case TRDB_TYPE_SMOKA:
+    hg->plabel=gtk_label_new("Searching objects in SMOKA ...");
+    break;
+    
+  case TRDB_TYPE_HST:
+    hg->plabel=gtk_label_new("Searching objects in HST archive ...");
+    break;
+    
+  case TRDB_TYPE_ESO:
+    hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
+    break;
+  }
+  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     hg->plabel,FALSE,FALSE,0);
+
+#ifndef USE_WIN32
+  button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed",
+		    cancel_trdb, 
+		    (gpointer)hg);
+#endif
+
+  gtk_widget_show_all(dialog);
+
+  start_time=time(NULL);
+
+  fcdb_tree_check_timer=g_timeout_add(1000, 
+				      (GSourceFunc)check_trdb,
+				      (gpointer)hg);
+
+  for(i_list=0;i_list<hg->i_max;i_list++){
+    hg->fcdb_i=i_list;
+
+    object.ra=ra_to_deg(hg->obj[hg->fcdb_i].ra);
+    object.dec=dec_to_deg(hg->obj[hg->fcdb_i].dec);
+
+    ln_get_equ_prec2 (&object, 
+		      get_julian_day_of_equinox(hg->obj[hg->fcdb_i].equinox),
+		      JD2000, &object_prec);
+  
+    switch(hg->fcdb_type){
+    case TRDB_TYPE_SMOKA:
+      ln_equ_to_hequ (&object_prec, &hobject_prec);
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_SMOKA);
+      
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      hg->fcdb_path=g_strdup(FCDB_SMOKA_PATH);
+      
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_TXT,NULL);
+
+      hg->fcdb_d_ra0=object_prec.ra;
+      hg->fcdb_d_dec0=object_prec.dec;
+
+      break;
+
+    case TRDB_TYPE_HST:
+      ln_equ_to_hequ (&object_prec, &hobject_prec);
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_HST);
+      
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      hg->fcdb_path=g_strdup(FCDB_HST_PATH);
+      
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_XML,NULL);
+      
+      hg->fcdb_d_ra0=object_prec.ra;
+      hg->fcdb_d_dec0=object_prec.dec;
+      
+      break;
+      
+    case TRDB_TYPE_ESO:
+      ln_equ_to_hequ (&object_prec, &hobject_prec);
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_ESO);
+      
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      hg->fcdb_path=g_strdup(FCDB_ESO_PATH);
+      
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_XML,NULL);
+      
+      hg->fcdb_d_ra0=object_prec.ra;
+      hg->fcdb_d_dec0=object_prec.dec;
+      break;
+
+    default:
+      break;
+    }
+
+#ifndef USE_WIN32
+    act.sa_handler=trdb_signal;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags=0;
+    if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
+      fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
+#endif
+    
+    timer=g_timeout_add(100, 
+			(GSourceFunc)progress_timeout,
+			(gpointer)hg);
+    
+    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(hg->pbar),
+			      "Downloading ...");
+    
+    unlink(hg->fcdb_file);
+    
+    get_fcdb(hg);
+    gtk_main();
+    gtk_timeout_remove(timer);
+
+    if(flag_trdb_kill){
+      flag_trdb_kill=FALSE;
+      flag_trdb_finish=FALSE;
+      break;
+    }
+    else{
+      switch(hg->fcdb_type){
+      case TRDB_TYPE_SMOKA:
+	trdb_smoka_txt_parse(hg);
+	break;
+
+      case TRDB_TYPE_HST:
+	trdb_hst_vo_parse(hg);
+	break;
+
+      case TRDB_TYPE_ESO:
+	trdb_eso_vo_parse(hg);
+	break;
+      }
+
+      elapsed_sec=difftime(time(NULL),start_time);
+      remaining_sec=elapsed_sec/(double)(i_list+1)
+	*(double)(hg->i_max-(i_list+1));
+      
+      gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(hg->pbar2),
+				    (gdouble)(i_list+1)/(gdouble)(hg->i_max));
+      sprintf(tmp,"Finished [ %d / %d ] Objects",i_list+1, hg->i_max);
+      gtk_progress_bar_set_text(GTK_PROGRESS_BAR(hg->pbar2),tmp);
+
+      if(hg->obj[i_list].trdb_band_max>0){
+	gtk_widget_modify_fg(stat_label,GTK_STATE_NORMAL,&col_red);
+      }
+      else{
+	gtk_widget_modify_fg(stat_label,GTK_STATE_NORMAL,&col_black);
+      }
+      sprintf(tmp,"%s : hit %d-bands", hg->obj[i_list].name, 
+	      hg->obj[i_list].trdb_band_max);
+      gtk_label_set_text(GTK_LABEL(stat_label),tmp);
+
+      if(remaining_sec>3600){
+	sprintf(tmp,"Estimated time left : %dhrs and %dmin", 
+		(int)(remaining_sec)/3600,
+		((int)remaining_sec%3600)/60);
+      }
+      else if(remaining_sec>60){
+	sprintf(tmp,"Estimated time left : %dmin and %dsec", 
+		(int)(remaining_sec)/60,(int)remaining_sec%60);
+      }
+      else{
+	sprintf(tmp,"Estimated time left : %.0lfsec", 
+		remaining_sec);
+      }
+      gtk_label_set_text(GTK_LABEL(time_label),tmp);
+      
+      flag_trdb_finish=FALSE;
+    }
+  }
+
+  gtk_timeout_remove(fcdb_tree_check_timer);
+  gtk_widget_destroy(dialog);
+
+  make_trdb_label(hg);
+  if(flagTree){
+    trdb_make_tree(hg);
+
+    model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
+    gtk_list_store_clear (GTK_LIST_STORE(model));
+    hg->fcdb_i_max=0;
+  }
+
+  flag_getFCDB=FALSE;
+}
 
 void fcdb_item2 (typHOE *hg)
 {
@@ -6055,6 +6417,56 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 }
 
 
+void trdb_tree_update_azel_item(typHOE *hg, 
+				GtkTreeModel *model, 
+				GtkTreeIter iter, 
+				gint i_list)
+{
+  gchar tmp[12];
+
+  // Num/Name
+  gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+		      COLUMN_TRDB_NUMBER,
+		      i_list+1,
+		      -1);
+  gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+		      COLUMN_TRDB_NAME,
+		      hg->obj[i_list].name,
+		      -1);
+
+  // OPE Num
+  if(hg->obj[i_list].ope<0){
+    switch(hg->obj[i_list].ope){
+    case ADDTYPE_STD:
+      sprintf(tmp,"Std");
+      break;
+
+    case ADDTYPE_TTGS:
+      sprintf(tmp,"TTGS");
+      break;
+
+    default:
+      sprintf(tmp,"add");
+      break;
+    }
+  }
+  else if(hg->obj[i_list].ope==MAX_ROPE-1){
+    sprintf(tmp," p-%3d",hg->obj[i_list].ope_i+1);
+  }
+  else{
+    sprintf(tmp,"%2d-%3d",hg->obj[i_list].ope+1,hg->obj[i_list].ope_i+1);
+  }
+  tmp[strlen(tmp)] = '\0';
+  gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+   		      COLUMN_TRDB_OPENUM, tmp, -1);
+
+  // Data
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_TRDB_DATA, 
+		     hg->obj[i_list].trdb_str, -1);
+}
+
+
 void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
   gint i;
   typHOE *hg;
@@ -6127,7 +6539,7 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
     break;
   }
   if(hg->fcdb_label_text) g_free(hg->fcdb_label_text);
-  if(hg->fcdb_i_all>=500){
+  if(hg->fcdb_i_all>=MAX_FCDB){
     switch(hg->fcdb_type){
     case FCDB_TYPE_SMOKA:
     case FCDB_TYPE_HST:
@@ -6177,6 +6589,108 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),2);
 }
 
+void make_trdb_label(typHOE *hg){
+  if(hg->trdb_label_text) g_free(hg->trdb_label_text);
+
+  switch(hg->fcdb_type){
+  case TRDB_TYPE_SMOKA:    
+    hg->trdb_label_text
+      =g_strdup_printf("SMOKA List Query (%s)", 
+		       smoka_subaru[hg->trdb_smoka_inst].name);
+    break;
+
+  case TRDB_TYPE_HST:
+    switch(hg->trdb_hst_mode){
+    case TRDB_HST_MODE_IMAGE:
+      hg->trdb_label_text
+	=g_strdup_printf("HST archive List Query (Imaging : %s)", 
+			 hst_image[hg->trdb_hst_image].name);
+      break;
+
+    case TRDB_HST_MODE_SPEC:
+      hg->trdb_label_text
+	=g_strdup_printf("HST archive List Query (Spectroscopy : %s)", 
+			 hst_spec[hg->trdb_hst_spec].name);
+      break;
+    case TRDB_HST_MODE_OTHER:
+      hg->trdb_label_text
+	=g_strdup_printf("HST archive List Query (Other : %s)", 
+			 hst_other[hg->trdb_hst_other].name);
+      break;
+    }
+    break;
+
+  case TRDB_TYPE_ESO:
+    switch(hg->trdb_eso_mode){
+    case TRDB_ESO_MODE_IMAGE:
+      hg->trdb_label_text
+	=g_strdup_printf("ESO archive List Query (Imaging : %s)", 
+			 eso_image[hg->trdb_eso_image].name);
+      break;
+    case TRDB_ESO_MODE_SPEC:
+      hg->trdb_label_text
+	=g_strdup_printf("ESO archive List Query (Spectroscopy : %s)", 
+			 eso_spec[hg->trdb_eso_spec].name);
+      break;
+    case TRDB_ESO_MODE_VLTI:
+      hg->trdb_label_text
+	=g_strdup_printf("ESO archive List Query (Interferometry : %s)", 
+			 eso_vlti[hg->trdb_eso_vlti].name);
+      break;
+    case TRDB_ESO_MODE_POLA:
+      hg->trdb_label_text
+	=g_strdup_printf("ESO archive List Query (Polarimetry : %s)", 
+			 eso_pola[hg->trdb_eso_pola].name);
+      break;
+    case TRDB_ESO_MODE_CORO:
+      hg->trdb_label_text
+	=g_strdup_printf("ESO archive List Query (Coronagraphy : %s)", 
+			 eso_coro[hg->trdb_eso_coro].name);
+      break;
+    case TRDB_ESO_MODE_OTHER:
+      hg->trdb_label_text
+	=g_strdup_printf("ESO archive List Query (Other : %s)", 
+			 eso_other[hg->trdb_eso_other].name);
+      break;
+    case TRDB_ESO_MODE_SAM:
+      hg->trdb_label_text
+	=g_strdup_printf("ESO archive List Query (Sparse Aperture Mask : %s)", 
+			 eso_sam[hg->trdb_eso_sam].name);
+      break;
+    }
+    break;
+
+  default:
+    hg->trdb_label_text
+      =g_strdup("hskymon List Query"); 
+    break;
+  }
+}
+
+void trdb_make_tree(typHOE *hg){
+  gint i;
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+  GdkColor col_red={0,0xFFFF,0,0};
+  GdkColor col_black={0,0,0,0};
+
+
+  model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+
+  gtk_list_store_clear (GTK_LIST_STORE(model));
+  
+  for (i = 0; i < hg->i_max; i++){
+    gtk_list_store_append (GTK_LIST_STORE(model), &iter);
+    trdb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
+ } 
+
+  make_trdb_label(hg);
+  gtk_label_set_text(GTK_LABEL(hg->trdb_label), hg->trdb_label_text);
+
+  gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
+}
+
+
 void fcdb_clear_tree(typHOE *hg){
   GtkTreeModel *model;
   
@@ -6202,7 +6716,7 @@ gdouble current_yrs(typHOE *hg){
   zonedate.hours=hg->skymon_hour;
   zonedate.minutes=hg->skymon_min;
   zonedate.seconds=0;
-  zonedate.gmtoff=(long)hg->obs_timezone*3600;
+  zonedate.gmtoff=(long)hg->obs_timezone*60;
   JD = ln_get_julian_local_date(&zonedate);
   return((JD-JD2000)/365.25);
 }

@@ -2284,7 +2284,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
   zonedate.hours=(gint)ihst0;
   zonedate.minutes=(gint)((ihst0-(gint)ihst0)*60.);
   zonedate.seconds=0.0;
-  zonedate.gmtoff=(long)hg->obs_timezone*3600;
+  zonedate.gmtoff=(long)hg->obs_timezone*60;
 
   ln_zonedate_to_date(&zonedate, &date);
 
@@ -2304,7 +2304,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 
     ln_get_lunar_rst (JD, &observer, &orst);
     ln_get_date (orst.transit, &odate);
-    ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*60);
     ln_get_lunar_equ_coords (orst.transit, &oequ_geoc);
     calc_moon_topocen(hg, orst.transit, &oequ_geoc, &oequ);
 
@@ -2428,7 +2428,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 			JD, &oequ_prec);
       ln_get_object_rst (JD, &observer, &oequ_prec, &orst);
       ln_get_date (orst.transit, &odate);
-      ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*3600);
+      ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*60);
 
       a0=oequ_prec.ra*24./360.; //[hour]
       d0rad=oequ_prec.dec*M_PI/180.;
@@ -3380,7 +3380,7 @@ void calcpa2_main(typHOE* hg){
   observer.lng = hg->obs_longitude;
 
   ln_get_date_from_sys(&date);
-  ln_date_to_zonedate(&date,&zonedate,(long)hg->obs_timezone*3600);
+  ln_date_to_zonedate(&date,&zonedate,(long)hg->obs_timezone*60);
   JD = ln_get_julian_local_date(&zonedate);
 
   flst = ln_get_mean_sidereal_time(JD) + hg->obs_longitude *24./360.;
@@ -3892,7 +3892,7 @@ void calcpa2_skymon(typHOE* hg){
   zonedate.hours=hg->skymon_hour;
   zonedate.minutes=hg->skymon_min;
   zonedate.seconds=0;
-  zonedate.gmtoff=(long)hg->obs_timezone*3600;
+  zonedate.gmtoff=(long)hg->obs_timezone*60;
 
   JD = ln_get_julian_local_date(&zonedate);
   flst = ln_get_mean_sidereal_time(JD) + hg->obs_longitude *24/360;
@@ -4403,9 +4403,9 @@ void calc_moon(typHOE *hg){
   }
   else {
     ln_get_date (rst.rise, &date);
-    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*60);
     ln_get_date (rst.set, &date);
-    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*60);
     hg->moon.c_circum=FALSE;
 
     hg->moon.c_rise.hours=rise.hours;
@@ -4464,9 +4464,9 @@ void calc_moon(typHOE *hg){
   }
   else {
     ln_get_date (rst.rise, &date);
-    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*60);
     ln_get_date (rst.set, &date);
-    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*60);
     hg->sun.c_circum=FALSE;
 
     hg->sun.c_set.hours=set.hours;
@@ -4526,9 +4526,9 @@ void calc_moon(typHOE *hg){
   }
   else {
     ln_get_date (rst.rise, &date);
-    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*60);
     ln_get_date (rst.set, &date);
-    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*60);
     hg->atw18.c_circum=FALSE;
 
     hg->atw18.c_set.hours=set.hours;
@@ -4547,9 +4547,9 @@ void calc_moon(typHOE *hg){
   }
   else {
     ln_get_date (rst.rise, &date);
-    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*60);
     ln_get_date (rst.set, &date);
-    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*60);
     hg->atw12.c_circum=FALSE;
 
     hg->atw12.c_set.hours=set.hours;
@@ -4568,9 +4568,9 @@ void calc_moon(typHOE *hg){
   }
   else {
     ln_get_date (rst.rise, &date);
-    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*60);
     ln_get_date (rst.set, &date);
-    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*60);
     hg->atw06.c_circum=FALSE;
 
     hg->atw06.c_set.hours=set.hours;
@@ -4611,7 +4611,7 @@ void calc_moon_skymon(typHOE *hg){
   local_date.minutes=hg->skymon_min;
   local_date.seconds=0.;
 
-  local_date.gmtoff=(long)(hg->obs_timezone*3600);
+  local_date.gmtoff=(long)(hg->obs_timezone*60);
   //local_date.gmtoff=(long)(+10);
 
   JD = ln_get_julian_local_date(&local_date);
@@ -4699,9 +4699,9 @@ void calc_moon_skymon(typHOE *hg){
   }
   else {
     ln_get_date (rst.rise, &date);
-    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*60);
     ln_get_date (rst.set, &date);
-    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*60);
     hg->moon.s_circum=FALSE;
 
     hg->moon.s_rise.hours=rise.hours;
@@ -4760,9 +4760,9 @@ void calc_moon_skymon(typHOE *hg){
   }
   else {
     ln_get_date (rst.rise, &date);
-    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*60);
     ln_get_date (rst.set, &date);
-    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*60);
     hg->sun.s_circum=FALSE;
 
     hg->sun.s_rise.hours=rise.hours;
@@ -4821,9 +4821,9 @@ void calc_moon_skymon(typHOE *hg){
   }
   else {
     ln_get_date (rst.rise, &date);
-    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*60);
     ln_get_date (rst.set, &date);
-    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*60);
     hg->atw18.s_circum=FALSE;
     
     hg->atw18.s_rise.hours=rise.hours;
@@ -4841,9 +4841,9 @@ void calc_moon_skymon(typHOE *hg){
   }
   else {
     ln_get_date (rst.rise, &date);
-    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*60);
     ln_get_date (rst.set, &date);
-    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*60);
     hg->atw12.s_circum=FALSE;
 
     hg->atw12.s_rise.hours=rise.hours;
@@ -4861,9 +4861,9 @@ void calc_moon_skymon(typHOE *hg){
   }
   else {
     ln_get_date (rst.rise, &date);
-    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*60);
     ln_get_date (rst.set, &date);
-    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*60);
     hg->atw06.s_circum=FALSE;
 
     hg->atw06.s_rise.hours=rise.hours;
@@ -4914,7 +4914,7 @@ gfloat get_meridian_hour(typHOE *hg){
   zonedate.hours=hour;
   zonedate.minutes=min;
   zonedate.seconds=sec;
-  zonedate.gmtoff=(long)hg->obs_timezone*3600;
+  zonedate.gmtoff=(long)hg->obs_timezone*60;
 
   oequ.ra=ra_to_deg(hg->obj[hg->plot_i].ra);
   oequ.dec=dec_to_deg(hg->obj[hg->plot_i].dec);
@@ -4924,12 +4924,12 @@ gfloat get_meridian_hour(typHOE *hg){
 		    JD, &oequ_prec);
   ln_get_object_rst (JD, &observer, &oequ_prec, &orst);
   ln_get_date (orst.transit, &odate);
-  ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*3600);
+  ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*60);
 
   if(transit.hours < 12){
     ln_get_object_next_rst (JD, &observer, &oequ_prec, &orst);
     ln_get_date (orst.transit, &odate);
-    ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*3600);
+    ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*60);
     transit.hours+=24;
   }
 

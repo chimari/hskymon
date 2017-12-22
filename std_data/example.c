@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
   //char file[50]="esostd.xml";
   reader = Init_VO_Parser(argv[1],&votable);
   int i_list=0, i_list_max;
-  STDpara std[100];
+  STDpara std[2000];
 
   Extract_Att_VO_Table(reader,&votable);
   //printf("Table Attribute=%s\n\n",votable.table->name);

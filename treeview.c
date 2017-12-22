@@ -39,6 +39,7 @@ static void add_item_std();
 static void fc_item ();
 static void stddb_item ();
 static void search_item ();
+static void trdb_search_item ();
 static void fcdb_item ();
 static void adc_item ();
 void stddb_dl();
@@ -48,6 +49,7 @@ void clip_copy();
 
 
 void cc_search_text();
+void trdb_cc_search_text();
 gchar *strip_spc();
 
 #ifdef USE_XMLRPC
@@ -260,6 +262,48 @@ void name_cell_data_func(GtkTreeViewColumn *col ,
 		 NULL);
 #endif
 }
+
+void trdb_name_cell_data_func(GtkTreeViewColumn *col , 
+			      GtkCellRenderer *renderer,
+			      GtkTreeModel *model, 
+			      GtkTreeIter *iter,
+			      gpointer user_data)
+{
+  gint i;
+  typHOE *hg;
+  
+  hg=(typHOE *)user_data;
+
+  gtk_tree_model_get (model, iter, COLUMN_TRDB_NUMBER, &i, -1);
+  i--;
+
+  if((hg->obj[i].ope<0)||(hg->obj[i].ope>=MAX_ROPE)){
+    g_object_set(renderer,
+		 "foreground-gdk", hg->col[MAX_ROPE-1],
+		 NULL);
+  }
+  else{
+    g_object_set(renderer,
+		 "foreground-gdk", hg->col[hg->obj[i].ope],
+		 NULL);
+  }
+
+#ifdef USE_XMLRPC
+  if(hg->obj[i].check_lock)
+    g_object_set(renderer,
+		 "background-gdk", &col_lock,
+		 NULL);
+  else if((hg->obj[i].c_rt<2) && (hg->obj[i].c_rt>0))
+    g_object_set(renderer,
+		 "background-gdk", &col_sub,
+		 NULL);
+  else
+    g_object_set(renderer,
+		 "background-gdk", NULL,
+		 NULL);
+#endif
+}
+
 
 #ifdef USE_XMLRPC
 void lock_cell_data_func(GtkTreeViewColumn *col , 
@@ -1141,6 +1185,28 @@ fcdb_create_items_model (typHOE *hg)
   return GTK_TREE_MODEL (model);
 }
 
+static GtkTreeModel *
+trdb_create_items_model (typHOE *hg)
+{
+  gint i = 0;
+  GtkListStore *model;
+  GtkTreeIter iter;
+
+  /* create list store */
+  model = gtk_list_store_new (NUM_COLUMN_TRDB, 
+			      G_TYPE_INT,     // number
+			      G_TYPE_STRING,  // OPENUM
+			      G_TYPE_STRING,  // name
+			      G_TYPE_STRING);  // Data
+
+  for (i = 0; i < hg->i_max; i++){
+    gtk_list_store_append (model, &iter);
+    trdb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
+  }
+
+  return GTK_TREE_MODEL (model);
+}
+
 
 
 static void add_item (typHOE *hg)
@@ -1465,6 +1531,7 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
   struct lnh_equ_posn hobject_prec;
   struct ln_equ_posn object_prec;
   gint fcdb_type_old;
+  gchar *c=NULL, *cp, *cpp;
 
 
   if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
@@ -1474,6 +1541,36 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
     path = gtk_tree_model_get_path (model, &iter);
     gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
     i--;
+    gtk_tree_path_free (path);
+
+    if(hg->wwwdb_mode==WWWDB_HASH){
+      cpp=hg->obj[i].note;
+      if(NULL != (cp = strstr(cpp, "HashID="))){
+	cp+=strlen("HashID=");
+	c=g_strndup(cp,strcspn(cp," ,"));
+	if(c){
+	  hg->obj[i].hash=atoi(c);
+	  g_free(c);
+	}
+	else{
+	  hg->obj[i].hash=-1;
+	}
+      }
+      else{
+	hg->obj[i].hash=-1;
+      }
+
+      if(hg->obj[i].hash==-1){
+#ifdef GTK_MSG
+	popup_message(POPUP_TIMEOUT,
+		      "Error: The target does not have a HASH ID.",
+		      NULL);
+#else
+	fprintf(stderr," Error: The target does not have a HASH ID.\n");
+#endif
+	return;
+      }
+    }
 
     object.ra=ra_to_deg(hg->obj[i].ra);
     object.dec=dec_to_deg(hg->obj[i].dec);
@@ -1563,6 +1660,9 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
       tmp=g_strdup_printf(CASSIS_URL,
 			  ln_hms_to_deg(&hobject_prec.ra),
 			  ln_dms_to_deg(&hobject_prec.dec));
+      break; 
+    case WWWDB_HASH:
+      tmp=g_strdup_printf(HASH_URL,hg->obj[i].hash);
       break; 
     case WWWDB_SSLOC:
       if((ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra)<0){
@@ -1690,6 +1790,13 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
       str_replace(hg->fcdb_file,
 		  "SRC=\"/",
 		  "SRC=\"http://" FCDB_HOST_SMOKA "/");
+      str_replace(hg->fcdb_file,
+		  "action=\"/",
+		  "action=\"http://" FCDB_HOST_SMOKA "/");
+      str_replace(hg->fcdb_file,
+		  "ACTION=\"/",
+		  "ACTION=\"http://" FCDB_HOST_SMOKA "/");
+
 
 #ifdef USE_WIN32      
       tmp=g_strdup(hg->fcdb_file);
@@ -1732,6 +1839,12 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
       str_replace(hg->fcdb_file,
 		  "SRC=\"/",
 		  "SRC=\"http://" FCDB_HOST_HST "/");
+      str_replace(hg->fcdb_file,
+		  "action=\"/",
+		  "action=\"http://" FCDB_HOST_HST "/");
+      str_replace(hg->fcdb_file,
+		  "ACTION=\"/",
+		  "ACTION=\"http://" FCDB_HOST_HST "/");
 
 #ifdef USE_WIN32      
       tmp=g_strdup(hg->fcdb_file);
@@ -1774,6 +1887,12 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
       str_replace(hg->fcdb_file,
 		  "SRC=\"/",
 		  "SRC=\"http://" FCDB_HOST_ESO "/");
+      str_replace(hg->fcdb_file,
+		  "action=\"/",
+		  "action=\"http://" FCDB_HOST_ESO "/");
+      str_replace(hg->fcdb_file,
+		  "ACTION=\"/",
+		  "ACTION=\"http://" FCDB_HOST_ESO "/");
 
 #ifdef USE_WIN32      
       tmp=g_strdup(hg->fcdb_file);
@@ -1808,9 +1927,7 @@ static wwwdb_item (GtkWidget *widget, gpointer data)
     ext_play(cmdline);
     g_free(cmdline);
 #endif
-    if(tmp) g_free(tmp);
-    
-    gtk_tree_path_free (path);
+    if(tmp) g_free(tmp); 
   }
 }
 
@@ -1861,6 +1978,9 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
 #endif
   typHOE *hg = (typHOE *)data;
   gchar *tgt;
+  gchar *cp, *cpp;
+  gchar *shot_name;
+  gchar *inst_name;
 
   if((hg->fcdb_tree_focus>=0)&&(hg->fcdb_tree_focus<hg->fcdb_i_max)){
     if(hg->fcdb_type==FCDB_TYPE_LAMOST){
@@ -1868,10 +1988,55 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
 			  hg->fcdb[hg->fcdb_tree_focus].ref);
     }
     else if(hg->fcdb_type==FCDB_TYPE_SMOKA){
-      tmp=g_strdup_printf(FCDB_SMOKA_URL,
-			  hg->fcdb[hg->fcdb_tree_focus].fid,
-			  hg->fcdb[hg->fcdb_tree_focus].date,
-			  hg->fcdb_tree_focus);
+      if(strncmp(hg->fcdb[hg->fcdb_tree_focus].fid,
+		 "HSC",strlen("HSC"))==0){
+	if((cp = strstr(hg->fcdb[hg->fcdb_tree_focus].fid, "XX")) != NULL){
+	  // Shot Mode
+	  shot_name=g_strdup(hg->fcdb[hg->fcdb_tree_focus].fid);
+	  strchg(shot_name, "XX", "*");
+	  inst_name=g_strdup("HSC");
+
+	  tmp=g_strdup_printf(FCDB_SMOKA_SHOT_URL,
+			      shot_name,
+			      inst_name);
+	  if(shot_name) g_free(shot_name);
+	  if(inst_name) g_free(inst_name);
+	}
+	else{
+	  // Frame Mode
+	  tmp=g_strdup_printf(FCDB_SMOKA_URL,
+			      hg->fcdb[hg->fcdb_tree_focus].fid,
+			      hg->fcdb[hg->fcdb_tree_focus].date,
+			      hg->fcdb_tree_focus);
+	}
+      }
+      else if(strncmp(hg->fcdb[hg->fcdb_tree_focus].fid,
+		      "SUP",strlen("SUP"))==0){
+	if((cp = strstr(hg->fcdb[hg->fcdb_tree_focus].fid, "X")) != NULL){
+	  // Shot Mode
+	  shot_name=g_strdup(hg->fcdb[hg->fcdb_tree_focus].fid);
+	  strchg(shot_name, "X", "*");
+	  inst_name=g_strdup("SUP");
+	  
+	  tmp=g_strdup_printf(FCDB_SMOKA_SHOT_URL,
+			      shot_name,
+			      inst_name);
+	  if(shot_name) g_free(shot_name);
+	  if(inst_name) g_free(inst_name);
+	}
+	else{
+	  tmp=g_strdup_printf(FCDB_SMOKA_URL,
+			      hg->fcdb[hg->fcdb_tree_focus].fid,
+			      hg->fcdb[hg->fcdb_tree_focus].date,
+			      hg->fcdb_tree_focus);
+	}
+      }
+      else{
+	tmp=g_strdup_printf(FCDB_SMOKA_URL,
+			    hg->fcdb[hg->fcdb_tree_focus].fid,
+			    hg->fcdb[hg->fcdb_tree_focus].date,
+			    hg->fcdb_tree_focus);
+      }
     }
     else if(hg->fcdb_type==FCDB_TYPE_HST){
       tmp=g_strdup_printf(FCDB_HST_URL,
@@ -1920,6 +2085,346 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
 #endif
   }
 }
+
+
+static trdb_dbtab (GtkWidget *widget, gpointer data)
+{
+  GtkTreeIter iter;
+#ifndef USE_WIN32
+  gchar *cmdline;
+#endif
+  typHOE *hg = (typHOE *)data;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->trdb_tree));
+
+  struct ln_equ_posn object;
+  struct lnh_equ_posn hobject_prec;
+  struct ln_equ_posn object_prec;
+  gint fcdb_type_old;
+
+
+  if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
+    gint i, i_list;
+    GtkTreePath *path;
+    
+    path = gtk_tree_model_get_path (model, &iter);
+    gtk_tree_model_get (model, &iter, COLUMN_TRDB_NUMBER, &i, -1);
+    i--;
+
+    object.ra=ra_to_deg(hg->obj[i].ra);
+    object.dec=dec_to_deg(hg->obj[i].dec);
+
+    ln_get_equ_prec2 (&object, 
+		      get_julian_day_of_equinox(hg->obj[i].equinox),
+		      JD2000, &object_prec);
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+
+    switch(hg->trdb_used){
+    case TRDB_TYPE_SMOKA:
+      if((hg->fcdb_type!=FCDB_TYPE_SMOKA)&&(flagTree)){
+	hg->fcdb_type=FCDB_TYPE_SMOKA;
+	rebuild_tree(hg);
+      }
+      hg->fcdb_type=TRDB_TYPE_FCDB_SMOKA;
+
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_SMOKA);
+
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      hg->fcdb_path=g_strdup(FCDB_SMOKA_PATH);
+
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_TXT,NULL);
+
+      hg->fcdb_d_ra0=ln_hms_to_deg(&hobject_prec.ra);
+      hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
+
+      fcdb_dl(hg);
+      fcdb_smoka_txt_parse(hg);
+
+      hg->fcdb_type=FCDB_TYPE_SMOKA;
+      if(flagFC) gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SMOKA");
+      break;
+
+    case TRDB_TYPE_HST:
+      if((hg->fcdb_type!=FCDB_TYPE_HST)&&(flagTree)){
+	hg->fcdb_type=FCDB_TYPE_HST;
+	rebuild_tree(hg);
+      }
+      hg->fcdb_type=TRDB_TYPE_FCDB_HST;
+
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_HST);
+
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      hg->fcdb_path=g_strdup(FCDB_HST_PATH);
+
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_XML,NULL);
+
+      hg->fcdb_d_ra0=ln_hms_to_deg(&hobject_prec.ra);
+      hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
+
+      fcdb_dl(hg);
+      fcdb_hst_vo_parse(hg);
+
+      hg->fcdb_type=FCDB_TYPE_HST;
+      if(flagFC) gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"HST archive");
+      break;
+
+    case TRDB_TYPE_ESO:
+      if((hg->fcdb_type!=FCDB_TYPE_ESO)&&(flagTree)){
+	hg->fcdb_type=FCDB_TYPE_ESO;
+	rebuild_tree(hg);
+      }
+      hg->fcdb_type=TRDB_TYPE_FCDB_ESO;
+
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_ESO);
+
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      hg->fcdb_path=g_strdup(FCDB_ESO_PATH);
+
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_HTML,NULL);
+
+      hg->fcdb_d_ra0=ln_hms_to_deg(&hobject_prec.ra);
+      hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
+
+      fcdb_dl(hg);
+      fcdb_eso_vo_parse(hg);
+
+      hg->fcdb_type=FCDB_TYPE_ESO;
+      if(flagFC) gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"ESO archive");
+      break;
+    }
+
+    gtk_tree_path_free (path);
+
+    if(flagTree) fcdb_make_tree(NULL, hg);
+    if(flagFC) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_button),
+					    TRUE);
+    hg->fcdb_flag=TRUE;
+    if(flagFC)  draw_fc_cairo(hg->fc_dw, hg);
+  }
+}
+
+
+static trdb_simbad (GtkWidget *widget, gpointer data)
+{
+  GtkTreeIter iter;
+  gchar *tmp;
+#ifndef USE_WIN32
+  gchar *cmdline;
+#endif
+  typHOE *hg = (typHOE *)data;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->trdb_tree));
+
+  struct ln_equ_posn object;
+  struct lnh_equ_posn hobject_prec;
+  struct ln_equ_posn object_prec;
+  gint fcdb_type_old;
+
+
+  if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
+    gint i, i_list;
+    GtkTreePath *path;
+    
+    path = gtk_tree_model_get_path (model, &iter);
+    gtk_tree_model_get (model, &iter, COLUMN_TRDB_NUMBER, &i, -1);
+    i--;
+
+    object.ra=ra_to_deg(hg->obj[i].ra);
+    object.dec=dec_to_deg(hg->obj[i].dec);
+
+    ln_get_equ_prec2 (&object, 
+		      get_julian_day_of_equinox(hg->obj[i].equinox),
+		      JD2000, &object_prec);
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+
+    switch(hg->trdb_used){
+    case TRDB_TYPE_SMOKA:
+      fcdb_type_old=hg->fcdb_type;
+      hg->fcdb_type=TRDB_TYPE_WWWDB_SMOKA;
+
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_SMOKA);
+
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      hg->fcdb_path=g_strdup(FCDB_SMOKA_PATH);
+
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_HTML,NULL);
+
+      hg->fcdb_d_ra0=ln_hms_to_deg(&hobject_prec.ra);
+      hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
+
+      fcdb_dl(hg);
+      hg->fcdb_type=fcdb_type_old;
+      str_replace(hg->fcdb_file,
+		  "href=\"/",
+		  "href=\"http://" FCDB_HOST_SMOKA "/");
+      str_replace(hg->fcdb_file,
+		  "HREF=\"/",
+		  "HREF=\"http://" FCDB_HOST_SMOKA "/");
+      str_replace(hg->fcdb_file,
+		  "src=\"/",
+		  "src=\"http://" FCDB_HOST_SMOKA "/");
+      str_replace(hg->fcdb_file,
+		  "SRC=\"/",
+		  "SRC=\"http://" FCDB_HOST_SMOKA "/");
+      str_replace(hg->fcdb_file,
+		  "action=\"/",
+		  "action=\"http://" FCDB_HOST_SMOKA "/");
+      str_replace(hg->fcdb_file,
+		  "ACTION=\"/",
+		  "ACTION=\"http://" FCDB_HOST_SMOKA "/");
+
+
+#ifdef USE_WIN32      
+      tmp=g_strdup(hg->fcdb_file);
+#elif defined(USE_OSX)
+      tmp=g_strconcat("open ", hg->fcdb_file, NULL);
+#else
+      tmp=g_strconcat("\"",hg->fcdb_file,"\"",NULL);
+#endif
+      break;
+
+    case TRDB_TYPE_HST:
+      fcdb_type_old=hg->fcdb_type;
+      hg->fcdb_type=TRDB_TYPE_WWWDB_HST;
+
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_HST);
+
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      hg->fcdb_path=g_strdup(FCDB_HST_PATH);
+
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_HTML,NULL);
+
+      hg->fcdb_d_ra0=ln_hms_to_deg(&hobject_prec.ra);
+      hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
+
+      fcdb_dl(hg);
+      hg->fcdb_type=fcdb_type_old;
+      str_replace(hg->fcdb_file,
+		  "href=\"/",
+		  "href=\"http://" FCDB_HOST_HST "/");
+      str_replace(hg->fcdb_file,
+		  "HREF=\"/",
+		  "HREF=\"http://" FCDB_HOST_HST "/");
+      str_replace(hg->fcdb_file,
+		  "src=\"/",
+		  "src=\"http://" FCDB_HOST_HST "/");
+      str_replace(hg->fcdb_file,
+		  "SRC=\"/",
+		  "SRC=\"http://" FCDB_HOST_HST "/");
+      str_replace(hg->fcdb_file,
+		  "action=\"/",
+		  "action=\"http://" FCDB_HOST_HST "/");
+      str_replace(hg->fcdb_file,
+		  "ACTION=\"/",
+		  "ACTION=\"http://" FCDB_HOST_HST "/");
+
+#ifdef USE_WIN32      
+      tmp=g_strdup(hg->fcdb_file);
+#elif defined(USE_OSX)
+      tmp=g_strconcat("open ", hg->fcdb_file, NULL);
+#else
+      tmp=g_strconcat("\"",hg->fcdb_file,"\"",NULL);
+#endif
+      break;
+
+    case TRDB_TYPE_ESO:
+      fcdb_type_old=hg->fcdb_type;
+      hg->fcdb_type=FCDB_TYPE_WWWDB_ESO;
+
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_ESO);
+
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      hg->fcdb_path=g_strdup(FCDB_ESO_PATH);
+
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_HTML,NULL);
+
+      hg->fcdb_d_ra0=ln_hms_to_deg(&hobject_prec.ra);
+      hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
+
+      fcdb_dl(hg);
+      hg->fcdb_type=fcdb_type_old;
+      str_replace(hg->fcdb_file,
+		  "href=\"/",
+		  "href=\"http://" FCDB_HOST_ESO "/");
+      str_replace(hg->fcdb_file,
+		  "HREF=\"/",
+		  "HREF=\"http://" FCDB_HOST_ESO "/");
+      str_replace(hg->fcdb_file,
+		  "src=\"/",
+		  "src=\"http://" FCDB_HOST_ESO "/");
+      str_replace(hg->fcdb_file,
+		  "SRC=\"/",
+		  "SRC=\"http://" FCDB_HOST_ESO "/");
+      str_replace(hg->fcdb_file,
+		  "action=\"/",
+		  "action=\"http://" FCDB_HOST_ESO "/");
+      str_replace(hg->fcdb_file,
+		  "ACTION=\"/",
+		  "ACTION=\"http://" FCDB_HOST_ESO "/");
+
+#ifdef USE_WIN32      
+      tmp=g_strdup(hg->fcdb_file);
+#elif defined(USE_OSX)
+      tmp=g_strconcat("open ", hg->fcdb_file, NULL);
+#else
+      tmp=g_strconcat("\"",hg->fcdb_file,"\"",NULL);
+#endif
+      break;
+    }
+
+#ifndef USE_WIN32
+    if((chmod(hg->fcdb_file,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
+    g_print("Cannot Chmod Temporary File %s!  Please check!!!\n",hg->fcdb_file);
+  }
+#endif
+
+#ifdef USE_WIN32
+    ShellExecute(NULL, 
+		 "open", 
+		 tmp,
+		 NULL, 
+		 NULL, 
+		 SW_SHOWNORMAL);
+#elif defined(USE_OSX)
+    if(system(tmp)==0){
+      fprintf(stderr, "Error: Could not open the default www browser.");
+    }
+#else
+    cmdline=g_strconcat(hg->www_com," ",tmp,NULL);
+    
+    ext_play(cmdline);
+    g_free(cmdline);
+#endif
+    if(tmp) g_free(tmp);
+    
+    gtk_tree_path_free (path);
+  }
+}
+
 
 void copy_stacstd(typHOE *hg, const stacSTDpara *stacstd, 
 		  gdouble d_ra0, gdouble d_dec0)
@@ -2249,15 +2754,25 @@ static void search_item (GtkWidget *widget, gpointer data)
 	hg->tree_search_imax++;
       }
       else if(hg->obj[i].def){
-	  g_free(up_obj2);
-	  up_obj1=g_ascii_strup(hg->obj[i].def, -1);
-	  up_obj2=strip_spc(up_obj1);
-	  g_free(up_obj1);
-	  if(g_strstr_len(up_obj2, -1, up_text2)!=NULL){
-	    hg->tree_search_iobj[hg->tree_search_imax]=i;
-	    hg->tree_search_imax++;
+	g_free(up_obj2);
+	up_obj1=g_ascii_strup(hg->obj[i].def, -1);
+	up_obj2=strip_spc(up_obj1);
+	g_free(up_obj1);
+	if(g_strstr_len(up_obj2, -1, up_text2)!=NULL){
+	  hg->tree_search_iobj[hg->tree_search_imax]=i;
+	  hg->tree_search_imax++;
 	}
       } 
+      else if(hg->obj[i].note){
+	g_free(up_obj2);
+	up_obj1=g_ascii_strup(hg->obj[i].note, -1);
+	up_obj2=strip_spc(up_obj1);
+	g_free(up_obj1);
+	if(g_strstr_len(up_obj2, -1, up_text2)!=NULL){
+	  hg->tree_search_iobj[hg->tree_search_imax]=i;
+	  hg->tree_search_imax++;
+	}
+      }
       g_free(up_obj2);
     }
     g_free(up_text2);
@@ -2309,6 +2824,99 @@ static void search_item (GtkWidget *widget, gpointer data)
     g_free(label_text);
   }
 }
+
+
+static void trdb_search_item (GtkWidget *widget, gpointer data)
+{
+  gint i;
+  gchar *label_text;
+  typHOE *hg = (typHOE *)data;
+  gchar *up_text1, *up_text2, *up_obj1, *up_obj2;
+
+  if(!hg->trdb_search_text) return;
+
+  if(strlen(hg->trdb_search_text)<1){
+    hg->trdb_search_imax=0;
+    hg->trdb_search_i=0;
+
+    gtk_label_set_text(GTK_LABEL(hg->trdb_search_label),"      ");
+    return;
+  }
+
+  if(hg->trdb_search_imax==0){
+    up_text1=g_ascii_strup(hg->trdb_search_text, -1);
+    up_text2=strip_spc(up_text1);
+    g_free(up_text1);
+    for(i=0; i<hg->i_max; i++){
+      up_obj1=g_ascii_strup(hg->obj[i].name, -1);
+      up_obj2=strip_spc(up_obj1);
+      g_free(up_obj1);
+      if(g_strstr_len(up_obj2, -1, up_text2)!=NULL){
+	hg->trdb_search_iobj[hg->trdb_search_imax]=i;
+	hg->trdb_search_imax++;
+      }
+      else if(hg->obj[i].note){
+	g_free(up_obj2);
+	up_obj1=g_ascii_strup(hg->obj[i].note, -1);
+	up_obj2=strip_spc(up_obj1);
+	g_free(up_obj1);
+	if(g_strstr_len(up_obj2, -1, up_text2)!=NULL){
+	  hg->trdb_search_iobj[hg->trdb_search_imax]=i;
+	  hg->trdb_search_imax++;
+	}
+      }
+      g_free(up_obj2);
+    }
+    g_free(up_text2);
+  }
+  else{
+    hg->trdb_search_i++;
+    if(hg->trdb_search_i>=hg->trdb_search_imax) hg->trdb_search_i=0;
+  }
+
+  if(flagTree){
+    if(hg->trdb_search_imax!=0){
+      label_text=g_strdup_printf("%d/%d   ",
+				 hg->trdb_search_i+1,
+				 hg->trdb_search_imax);
+
+      {
+	gint i_list;
+	GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+	GtkTreePath *path;
+	GtkTreeIter  iter;
+
+	path=gtk_tree_path_new_first();
+	
+	for(i=0;i<hg->i_max;i++){
+	  gtk_tree_model_get_iter (model, &iter, path);
+	  gtk_tree_model_get (model, &iter, COLUMN_TRDB_NUMBER, &i_list, -1);
+	  i_list--;
+
+	  if(i_list==hg->trdb_search_iobj[hg->trdb_search_i]){
+	    gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
+	    gtk_widget_grab_focus (hg->trdb_tree);
+	    gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->trdb_tree), path, NULL, FALSE);
+	    raise_tree();
+	    break;
+	  }
+	  else{
+	    gtk_tree_path_next(path);
+	  }
+	}
+	gtk_tree_path_free(path);
+      }
+    }
+    else{
+      label_text=g_strdup_printf("%d/%d   ",
+				 hg->trdb_search_i,
+				 hg->trdb_search_imax);
+    }
+    gtk_label_set_text(GTK_LABEL(hg->trdb_search_label),label_text);
+    g_free(label_text);
+  }
+}
+
 
 static void fc_item (GtkWidget *widget, gpointer data)
 {
@@ -2406,28 +3014,49 @@ focus_item (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
   GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW(hg->tree));
   GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->tree));
+  gint i, i_list;
+  GtkTreePath *path;
 
-  if (gtk_tree_selection_get_selected (selection, NULL, &iter))
-    {
-      gint i;
-      GtkTreePath *path;
+  if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
 
-      path = gtk_tree_model_get_path (model, &iter);
-      gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
-      i--;
-      hg->plot_i=i;
+    path = gtk_tree_model_get_path (model, &iter);
+    gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
+    i--;
+    hg->plot_i=i;
+    
+    if(hg->plot_center==PLOT_CENTER_MERIDIAN){
+      hg->plot_ihst0=get_meridian_hour(hg)-6.;
+      hg->plot_ihst1=get_meridian_hour(hg)+6.;
+    }
+    
+    hg->obj[hg->tree_focus].check_sm=FALSE;
+    hg->tree_focus=i;
+    hg->obj[hg->tree_focus].check_sm=TRUE;
+    
+    gtk_tree_path_free (path);
 
-      if(hg->plot_center==PLOT_CENTER_MERIDIAN){
-	hg->plot_ihst0=get_meridian_hour(hg)-6.;
-	hg->plot_ihst1=get_meridian_hour(hg)+6.;
+    if(hg->tree_focus!=hg->trdb_tree_focus){
+      model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+      path=gtk_tree_path_new_first();
+    
+      for(i=0;i<hg->i_max;i++){
+	gtk_tree_model_get_iter (model, &iter, path);
+	gtk_tree_model_get (model, &iter, COLUMN_TRDB_NUMBER, &i_list, -1);
+	i_list--;
+	
+	if(i_list==hg->tree_focus){
+	  gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->trdb_tree), 
+				   path, NULL, FALSE);
+	  break;
+	}
+	else{
+	  gtk_tree_path_next(path);
+	}
       }
-
-      hg->obj[hg->tree_focus].check_sm=FALSE;
-      hg->tree_focus=i;
-      hg->obj[hg->tree_focus].check_sm=TRUE;
-
+      hg->trdb_tree_focus=hg->tree_focus;
       gtk_tree_path_free (path);
     }
+  }
 
   draw_skymon(hg->skymon_dw,hg, FALSE);
 
@@ -2488,6 +3117,62 @@ static void fcdb_focus_item (GtkWidget *widget, gpointer data)
       
       if(flagFC)  draw_fc_cairo(hg->fc_dw, hg);
     }
+}
+
+
+static void trdb_focus_item (GtkWidget *widget, gpointer data)
+{
+  GtkTreeIter iter;
+  typHOE *hg = (typHOE *)data;
+  GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW(hg->trdb_tree));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->trdb_tree));
+  gint i, i_list;
+  GtkTreePath *path;
+  
+  
+  if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
+      path = gtk_tree_model_get_path (model, &iter);
+      gtk_tree_model_get (model, &iter, COLUMN_STD_NUMBER, &i, -1);
+      i--;
+      hg->trdb_tree_focus=i;
+      
+      gtk_tree_path_free (path);
+  }
+
+  if(hg->tree_focus!=hg->trdb_tree_focus){
+    model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+    path=gtk_tree_path_new_first();
+  
+    for(i=0;i<hg->i_max;i++){
+      gtk_tree_model_get_iter (model, &iter, path);
+      gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i_list, -1);
+      i_list--;
+    
+      if(i_list==hg->trdb_tree_focus){
+	gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->tree), path, NULL, FALSE);
+	hg->plot_i=i_list;
+	break;
+      }
+      else{
+	gtk_tree_path_next(path);
+      }
+    }
+    gtk_tree_path_free (path);
+
+    hg->tree_focus=hg->trdb_tree_focus;
+    hg->obj[hg->tree_focus].check_sm=FALSE;
+    hg->obj[hg->tree_focus].check_sm=TRUE;
+    
+    draw_skymon(hg->skymon_dw,hg, FALSE);
+
+    if(flagPlot){
+      draw_plot_cairo(hg->plot_dw,(gpointer)hg);
+    }
+
+    if(flagADC){
+      draw_adc_cairo(hg->adc_dw,(gpointer)hg);
+    }
+  }
 }
 
 
@@ -4860,6 +5545,61 @@ fcdb_add_columns (typHOE *hg,
 }
 
 
+static void
+trdb_add_columns (typHOE *hg,
+		 GtkTreeView  *treeview, 
+		 GtkTreeModel *items_model)
+{
+  GtkCellRenderer *renderer;
+  GtkTreeViewColumn *column;  
+
+  
+  /* number column */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+  		     GINT_TO_POINTER (COLUMN_TRDB_OPENUM));
+  column=gtk_tree_view_column_new_with_attributes ("##",
+					    renderer,
+					    "text",
+					    COLUMN_TRDB_OPENUM,
+					    NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_TRDB_OPENUM);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  trdb_name_cell_data_func,
+					  (gpointer)hg,
+					  NULL);
+    
+  /* Name column */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_TRDB_NAME));
+  column=gtk_tree_view_column_new_with_attributes ("Name",
+						   renderer,
+						   "text", 
+						   COLUMN_TRDB_NAME,
+						   NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_TRDB_NAME);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+  gtk_tree_view_column_set_cell_data_func(column, renderer,
+					  trdb_name_cell_data_func,
+					  (gpointer)hg,
+					  NULL);
+
+  /* Data column */
+  renderer = gtk_cell_renderer_text_new ();
+  g_object_set_data (G_OBJECT (renderer), "column", 
+		     GINT_TO_POINTER (COLUMN_TRDB_DATA));
+  column=gtk_tree_view_column_new_with_attributes ("Data",
+						   renderer,
+						   "text", 
+						   COLUMN_TRDB_DATA,
+						   NULL);
+  gtk_tree_view_column_set_sort_column_id(column,COLUMN_TRDB_DATA);
+  gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+}
+
+
 GtkWidget *
 do_editable_cells (typHOE *hg)
 {
@@ -5113,6 +5853,11 @@ do_editable_cells (typHOE *hg)
       gtk_list_store_set(store, &iter, 0, "CASSIS",
 			 1, WWWDB_CASSIS, 2, TRUE, -1);
       if(hg->wwwdb_mode==WWWDB_CASSIS) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "HASH PN Database",
+			 1, WWWDB_HASH, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_HASH) iter_set=iter;
       
       gtk_list_store_append (store, &iter);
       gtk_list_store_set (store, &iter,
@@ -5405,7 +6150,7 @@ do_editable_cells (typHOE *hg)
   // FCDB
   {
     vbox = gtk_vbox_new (FALSE, 5);
-    label = gtk_label_new ("Finding Chart");
+    label = gtk_label_new ("Finding Chart / DB");
     gtk_notebook_append_page (GTK_NOTEBOOK (hg->obj_note), vbox, label);
     
     hbox = gtk_hbox_new (FALSE, 0);
@@ -5533,6 +6278,113 @@ do_editable_cells (typHOE *hg)
     gtk_widget_set_tooltip_text(button,
 				"Copy to clipboard");
 #endif
+  }
+
+
+  // TRDB
+  {
+    vbox = gtk_vbox_new (FALSE, 5);
+    label = gtk_label_new ("List Query");
+    gtk_notebook_append_page (GTK_NOTEBOOK (hg->obj_note), vbox, label);
+    
+    hbox = gtk_hbox_new (FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
+    
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_SAVE);
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+    		       G_CALLBACK (do_save_TRDB_CSV), (gpointer)hg);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,"Save queried List to CSV file");
+#endif
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+    		       G_CALLBACK (trdb_search_item), (gpointer)hg);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,"Find Object");
+#endif
+
+    hg->trdb_search_i=0;
+    hg->trdb_search_imax=0;
+
+    entry = gtk_entry_new ();
+    gtk_box_pack_start(GTK_BOX(hbox), entry,FALSE, FALSE, 0);
+    gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+    my_entry_set_width_chars(GTK_ENTRY(entry),10);
+    my_signal_connect (entry, "changed", trdb_cc_search_text, (gpointer)hg);
+    my_signal_connect (entry, "activate", trdb_search_item, (gpointer)hg);
+
+    hg->trdb_search_label = gtk_label_new ("     ");
+    gtk_box_pack_start(GTK_BOX(hbox),hg->trdb_search_label,FALSE,FALSE,0);
+    
+    hg->trdb_label= gtk_label_new (hg->trdb_label_text);
+    gtk_box_pack_start(GTK_BOX(hbox), hg->trdb_label, TRUE, TRUE, 0);
+      
+    button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
+    my_signal_connect (button, "clicked",
+		      G_CALLBACK (close_tree2), (gpointer)hg);
+    gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,
+				"Close");
+#endif
+    
+    sw = gtk_scrolled_window_new (NULL, NULL);
+    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),
+					 GTK_SHADOW_ETCHED_IN);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
+				    GTK_POLICY_AUTOMATIC,
+				    GTK_POLICY_AUTOMATIC);
+    gtk_box_pack_start (GTK_BOX (vbox), sw, TRUE, TRUE, 0);
+
+    /* create models */
+    items_model = trdb_create_items_model (hg);
+
+    /* create tree view */
+    hg->trdb_tree = gtk_tree_view_new_with_model (items_model);
+    gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (hg->trdb_tree), TRUE);
+    gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (hg->trdb_tree)),
+				 GTK_SELECTION_SINGLE);
+    trdb_add_columns (hg, GTK_TREE_VIEW (hg->trdb_tree), items_model);
+    
+    g_object_unref (items_model);
+    
+    gtk_container_add (GTK_CONTAINER (sw), hg->trdb_tree);
+    
+    my_signal_connect (hg->trdb_tree, "cursor-changed",
+		      G_CALLBACK (trdb_focus_item), (gpointer)hg);
+
+    // Browse buttons
+    hbox = gtk_hbox_new (FALSE, 4);
+    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+
+    button=gtkut_button_new_from_stock("Show Detail",GTK_STOCK_GO_BACK);
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (trdb_dbtab), (gpointer)hg);
+
+#ifdef USE_OSX
+    icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
+				      FALSE, NULL);
+#elif defined(USE_WIN32)
+    icon = gdk_pixbuf_new_from_inline(sizeof(ie_icon), ie_icon, 
+				      FALSE, NULL);
+#else
+    if(strcmp(hg->www_com,"firefox")==0){
+      icon = gdk_pixbuf_new_from_inline(sizeof(firefox_icon), firefox_icon, 
+					FALSE, NULL);
+    }
+    else{
+      icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
+					FALSE, NULL);
+    }
+#endif
+    button=gtkut_button_new_from_pixbuf("Browse", icon);
+    g_object_unref(icon);
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (trdb_simbad), (gpointer)hg);
   }
 
   
@@ -5868,7 +6720,7 @@ void remake_tree(typHOE *hg)
 
   for (i = 0; i < hg->i_max; i++){
     gtk_list_store_append (GTK_LIST_STORE(model), &iter);
-      tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
+    tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
   }
   
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
@@ -6347,6 +7199,21 @@ void cc_search_text (GtkWidget *widget, gpointer gdata)
 
   gtk_label_set_text(GTK_LABEL(hg->tree_search_label),"      ");
 }
+
+void trdb_cc_search_text (GtkWidget *widget, gpointer gdata)
+{
+  typHOE *hg;
+  hg=(typHOE *)gdata;
+
+  if(hg->trdb_search_text) g_free(hg->trdb_search_text);
+  hg->trdb_search_text=g_strdup(gtk_entry_get_text(GTK_ENTRY(widget)));
+
+  hg->trdb_search_i=0;
+  hg->trdb_search_imax=0;
+
+  gtk_label_set_text(GTK_LABEL(hg->trdb_search_label),"      ");
+}
+
 
 gchar *strip_spc(gchar * obj_name){
   gchar *tgt_name, *ret_name;

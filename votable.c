@@ -44,6 +44,157 @@
 #include "main.h"
 #include "votable.h"
 
+gchar *rm_spc(gchar * obj_name){
+  gchar *tgt_name, *ret_name;
+  gint  i_obj,i_tgt=0;
+
+  if((tgt_name=(gchar *)g_malloc(sizeof(gchar)*(strlen(obj_name)+1)))
+     ==NULL){
+    fprintf(stderr, "!!! Memory allocation error in fgets_new().\n");
+    fflush(stderr);
+    return(NULL);
+  }
+
+  for(i_obj=0;i_obj<strlen(obj_name);i_obj++){
+    if(obj_name[i_obj]!=0x20){
+      tgt_name[i_tgt]=obj_name[i_obj];
+      i_tgt++;
+    }
+  }
+
+  tgt_name[i_tgt]='\0';
+  ret_name=g_strdup(tgt_name);
+
+  if(tgt_name) g_free(tgt_name);
+
+  return(ret_name);
+}
+
+void make_band_str(typHOE *hg, gint i, gint mode){
+  gint i_band;
+  gchar *tmp_str1=NULL, *tmp_str2=NULL, *tmp_str3=NULL;
+
+  switch(mode){
+  case TRDB_TYPE_SMOKA:
+    for(i_band=0;i_band<hg->obj[i].trdb_band_max;i_band++){
+      if((strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"HSC")==0)
+	 || (strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"SUP")==0)){
+	tmp_str1=g_strdup_printf((hg->obj[i].trdb_exp[i_band] > 10) ?
+				 "%s %.0lfs(%d)" : "%s %.1lfs(%d)",	       
+				 hg->obj[i].trdb_band[i_band],
+				 hg->obj[i].trdb_exp[i_band],
+				 hg->obj[i].trdb_shot[i_band]);
+      }
+      else if((strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"HDS")==0)
+	      || (strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"FMS")==0)){
+	tmp_str1=g_strdup_printf((hg->obj[i].trdb_exp[i_band] > 10) ?
+				 "[%s] %.0lfs(%d)" : "[%s] %.1lfs(%d)",	       
+				 hg->obj[i].trdb_band[i_band],
+				 hg->obj[i].trdb_exp[i_band],
+				 hg->obj[i].trdb_shot[i_band]);
+      }
+      else{
+	if(g_ascii_strncasecmp(hg->obj[i].trdb_mode[i_band],
+			       "imag",strlen("imag"))==0){
+	  tmp_str1=g_strdup_printf((hg->obj[i].trdb_exp[i_band] > 10) ?
+				   "%s: %s %.0lfs(%d)" : "%s: %s %.1lfs(%d)",
+				   hg->obj[i].trdb_mode[i_band],
+				   hg->obj[i].trdb_band[i_band],
+				   hg->obj[i].trdb_exp[i_band],
+				   hg->obj[i].trdb_shot[i_band]);
+	}
+	else{
+	  tmp_str1=g_strdup_printf((hg->obj[i].trdb_exp[i_band] > 10) ?
+				   "%s: [%s] %.0lfs(%d)" : "%s: [%s] %.1lfs(%d)",
+				   hg->obj[i].trdb_mode[i_band],
+				   hg->obj[i].trdb_band[i_band],
+				   hg->obj[i].trdb_exp[i_band],
+				   hg->obj[i].trdb_shot[i_band]);
+	}
+      }
+      if(tmp_str3){
+	tmp_str2=g_strdup(tmp_str3);
+	g_free(tmp_str3);
+	tmp_str3=g_strconcat(tmp_str2, " / ", tmp_str1, NULL);
+      }
+      else{
+	tmp_str3=g_strdup(tmp_str1);
+      }
+      
+      if(tmp_str1) g_free(tmp_str1);
+      if(tmp_str2) g_free(tmp_str2);
+      tmp_str1=NULL;
+      tmp_str2=NULL;
+    }
+    break;
+
+  case TRDB_TYPE_HST:
+    for(i_band=0;i_band<hg->obj[i].trdb_band_max;i_band++){
+      if(hg->trdb_hst_mode==TRDB_HST_MODE_IMAGE){ 
+	tmp_str1=g_strdup_printf((hg->obj[i].trdb_exp[i_band] > 10) ?
+				 "%s %.0lfs(%d)" : "%s %.1lfs(%d)",
+				 hg->obj[i].trdb_band[i_band],
+				 hg->obj[i].trdb_exp[i_band],
+				 hg->obj[i].trdb_shot[i_band]);
+      }
+      else{
+	tmp_str1=g_strdup_printf((hg->obj[i].trdb_exp[i_band] > 10) ?
+				 "[%s] %.0lfs(%d)" : "[%s] %.1lfs(%d)",
+				 hg->obj[i].trdb_band[i_band],
+				 hg->obj[i].trdb_exp[i_band],
+				 hg->obj[i].trdb_shot[i_band]);
+      }
+      if(tmp_str3){
+	tmp_str2=g_strdup(tmp_str3);
+	g_free(tmp_str3);
+	tmp_str3=g_strconcat(tmp_str2, " / ", tmp_str1, NULL);
+      }
+      else{
+	tmp_str3=g_strdup(tmp_str1);
+      }
+      
+      if(tmp_str1) g_free(tmp_str1);
+      if(tmp_str2) g_free(tmp_str2);
+      tmp_str1=NULL;
+      tmp_str2=NULL;
+    }
+    break;
+
+
+  case TRDB_TYPE_ESO:
+    for(i_band=0;i_band<hg->obj[i].trdb_band_max;i_band++){
+      tmp_str1=g_strdup_printf((hg->obj[i].trdb_exp[i_band] > 10) ?
+			       "%s %.0lfs(%d)" : "%s %.1lfs(%d)",
+			       hg->obj[i].trdb_mode[i_band],
+			       hg->obj[i].trdb_exp[i_band],
+			       hg->obj[i].trdb_shot[i_band]);
+      
+      if(tmp_str3){
+	tmp_str2=g_strdup(tmp_str3);
+	g_free(tmp_str3);
+	tmp_str3=g_strconcat(tmp_str2, " / ", tmp_str1, NULL);
+      }
+      else{
+	tmp_str3=g_strdup(tmp_str1);
+      }
+
+      if(tmp_str1) g_free(tmp_str1);
+      if(tmp_str2) g_free(tmp_str2);
+      tmp_str1=NULL;
+      tmp_str2=NULL;
+    }
+
+    break;
+  }
+
+  if(hg->obj[i].trdb_str) g_free(hg->obj[i].trdb_str);
+  hg->obj[i].trdb_str=g_strdup(tmp_str3);
+
+  if(tmp_str3) g_free(tmp_str3);
+  tmp_str3=NULL;
+}
+
+
 static list_field *insert_field(xmlTextReaderPtr reader, 
 				  list_field *list, 
 				  int position) {
@@ -2562,7 +2713,7 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
       cp=buf;
       cp+=pos_wv;
       if(hg->fcdb[i_list].wv) g_free(hg->fcdb[i_list].wv);
-      hg->fcdb[i_list].wv=g_strstrip(g_strndup(cp,len_wv));
+      hg->fcdb[i_list].wv=rm_spc(g_strndup(cp,len_wv));
 
       // RA2000
       cp=buf;
@@ -2648,6 +2799,450 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
   return;
 }
 
+void trdb_smoka_txt_parse(typHOE *hg) {
+  FILE *fp;
+  gchar *buf=NULL, *cp, *cpp, *buf_tmp1=NULL, *buf_tmp2=NULL;
+  int i_list=0, i_all=0;
+  gint pos_fid,pos_date,pos_mode,pos_type,pos_obj,pos_fil,pos_wv,
+    pos_ra,pos_dec,pos_exp,pos_obs;
+  gint len_fid,len_date,len_mode,len_type,len_obj,len_fil,len_wv,
+    len_ra,len_dec,len_exp,len_obs;
+  struct lnh_equ_posn equ;
+  gint i_band, i_band_max=0;
+  gboolean flag_band;
+
+  printf_log(hg,"[FCDB] pursing TXT.");
+
+  if((fp=fopen(hg->fcdb_file,"rb"))==NULL){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: File cannot be opened.",
+		  " ",
+		  hg->fcdb_file,
+		  NULL);
+#else
+    fprintf(stderr," File Open Error  \"%s\".\n",hg->fcdb_file);
+#endif
+    printf_log(hg,"[FCDB] File Open Error  \"%s\".", hg->fcdb_file);
+    return;
+  }
+  
+  hg->obj[hg->fcdb_i].trdb_band_max=0;
+
+  while(!feof(fp)){
+    if((buf=fgets_new(fp))==NULL){
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: File cannot be read.",
+		    " ",
+		    hg->fcdb_file,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->fcdb_file);
+#endif
+      printf_log(hg,"[FCDB] File Read Error  \"%s\".", hg->fcdb_file);
+      fclose(fp);
+      return;
+    }
+    else{
+      if(strncmp(buf,"<pre>",strlen("<pre>"))==0){
+	if(buf) g_free(buf);
+	break;
+      }
+      else{
+	if(buf) g_free(buf);
+      }
+    }
+  }
+
+  if((buf=fgets_new(fp))==NULL){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT*2,
+		  "Error: File cannot be read.",
+		  " ",
+		  hg->fcdb_file,
+		  NULL);
+#else
+    fprintf(stderr," File Read Error  \"%s\".\n",hg->fcdb_file);
+#endif
+    printf_log(hg,"[FCDB] File Read Error  \"%s\".", hg->fcdb_file);
+    fclose(fp);
+    return;
+  }
+  else if(strncmp(buf,"FRAMEID",strlen("FRAMEID"))==0){
+    cpp=buf;
+    pos_fid=0;
+    if((cp = strstr(cpp, "DATE_OBS")) != NULL){
+      len_fid=strlen(cpp)-strlen(cp);
+      pos_date=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "FITS_SIZE")) != NULL){
+      len_date=strlen(cpp)-strlen(cp)-pos_date;
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "OBS_MODE")) != NULL){
+      pos_mode=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "DATA_TYPE")) != NULL){
+      len_mode=strlen(cpp)-strlen(cp)-pos_mode;
+      pos_type=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "OBJECT")) != NULL){
+      len_type=strlen(cpp)-strlen(cp)-pos_type;
+      pos_obj=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "FILTER")) != NULL){
+      len_obj=strlen(cpp)-strlen(cp)-pos_obj;
+      pos_fil=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "WVLEN")) != NULL){
+      len_fil=strlen(cpp)-strlen(cp)-pos_fil;
+      pos_wv=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "DISPERSER")) != NULL){
+      len_wv=strlen(cpp)-strlen(cp)-pos_wv;
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "RA2000")) != NULL){
+      pos_ra=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "DEC2000")) != NULL){
+      len_ra=strlen(cpp)-strlen(cp)-pos_ra;
+      pos_dec=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "GALLONG")) != NULL){
+      len_dec=strlen(cpp)-strlen(cp)-pos_dec;
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "EXPTIME")) != NULL){
+      pos_exp=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "OBSERVER")) != NULL){
+      len_exp=strlen(cpp)-strlen(cp)-pos_exp;
+      pos_obs=strlen(cpp)-strlen(cp);
+    }
+    
+    cpp=buf;
+    if((cp = strstr(cpp, "EXP_ID")) != NULL){
+      len_obs=strlen(cpp)-strlen(cp)-pos_obs;
+    }
+
+    if(buf) g_free(buf);
+  }
+  else{
+    if(buf) g_free(buf);
+    fclose(fp);
+
+    hg->fcdb_i_max=0;
+    hg->fcdb_i_all=0;
+    hg->obj[hg->fcdb_i].trdb_band_max=0;
+    if(hg->obj[hg->fcdb_i].trdb_str) g_free(hg->obj[hg->fcdb_i].trdb_str);
+    hg->obj[hg->fcdb_i].trdb_str=NULL;
+
+    return;
+  }
+
+  while(!feof(fp)){
+    if((buf=fgets_new(fp))==NULL){
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT*2,
+		    "Error: File cannot be read.",
+		    " ",
+		    hg->fcdb_file,
+		    NULL);
+#else
+      fprintf(stderr," File Read Error  \"%s\".\n",hg->fcdb_file);
+#endif
+      printf_log(hg,"[FCDB] File Read Error  \"%s\".", hg->fcdb_file);
+      fclose(fp);
+      return;
+    }
+    else if(strncmp(buf,"</pre>",strlen("</pre>"))==0){
+      if(buf) g_free(buf);
+      break;
+    }
+    else{
+
+      // FRAMEID
+      cp=buf;
+      cp+=pos_fid;
+      if(hg->fcdb[i_list].fid) g_free(hg->fcdb[i_list].fid);
+      hg->fcdb[i_list].fid=g_strstrip(g_strndup(cp,len_fid));
+
+      // DATE_OBS
+      cp=buf;
+      cp+=pos_date;
+      if(hg->fcdb[i_list].date) g_free(hg->fcdb[i_list].date);
+      hg->fcdb[i_list].date=g_strstrip(g_strndup(cp,len_date));
+
+      // OBS_MODE
+      cp=buf;
+      cp+=pos_mode;
+      if(hg->fcdb[i_list].mode) g_free(hg->fcdb[i_list].mode);
+      hg->fcdb[i_list].mode=g_strstrip(g_strndup(cp,len_mode));
+
+      // DATA_TYPE
+      cp=buf;
+      cp+=pos_type;
+      if(hg->fcdb[i_list].type) g_free(hg->fcdb[i_list].type);
+      hg->fcdb[i_list].type=g_strstrip(g_strndup(cp,len_type));
+
+      // OBJECT
+      cp=buf;
+      cp+=pos_obj;
+      if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+      hg->fcdb[i_list].name=g_strstrip(g_strndup(cp,len_obj));
+
+      // FILTER
+      cp=buf;
+      cp+=pos_fil;
+      if(hg->fcdb[i_list].fil) g_free(hg->fcdb[i_list].fil);
+      hg->fcdb[i_list].fil=g_strstrip(g_strndup(cp,len_fil));
+
+      // WV_LEN
+      cp=buf;
+      cp+=pos_wv;
+      if(hg->fcdb[i_list].wv) g_free(hg->fcdb[i_list].wv);
+      hg->fcdb[i_list].wv=rm_spc(g_strndup(cp,len_wv));
+
+      // RA2000
+      cp=buf;
+      cp+=pos_ra;
+      buf_tmp1=g_strstrip(g_strndup(cp,len_ra));
+      cpp=buf_tmp1;
+      buf_tmp2=g_strndup(cpp,2);
+      equ.ra.hours=(gint)g_strtod(buf_tmp2,NULL);
+      if(buf_tmp2) g_free(buf_tmp2);
+      cpp+=3;
+      buf_tmp2=g_strndup(cpp,2);
+      equ.ra.minutes=(gint)g_strtod(buf_tmp2,NULL);
+      if(buf_tmp2) g_free(buf_tmp2);
+      cpp+=3;
+      buf_tmp2=g_strndup(cpp,strlen(buf_tmp1)-6);
+      equ.ra.seconds=(gdouble)g_strtod(buf_tmp2,NULL);
+      if(buf_tmp2) g_free(buf_tmp2);
+      if(buf_tmp1) g_free(buf_tmp1);
+      hg->fcdb[i_list].d_ra=ln_hms_to_deg(&equ.ra);
+      hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
+
+      
+      // DEC2000
+      cp=buf;
+      cp+=pos_dec;
+      buf_tmp1=g_strstrip(g_strndup(cp,len_dec));
+      cpp=buf_tmp1;
+      if(cpp[0]==0x2d){
+	equ.dec.neg=1;
+      }
+      else{
+	equ.dec.neg=0;
+      }
+      cpp+=1;
+      buf_tmp2=g_strndup(cpp,2);
+      equ.dec.degrees=(gint)g_strtod(buf_tmp2,NULL);
+      if(buf_tmp2) g_free(buf_tmp2);
+      cpp+=3;
+      buf_tmp2=g_strndup(cpp,2);
+      equ.dec.minutes=(gint)g_strtod(buf_tmp2,NULL);
+      if(buf_tmp2) g_free(buf_tmp2);
+      cpp+=3;
+      buf_tmp2=g_strndup(cpp,strlen(buf_tmp1)-7);
+      equ.dec.seconds=(gdouble)g_strtod(buf_tmp2,NULL);
+      if(buf_tmp2) g_free(buf_tmp2);
+      if(buf_tmp1) g_free(buf_tmp1);
+      hg->fcdb[i_list].d_dec=ln_dms_to_deg(&equ.dec);
+      hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
+      
+      // EXPTIME
+      cp=buf;
+      cp+=pos_exp;
+      buf_tmp1=g_strstrip(g_strndup(cp,len_exp));
+      hg->fcdb[i_list].u=(gdouble)g_strtod(buf_tmp1,NULL);
+      if(buf_tmp1) g_free(buf_tmp1);
+
+      // OBSERVER
+      cp=buf;
+      cp+=pos_obs;
+      if(hg->fcdb[i_list].obs) g_free(hg->fcdb[i_list].obs);
+      hg->fcdb[i_list].obs=g_strstrip(g_strndup(cp,len_obs));
+
+      if(buf) g_free(buf);
+      i_list++;
+      if(i_list==MAX_FCDB) break;
+    }
+  }  
+  i_all=i_list;
+  hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
+
+  fclose(fp);
+
+  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    hg->fcdb[i_list].equinox=2000.00;
+    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
+				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+    hg->fcdb[i_list].pmra=0;
+    hg->fcdb[i_list].pmdec=0;
+    hg->fcdb[i_list].pm=FALSE;
+
+    flag_band=FALSE;
+    for(i_band=0;i_band<i_band_max;i_band++){
+
+      if((strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"HSC")==0)
+	 || (strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"SUP")==0)){
+	// HSC or SupCam (Imag only)
+	// Imaging  (Mode:Ignore)
+	if(strcmp(hg->fcdb[i_list].fil,
+		  hg->obj[hg->fcdb_i].trdb_band[i_band])==0){
+	  if(strcmp(hg->fcdb[i_list].type, "FOCUSING")!=0){
+	    hg->obj[hg->fcdb_i].trdb_exp[i_band]+=hg->fcdb[i_list].u;
+	    hg->obj[hg->fcdb_i].trdb_shot[i_band]++;
+	    flag_band=TRUE;
+	  }
+	}
+      }
+      else if((strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"HDS")==0)
+	      || (strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"FMS")==0)){
+	// HDS or FMOS (Spec only)
+	// Spec.  (Mode:Ignore)
+	if(strcmp(hg->fcdb[i_list].wv,
+		  hg->obj[hg->fcdb_i].trdb_band[i_band])==0){
+	  hg->obj[hg->fcdb_i].trdb_exp[i_band]+=hg->fcdb[i_list].u;
+	  hg->obj[hg->fcdb_i].trdb_shot[i_band]++;
+	  flag_band=TRUE;
+	}
+      }
+      else{
+	// Other Inst.
+	if(strcmp(hg->fcdb[i_list].mode,
+		  hg->obj[hg->fcdb_i].trdb_mode[i_band])==0){
+	  if(g_ascii_strncasecmp(hg->obj[hg->fcdb_i].trdb_mode[i_band],
+				 "imag",strlen("imag"))==0){ 
+	    // Mode==Imag Band->Fil
+	    if(strcmp(hg->fcdb[i_list].fil,
+		      hg->obj[hg->fcdb_i].trdb_band[i_band])==0){
+	      hg->obj[hg->fcdb_i].trdb_exp[i_band]+=hg->fcdb[i_list].u;
+	      hg->obj[hg->fcdb_i].trdb_shot[i_band]++;
+	      flag_band=TRUE;
+	      break;
+	    }
+	  }
+	  else if(g_ascii_strncasecmp(hg->obj[hg->fcdb_i].trdb_mode[i_band],
+				      "slitview",strlen("slitview"))!=0){
+	    if(strcmp(hg->fcdb[i_list].wv,
+		      hg->obj[hg->fcdb_i].trdb_band[i_band])==0){ 
+	      // Mode!=Imag Band->Wv
+	      hg->obj[hg->fcdb_i].trdb_exp[i_band]+=hg->fcdb[i_list].u;
+	      hg->obj[hg->fcdb_i].trdb_shot[i_band]++;
+	      flag_band=TRUE;
+	      break;
+	    }
+	  }
+	}
+      }
+    }
+    
+    if((!flag_band)&&(i_band_max<MAX_TRDB_BAND)){ 
+      // Add New Band
+      if((strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"HSC")==0)
+	 || (strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"SUP")==0)){
+	// HSC or SupCam (Imag only)
+	if(strcmp(hg->fcdb[i_list].type, "FOCUSING")!=0){
+	  if(hg->obj[hg->fcdb_i].trdb_mode[i_band_max])
+	    g_free(hg->obj[hg->fcdb_i].trdb_mode[i_band_max]);
+	  hg->obj[hg->fcdb_i].trdb_mode[i_band_max]
+	    =g_strdup("IMAG");
+
+	  if(hg->obj[hg->fcdb_i].trdb_band[i_band_max])
+	    g_free(hg->obj[hg->fcdb_i].trdb_band[i_band_max]);
+	  hg->obj[hg->fcdb_i].trdb_band[i_band_max]
+	    =g_strdup(hg->fcdb[i_list].fil);
+
+	  hg->obj[hg->fcdb_i].trdb_exp[i_band_max]=hg->fcdb[i_list].u;
+	  hg->obj[hg->fcdb_i].trdb_shot[i_band_max]=1;
+	  i_band_max++;
+	}
+      }
+      else if((strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"HDS")==0)
+	      || (strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"FMS")==0)){
+	// HDS or FMOS (Spec only)
+	if(hg->obj[hg->fcdb_i].trdb_mode[i_band_max])
+	  g_free(hg->obj[hg->fcdb_i].trdb_mode[i_band_max]);
+	hg->obj[hg->fcdb_i].trdb_mode[i_band_max]
+	  =g_strdup("SPEC");
+
+	if(hg->obj[hg->fcdb_i].trdb_band[i_band_max])
+	  g_free(hg->obj[hg->fcdb_i].trdb_band[i_band_max]);
+	hg->obj[hg->fcdb_i].trdb_band[i_band_max]
+	  =g_strdup(hg->fcdb[i_list].wv);
+	
+	hg->obj[hg->fcdb_i].trdb_exp[i_band_max]=hg->fcdb[i_list].u;
+	hg->obj[hg->fcdb_i].trdb_shot[i_band_max]=1;
+	i_band_max++;
+      }
+      else{
+	// Other Inst.
+	if(hg->obj[hg->fcdb_i].trdb_mode[i_band_max])
+	  g_free(hg->obj[hg->fcdb_i].trdb_mode[i_band_max]);
+	hg->obj[hg->fcdb_i].trdb_mode[i_band_max]
+	  =g_strdup(hg->fcdb[i_list].mode);
+	
+	if(hg->obj[hg->fcdb_i].trdb_band[i_band_max])
+	  g_free(hg->obj[hg->fcdb_i].trdb_band[i_band_max]);
+	if(g_ascii_strncasecmp(hg->obj[hg->fcdb_i].trdb_mode[i_band_max],
+			       "imag",strlen("imag"))==0){
+	  // Mode==Imag Band->Fil
+	  hg->obj[hg->fcdb_i].trdb_band[i_band_max]
+	    =g_strdup(hg->fcdb[i_list].fil);
+
+	  hg->obj[hg->fcdb_i].trdb_exp[i_band_max]=hg->fcdb[i_list].u;
+	  hg->obj[hg->fcdb_i].trdb_shot[i_band_max]=1;
+	  i_band_max++;
+	}
+	else if(g_ascii_strncasecmp(hg->obj[hg->fcdb_i].trdb_mode[i_band],
+				    "slitview",strlen("slitview"))!=0){
+	  // Mode!=Imag Band->Wv.
+	  hg->obj[hg->fcdb_i].trdb_band[i_band_max]
+	    =g_strdup(hg->fcdb[i_list].wv);
+
+	  hg->obj[hg->fcdb_i].trdb_exp[i_band_max]=hg->fcdb[i_list].u;
+	  hg->obj[hg->fcdb_i].trdb_shot[i_band_max]=1;
+	  i_band_max++;
+	}
+      
+      }
+    }
+
+    if(i_band_max>=MAX_TRDB_BAND) break;
+  }
+
+  hg->obj[hg->fcdb_i].trdb_band_max=i_band_max;
+
+  make_band_str(hg, hg->fcdb_i, TRDB_TYPE_SMOKA);
+
+  return;
+}
 
 void fcdb_hst_vo_parse(typHOE *hg) {
   xmlTextReaderPtr reader;
@@ -2768,6 +3363,192 @@ void fcdb_hst_vo_parse(typHOE *hg) {
 
 }
 
+
+void trdb_hst_vo_parse(typHOE *hg) {
+  xmlTextReaderPtr reader;
+  list_field *vfield_move;
+  list_tabledata *vtabledata_move;
+  VOTable votable;
+  int nbFields, process_column;
+  int *columns;
+  reader = Init_VO_Parser(hg->fcdb_file,&votable);
+  int i_list=0, i_all=0;
+  gint i_band, i_band_max=0;
+  gboolean flag_band;
+
+  printf_log(hg,"[FCDB] pursing XML.");
+
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
+
+  Extract_VO_Fields(reader,&votable,&nbFields,&columns);
+  for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
+    if(xmlStrcmp(vfield_move->name,"Dataset") == 0) 
+      columns[0] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Target Name") == 0)
+      columns[1] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"RA (J2000)") == 0) 
+      columns[2] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Dec (J2000)") == 0) 
+      columns[3] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Start Time") == 0) 
+      columns[4] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Exp Time") == 0) 
+      columns[5] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Instrument") == 0) 
+      columns[6] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Filters/Gratings") == 0) 
+      columns[7] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Central Wavelength") == 0) 
+      columns[8] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Proposal ID") == 0) 
+      columns[9] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"Apertures") == 0) 
+      columns[10] = vfield_move->position;
+ }
+
+
+ Extract_VO_TableData(reader,&votable, nbFields, columns);
+ for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+   if(i_list==MAX_FCDB) break;
+
+   if (vtabledata_move->colomn == columns[0]){
+     if(hg->fcdb[i_list].fid) g_free(hg->fcdb[i_list].fid);
+     hg->fcdb[i_list].fid=g_strdup(vtabledata_move->value);
+     i_all++;
+     i_list++;
+   }
+   else if (vtabledata_move->colomn == columns[1]){
+     if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+     hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[2]){
+     hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
+     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
+   }
+   else if (vtabledata_move->colomn == columns[3]){
+     hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
+     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
+   }
+   else if (vtabledata_move->colomn == columns[4]){  // StartDate
+     if(hg->fcdb[i_list].date) g_free(hg->fcdb[i_list].date);
+     hg->fcdb[i_list].date=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[5]){ // ExpTime
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].u=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].u<0) hg->fcdb[i_list].u=-1;
+     }
+     else{
+       hg->fcdb[i_list].u=-1;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[6]){  // Instrument
+     if(hg->fcdb[i_list].mode) g_free(hg->fcdb[i_list].mode);
+     hg->fcdb[i_list].mode=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[7]){  // Filters
+     if(hg->fcdb[i_list].fil) g_free(hg->fcdb[i_list].fil);
+     hg->fcdb[i_list].fil=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[8]){ // Central Wv
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].v=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].v<0) hg->fcdb[i_list].v=-1;
+     }
+     else{
+       hg->fcdb[i_list].v=-1;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[9]){  // Prop ID
+     if(hg->fcdb[i_list].obs) g_free(hg->fcdb[i_list].obs);
+     hg->fcdb[i_list].obs=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[10]){  // Apertures
+     if(hg->fcdb[i_list].type) g_free(hg->fcdb[i_list].type);
+     hg->fcdb[i_list].type=g_strdup(vtabledata_move->value);
+   }
+  }
+  hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
+
+  if (Free_VO_Parser(reader,&votable,&columns) == 1)
+    fprintf(stderr,"memory problem\n");
+
+  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    hg->fcdb[i_list].equinox=2000.00;
+    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
+				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+    hg->fcdb[i_list].pmra=0;
+    hg->fcdb[i_list].pmdec=0;
+    hg->fcdb[i_list].pm=FALSE;
+
+    flag_band=FALSE;
+    for(i_band=0;i_band<i_band_max;i_band++){
+      if(strcmp(hg->fcdb[i_list].mode,
+		hg->obj[hg->fcdb_i].trdb_mode[i_band])==0){
+	if(hg->trdb_hst_mode==TRDB_HST_MODE_IMAGE){ 
+	  // Mode==Imag Band->Fil
+	  if(strcmp(hg->fcdb[i_list].fil,
+		    hg->obj[hg->fcdb_i].trdb_band[i_band])==0){
+	    hg->obj[hg->fcdb_i].trdb_exp[i_band]+=hg->fcdb[i_list].u;
+	    hg->obj[hg->fcdb_i].trdb_shot[i_band]++;
+	    flag_band=TRUE;
+	    break;
+	  }
+	}
+	else{
+	  if((int)hg->fcdb[i_list].v
+	     ==atoi(hg->obj[hg->fcdb_i].trdb_band[i_band])){
+	    // Mode!=Imag Band->Wv
+	    hg->obj[hg->fcdb_i].trdb_exp[i_band]+=hg->fcdb[i_list].u;
+	    hg->obj[hg->fcdb_i].trdb_shot[i_band]++;
+	    flag_band=TRUE;
+	    break;
+	  }
+	}
+      }
+    }
+    
+    if((!flag_band)&&(i_band_max<MAX_TRDB_BAND)){ 
+      // Add New Band
+      if(hg->obj[hg->fcdb_i].trdb_mode[i_band_max])
+	g_free(hg->obj[hg->fcdb_i].trdb_mode[i_band_max]);
+      hg->obj[hg->fcdb_i].trdb_mode[i_band_max]
+	=g_strdup(hg->fcdb[i_list].mode);
+      
+      if(hg->obj[hg->fcdb_i].trdb_band[i_band_max])
+	g_free(hg->obj[hg->fcdb_i].trdb_band[i_band_max]);
+      if(hg->trdb_hst_mode==TRDB_HST_MODE_IMAGE){ 
+	// Mode==Imag Band->Fil
+	hg->obj[hg->fcdb_i].trdb_band[i_band_max]
+	  =g_strdup(hg->fcdb[i_list].fil);
+	
+	hg->obj[hg->fcdb_i].trdb_exp[i_band_max]=hg->fcdb[i_list].u;
+	hg->obj[hg->fcdb_i].trdb_shot[i_band_max]=1;
+	i_band_max++;
+      }
+      else{
+	// Mode!=Imag Band->Wv.
+	hg->obj[hg->fcdb_i].trdb_band[i_band_max]
+	  =g_strdup_printf("%d",(int)hg->fcdb[i_list].v);
+	
+	hg->obj[hg->fcdb_i].trdb_exp[i_band_max]=hg->fcdb[i_list].u;
+	hg->obj[hg->fcdb_i].trdb_shot[i_band_max]=1;
+	i_band_max++;
+      }
+    }
+
+    if(i_band_max>=MAX_TRDB_BAND) break;
+  }
+
+  hg->obj[hg->fcdb_i].trdb_band_max=i_band_max;
+
+  make_band_str(hg, hg->fcdb_i, TRDB_TYPE_HST);
+
+  return;
+}
+
+
 void fcdb_eso_vo_parse(typHOE *hg) {
   xmlTextReaderPtr reader;
   list_field *vfield_move;
@@ -2868,7 +3649,149 @@ void fcdb_eso_vo_parse(typHOE *hg) {
     hg->fcdb[i_list].pm=FALSE;
   }
 
+  return;
 }
+
+
+void trdb_eso_vo_parse(typHOE *hg) {
+  xmlTextReaderPtr reader;
+  list_field *vfield_move;
+  list_tabledata *vtabledata_move;
+  VOTable votable;
+  int nbFields, process_column;
+  int *columns;
+  reader = Init_VO_Parser(hg->fcdb_file,&votable);
+  int i_list=0, i_all=0;
+  gint i_band, i_band_max=0;
+  gboolean flag_band;
+
+  printf_log(hg,"[FCDB] pursing XML.");
+
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file);
+
+  Extract_VO_Fields(reader,&votable,&nbFields,&columns);
+  for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
+    if(xmlStrcmp(vfield_move->name,"object") == 0) 
+      columns[0] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"ra") == 0)
+      columns[1] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"dec") == 0) 
+      columns[2] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"exptime") == 0) 
+      columns[3] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"prog_id") == 0) 
+      columns[4] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"dp_id") == 0) 
+      columns[5] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"dp_tech") == 0) 
+      columns[6] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"ins_id") == 0) 
+      columns[7] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,"data_release_date") == 0) 
+      columns[8] = vfield_move->position;
+ }
+
+
+ Extract_VO_TableData(reader,&votable, nbFields, columns);
+ for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+   if(i_list==MAX_FCDB) break;
+
+   if (vtabledata_move->colomn == columns[0]){  // Name
+     if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+     hg->fcdb[i_list].name=g_strdup(vtabledata_move->value);
+     i_all++;
+     i_list++;
+   }
+   else if (vtabledata_move->colomn == columns[1]){  // RA
+     hg->fcdb[i_list].d_ra=atof(vtabledata_move->value);
+     hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
+   }
+   else if (vtabledata_move->colomn == columns[2]){  // DEC
+     hg->fcdb[i_list].d_dec=atof(vtabledata_move->value);
+     hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
+   }
+   else if (vtabledata_move->colomn == columns[3]){ // ExpTime
+     if(vtabledata_move->value){
+       hg->fcdb[i_list].u=atof(vtabledata_move->value);
+       if(hg->fcdb[i_list].u<0) hg->fcdb[i_list].u=-1;
+     }
+     else{
+       hg->fcdb[i_list].u=-1;
+     }
+   }
+   else if (vtabledata_move->colomn == columns[4]){  // Prop ID
+     if(hg->fcdb[i_list].obs) g_free(hg->fcdb[i_list].obs);
+     hg->fcdb[i_list].obs=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[5]){  // Frame ID
+     if(hg->fcdb[i_list].fid) g_free(hg->fcdb[i_list].fid);
+     hg->fcdb[i_list].fid=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[6]){  // Mode
+     if(hg->fcdb[i_list].type) g_free(hg->fcdb[i_list].type);
+     hg->fcdb[i_list].type=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[7]){ // Instrument
+     if(hg->fcdb[i_list].mode) g_free(hg->fcdb[i_list].mode);
+     hg->fcdb[i_list].mode=g_strdup(vtabledata_move->value);
+   }
+   else if (vtabledata_move->colomn == columns[8]){  // Release Date
+     if(hg->fcdb[i_list].date) g_free(hg->fcdb[i_list].date);
+     hg->fcdb[i_list].date=g_strdup(vtabledata_move->value);
+   }
+  }
+  hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
+
+  if (Free_VO_Parser(reader,&votable,&columns) == 1)
+    fprintf(stderr,"memory problem\n");
+
+  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    hg->fcdb[i_list].equinox=2000.00;
+    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
+				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+    hg->fcdb[i_list].pmra=0;
+    hg->fcdb[i_list].pmdec=0;
+    hg->fcdb[i_list].pm=FALSE;
+
+    // No trdb_band for ESO
+    flag_band=FALSE;
+    for(i_band=0;i_band<i_band_max;i_band++){
+      if(strcmp(hg->fcdb[i_list].type,
+		hg->obj[hg->fcdb_i].trdb_mode[i_band])==0){
+	hg->obj[hg->fcdb_i].trdb_exp[i_band]+=hg->fcdb[i_list].u;
+	hg->obj[hg->fcdb_i].trdb_shot[i_band]++;
+	flag_band=TRUE;
+	break;
+      }
+    }
+    
+    if((!flag_band)&&(i_band_max<MAX_TRDB_BAND)){ 
+      // Add New Band
+      if(hg->obj[hg->fcdb_i].trdb_mode[i_band_max])
+	g_free(hg->obj[hg->fcdb_i].trdb_mode[i_band_max]);
+      hg->obj[hg->fcdb_i].trdb_mode[i_band_max]
+	=g_strdup(hg->fcdb[i_list].type);
+      
+      if(hg->obj[hg->fcdb_i].trdb_band[i_band_max])
+	g_free(hg->obj[hg->fcdb_i].trdb_band[i_band_max]);
+      hg->obj[hg->fcdb_i].trdb_band[i_band_max]=NULL;
+
+      hg->obj[hg->fcdb_i].trdb_exp[i_band_max]=hg->fcdb[i_list].u;
+      hg->obj[hg->fcdb_i].trdb_shot[i_band_max]=1;
+      i_band_max++;
+    }
+
+    if(i_band_max>=MAX_TRDB_BAND) break;
+  }
+
+  hg->obj[hg->fcdb_i].trdb_band_max=i_band_max;
+
+  make_band_str(hg, hg->fcdb_i, TRDB_TYPE_ESO);
+
+  return;
+}
+
 
 void addobj_vo_parse(typHOE *hg) {
   xmlTextReaderPtr reader;

@@ -13,6 +13,14 @@ struct _PARAMhstinst{
 #define NUM_HST_SPEC 8
 #define NUM_HST_OTHER 2
 
+// HST Obs mode
+enum
+{
+  TRDB_HST_MODE_IMAGE,
+  TRDB_HST_MODE_SPEC,
+  TRDB_HST_MODE_OTHER
+};
+
 static const PARAMhstinst hst_image[NUM_HST_IMAGE] = {
   {"STIS"},  
   {"NICMOS"},  

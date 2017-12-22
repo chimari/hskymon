@@ -63,7 +63,6 @@ gint skymon_go();
 gint skymon_last_go();
 static void skymon_rev();
 gint skymon_back();
-void skymon_set_time_current();
 
 static gint button_signal();
 void draw_stderr_graph();
@@ -975,10 +974,9 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
     zonedate.hours=hour;
     zonedate.minutes=min;
     zonedate.seconds=sec;
-    zonedate.gmtoff=(long)hg->obs_timezone*3600;
+    zonedate.gmtoff=(long)hg->obs_timezone*60;
 
     ln_zonedate_to_date(&zonedate, &date);
-
     tmp=g_strdup_printf("UT =%02d:%02d",
 			date.hours,date.minutes);
     cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
@@ -1534,11 +1532,11 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
       ln_get_timet_from_julian (JD0, &t0);
       
       if(hg->skymon_mode==SKYMON_CUR){
-	int sys_gmtoff=get_gmtoff_from_sys();
+	int sys_gmtoff=get_gmtoff_from_sys(hg);
 
 	if(hg->allsky_last_t[hg->allsky_last_i-1]>0){
 	  ago=(t0-hg->allsky_last_t[hg->allsky_last_i-1])/60
-	    +(sys_gmtoff+hg->obs_timezone*60);
+	    +(sys_gmtoff+hg->obs_timezone);
 	  if(ago>30){
 	    cairo_set_source_rgba(cr, 1.0, 0, 0, 1.0);
 	  }
@@ -1548,11 +1546,19 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	  
 	  if((hg->allsky_diff_flag)&&(hg->allsky_last_i>1)){
 	    gint ago0=(t0-hg->allsky_last_t[hg->allsky_last_i-2])/60
-	      	    +(sys_gmtoff+hg->obs_timezone*60);
+	      	    +(sys_gmtoff+hg->obs_timezone);
 	    tmp=g_strdup_printf("[%dmin ago] - [%dmin ago]",ago,ago0);
 	  }
 	  else{
-	    tmp=g_strdup_printf("%dmin ago",ago);
+	    if(ago>60*24){
+	      tmp=g_strdup_printf("%ddays ago",ago/60/24);
+	    }
+	    else if(ago>60){
+	      tmp=g_strdup_printf("%dhrs ago",ago/60);
+	    }
+	    else{
+	      tmp=g_strdup_printf("%dmin ago",ago);
+	    }
 	  }
 	  cairo_text_extents (cr, tmp, &extents);
 	  cairo_move_to(cr,width-extents.width-5,height-e_h*2-5);
@@ -1562,16 +1568,16 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	
       }
       else if(hg->skymon_mode==SKYMON_LAST){
-	int sys_gmtoff=get_gmtoff_from_sys();
+	int sys_gmtoff=get_gmtoff_from_sys(hg);
 
 	if(hg->allsky_last_t[hg->allsky_last_frame]>0){
 	  ago=(t0-hg->allsky_last_t[hg->allsky_last_frame])/60
-	    +(sys_gmtoff+hg->obs_timezone*60);
+	    +(sys_gmtoff+hg->obs_timezone);
 
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
 	  if((hg->allsky_diff_flag)&&(hg->allsky_last_frame>0)){
 	    gint ago0=(t0-hg->allsky_last_t[hg->allsky_last_frame-1])/60
-	      +(sys_gmtoff+hg->obs_timezone*60);
+	      +(sys_gmtoff+hg->obs_timezone);
 	    tmp=g_strdup_printf("[%dmin ago] - [%dmin ago]",ago,ago0);
 	  }
 	  else{

@@ -208,9 +208,10 @@ void ln_get_date_from_sys (struct ln_date * date)
 	date->seconds = gmt->tm_sec + ((double)ts.tv_nsec / 1e9);
 #else
         struct timeval tv;
-        struct timezone tz;
+        //struct timezone tz;
 
-	gettimeofday (&tv, &tz);
+	//gettimeofday (&tv, &tz);
+	gettimeofday (&tv, NULL);
 	/* convert to UTC time representation */
 	gmt = gmtime(&tv.tv_sec);
 	date->seconds = gmt->tm_sec + ((double)tv.tv_usec / 1000000);
@@ -443,12 +444,25 @@ void ln_zonedate_to_date (struct ln_zonedate * zonedate, struct ln_date * date)
 	ln_get_date (jd, date);
 }
 
-int get_gmtoff_from_sys ()
+int get_gmtoff_from_sys (typHOE *hg)
 {
+  /*
   struct timeval tv;
   struct timezone tz;
   
   gettimeofday (&tv, &tz);
 
   return(tz.tz_minuteswest);
+  */
+#ifdef _BSD_SOURCE
+  time_t curtime;
+  struct tm *lotime;
+  
+  curtime = time (NULL);
+  lotime = localtime(&curtime);
+  
+  return(-(int)(lotime->tm_gmtoff/60));
+#else
+  return(hg->obs_timezone);
+#endif
 }

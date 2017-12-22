@@ -7,4 +7,7 @@ EXTRA_DIST = \
 	irafstd.lst\
 	irafstd.xml\
 	README\
-	mkexample.sh
+	mkexample.sh\
+	mk_acker2000.c\
+	PN_Acker_in.lst\
+	PN_Acker.xml
