@@ -1516,7 +1516,7 @@ void str_replace(gchar *in_file, const gchar *str1, const gchar *str2){
 }
 
 
-static wwwdb_item (GtkWidget *widget, gpointer data)
+static void  wwwdb_item (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
   gchar *tmp;
