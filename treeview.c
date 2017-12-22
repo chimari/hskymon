@@ -5599,6 +5599,16 @@ trdb_add_columns (typHOE *hg,
   gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
 }
 
+static void ToggleDispTRDB (GtkWidget *widget,  gpointer * gdata)
+{
+  typHOE *hg;
+  hg=(typHOE *)gdata;
+
+  hg->trdb_disp_flag
+    =gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
+  draw_skymon_cairo(hg->skymon_dw,hg, TRUE);
+}
 
 GtkWidget *
 do_editable_cells (typHOE *hg)
@@ -5612,8 +5622,8 @@ do_editable_cells (typHOE *hg)
   GtkTreeModel *items_model;
   GtkWidget *label;
   GtkWidget *combo;
-  GtkWidget *check;
   GtkWidget *entry;
+  GtkWidget *check;
   GtkWidget *all_note, *note_vbox;
   GdkPixbuf *icon;
 
@@ -6385,6 +6395,18 @@ do_editable_cells (typHOE *hg)
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (trdb_simbad), (gpointer)hg);
+
+    label= gtk_label_new ("       ");
+    gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+
+    check = gtk_check_button_new_with_label("Display on Sky Monitor");
+    gtk_box_pack_start(GTK_BOX(hbox), check, FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       ToggleDispTRDB,
+		       (gpointer)hg);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->trdb_disp_flag);
+
   }
 
   

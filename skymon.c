@@ -34,7 +34,7 @@ void my_cairo_object_nst();
 void my_cairo_object2();
 void my_cairo_object2_nst();
 void my_cairo_object3();
-void my_cairo_object3_nst();
+void my_cairo_object4();
 void my_cairo_std();
 void my_cairo_std2();
 void my_cairo_moon();
@@ -1683,26 +1683,23 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	if((hg->obj[i_list].s_el>0) && (hg->obj[i_list].check_disp)){
 	  if((hg->obj[i_list].i_nst>=0)
 	     &&(hg->nst[hg->obj[i_list].i_nst].s_fl!=0)){
-	    my_cairo_object_nst(cr,hg->fontfamily,width,height,
-				hg->obj[i_list].s_az,hg->obj[i_list].s_el,
-				hg->obj[i_list].name, hg->obj[i_list].check_sm,
-				hg->obj[i_list].check_lock,
-				hg->obj[i_list].check_std,
-				as_flag, hg->skymon_objsz,
-				hg->col[(hg->obj[i_list].ope<0)?(MAX_ROPE-1):(hg->obj[i_list].ope)],
-				hg->col_edge,hg->alpha_edge,hg->size_edge,
-				&hg->obj[i_list].x,&hg->obj[i_list].y);
+	    my_cairo_object_nst(cr,hg,i_list,width,height,SKYMON_SET,as_flag);
 	  }
 	  else{
-	    my_cairo_object(cr,hg->fontfamily,width,height,
-			    hg->obj[i_list].s_az,hg->obj[i_list].s_el,
-			    hg->obj[i_list].name, hg->obj[i_list].check_sm,
-			    hg->obj[i_list].check_lock,
-			    hg->obj[i_list].check_std,
-			    as_flag, hg->skymon_objsz,
-			    hg->col[(hg->obj[i_list].ope<0)?(MAX_ROPE-1):(hg->obj[i_list].ope)],
-			    hg->col_edge,hg->alpha_edge,hg->size_edge,
-			    &hg->obj[i_list].x,&hg->obj[i_list].y);
+	    if((!hg->trdb_disp_flag) || (hg->obj[i_list].trdb_band_max==0)){
+	      my_cairo_object(cr,hg,i_list,width,height,SKYMON_SET,as_flag);
+	    }
+	  }
+	}
+	else{
+	  hg->obj[i_list].x=-1;
+	  hg->obj[i_list].y=-1;
+	}
+      }
+      for(i_list=0;i_list<hg->i_max;i_list++){
+	if((hg->obj[i_list].s_el>0) && (hg->obj[i_list].check_disp)){
+	  if((hg->trdb_disp_flag) && (hg->obj[i_list].trdb_band_max>0)){
+	    my_cairo_object4(cr,hg,i_list,width,height,SKYMON_SET);
 	  }
 	}
 	else{
@@ -1714,20 +1711,10 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	if((hg->obj[i_list].s_el>0) && (hg->obj[i_list].check_disp)){
 	  if((hg->obj[i_list].i_nst>=0)
 	     &&(hg->nst[hg->obj[i_list].i_nst].s_fl!=0)){
-	    my_cairo_object2_nst(cr,width,height,
-				 hg->obj[i_list].s_az,hg->obj[i_list].s_el,
-				 hg->obj[i_list].name, hg->obj[i_list].check_sm,
-				 hg->obj[i_list].check_lock,
-				 hg->col[(hg->obj[i_list].ope<0)?(MAX_ROPE-1):(hg->obj[i_list].ope)],
-				 &hg->obj[i_list].x,&hg->obj[i_list].y);
+	    my_cairo_object2_nst(cr,hg,i_list,width,height,SKYMON_SET);
 	  }
 	  else{
-	    my_cairo_object2(cr,width,height,
-			     hg->obj[i_list].s_az,hg->obj[i_list].s_el,
-			     hg->obj[i_list].name, hg->obj[i_list].check_sm,
-			     hg->obj[i_list].check_lock,
-			     hg->col[(hg->obj[i_list].ope<0)?(MAX_ROPE-1):(hg->obj[i_list].ope)],
-			     &hg->obj[i_list].x,&hg->obj[i_list].y);
+	    my_cairo_object2(cr,hg,i_list,width,height,SKYMON_SET);
 	  }
 	}
 	else{
@@ -1737,13 +1724,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
       }
       for(i_list=0;i_list<hg->i_max;i_list++){
 	if((hg->obj[i_list].s_el>0) && (hg->obj[i_list].check_disp)){
-	  my_cairo_object3(cr,hg->fontfamily,width,height,
-			   hg->obj[i_list].s_az,hg->obj[i_list].s_el,
-			   hg->obj[i_list].name, hg->obj[i_list].check_sm,
-			   hg->obj[i_list].check_lock,
-			   hg->skymon_objsz,hg->size_edge,
-			   &hg->obj[i_list].x,&hg->obj[i_list].y);
-
+	  my_cairo_object3(cr,hg,i_list,width,height,SKYMON_SET);
 	}
 	else{
 	  hg->obj[i_list].x=-1;
@@ -1784,26 +1765,23 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	if((hg->obj[i_list].c_el>0) && (hg->obj[i_list].check_disp)){
 	  if((hg->obj[i_list].i_nst>=0)
 	     &&(hg->nst[hg->obj[i_list].i_nst].c_fl!=0)){
-	    my_cairo_object_nst(cr,hg->fontfamily,width,height,
-				hg->obj[i_list].c_az,hg->obj[i_list].c_el,
-				hg->obj[i_list].name, hg->obj[i_list].check_sm, 
-				hg->obj[i_list].check_lock,
-				hg->obj[i_list].check_std,
-				as_flag, hg->skymon_objsz,
-				hg->col[(hg->obj[i_list].ope<0)?(MAX_ROPE-1):(hg->obj[i_list].ope)],
-				hg->col_edge,hg->alpha_edge,hg->size_edge,
-				&hg->obj[i_list].x,&hg->obj[i_list].y);
+	    my_cairo_object_nst(cr,hg,i_list,width,height,SKYMON_CUR,as_flag);
 	  }
 	  else{
-	    my_cairo_object(cr,hg->fontfamily,width,height,
-			    hg->obj[i_list].c_az,hg->obj[i_list].c_el,
-			    hg->obj[i_list].name, hg->obj[i_list].check_sm, 
-			    hg->obj[i_list].check_lock,
-			    hg->obj[i_list].check_std,
-			    as_flag, hg->skymon_objsz,
-			    hg->col[(hg->obj[i_list].ope<0)?(MAX_ROPE-1):(hg->obj[i_list].ope)],
-			    hg->col_edge,hg->alpha_edge,hg->size_edge,
-			    &hg->obj[i_list].x,&hg->obj[i_list].y);
+	    if((!hg->trdb_disp_flag) || (hg->obj[i_list].trdb_band_max==0)){
+	      my_cairo_object(cr,hg,i_list,width,height,SKYMON_CUR,as_flag);
+	    }
+	  }
+	}
+	else{
+	  hg->obj[i_list].x=-1;
+	  hg->obj[i_list].y=-1;
+	}
+      }
+      for(i_list=0;i_list<hg->i_max;i_list++){
+	if((hg->obj[i_list].c_el>0) && (hg->obj[i_list].check_disp)){
+	  if((hg->trdb_disp_flag) && (hg->obj[i_list].trdb_band_max>0)){
+	    my_cairo_object4(cr,hg,i_list,width,height,SKYMON_CUR);
 	  }
 	}
 	else{
@@ -1815,20 +1793,10 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 	if((hg->obj[i_list].c_el>0) && (hg->obj[i_list].check_disp)){
 	  if((hg->obj[i_list].i_nst>=0)
 	     &&(hg->nst[hg->obj[i_list].i_nst].c_fl!=0)){
-	    my_cairo_object2_nst(cr,width,height,
-				 hg->obj[i_list].c_az,hg->obj[i_list].c_el,
-				 hg->obj[i_list].name, hg->obj[i_list].check_sm,
-				 hg->obj[i_list].check_lock,
-				 hg->col[(hg->obj[i_list].ope<0)?(MAX_ROPE-1):(hg->obj[i_list].ope)],
-				 &hg->obj[i_list].x,&hg->obj[i_list].y);
+	    my_cairo_object2_nst(cr,hg,i_list,width,height,SKYMON_CUR);
 	  }
 	  else{
-	    my_cairo_object2(cr,width,height,
-			     hg->obj[i_list].c_az,hg->obj[i_list].c_el,
-			     hg->obj[i_list].name, hg->obj[i_list].check_sm,
-			     hg->obj[i_list].check_lock,
-			     hg->col[(hg->obj[i_list].ope<0)?(MAX_ROPE-1):(hg->obj[i_list].ope)],
-			     &hg->obj[i_list].x,&hg->obj[i_list].y);
+	    my_cairo_object2(cr,hg,i_list,width,height,SKYMON_CUR);
 	  }
 	}
 	else{
@@ -1838,12 +1806,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
       }
       for(i_list=0;i_list<hg->i_max;i_list++){
 	if((hg->obj[i_list].c_el>0) && (hg->obj[i_list].check_disp)){
-	  my_cairo_object3(cr,hg->fontfamily,width,height,
-			   hg->obj[i_list].c_az,hg->obj[i_list].c_el,
-			   hg->obj[i_list].name, hg->obj[i_list].check_sm,
-			   hg->obj[i_list].check_lock,
-			   hg->skymon_objsz,hg->size_edge,
-			   &hg->obj[i_list].x,&hg->obj[i_list].y);
+	  my_cairo_object3(cr,hg,i_list,width,height,SKYMON_CUR);
 	}
 	else{
 	  hg->obj[i_list].x=-1;
@@ -2108,32 +2071,41 @@ void my_cairo_arc_center_path(cairo_t *cr, gint w, gint h){
 }
 
 // Normal
-void my_cairo_object(cairo_t *cr, gchar* fontname, gint w, gint h, gdouble az, gdouble el, gchar *name, gboolean check_sm, gboolean check_lock, gboolean check_std, gboolean allsky_flag, gint sz, GdkColor *col,GdkColor *col_edge,gint alpha_edge, gint size_edge, gdouble *objx, gdouble *objy){
+void my_cairo_object(cairo_t *cr, typHOE *hg, gint i, 
+		     gint w, gint h, gint mode, gboolean allsky_flag){
   gdouble r, el_r;
   gdouble x, y;
   cairo_text_extents_t extents;
 
-  if(check_sm||check_lock) return;
+  if(hg->obj[i].check_sm||hg->obj[i].check_lock) return;
 
   r= w<h ? w/2*0.9 : h/2*0.9;
 
-  el_r = r * (90 - el)/90;
+  if(mode==SKYMON_CUR){
+    el_r = r * (90 - hg->obj[i].c_el)/90;
 
-  x = w/2 + el_r*cos(M_PI/180.*(90-az));
-  y = h/2 + el_r*sin(M_PI/180.*(90-az));
+    x = w/2 + el_r*cos(M_PI/180.*(90-hg->obj[i].c_az));
+    y = h/2 + el_r*sin(M_PI/180.*(90-hg->obj[i].c_az));
+  }
+  else{
+    el_r = r * (90 - hg->obj[i].s_el)/90;
 
-  *objx=x;
-  *objy=y;
+    x = w/2 + el_r*cos(M_PI/180.*(90-hg->obj[i].s_az));
+    y = h/2 + el_r*sin(M_PI/180.*(90-hg->obj[i].s_az));
+  }
+
+  hg->obj[i].x=x;
+  hg->obj[i].y=y;
 
   cairo_new_path(cr);
 
   if(allsky_flag){
     cairo_set_source_rgba(cr, 
-			  (gdouble)col_edge->red/0x10000, 
-			  (gdouble)col_edge->green/0x10000,
-			  (gdouble)col_edge->blue/0x10000, 
-			  (gdouble)alpha_edge/0x10000);
-    if(check_std){
+			  (gdouble)hg->col_edge->red/0x10000, 
+			  (gdouble)hg->col_edge->green/0x10000,
+			  (gdouble)hg->col_edge->blue/0x10000, 
+			  (gdouble)hg->alpha_edge/0x10000);
+    if(hg->obj[i].check_std){
       cairo_arc(cr, x, y, 4, 0, 2*M_PI);
     }
     else{
@@ -2143,10 +2115,10 @@ void my_cairo_object(cairo_t *cr, gchar* fontname, gint w, gint h, gdouble az, g
     cairo_new_path(cr);
   }
 
-  cairo_set_source_rgba(cr, (gdouble)col->red/0x10000, 
-			(gdouble)col->green/0x10000, 
-			(gdouble)col->blue/0x10000, 1.0);
-  if(check_std){
+  cairo_set_source_rgba(cr, (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 1.0);
+  if(hg->obj[i].check_std){
     cairo_arc(cr, x, y, 2, 0, 2*M_PI);
   }
   else{
@@ -2154,67 +2126,77 @@ void my_cairo_object(cairo_t *cr, gchar* fontname, gint w, gint h, gdouble az, g
   }
   cairo_fill(cr);
 
-  if(sz>0){
-    cairo_select_font_face (cr, fontname, CAIRO_FONT_SLANT_NORMAL,
+  if(hg->skymon_objsz>0){
+    cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_NORMAL);
-    if(check_std)
-      cairo_set_font_size (cr, (gdouble)sz*.8);
+    if(hg->obj[i].check_std)
+      cairo_set_font_size (cr, (gdouble)hg->skymon_objsz*.8);
     else
-      cairo_set_font_size (cr, (gdouble)sz);
-    cairo_text_extents (cr, name, &extents);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_objsz);
+    cairo_text_extents (cr, hg->obj[i].name, &extents);
     if(allsky_flag){
       cairo_move_to(cr,
 		    x-(extents.width/2 + extents.x_bearing),
 		    y-5);
-      cairo_text_path(cr, name);
+      cairo_text_path(cr, hg->obj[i].name);
       cairo_set_source_rgba(cr, 
-			    (gdouble)col_edge->red/0x10000, 
-			    (gdouble)col_edge->green/0x10000,
-			    (gdouble)col_edge->blue/0x10000, 
-			    (gdouble)alpha_edge/0x10000);
-      cairo_set_line_width(cr, (double)size_edge);
+			    (gdouble)hg->col_edge->red/0x10000, 
+			    (gdouble)hg->col_edge->green/0x10000,
+			    (gdouble)hg->col_edge->blue/0x10000, 
+			    (gdouble)hg->alpha_edge/0x10000);
+      cairo_set_line_width(cr, (double)hg->size_edge);
       cairo_stroke(cr);
       
       cairo_new_path(cr);
     }
     
-    cairo_set_source_rgba(cr, (gdouble)col->red/0x10000, 
-			  (gdouble)col->green/0x10000, (gdouble)col->blue/0x10000, 1.0);
+    cairo_set_source_rgba(cr, 
+			  (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
+			  (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
+			  (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 1.0);
     cairo_move_to(cr,
 		  x-(extents.width/2 + extents.x_bearing),
 		  y-5);
-    cairo_show_text(cr, name);
+    cairo_show_text(cr, hg->obj[i].name);
   }
 
 }
 
-
-void my_cairo_object_nst(cairo_t *cr, gchar* fontname, gint w, gint h, gdouble az, gdouble el, gchar *name, gboolean check_sm, gboolean check_lock, gboolean check_std, gboolean allsky_flag, gint sz, GdkColor *col,GdkColor *col_edge,gint alpha_edge, gint size_edge, gdouble *objx, gdouble *objy){
+void my_cairo_object_nst(cairo_t *cr, typHOE *hg, gint i,
+			 gint w, gint h, gint mode, gboolean allsky_flag){
   gdouble r, el_r;
   gdouble x, y;
   cairo_text_extents_t extents;
 
-  if(check_sm||check_lock) return;
+  if(hg->obj[i].check_sm||hg->obj[i].check_lock) return;
 
   r= w<h ? w/2*0.9 : h/2*0.9;
 
-  el_r = r * (90 - el)/90;
+  if(mode==SKYMON_CUR){
+    el_r = r * (90 - hg->obj[i].c_el)/90;
+  
+    x = w/2 + el_r*cos(M_PI/180.*(90-hg->obj[i].c_az));
+    y = h/2 + el_r*sin(M_PI/180.*(90-hg->obj[i].c_az));
+  }
+  else{
+    el_r = r * (90 - hg->obj[i].s_el)/90;
+  
+    x = w/2 + el_r*cos(M_PI/180.*(90-hg->obj[i].s_az));
+    y = h/2 + el_r*sin(M_PI/180.*(90-hg->obj[i].s_az));
+  }
 
-  x = w/2 + el_r*cos(M_PI/180.*(90-az));
-  y = h/2 + el_r*sin(M_PI/180.*(90-az));
-
-  *objx=x;
-  *objy=y;
+  hg->obj[i].x=x;
+  hg->obj[i].y=y;
 
   cairo_new_path(cr);
 
   if(allsky_flag){
     cairo_set_source_rgba(cr, 
-			  (gdouble)col_edge->red/0x10000, 
-			  (gdouble)col_edge->green/0x10000,
-			  (gdouble)col_edge->blue/0x10000, 
-			  (gdouble)alpha_edge/0x10000);
-    cairo_set_line_width(cr, (double)size_edge+2);
+			  (gdouble)hg->col_edge->red/0x10000, 
+			  (gdouble)hg->col_edge->green/0x10000,
+			  (gdouble)hg->col_edge->blue/0x10000, 
+			  (gdouble)hg->alpha_edge/0x10000);
+    cairo_set_line_width(cr, (double)hg->size_edge+2);
 
     cairo_move_to(cr, x-3, y-3);
     cairo_line_to(cr, x+3, y+3);
@@ -2225,9 +2207,10 @@ void my_cairo_object_nst(cairo_t *cr, gchar* fontname, gint w, gint h, gdouble a
     cairo_stroke(cr);
   }
 
-  cairo_set_source_rgba(cr, (gdouble)col->red/0x10000, 
-			(gdouble)col->green/0x10000, 
-			(gdouble)col->blue/0x10000, 0.7);
+  cairo_set_source_rgba(cr, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 0.7);
   cairo_set_line_width(cr, 2);
   
   cairo_move_to(cr, x-3, y-3);
@@ -2238,61 +2221,72 @@ void my_cairo_object_nst(cairo_t *cr, gchar* fontname, gint w, gint h, gdouble a
   cairo_line_to(cr, x+3, y-3);
   cairo_stroke(cr);
 
-  if(sz>0){
-    cairo_select_font_face (cr, fontname, CAIRO_FONT_SLANT_ITALIC,
+  if(hg->skymon_objsz>0){
+    cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_ITALIC,
 			  CAIRO_FONT_WEIGHT_NORMAL);
-    if(check_std)
-      cairo_set_font_size (cr, (gdouble)sz*.8);
+    if(hg->obj[i].check_std)
+      cairo_set_font_size (cr, (gdouble)hg->skymon_objsz*.8);
     else
-      cairo_set_font_size (cr, (gdouble)sz);
-    cairo_text_extents (cr, name, &extents);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_objsz);
+    cairo_text_extents (cr, hg->obj[i].name, &extents);
     if(allsky_flag){
       cairo_move_to(cr,
 		    x-(extents.width/2 + extents.x_bearing),
 		    y-5);
-      cairo_text_path(cr, name);
+      cairo_text_path(cr, hg->obj[i].name);
       cairo_set_source_rgba(cr, 
-			    (gdouble)col_edge->red/0x10000, 
-			    (gdouble)col_edge->green/0x10000,
-			    (gdouble)col_edge->blue/0x10000, 
-			    (gdouble)alpha_edge/0x10000);
-      cairo_set_line_width(cr, (double)size_edge);
+			    (gdouble)hg->col_edge->red/0x10000, 
+			    (gdouble)hg->col_edge->green/0x10000,
+			    (gdouble)hg->col_edge->blue/0x10000, 
+			    (gdouble)hg->alpha_edge/0x10000);
+      cairo_set_line_width(cr, (double)hg->size_edge);
       cairo_stroke(cr);
       
       cairo_new_path(cr);
     }
     
-    cairo_set_source_rgba(cr, (gdouble)col->red/0x10000, 
-			  (gdouble)col->green/0x10000, (gdouble)col->blue/0x10000, 0.7);
+    cairo_set_source_rgba(cr, 
+			  (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
+			  (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
+			  (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 0.7);
     cairo_move_to(cr,
 		  x-(extents.width/2 + extents.x_bearing),
 		  y-5);
-    cairo_show_text(cr, name);
+    cairo_show_text(cr, hg->obj[i].name);
   }
 
 }
 
 // High-ligted
-void my_cairo_object2(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, gchar *name, gboolean check_sm, gboolean check_lock, GdkColor *col, gdouble *objx, gdouble *objy){
+void my_cairo_object2(cairo_t *cr, typHOE *hg, gint i, 
+		      gint w, gint h, gint mode){
   gdouble r, el_r;
   gdouble x, y;
   cairo_text_extents_t extents;
 
-  if((!check_sm)&&(!check_lock)) return;
+  if((!hg->obj[i].check_sm)&&(!hg->obj[i].check_lock)) return;
    
   r= w<h ? w/2*0.9 : h/2*0.9;
 
-  el_r = r * (90 - el)/90;
+  if(mode==SKYMON_CUR){
+    el_r = r * (90 - hg->obj[i].c_el)/90;
 
-  x = w/2 + el_r*cos(M_PI/180.*(90-az));
-  y = h/2 + el_r*sin(M_PI/180.*(90-az));
+    x = w/2 + el_r*cos(M_PI/180.*(90-hg->obj[i].c_az));
+    y = h/2 + el_r*sin(M_PI/180.*(90-hg->obj[i].c_az));
+  }
+  else{
+    el_r = r * (90 - hg->obj[i].s_el)/90;
 
-  *objx=x;
-  *objy=y;
+    x = w/2 + el_r*cos(M_PI/180.*(90-hg->obj[i].s_az));
+    y = h/2 + el_r*sin(M_PI/180.*(90-hg->obj[i].s_az));
+  }
+
+  hg->obj[i].x=x;
+  hg->obj[i].y=y;
 
   cairo_new_path(cr);
 
-  if(check_lock){
+  if(hg->obj[i].check_lock){
     cairo_set_source_rgba(cr, 1.0, 0.5, 0.5, 0.6);
     cairo_arc(cr, x, y, 10, 0, 2*M_PI);
   }
@@ -2303,33 +2297,43 @@ void my_cairo_object2(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, gchar
   cairo_fill(cr);
   cairo_new_path(cr);
 
-  cairo_set_source_rgba(cr, (gdouble)col->red/0x10000, 
-			(gdouble)col->green/0x10000, (gdouble)col->blue/0x10000, 1.0);
+  cairo_set_source_rgba(cr, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 1.0);
   cairo_arc(cr, x, y, 3, 0, 2*M_PI);
   cairo_fill(cr);
-
 }
 
-void my_cairo_object2_nst(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, gchar *name, gboolean check_sm, gboolean check_lock, GdkColor *col, gdouble *objx, gdouble *objy){
+void my_cairo_object2_nst(cairo_t *cr, typHOE *hg, gint i,
+			  gint w, gint h, gint mode){
   gdouble r, el_r;
   gdouble x, y;
   cairo_text_extents_t extents;
 
-  if((!check_sm)&&(!check_lock)) return;
+  if((!hg->obj[i].check_sm)&&(!hg->obj[i].check_lock)) return;
    
   r= w<h ? w/2*0.9 : h/2*0.9;
 
-  el_r = r * (90 - el)/90;
+  if(mode==SKYMON_CUR){
+    el_r = r * (90 - hg->obj[i].c_el)/90;
 
-  x = w/2 + el_r*cos(M_PI/180.*(90-az));
-  y = h/2 + el_r*sin(M_PI/180.*(90-az));
+    x = w/2 + el_r*cos(M_PI/180.*(90-hg->obj[i].c_az));
+    y = h/2 + el_r*sin(M_PI/180.*(90-hg->obj[i].c_az));
+  }
+  else{
+    el_r = r * (90 - hg->obj[i].s_el)/90;
 
-  *objx=x;
-  *objy=y;
+    x = w/2 + el_r*cos(M_PI/180.*(90-hg->obj[i].s_az));
+    y = h/2 + el_r*sin(M_PI/180.*(90-hg->obj[i].s_az));
+  }
+
+  hg->obj[i].x=x;
+  hg->obj[i].y=y;
 
   cairo_new_path(cr);
 
-  if(check_lock){
+  if(hg->obj[i].check_lock){
     cairo_set_source_rgba(cr, 1.0, 0.5, 0.5, 0.6);
     cairo_set_line_width(cr, 6);
 
@@ -2356,8 +2360,10 @@ void my_cairo_object2_nst(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, g
   cairo_fill(cr);
   cairo_new_path(cr);
 
-  cairo_set_source_rgba(cr, (gdouble)col->red/0x10000, 
-			(gdouble)col->green/0x10000, (gdouble)col->blue/0x10000, 1.0);
+  cairo_set_source_rgba(cr, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 1.0);
 
   cairo_set_line_width(cr, 2);
   cairo_move_to(cr, x-3, y-3);
@@ -2371,53 +2377,119 @@ void my_cairo_object2_nst(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, g
 }
 
 // Locked
-void my_cairo_object3(cairo_t *cr, char *fontname, gint w, gint h, gdouble az, gdouble el, gchar *name, gboolean check_sm, gboolean check_lock, gint sz, gint size_edge, gdouble *objx, gdouble *objy){
+void my_cairo_object3(cairo_t *cr, typHOE *hg, gint i, 
+		      gint w, gint h, gint mode){
   gdouble r, el_r;
   gdouble x, y;
   cairo_text_extents_t extents;
+  gboolean trdb_flag=FALSE;
 
-  if((!check_sm)&&(!check_lock)) return;
+  if((hg->trdb_disp_flag) && (hg->obj[i].trdb_band_max>0)){
+    trdb_flag=TRUE;
+  }
+
+  if(!trdb_flag){
+    if((!hg->obj[i].check_sm)&&(!hg->obj[i].check_lock)) return;
+  }
    
   r= w<h ? w/2*0.9 : h/2*0.9;
 
-  el_r = r * (90 - el)/90;
+  if(mode==SKYMON_CUR){
+    el_r = r * (90 - hg->obj[i].c_el)/90;
 
-  x = w/2 + el_r*cos(M_PI/180.*(90-az));
-  y = h/2 + el_r*sin(M_PI/180.*(90-az));
+    x = w/2 + el_r*cos(M_PI/180.*(90-hg->obj[i].c_az));
+    y = h/2 + el_r*sin(M_PI/180.*(90-hg->obj[i].c_az));
+  }
+  else{
+    el_r = r * (90 - hg->obj[i].s_el)/90;
 
-  *objx=x;
-  *objy=y;
+    x = w/2 + el_r*cos(M_PI/180.*(90-hg->obj[i].s_az));
+    y = h/2 + el_r*sin(M_PI/180.*(90-hg->obj[i].s_az));
+  }
+
+  hg->obj[i].x=x;
+  hg->obj[i].y=y;
 
   cairo_new_path(cr);
 
-  if(sz>0){
-    cairo_select_font_face (cr, fontname, CAIRO_FONT_SLANT_NORMAL,
+  if(hg->skymon_objsz>0){
+    cairo_select_font_face (cr, hg->fontfamily, CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_BOLD);
-    if(check_lock)
-      cairo_set_font_size (cr, (gdouble)sz*1.5);
+    if(hg->obj[i].check_lock)
+      cairo_set_font_size (cr, (gdouble)hg->skymon_objsz*1.5);
     else
-      cairo_set_font_size (cr, (gdouble)sz*1.3);
-    cairo_text_extents (cr, name, &extents);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_objsz*1.3);
+    cairo_text_extents (cr, hg->obj[i].name, &extents);
     cairo_move_to(cr,
 		  x-(extents.width/2 + extents.x_bearing),
 		  y-15);
-    cairo_text_path(cr, name);
+    cairo_text_path(cr, hg->obj[i].name);
     cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.8);
-    cairo_set_line_width(cr, (double)size_edge*1.5);
+    cairo_set_line_width(cr, (double)hg->size_edge*1.5);
     cairo_stroke(cr);
     
     cairo_new_path(cr);
     cairo_move_to(cr,
 		  x-(extents.width/2 + extents.x_bearing),
 		  y-15);
-    if(check_lock)
+    if(hg->obj[i].check_lock)
       cairo_set_source_rgba(cr, 1.0, 0.2, 0.2, 1.0);
-    else
+    else if(hg->obj[i].check_sm)
       cairo_set_source_rgba(cr, 1.0, 0.4, 0.2, 1.0);
-    cairo_show_text(cr, name);
+    else
+      cairo_set_source_rgba(cr, 0.4, 0.4, 1.0, 1.0);
+    cairo_show_text(cr, hg->obj[i].name);
   }
 }
 
+// High-ligted for Data found
+void my_cairo_object4(cairo_t *cr, typHOE *hg, gint i,
+		      gint w, gint h, gint mode){
+  gdouble r, el_r;
+  gdouble x, y;
+  cairo_text_extents_t extents;
+
+  if((hg->obj[i].check_sm)||(hg->obj[i].check_lock)) return;
+   
+  r= w<h ? w/2*0.9 : h/2*0.9;
+
+  if(mode==SKYMON_CUR){
+    el_r = r * (90 - hg->obj[i].c_el)/90;
+
+    x = w/2 + el_r*cos(M_PI/180.*(90-hg->obj[i].c_az));
+    y = h/2 + el_r*sin(M_PI/180.*(90-hg->obj[i].c_az));
+  }
+  else{
+    el_r = r * (90 - hg->obj[i].s_el)/90;
+
+    x = w/2 + el_r*cos(M_PI/180.*(90-hg->obj[i].s_az));
+    y = h/2 + el_r*sin(M_PI/180.*(90-hg->obj[i].s_az));
+  }
+
+  hg->obj[i].x=x;
+  hg->obj[i].y=y;
+
+  cairo_new_path(cr);
+
+  if(hg->obj[i].check_lock){
+    cairo_set_source_rgba(cr, 1.0, 0.5, 0.5, 0.6);
+    cairo_arc(cr, x, y, 10, 0, 2*M_PI);
+  }
+  else{
+    cairo_set_source_rgba(cr, 0.5, 0.5, 1.0, 0.6);
+    cairo_arc(cr, x, y, 7, 0, 2*M_PI);
+  }
+  cairo_fill(cr);
+  cairo_new_path(cr);
+
+  cairo_set_source_rgba(cr, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 1.0);
+  cairo_arc(cr, x, y, 3, 0, 2*M_PI);
+  cairo_fill(cr);
+
+}
 
 void my_cairo_std(cairo_t *cr, gint w, gint h, gdouble az, gdouble el, gdouble *objx, gdouble *objy){
   gdouble r, el_r;

@@ -1780,8 +1780,8 @@ struct _typHOE{
 
   GtkWidget *trdb_tree;
   GtkWidget *trdb_label;
-  gint trdb_i;
   gint trdb_tree_focus;
+  gboolean trdb_disp_flag;
   gchar *trdb_label_text;
   GtkWidget *trdb_search_label;
   gchar *trdb_search_text;

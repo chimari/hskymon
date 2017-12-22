@@ -52,6 +52,8 @@ void ext_play();
 static void show_dss();
 static void show_simbad();
 
+void clear_trdb();
+
 void do_open();
 void do_open_NST();
 void do_open_JPL();
@@ -2234,6 +2236,30 @@ void do_quit (GtkWidget *widget, gpointer gdata)
   gtk_main_quit();
 }
 
+void clear_trdb(typHOE *hg){
+  gint i_list, i_band;
+  
+  for(i_list=0;i_list<hg->i_max;i_list++){
+    for(i_band=0;i_band<hg->obj[i_list].trdb_band_max;i_band++){
+      if(hg->obj[i_list].trdb_band[i_band]){
+	g_free(hg->obj[i_list].trdb_band[i_band]);
+	hg->obj[i_list].trdb_band[i_band]=NULL;
+      }
+      if(hg->obj[i_list].trdb_mode[i_band]){
+	g_free(hg->obj[i_list].trdb_mode[i_band]);
+	hg->obj[i_list].trdb_mode[i_band]=NULL;
+      }
+      hg->obj[i_list].trdb_exp[i_band]=0;
+      hg->obj[i_list].trdb_shot[i_band]=0;
+    }
+    if(hg->obj[i_list].trdb_str){
+      g_free(hg->obj[i_list].trdb_str);
+      hg->obj[i_list].trdb_str=NULL;
+    }
+    hg->obj[i_list].trdb_band_max=0;
+  }
+}
+
 void do_open (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *fdialog;
@@ -2291,6 +2317,8 @@ void do_open (GtkWidget *widget, gpointer gdata)
       hg->filehead=make_head(dest_file);
       ReadList(hg, 0);
 
+      clear_trdb(hg);
+
       //// Current Condition
       if(hg->skymon_mode==SKYMON_SET){
 	calcpa2_skymon(hg);
@@ -2302,6 +2330,7 @@ void do_open (GtkWidget *widget, gpointer gdata)
 
       if(flagTree){
 	remake_tree(hg);
+	trdb_make_tree(hg);
       }
     }
     else{
@@ -2733,6 +2762,8 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
       hg->filehead=make_head(dest_file);
       ReadListOPE(hg, 0);
 
+      clear_trdb(hg);
+
       //// Current Condition
       if(hg->skymon_mode==SKYMON_SET){
 	calcpa2_skymon(hg);
@@ -2744,6 +2775,7 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
       
       if(flagTree){
 	remake_tree(hg);
+	trdb_make_tree(hg);
       }
     }
     else{
@@ -11047,6 +11079,7 @@ void param_init(typHOE *hg){
     }
   }
 
+  hg->trdb_disp_flag=TRUE;
   hg->trdb_smoka_inst=0;
   skymon_set_time_current(hg);
   hg->trdb_smoka_date=g_strdup_printf("1998-01-01..%d-%02d-%02d",
