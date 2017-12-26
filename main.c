@@ -96,6 +96,7 @@ static void fcdb_para_item();
 static void trdb_smoka();
 static void trdb_hst();
 static void trdb_eso();
+static void trdb_gemini();
 
 
 void InitDefCol();
@@ -659,6 +660,15 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",
   		     trdb_eso, (gpointer)hg);
+
+  // Gemini
+  image=gtk_image_new_from_stock (GTK_STOCK_FIND, GTK_ICON_SIZE_MENU);
+  popup_button =gtk_image_menu_item_new_with_label ("Gemini archive : List Query");
+  gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+  gtk_widget_show (popup_button);
+  gtk_container_add (GTK_CONTAINER (menu), popup_button);
+  my_signal_connect (popup_button, "activate",
+  		     trdb_gemini, (gpointer)hg);
 
   bar =gtk_separator_menu_item_new();
   gtk_widget_show (bar);
@@ -5318,6 +5328,190 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
 }
 
 
+static void ok_trdb_gemini(GtkWidget *w, gpointer gdata)
+{
+  typHOE *hg;
+  hg=(typHOE *)gdata;
+
+  gtk_main_quit();
+
+  trdb_run(hg);
+
+  hg->fcdb_type=hg->fcdb_type_tmp;
+  hg->trdb_used=TRDB_TYPE_GEMINI;
+  hg->trdb_gemini_inst_used  =hg->trdb_gemini_inst;
+  hg->trdb_gemini_mode_used  =hg->trdb_gemini_mode;
+  hg->trdb_arcmin_used=hg->trdb_arcmin;
+  if(hg->trdb_gemini_date_used) g_free(hg->trdb_gemini_date_used);
+  hg->trdb_gemini_date_used=g_strdup(hg->trdb_gemini_date);
+}
+
+
+
+static void trdb_gemini (GtkWidget *widget, gpointer data)
+{
+  GtkWidget *dialog, *label, *button, *combo, *table, *entry, 
+    *spinner, *hbox, *check, *rb[3];
+  GtkAdjustment *adj;
+  GSList *group;
+  typHOE *hg = (typHOE *)data;
+
+  if(hg->i_max<=0){
+    return;
+  }
+
+  if(flagChildDialog){
+    return;
+  }
+  else{
+    flagChildDialog=TRUE;
+  }
+
+  hg->fcdb_type_tmp=hg->fcdb_type;
+  hg->fcdb_type=TRDB_TYPE_GEMINI;
+
+  dialog = gtk_dialog_new();
+  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Gemini archive List Query");
+
+  table = gtk_table_new(2,3,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		     table,FALSE, FALSE, 0);
+
+  label = gtk_label_new ("Gemini Instrument");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  
+  {
+    GtkListStore *store;
+    GtkTreeIter iter, iter_set;	  
+    GtkCellRenderer *renderer;
+    gint i_inst;
+    
+    store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+
+    for(i_inst=1;i_inst<NUM_GEMINI_INST;i_inst++){
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, gemini_inst[i_inst].name,
+			 1, i_inst, -1);
+      if(hg->trdb_gemini_inst==i_inst) iter_set=iter;
+    }
+
+    combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    gtk_table_attach(GTK_TABLE(table), combo, 1, 2, 0, 1,
+		     GTK_FILL,GTK_SHRINK,0,0);
+    g_object_unref(store);
+    
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+    
+    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+    gtk_widget_show(combo);
+    my_signal_connect (combo,"changed",cc_get_combo_box,
+		       &hg->trdb_gemini_inst);
+  }
+
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 0, 2, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  rb[0]=gtk_radio_button_new_with_label(NULL, "Any");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[0], FALSE, FALSE, 0);
+  my_signal_connect (rb[0], "toggled", cc_radio, &hg->trdb_gemini_mode);
+
+  rb[1]=gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]),"Imaging");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[1], FALSE, FALSE, 0);
+  my_signal_connect (rb[1], "toggled", cc_radio, &hg->trdb_gemini_mode);
+
+  rb[2]=gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]),"Spectroscopy");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[2], FALSE, FALSE, 0);
+  my_signal_connect (rb[2], "toggled", cc_radio, &hg->trdb_gemini_mode);
+
+  group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(rb[0]));
+
+
+  label = gtk_label_new ("Search Radius");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtk_hbox_new(FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 2, 3,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->trdb_arcmin,
+					    1, 10, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &hg->trdb_arcmin);
+
+  label = gtk_label_new (" arcmin");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  
+  label = gtk_label_new ("Observation Date");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 3, 4,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  entry = gtk_entry_new ();
+  gtk_table_attach(GTK_TABLE(table), entry, 1, 2, 3, 4,
+		   GTK_FILL,GTK_SHRINK,0,0);
+  gtk_entry_set_text(GTK_ENTRY(entry), hg->trdb_gemini_date);
+  gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+  my_entry_set_width_chars(GTK_ENTRY(entry),25);
+  my_signal_connect (entry,
+		     "changed",
+		     cc_get_entry,
+		     &hg->trdb_gemini_date);
+
+  button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed",
+		    gtk_main_quit, NULL);
+
+  button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed",
+		    ok_trdb_gemini, (gpointer)hg);
+
+  gtk_widget_show_all(dialog);
+
+  if(hg->trdb_gemini_mode==TRDB_GEMINI_MODE_ANY)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb[0]),TRUE);
+  if(hg->trdb_gemini_mode==TRDB_GEMINI_MODE_IMAGE)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb[1]),TRUE);
+  if(hg->trdb_gemini_mode==TRDB_GEMINI_MODE_SPEC)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb[2]),TRUE);
+
+  gtk_main();
+
+  gtk_widget_destroy(dialog);
+
+  flagChildDialog=FALSE;
+
+  if(!flagTree){
+    make_tree(hg->skymon_main,hg);
+  }
+  raise_tree();
+  gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
+}
+
+
 static void fcdb_para_item (GtkWidget *widget, gpointer data)
 {
   typHOE *hg = (typHOE *)data;
@@ -5328,8 +5522,7 @@ static void fcdb_para_item (GtkWidget *widget, gpointer data)
 void create_fcdb_para_dialog (typHOE *hg)
 {
   GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox, 
-    *spinner, *combo, *table, *check, *r1, *r2, *r3, *r4, *r5, *r6, 
-    *r7, *r8, *r9, *r10, *r11, *r12, *r13, *r14, *r15, 
+    *spinner, *combo, *table, *check, *rb[16], 
     *table1, *hbox1, *vbox1;
   GtkAdjustment *adj;
   gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, 
@@ -5357,7 +5550,8 @@ void create_fcdb_para_dialog (typHOE *hg)
     tmp_eso_pola[NUM_ESO_POLA],
     tmp_eso_coro[NUM_ESO_CORO],
     tmp_eso_other[NUM_ESO_OTHER],
-    tmp_eso_sam[NUM_ESO_SAM];
+    tmp_eso_sam[NUM_ESO_SAM],
+    tmp_gemini_inst;
   confPropFCDB *cdata;
   gboolean rebuild_flag=FALSE;
   gint i;
@@ -5451,6 +5645,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   for(i=0;i<NUM_ESO_SAM;i++){
     tmp_eso_sam[i]=hg->fcdb_eso_sam[i];
   }
+  tmp_gemini_inst =hg->fcdb_gemini_inst;
 
   dialog = gtk_dialog_new();
   cdata->dialog=dialog;
@@ -5473,14 +5668,14 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (frame), hbox);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
-  r1 = gtk_radio_button_new_with_label_from_widget (NULL, "SIMBAD");
-  gtk_box_pack_start(GTK_BOX(hbox), r1, FALSE, FALSE, 0);
-  my_signal_connect (r1, "toggled", radio_fcdb, (gpointer)hg);
+  rb[0] = gtk_radio_button_new_with_label_from_widget (NULL, "SIMBAD");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[0], FALSE, FALSE, 0);
+  my_signal_connect (rb[0], "toggled", radio_fcdb, (gpointer)hg);
 
-  r2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "NED");
-  gtk_box_pack_start(GTK_BOX(hbox), r2, FALSE, FALSE, 0);
-  gtk_widget_show (r2);
-  my_signal_connect (r2, "toggled", radio_fcdb, (gpointer)hg);
+  rb[1] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "NED");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[1], FALSE, FALSE, 0);
+  gtk_widget_show (rb[1]);
+  my_signal_connect (rb[1], "toggled", radio_fcdb, (gpointer)hg);
 
   frame = gtk_frame_new ("Optical");
   gtk_container_add (GTK_CONTAINER (hbox1), frame);
@@ -5490,35 +5685,35 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (frame), hbox);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
-  r3 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "GSC");
-  gtk_box_pack_start(GTK_BOX(hbox), r3, FALSE, FALSE, 0);
-  gtk_widget_show (r3);
-  my_signal_connect (r3, "toggled", radio_fcdb, (gpointer)hg);
+  rb[2] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "GSC");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[2], FALSE, FALSE, 0);
+  gtk_widget_show (rb[2]);
+  my_signal_connect (rb[2], "toggled", radio_fcdb, (gpointer)hg);
 
-  r4 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "PanSTARRS");
-  gtk_box_pack_start(GTK_BOX(hbox), r4, FALSE, FALSE, 0);
-  gtk_widget_show (r4);
-  my_signal_connect (r4, "toggled", radio_fcdb, (gpointer)hg);
+  rb[3] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "PanSTARRS");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[3], FALSE, FALSE, 0);
+  gtk_widget_show (rb[3]);
+  my_signal_connect (rb[3], "toggled", radio_fcdb, (gpointer)hg);
 
-  r5 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "SDSS");
-  gtk_box_pack_start(GTK_BOX(hbox), r5, FALSE, FALSE, 0);
-  gtk_widget_show (r5);
-  my_signal_connect (r5, "toggled", radio_fcdb, (gpointer)hg);
+  rb[4] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "SDSS");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[4], FALSE, FALSE, 0);
+  gtk_widget_show (rb[4]);
+  my_signal_connect (rb[4], "toggled", radio_fcdb, (gpointer)hg);
 
-  r6 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "LAMOST");
-  gtk_box_pack_start(GTK_BOX(hbox), r6, FALSE, FALSE, 0);
-  gtk_widget_show (r6);
-  my_signal_connect (r6, "toggled", radio_fcdb, (gpointer)hg);
+  rb[5] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "LAMOST");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[5], FALSE, FALSE, 0);
+  gtk_widget_show (rb[5]);
+  my_signal_connect (rb[5], "toggled", radio_fcdb, (gpointer)hg);
 
-  r7 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "USNO-B");
-  gtk_box_pack_start(GTK_BOX(hbox), r7, FALSE, FALSE, 0);
-  gtk_widget_show (r7);
-  my_signal_connect (r7, "toggled", radio_fcdb, (gpointer)hg);
+  rb[6] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "USNO-B");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[6], FALSE, FALSE, 0);
+  gtk_widget_show (rb[6]);
+  my_signal_connect (rb[6], "toggled", radio_fcdb, (gpointer)hg);
 
-  r8 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "GAIA");
-  gtk_box_pack_start(GTK_BOX(hbox), r8, FALSE, FALSE, 0);
-  gtk_widget_show (r8);
-  my_signal_connect (r8, "toggled", radio_fcdb, (gpointer)hg);
+  rb[7] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "GAIA");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[7], FALSE, FALSE, 0);
+  gtk_widget_show (rb[7]);
+  my_signal_connect (rb[7], "toggled", radio_fcdb, (gpointer)hg);
 
   hbox1 = gtk_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
@@ -5533,25 +5728,25 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (frame), hbox);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
-  r9 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "2MASS");
-  gtk_box_pack_start(GTK_BOX(hbox), r9, FALSE, FALSE, 0);
-  gtk_widget_show (r9);
-  my_signal_connect (r9, "toggled", radio_fcdb, (gpointer)hg);
+  rb[8] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "2MASS");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[8], FALSE, FALSE, 0);
+  gtk_widget_show (rb[8]);
+  my_signal_connect (rb[8], "toggled", radio_fcdb, (gpointer)hg);
 
-  r10 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "WISE");
-  gtk_box_pack_start(GTK_BOX(hbox), r10, FALSE, FALSE, 0);
-  gtk_widget_show (r10);
-  my_signal_connect (r10, "toggled", radio_fcdb, (gpointer)hg);
+  rb[9] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "WISE");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[9], FALSE, FALSE, 0);
+  gtk_widget_show (rb[9]);
+  my_signal_connect (rb[9], "toggled", radio_fcdb, (gpointer)hg);
 
-  r11 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "AKARI/IRC");
-  gtk_box_pack_start(GTK_BOX(hbox), r11, FALSE, FALSE, 0);
-  gtk_widget_show (r11);
-  my_signal_connect (r11, "toggled", radio_fcdb, (gpointer)hg);
+  rb[10] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "AKARI/IRC");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[10], FALSE, FALSE, 0);
+  gtk_widget_show (rb[10]);
+  my_signal_connect (rb[10], "toggled", radio_fcdb, (gpointer)hg);
 
-  r12 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "AKARI/FIS");
-  gtk_box_pack_start(GTK_BOX(hbox), r12, FALSE, FALSE, 0);
-  gtk_widget_show (r12);
-  my_signal_connect (r12, "toggled", radio_fcdb, (gpointer)hg);
+  rb[11] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "AKARI/FIS");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[11], FALSE, FALSE, 0);
+  gtk_widget_show (rb[11]);
+  my_signal_connect (rb[11], "toggled", radio_fcdb, (gpointer)hg);
 
   frame = gtk_frame_new ("Data Archive");
   gtk_container_add (GTK_CONTAINER (hbox1), frame);
@@ -5561,24 +5756,28 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (frame), hbox);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
-  r13 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "SMOKA");
-  gtk_box_pack_start(GTK_BOX(hbox), r13, FALSE, FALSE, 0);
-  gtk_widget_show (r13);
-  my_signal_connect (r13, "toggled", radio_fcdb, (gpointer)hg);
+  rb[12] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "SMOKA");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[12], FALSE, FALSE, 0);
+  gtk_widget_show (rb[12]);
+  my_signal_connect (rb[12], "toggled", radio_fcdb, (gpointer)hg);
 
-  r14 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "HST");
-  gtk_box_pack_start(GTK_BOX(hbox), r14, FALSE, FALSE, 0);
-  gtk_widget_show (r14);
-  my_signal_connect (r14, "toggled", radio_fcdb, (gpointer)hg);
+  rb[13] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "HST");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[13], FALSE, FALSE, 0);
+  gtk_widget_show (rb[13]);
+  my_signal_connect (rb[13], "toggled", radio_fcdb, (gpointer)hg);
 
-  r15 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(r1), "ESO");
-  gtk_box_pack_start(GTK_BOX(hbox), r15, FALSE, FALSE, 0);
-  gtk_widget_show (r15);
-  my_signal_connect (r15, "toggled", radio_fcdb, (gpointer)hg);
+  rb[14] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "ESO");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[14], FALSE, FALSE, 0);
+  gtk_widget_show (rb[14]);
+  my_signal_connect (rb[14], "toggled", radio_fcdb, (gpointer)hg);
 
-  cdata->fcdb_group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(r1));
+  rb[15] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "Gemini");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[15], FALSE, FALSE, 0);
+  gtk_widget_show (rb[15]);
+  my_signal_connect (rb[15], "toggled", radio_fcdb, (gpointer)hg);
+
+  cdata->fcdb_group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(rb[0]));
   cdata->fcdb_type=hg->fcdb_type;
-
 
   frame = gtk_frame_new ("Query parameters");
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
@@ -5681,7 +5880,6 @@ void create_fcdb_para_dialog (typHOE *hg)
 		       &tmp_band);
   }
 
-  
   label = gtk_label_new (" < ");
   gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
 
@@ -6814,7 +7012,6 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), vbox1, 3, 4, 1, 2,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
 
-
   vbox = gtk_vbox_new (FALSE, 0);
   label = gtk_label_new ("ESO");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
@@ -6976,6 +7173,59 @@ void create_fcdb_para_dialog (typHOE *hg)
 				 hg->fcdb_eso_sam[i]);
   }
 
+  
+  // Gemini
+  vbox = gtk_vbox_new (FALSE, 0);
+  label = gtk_label_new ("Gemini");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
+
+  table = gtk_table_new(4,2,FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
+
+  label = gtk_label_new ("Search Radius = Finding Chart Radius");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 4, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  label = gtk_label_new ("Instrument");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
+  {
+    GtkListStore *store;
+    GtkTreeIter iter, iter_set;	  
+    GtkCellRenderer *renderer;
+    gint i_inst;
+      
+    store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+
+    for(i_inst=0;i_inst<NUM_GEMINI_INST;i_inst++){
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, gemini_inst[i_inst].name,
+			 1, i_inst, -1);
+      if(hg->fcdb_gemini_inst==i_inst) iter_set=iter;
+    }
+
+    combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    gtk_table_attach(GTK_TABLE(table), combo, 1, 3, 1, 2,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+    g_object_unref(store);
+    
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+    	
+    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+    gtk_widget_show(combo);
+    my_signal_connect (combo,"changed",cc_get_combo_box,
+		       &tmp_gemini_inst);
+  }
+
+  
 
 
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
@@ -6994,36 +7244,8 @@ void create_fcdb_para_dialog (typHOE *hg)
 
   gtk_widget_show_all(dialog);
 
-  if(hg->fcdb_type==FCDB_TYPE_SIMBAD)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r1), TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_NED)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r2),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_GSC)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r3),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_PS1)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r4),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_SDSS)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r5),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_LAMOST)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r6),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_USNO)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r7),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_GAIA)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r8),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_2MASS)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r9),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_WISE)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r10),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_IRC)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r11),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_FIS)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r12),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_SMOKA)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r13),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_HST)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r14),TRUE);
-  if(hg->fcdb_type==FCDB_TYPE_ESO)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(r15),TRUE);
+  if(hg->fcdb_type<=FCDB_TYPE_GEMINI)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb[hg->fcdb_type]),TRUE);
 
   gtk_main();
 
@@ -7109,6 +7331,7 @@ void create_fcdb_para_dialog (typHOE *hg)
       for(i=0;i<NUM_ESO_SAM;i++){
 	hg->fcdb_eso_sam[i]  = tmp_eso_sam[i];
       }
+      hg->fcdb_gemini_inst = tmp_gemini_inst;
     }
     else{
       hg->fcdb_band  = FCDB_BAND_NOP;
@@ -7191,6 +7414,7 @@ void create_fcdb_para_dialog (typHOE *hg)
       for(i=0;i<NUM_ESO_SAM;i++){
 	hg->fcdb_eso_sam[i]  = TRUE;
       }
+      hg->fcdb_gemini_inst=GEMINI_INST_ANY;
     }
 
     if(flagFC){
@@ -7224,6 +7448,8 @@ void create_fcdb_para_dialog (typHOE *hg)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"HST archive");
       else if(hg->fcdb_type==FCDB_TYPE_ESO)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"ESO archive");
+      else if(hg->fcdb_type==FCDB_TYPE_GEMINI)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"Gemini archive");
     }
 
     if((rebuild_flag)&&(flagTree)) rebuild_tree(hg);
@@ -7517,6 +7743,10 @@ gchar *fcdb_csv_name (typHOE *hg){
     fname=g_strconcat("FCDB_", oname, "_by_ESOarchive." CSV_EXTENSION,NULL);
     break;
 
+  case FCDB_TYPE_GEMINI:
+    fname=g_strconcat("FCDB_", oname, "_by_GEMINIarchive." CSV_EXTENSION,NULL);
+    break;
+
   default:
     fname=g_strconcat("FCDB_", oname, "_by_hskymon." CSV_EXTENSION,NULL);
     break;
@@ -7747,6 +7977,15 @@ gchar *trdb_file_name (typHOE *hg, const gchar *ext){
 			NULL);
       break;
     }
+    break;
+  case TRDB_TYPE_GEMINI:
+    iname=repl_nonalnum(gemini_inst[hg->trdb_gemini_inst_used].name,0x5F);
+    fname=g_strconcat((hg->filehead) ? hg->filehead : "hskymon",
+		      "_query_list_by_Gemini_",
+		      iname,
+		      ".",
+		      ext,
+		      NULL);
     break;
   }
 
@@ -11110,6 +11349,14 @@ void param_init(typHOE *hg){
 				      hg->skymon_month,
 				      hg->skymon_day);
 
+  hg->trdb_gemini_inst  = GEMINI_INST_GMOS;
+  hg->trdb_gemini_mode  = TRDB_GEMINI_MODE_ANY;
+  hg->trdb_gemini_date=g_strdup_printf("19980101-%d%02d%02d",
+				       hg->skymon_year,
+				       hg->skymon_month,
+				       hg->skymon_day);
+  
+
   hg->azel_mode=AZEL_NORMAL;
 
   hg->skymon_mode=SKYMON_CUR;
@@ -11313,6 +11560,7 @@ void param_init(typHOE *hg){
   for(i=0;i<NUM_ESO_SAM;i++){
     hg->fcdb_eso_sam[i]  = TRUE;
   }
+  hg->fcdb_gemini_inst = GEMINI_INST_ANY;
 
   hg->adc_inst=ADC_INST_IMR;
   hg->adc_flip=FALSE;
@@ -15159,6 +15407,31 @@ void ReadTRDB(typHOE *hg)
       hg->trdb_eso_sam_used=0;
     hg->trdb_eso_sam=hg->trdb_eso_sam_used;
 
+    // Gemini
+    if(xmms_cfg_read_int  (cfgfile, "Gemini", "Inst",  &i_buf))
+      hg->trdb_gemini_inst_used=i_buf;
+    else
+      hg->trdb_gemini_inst_used=GEMINI_INST_GMOS;
+    hg->trdb_gemini_inst=hg->trdb_gemini_inst_used;
+
+    if(xmms_cfg_read_int  (cfgfile, "Gemini", "Mode",  &i_buf))
+      hg->trdb_gemini_mode_used=i_buf;
+    else
+      hg->trdb_gemini_mode_used=0;
+    hg->trdb_gemini_mode=hg->trdb_gemini_mode_used;
+
+    if(hg->trdb_gemini_date_used) g_free(hg->trdb_gemini_date_used);
+    if(xmms_cfg_read_string(cfgfile, "Gemini", "Date", &c_buf)) 
+      hg->trdb_gemini_date_used =c_buf;
+    else
+      hg->trdb_gemini_date_used=g_strdup_printf("19980101-%4d%02d%02d",
+						hg->skymon_year,
+						hg->skymon_month,
+						hg->skymon_day);
+    if(hg->trdb_gemini_date) g_free(hg->trdb_gemini_date);
+    hg->trdb_gemini_date=g_strdup(hg->trdb_gemini_date_used);
+
+
     // Object
     if(xmms_cfg_read_int  (cfgfile, "Object", "IMax",  &i_buf))
       hg->i_max=i_buf;
@@ -15333,6 +15606,14 @@ void WriteTRDB(typHOE *hg){
   xmms_cfg_write_int(cfgfile, "ESO", "Coro", hg->trdb_eso_coro_used);
   xmms_cfg_write_int(cfgfile, "ESO", "Other", hg->trdb_eso_other_used);
   xmms_cfg_write_int(cfgfile, "ESO", "SAM", hg->trdb_eso_sam_used);
+
+  // Gemini
+  xmms_cfg_write_int(cfgfile, "Gemini", "Inst", hg->trdb_gemini_inst_used);
+  xmms_cfg_write_int(cfgfile, "Gemini", "Mode", hg->trdb_gemini_mode_used);
+  if(hg->trdb_gemini_date_used)
+    xmms_cfg_write_string(cfgfile, "Gemini", "Date", hg->trdb_gemini_date_used);
+  else
+    xmms_cfg_write_string(cfgfile, "Gemini", "Date", hg->trdb_gemini_date);
 
   // Object
   xmms_cfg_write_int (cfgfile, "Object", "IMax",  hg->i_max);

@@ -1394,6 +1394,9 @@ void create_fc_dialog(typHOE *hg)
   else if(hg->fcdb_type==FCDB_TYPE_ESO){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "ESO");
   }
+  else if(hg->fcdb_type==FCDB_TYPE_GEMINI){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "Gemini");
+  }
   gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_frame), 3);
 
@@ -4960,6 +4963,11 @@ void fcdb_dl(typHOE *hg)
   case TRDB_TYPE_FCDB_ESO:
     label=gtk_label_new("Searching objects in ESO archive ...");
     break;
+
+  case FCDB_TYPE_GEMINI:
+  case TRDB_TYPE_FCDB_GEMINI:
+    label=gtk_label_new("Searching objects in Gemini archive ...");
+    break;
   }
 
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
@@ -5044,6 +5052,11 @@ void fcdb_dl(typHOE *hg)
   case TRDB_TYPE_WWWDB_ESO:
   case TRDB_TYPE_FCDB_ESO:
     hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
+    break;
+
+  case FCDB_TYPE_GEMINI:
+  case TRDB_TYPE_FCDB_GEMINI:
+    hg->plabel=gtk_label_new("Searching objects in Gemini archive ...");
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
@@ -5234,6 +5247,12 @@ void addobj_dl(typHOE *hg)
   case TRDB_TYPE_FCDB_ESO:
     hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
     break;
+
+  case FCDB_TYPE_GEMINI:
+  case TRDB_TYPE_GEMINI:
+  case TRDB_TYPE_FCDB_GEMINI:
+    hg->plabel=gtk_label_new("Searching objects in Gemini archive ...");
+    break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
@@ -5381,6 +5400,11 @@ void trdb_run (typHOE *hg)
     hg->fcdb_post=TRUE;
     label=gtk_label_new("Searching objects in ESO archive ...");
     break;
+
+  case TRDB_TYPE_GEMINI:
+    hg->fcdb_post=FALSE;
+    label=gtk_label_new("Searching objects in Gemini archive ...");
+    break;
   }
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
@@ -5427,6 +5451,10 @@ void trdb_run (typHOE *hg)
     
   case TRDB_TYPE_ESO:
     hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
+    break;
+
+  case TRDB_TYPE_GEMINI:
+    hg->plabel=gtk_label_new("Searching objects in Gemini archive ...");
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
@@ -5514,6 +5542,53 @@ void trdb_run (typHOE *hg)
       hg->fcdb_d_dec0=object_prec.dec;
       break;
 
+    case TRDB_TYPE_GEMINI:
+      ln_equ_to_hequ (&object_prec, &hobject_prec);
+      if(hg->fcdb_host) g_free(hg->fcdb_host);
+      hg->fcdb_host=g_strdup(FCDB_HOST_GEMINI);
+      
+      hg->fcdb_d_ra0=object_prec.ra;
+      hg->fcdb_d_dec0=object_prec.dec;
+
+      if(hg->fcdb_path) g_free(hg->fcdb_path);
+      {
+	gchar *g_inst;
+	gchar *g_mode;
+
+	g_inst=g_strdup_printf("/%s/",gemini_inst[hg->trdb_gemini_inst].prm);
+	switch(hg->trdb_gemini_mode){
+	case TRDB_GEMINI_MODE_ANY:
+	  g_mode=g_strdup("/");
+	  break;
+
+	case TRDB_GEMINI_MODE_IMAGE:
+	  g_mode=g_strdup("/imaging/");
+	  break;
+
+	case TRDB_GEMINI_MODE_SPEC:
+	  g_mode=g_strdup("/spectrosocpy/");
+	  break;
+	}
+
+	hg->fcdb_path=g_strdup_printf(TRDB_GEMINI_PATH,
+				      hg->trdb_arcmin*60,
+				      g_inst,
+				      hg->fcdb_d_ra0,	
+				      hg->trdb_gemini_date,
+				      g_mode,
+				      (hg->fcdb_d_dec0>0) ? "%2B" : "%2D",
+				      fabs(hg->fcdb_d_dec0));
+	g_free(g_inst);
+	g_free(g_mode);
+      }
+      
+      if(hg->fcdb_file) g_free(hg->fcdb_file);
+      hg->fcdb_file=g_strconcat(hg->temp_dir,
+				G_DIR_SEPARATOR_S,
+				FCDB_FILE_JSON,NULL);
+      
+      break;
+
     default:
       break;
     }
@@ -5556,6 +5631,10 @@ void trdb_run (typHOE *hg)
 
       case TRDB_TYPE_ESO:
 	trdb_eso_vo_parse(hg);
+	break;
+
+      case TRDB_TYPE_GEMINI:
+	trdb_gemini_json_parse(hg);
 	break;
       }
 
@@ -6181,6 +6260,47 @@ void fcdb_item2 (typHOE *hg)
     fcdb_eso_vo_parse(hg);
 
     break;
+
+  case FCDB_TYPE_GEMINI:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_GEMINI);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+    if(hg->fcdb_gemini_inst==GEMINI_INST_ANY){
+      hg->fcdb_path=g_strdup_printf(FCDB_GEMINI_PATH,
+				    hg->dss_arcmin*30,
+				    "/",
+				    hg->fcdb_d_ra0,
+				    (hg->fcdb_d_dec0>0) ? "%2B" : "%2D",
+				    fabs(hg->fcdb_d_dec0));
+    }
+    else{
+      gchar *g_inst;
+      g_inst=g_strdup_printf("/%s/",gemini_inst[hg->fcdb_gemini_inst].prm);
+
+      hg->fcdb_path=g_strdup_printf(FCDB_GEMINI_PATH,
+				    hg->dss_arcmin*30,
+				    g_inst,
+				    hg->fcdb_d_ra0,
+				    (hg->fcdb_d_dec0>0) ? "%2B" : "%2D",
+				    fabs(hg->fcdb_d_dec0));
+      g_free(g_inst);
+    }
+
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_JSON,NULL);
+
+    fcdb_dl(hg);
+
+    fcdb_gemini_json_parse(hg);
+
+    break;
   }
 
   if(flagTree) fcdb_make_tree(NULL, hg);
@@ -6414,6 +6534,17 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       COLUMN_FCDB_OBS, hg->fcdb[i_list].obs,
 		       -1);
   }
+  else if(hg->fcdb_type==FCDB_TYPE_GEMINI){
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_FID, hg->fcdb[i_list].fid,
+		       COLUMN_FCDB_DATE, hg->fcdb[i_list].date,
+		       COLUMN_FCDB_MODE, hg->fcdb[i_list].mode,
+		       COLUMN_FCDB_TYPE, hg->fcdb[i_list].type,
+		       COLUMN_FCDB_U, hg->fcdb[i_list].u,
+		       COLUMN_FCDB_WV, hg->fcdb[i_list].wv,
+		       COLUMN_FCDB_OBS, hg->fcdb[i_list].obs,
+		       -1);
+  }
 }
 
 
@@ -6534,6 +6665,9 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
   case FCDB_TYPE_ESO:
     db_name=g_strdup("ESO archive");
     break;
+  case FCDB_TYPE_GEMINI:
+    db_name=g_strdup("Gemini archive");
+    break;
   default:
     db_name=g_strdup("Database queried");
     break;
@@ -6544,6 +6678,7 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
     case FCDB_TYPE_SMOKA:
     case FCDB_TYPE_HST:
     case FCDB_TYPE_ESO:
+    case FCDB_TYPE_GEMINI:
       hg->fcdb_label_text
 	=g_strdup_printf("%s data around [%d-%d] %s [%d frames (over max.)]",
 			 db_name,
@@ -6566,6 +6701,7 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
     case FCDB_TYPE_SMOKA:
     case FCDB_TYPE_HST:
     case FCDB_TYPE_ESO:
+    case FCDB_TYPE_GEMINI:
       hg->fcdb_label_text
 	=g_strdup_printf("%s data around [%d-%d] %s (%d frames found)",
 			 db_name,
@@ -6658,6 +6794,12 @@ void make_trdb_label(typHOE *hg){
 			 eso_sam[hg->trdb_eso_sam].name);
       break;
     }
+    break;
+
+  case TRDB_TYPE_GEMINI:
+    hg->trdb_label_text
+      =g_strdup_printf("Gemini archive List Query (%s)", 
+		       gemini_inst[hg->trdb_gemini_inst].name);
     break;
 
   default:

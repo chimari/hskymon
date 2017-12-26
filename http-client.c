@@ -2497,7 +2497,8 @@ int http_c_std(typHOE *hg){
 #endif
 }
 
-int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
+int post_body(typHOE *hg, gboolean wflag, int command_socket, 
+	      gchar *rand16){
   char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
   char ins_mesg[BUF_LEN];
   gint ip, plen, i;
@@ -2608,7 +2609,10 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 	break;
       }	
       plen+=strlen(send_mesg);
-      if(wflag)  write_to_server(command_socket, send_mesg);
+      if(wflag){
+	write_to_server(command_socket, send_mesg);
+      }
+	  
       ip++;
     }
     
@@ -2616,7 +2620,9 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 	    "------WebKitFormBoundary%s--\r\n\r\n",
 	    rand16);
     plen+=strlen(send_mesg);
-    if(wflag)  write_to_server(command_socket, send_mesg);
+    if(wflag){
+      write_to_server(command_socket, send_mesg);
+    }
 
     break;
 
@@ -2667,7 +2673,9 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 	break;
       }	
       plen+=strlen(send_mesg);
-      if(wflag)  write_to_server(command_socket, send_mesg);
+      if(wflag){
+	write_to_server(command_socket, send_mesg);
+      }
       ip++;
     }
     
@@ -2675,7 +2683,9 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 	    "------WebKitFormBoundary%s--\r\n\r\n",
 	    rand16);
     plen+=strlen(send_mesg);
-    if(wflag)  write_to_server(command_socket, send_mesg);
+    if(wflag){
+      write_to_server(command_socket, send_mesg);
+    }
 
     break;
 
@@ -3095,7 +3105,9 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 
     plen+=strlen(send_mesg);
 
-    if(wflag)  write_to_server(command_socket, send_buf1);
+    if(wflag){
+      write_to_server(command_socket, send_buf1);
+    }
 
     if(send_buf1) g_free(send_buf1);
     if(send_buf2) g_free(send_buf2);
@@ -3323,7 +3335,9 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
     
     plen+=strlen(send_mesg);
     
-    if(wflag)  write_to_server(command_socket, send_buf1);
+    if(wflag){
+      write_to_server(command_socket, send_buf1);
+    }
 
     if(send_buf1) g_free(send_buf1);
     if(send_buf2) g_free(send_buf2);
@@ -3979,7 +3993,9 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 	
       if(send_flag){
 	plen+=strlen(send_mesg);
-	if(wflag)  write_to_server(command_socket, send_mesg);
+	if(wflag){
+	  write_to_server(command_socket, send_mesg);
+	}
       }
       ip++;
     }
@@ -3988,7 +4004,9 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket, gchar *rand16){
 	    "------WebKitFormBoundary%s--\r\n\r\n",
 	    rand16);
     plen+=strlen(send_mesg);
-    if(wflag)  write_to_server(command_socket, send_mesg);
+    if(wflag){
+      write_to_server(command_socket, send_mesg);
+    }
 
     break;
   }
@@ -4123,6 +4141,7 @@ int http_c_fcdb(typHOE *hg){
 
   // POST body
   if(hg->fcdb_post){
+
     plen=post_body(hg, TRUE, command_socket, rand16);
     if(rand16) g_free(rand16);
   }
@@ -4173,6 +4192,181 @@ int http_c_fcdb(typHOE *hg){
   return 0;
 #endif
 }
+
+#ifdef USE_SSL
+#ifdef USE_WIN32
+unsigned __stdcall http_c_fcdb_ssl(LPVOID lpvPipe)
+{
+  typHOE *hg=(typHOE *) lpvPipe;
+#else
+int http_c_fcdb_ssl(typHOE *hg){
+#endif
+  int command_socket;           /* コマンド用ソケット */
+  int size;
+
+  char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
+  char buf[BUF_LEN+1];
+  
+  FILE *fp_write;
+  FILE *fp_read;
+
+  struct addrinfo hints, *res;
+  struct in_addr addr;
+  int err;
+
+  gboolean chunked_flag=FALSE;
+  gchar *cp;
+
+  gchar *rand16=NULL;
+  gint plen;
+
+  SSL *ssl;
+  SSL_CTX *ctx;
+
+  // Calculate Content-Length
+  /*
+  if(hg->fcdb_post){
+    rand16=make_rand16();
+    plen=post_body_ssl(hg, FALSE, 0, rand16, FALSE, NULL);
+  }
+  */
+   
+  /* ホストの情報 (IP アドレスなど) を取得 */
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_family = AF_INET;
+
+  if ((err = getaddrinfo(hg->fcdb_host, "https", &hints, &res)) !=0){
+    fprintf(stderr, "Bad hostname [%s]\n", hg->fcdb_host);
+#ifdef USE_WIN32
+    gtk_main_quit();
+    _endthreadex(0);
+#endif
+    return(HSKYMON_HTTP_ERROR_GETHOST);
+  }
+
+    /* ソケット生成 */
+  if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
+    fprintf(stderr, "Failed to create a new socket.\n");
+#ifdef USE_WIN32
+    gtk_main_quit();
+    _endthreadex(0);
+#endif
+    return(HSKYMON_HTTP_ERROR_SOCKET);
+  }
+  
+  /* サーバに接続 */
+  if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
+    fprintf(stderr, "Failed to connect to %s .\n", hg->fcdb_host);
+#ifdef USE_WIN32
+    gtk_main_quit();
+    _endthreadex(0);
+#endif
+    return(HSKYMON_HTTP_ERROR_CONNECT);
+  }
+
+  SSL_load_error_strings();
+  SSL_library_init();
+
+  ctx = SSL_CTX_new(SSLv23_client_method());
+  ssl = SSL_new(ctx);
+  err = SSL_set_fd(ssl, command_socket);
+  if( SSL_connect(ssl) !=1) {
+    fprintf(stderr, "SSL connection failed.\n");
+#ifdef USE_WIN32
+    gtk_main_quit();
+    _endthreadex(0);
+#endif
+    return(HSKYMON_HTTP_ERROR_SSL);
+  }
+  
+  // AddrInfoの解放
+  freeaddrinfo(res);
+
+  // HTTP/1.1 ではchunked対策が必要
+  if(hg->fcdb_post){
+    sprintf(send_mesg, "POST %s HTTP/1.1\r\n", hg->fcdb_path);
+  }
+  else{
+    sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->fcdb_path);
+  }
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "Accept: application/xml, application/json\r\n");
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "User-Agent: Mozilla/5.0\r\n");
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "Host: %s\r\n", hg->fcdb_host);
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "Connection: close\r\n");
+  write_to_SSLserver(ssl, send_mesg);
+
+  //if(hg->fcdb_post){
+  //}
+
+  sprintf(send_mesg, "\r\n");
+  write_to_SSLserver(ssl, send_mesg);
+
+  // POST body
+  //if(hg->fcdb_post){
+  //}
+
+  if((fp_write=fopen(hg->fcdb_file,"w"))==NULL){
+    fprintf(stderr," File Write Error  \"%s\" \n", hg->fcdb_file);
+    return(HSKYMON_HTTP_ERROR_TEMPFILE);
+  }
+
+  while((size = ssl_gets(ssl, buf, BUF_LEN)) > 2 ){
+    // header lines
+    if(debug_flg){
+      fprintf(stderr,"[SSL] --> Header: %s", buf);
+    }
+    if(NULL != (cp = strstr(buf, "Transfer-Encoding: chunked"))){
+      chunked_flag=TRUE;
+      }
+  }
+  do{ // data read
+    size = SSL_read(ssl, buf, BUF_LEN);
+    fwrite( &buf , size , 1 , fp_write ); 
+  }while(size >0);
+      
+  fclose(fp_write);
+
+
+  if(chunked_flag) unchunk(hg->fcdb_file);
+  // This is a bug fix for SDSS DR14 VOTable output
+  if(hg->fcdb_type==FCDB_TYPE_SDSS){ 
+    str_replace(hg->fcdb_file, 
+		"encoding=\"utf-16\"",
+		" encoding=\"utf-8\"");
+  }    
+ 
+
+#ifndef USE_WIN32
+    if((chmod(hg->fcdb_file,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
+    g_print("Cannot Chmod Temporary File %s!  Please check!!!\n",hg->fcdb_file);
+  }
+#endif
+
+  SSL_shutdown(ssl);
+  SSL_free(ssl);
+  SSL_CTX_free(ctx);
+  ERR_free_strings();
+  
+#ifdef USE_WIN32
+  closesocket(command_socket);
+  gtk_main_quit();
+  _endthreadex(0);
+#else
+  close(command_socket);
+
+  return 0;
+#endif
+}
+#endif  //USE_SSL
 
 
 
@@ -4275,10 +4469,28 @@ int get_fcdb(typHOE *hg){
   DWORD dwErrorNumber;
   unsigned int dwThreadID;
   HANDLE hThread;
-  
+
+#ifdef USE_SSL
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_GEMINI:
+  case TRDB_TYPE_GEMINI:
+  case TRDB_TYPE_FCDB_GEMINI:
+    hThread = (HANDLE)_beginthreadex(NULL,0,
+				     http_c_fcdb_ssl,
+				     (LPVOID)hg, 0, &dwThreadID);
+    break;
+
+  default:
+    hThread = (HANDLE)_beginthreadex(NULL,0,
+				     http_c_fcdb,
+				     (LPVOID)hg, 0, &dwThreadID);
+    break;
+  }
+#else  
   hThread = (HANDLE)_beginthreadex(NULL,0,
 				   http_c_fcdb,
 				   (LPVOID)hg, 0, &dwThreadID);
+#endif
   if (hThread == NULL) {
     dwErrorNumber = GetLastError();
     fprintf(stderr,"_beginthreadex() error(%ld).\n", dwErrorNumber);
@@ -4296,7 +4508,21 @@ int get_fcdb(typHOE *hg){
     fprintf(stderr,"fork error\n");
   }
   else if(fcdb_pid ==0) {
+#ifdef USE_SSL
+    switch(hg->fcdb_type){
+    case FCDB_TYPE_GEMINI:
+    case TRDB_TYPE_GEMINI:
+    case TRDB_TYPE_FCDB_GEMINI:
+      http_c_fcdb_ssl(hg);
+      break;
+
+    default:
+      http_c_fcdb(hg);
+      break;
+    }
+#else
     http_c_fcdb(hg);
+#endif
     kill(getppid(), SIGHSKYMON1);  //calling dss_signal
     _exit(1);
   }

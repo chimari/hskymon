@@ -54,6 +54,7 @@
 #include "post_smoka.h"
 #include "post_hst.h"
 #include "post_eso.h"
+#include "get_gemini.h"
 
 
 #ifdef USE_WIN32
@@ -101,6 +102,8 @@
 #define FCDB_SMOKA_SHOT_URL "http://smoka.nao.ac.jp/fssearch?frameid=%s*&instruments=%s&obs_mod=all&data_typ=all&dispcol=default&diff=1000&action=Search&asciitable=table&obs_cat=all"
 #define FCDB_HST_URL "http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst&dataid=%s"
 #define FCDB_ESO_URL "http://archive.eso.org/wdb/wdb/eso/eso_archive_main/query?dp_id=%s&format=DecimDeg&tab_stat_plot=on&aladin_colour=aladin_instrument"
+#define FCDB_GEMINI_URL "https://archive.gemini.edu/searchform/cols=CTOWEQ/notengineering/NotFail/OBJECT/%s"
+#define TRDB_GEMINI_URL "https://archive.gemini.edu/searchform/sr=%d/cols=CTOWEQ/notengineering%sra=%.6lf/%s/science%sdec=%s%.6lf/NotFail/OBJECT"
 #define HASH_URL "http://202.189.117.101:8999/gpne/objectInfoPage.php?id=%d"
 
 #elif defined(USE_OSX)
@@ -130,6 +133,8 @@
 #define FCDB_SMOKA_SHOT_URL "open http://smoka.nao.ac.jp/fssearch?frameid=%s*\\&instruments=%s\\&obs_mod=all\\&data_typ=all\\&dispcol=default\\&diff=1000\\&action=Search\\&asciitable=table\\&obs_cat=all"
 #define FCDB_HST_URL "open http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst\\&dataid=%s"
 #define FCDB_ESO_URL "open http://archive.eso.org/wdb/wdb/eso/eso_archive_main/query?dp_id=%s\\&format=DecimDeg\\&tab_stat_plot=on\\&aladin_colour=aladin_instrument"
+#define FCDB_GEMINI_URL "open https://archive.gemini.edu/searchform/cols=CTOWEQ/notengineering/NotFail/OBJECT/%s"
+#define TRDB_GEMINI_URL "open https://archive.gemini.edu/searchform/sr=%d/cols=CTOWEQ/notengineering%sra=%.6lf/%s/science%sdec=%s%.6lf/NotFail/OBJECT"
 #define HASH_URL "open http://202.189.117.101:8999/gpne/objectInfoPage.php?id=%d"
 
 #else
@@ -158,6 +163,8 @@
 #define FCDB_SMOKA_SHOT_URL "\"http://smoka.nao.ac.jp/fssearch?frameid=%s*&instruments=%s&obs_mod=all&data_typ=all&dispcol=default&diff=1000&action=Search&asciitable=table&obs_cat=all\""
 #define FCDB_HST_URL "\"http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst&dataid=%s\""
 #define FCDB_ESO_URL "\"http://archive.eso.org/wdb/wdb/eso/eso_archive_main/query?dp_id=%s&format=DecimDeg&tab_stat_plot=on&aladin_colour=aladin_instrument\""
+#define FCDB_GEMINI_URL "\"https://archive.gemini.edu/searchform/cols=CTOWEQ/notengineering/NotFail/OBJECT/%s\""
+#define TRDB_GEMINI_URL "\"https://archive.gemini.edu/searchform/sr=%d/cols=CTOWEQ/notengineering%sra=%.6lf/%s/science%sdec=%s%.6lf/NotFail/OBJECT\""
 #define HASH_URL "\"http://202.189.117.101:8999/gpne/objectInfoPage.php?id=%d\""
 #endif
 
@@ -185,6 +192,7 @@
 #define FCDB_FILE_XML "database_fc.xml"
 #define FCDB_FILE_TXT "database_fc.txt"
 #define FCDB_FILE_HTML "database_fc.html"
+#define FCDB_FILE_JSON "database_fc.json"
 
 #define FCDB_HOST_NED "ned.ipac.caltech.edu"
 #define FCDB_NED_PATH "/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=%.2lf&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY%sout_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=0&img_stamp=YES&of=xml_main"
@@ -227,6 +235,10 @@
 
 #define FCDB_HOST_ESO "archive.eso.org"
 #define FCDB_ESO_PATH "/wdb/wdb/eso/eso_archive_main/query"
+
+#define FCDB_HOST_GEMINI "archive.gemini.edu"
+#define FCDB_GEMINI_PATH "/jsonsummary/sr=%d/notengineering%sra=%.6lf/science/dec=%s%.6lf/NotFail/OBJECT/present/canonical"
+#define TRDB_GEMINI_PATH "/jsonsummary/sr=%d/notengineering%sra=%.6lf/%s/science%sdec=%s%.6lf/NotFail/OBJECT/present/canonical"
 
 
 
@@ -549,18 +561,21 @@ enum
   FCDB_TYPE_SMOKA,
   FCDB_TYPE_HST,
   FCDB_TYPE_ESO,
+  FCDB_TYPE_GEMINI,
   FCDB_TYPE_WWWDB_SMOKA,
   FCDB_TYPE_WWWDB_HST,
   FCDB_TYPE_WWWDB_ESO,
   TRDB_TYPE_SMOKA,
   TRDB_TYPE_HST,
   TRDB_TYPE_ESO,
+  TRDB_TYPE_GEMINI,
   TRDB_TYPE_WWWDB_SMOKA,
   TRDB_TYPE_WWWDB_HST,
   TRDB_TYPE_WWWDB_ESO,
   TRDB_TYPE_FCDB_SMOKA,
   TRDB_TYPE_FCDB_HST,
-  TRDB_TYPE_FCDB_ESO
+  TRDB_TYPE_FCDB_ESO,
+  TRDB_TYPE_FCDB_GEMINI
 };
 
 enum
@@ -1777,6 +1792,7 @@ struct _typHOE{
   gboolean fcdb_eso_coro[NUM_ESO_CORO];
   gboolean fcdb_eso_other[NUM_ESO_OTHER];
   gboolean fcdb_eso_sam[NUM_ESO_SAM];
+  gint fcdb_gemini_inst;
 
   GtkWidget *trdb_tree;
   GtkWidget *trdb_label;
@@ -1836,6 +1852,13 @@ struct _typHOE{
   gint trdb_eso_other_used;
   gint trdb_eso_sam;
   gint trdb_eso_sam_used;
+
+  gint trdb_gemini_inst;
+  gint trdb_gemini_inst_used;
+  gint trdb_gemini_mode;
+  gint trdb_gemini_mode_used;
+  gchar *trdb_gemini_date;
+  gchar *trdb_gemini_date_used;
 
   gint addobj_type;
   gchar *addobj_name;

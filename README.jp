@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 3.2.0    2017/12/21
+#                                  ver 3.3.0    2017/12/25
 #                               Copyright (C) 2003-17 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #      Subaru Telescope, National Astronomical Observatory of Japan
@@ -40,7 +40,7 @@ sourceからコンパイルするためにはGtk+が必要(Windows版は 32bit: msys+Gtk-dev,
 64bit: msys2を使用)です。
 Gtk+についてはcairoグラフィックライブラリを使用しているため、最低限ver2.8以降
 が必要、推奨はver2.10以降となります。
-libxml2とopensslも必要となります。
+libxml2, openssl, json-cも必要となります。
 macOS, Windowsのバイナリー配布版には必要なライブラリはすべて同梱されています。
 
 Subaru Gen2と接続し、望遠鏡のステータスをとる場合(Gen2 summitネットワーク内

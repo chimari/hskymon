@@ -185,6 +185,29 @@ void make_band_str(typHOE *hg, gint i, gint mode){
     }
 
     break;
+
+  case TRDB_TYPE_GEMINI:
+    for(i_band=0;i_band<hg->obj[i].trdb_band_max;i_band++){
+      tmp_str1=g_strdup_printf((hg->obj[i].trdb_exp[i_band] > 10) ?
+			       "[%s] %.0lfs(%d)" : "[%s] %.1lfs(%d)",
+			       hg->obj[i].trdb_band[i_band],
+			       hg->obj[i].trdb_exp[i_band],
+			       hg->obj[i].trdb_shot[i_band]);
+      if(tmp_str3){
+	tmp_str2=g_strdup(tmp_str3);
+	g_free(tmp_str3);
+	tmp_str3=g_strconcat(tmp_str2, " / ", tmp_str1, NULL);
+      }
+      else{
+	tmp_str3=g_strdup(tmp_str1);
+      }
+      
+      if(tmp_str1) g_free(tmp_str1);
+      if(tmp_str2) g_free(tmp_str2);
+      tmp_str1=NULL;
+      tmp_str2=NULL;
+    }
+    break;
   }
 
   if(hg->obj[i].trdb_str) g_free(hg->obj[i].trdb_str);
