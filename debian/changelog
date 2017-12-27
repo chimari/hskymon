@@ -1,9 +1,3 @@
-hskymon (3.3.1) unstable; urgency=medium
-
-  * fgets_new() -> fgets() in votable.c .
-
- -- Akito Tajitsu <tajitsu@naoj.org>  Tue, 26 Dec 2017 14:59:15 -1000
-
 hskymon (3.3.0) unstable; urgency=medium
 
   * Added Gemini archive into List query mode and FCDB.
