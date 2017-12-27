@@ -50,7 +50,7 @@ gchar *rm_spc(gchar * obj_name){
 
   if((tgt_name=(gchar *)g_malloc(sizeof(gchar)*(strlen(obj_name)+1)))
      ==NULL){
-    fprintf(stderr, "!!! Memory allocation error in fgets_new().\n");
+    fprintf(stderr, "!!! Memory allocation error in rm_spc().\n");
     fflush(stderr);
     return(NULL);
   }
@@ -2519,7 +2519,7 @@ void fcdb_lamost_vo_parse(typHOE *hg) {
 
 void fcdb_smoka_txt_parse(typHOE *hg) {
   FILE *fp;
-  gchar *buf=NULL, *cp, *cpp, *buf_tmp1=NULL, *buf_tmp2=NULL;
+  gchar buf[BUFFSIZE], *cp, *cpp, *buf_tmp1=NULL, *buf_tmp2=NULL;
   int i_list=0, i_all=0;
   gint pos_fid,pos_date,pos_mode,pos_type,pos_obj,pos_fil,pos_wv,
     pos_ra,pos_dec,pos_exp,pos_obs;
@@ -2545,7 +2545,8 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
   }
   
   while(!feof(fp)){
-    if((buf=fgets_new(fp))==NULL){
+    //if((buf=fgets_new(fp))==NULL){
+    if(!fgets(buf,BUFFSIZE-1,fp)){
 #ifdef GTK_MSG
       popup_message(POPUP_TIMEOUT*2,
 		    "Error: File cannot be read.",
@@ -2561,16 +2562,17 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
     }
     else{
       if(strncmp(buf,"<pre>",strlen("<pre>"))==0){
-	if(buf) g_free(buf);
+    //if(buf) g_free(buf);
 	break;
       }
       else{
-	if(buf) g_free(buf);
+    //	if(buf) g_free(buf);
       }
     }
   }
 
-  if((buf=fgets_new(fp))==NULL){
+    //if((buf=fgets_new(fp))==NULL){
+    if(!fgets(buf,BUFFSIZE-1,fp)){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be read.",
@@ -2663,10 +2665,10 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
       len_obs=strlen(cpp)-strlen(cp)-pos_obs;
     }
 
-    if(buf) g_free(buf);
+    //if(buf) g_free(buf);
   }
   else{
-    if(buf) g_free(buf);
+    //if(buf) g_free(buf);
     fclose(fp);
 
     hg->fcdb_i_max=0;
@@ -2676,7 +2678,8 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
   }
 
   while(!feof(fp)){
-    if((buf=fgets_new(fp))==NULL){
+    //if((buf=fgets_new(fp))==NULL){
+    if(!fgets(buf,BUFFSIZE-1,fp)){
 #ifdef GTK_MSG
       popup_message(POPUP_TIMEOUT*2,
 		    "Error: File cannot be read.",
@@ -2691,7 +2694,7 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
       return;
     }
     else if(strncmp(buf,"</pre>",strlen("</pre>"))==0){
-      if(buf) g_free(buf);
+    //if(buf) g_free(buf);
       break;
     }
     else{
@@ -2799,7 +2802,7 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
       if(hg->fcdb[i_list].obs) g_free(hg->fcdb[i_list].obs);
       hg->fcdb[i_list].obs=g_strstrip(g_strndup(cp,len_obs));
 
-      if(buf) g_free(buf);
+      //if(buf) g_free(buf);
       i_list++;
       if(i_list==MAX_FCDB) break;
     }
@@ -2824,7 +2827,7 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
 
 void trdb_smoka_txt_parse(typHOE *hg) {
   FILE *fp;
-  gchar *buf=NULL, *cp, *cpp, *buf_tmp1=NULL, *buf_tmp2=NULL;
+  gchar buf[BUFFSIZE], *cp, *cpp, *buf_tmp1=NULL, *buf_tmp2=NULL;
   int i_list=0, i_all=0;
   gint pos_fid,pos_date,pos_mode,pos_type,pos_obj,pos_fil,pos_wv,
     pos_ra,pos_dec,pos_exp,pos_obs;
@@ -2853,7 +2856,8 @@ void trdb_smoka_txt_parse(typHOE *hg) {
   hg->obj[hg->fcdb_i].trdb_band_max=0;
 
   while(!feof(fp)){
-    if((buf=fgets_new(fp))==NULL){
+    //if((buf=fgets_new(fp))==NULL){
+    if(!fgets(buf,BUFFSIZE-1,fp)){
 #ifdef GTK_MSG
       popup_message(POPUP_TIMEOUT*2,
 		    "Error: File cannot be read.",
@@ -2869,16 +2873,17 @@ void trdb_smoka_txt_parse(typHOE *hg) {
     }
     else{
       if(strncmp(buf,"<pre>",strlen("<pre>"))==0){
-	if(buf) g_free(buf);
+	//if(buf) g_free(buf);
 	break;
       }
       else{
-	if(buf) g_free(buf);
+	//if(buf) g_free(buf);
       }
     }
   }
 
-  if((buf=fgets_new(fp))==NULL){
+  //if((buf=fgets_new(fp))==NULL){
+  if(!fgets(buf,BUFFSIZE-1,fp)){
 #ifdef GTK_MSG
     popup_message(POPUP_TIMEOUT*2,
 		  "Error: File cannot be read.",
@@ -2971,10 +2976,10 @@ void trdb_smoka_txt_parse(typHOE *hg) {
       len_obs=strlen(cpp)-strlen(cp)-pos_obs;
     }
 
-    if(buf) g_free(buf);
+    //if(buf) g_free(buf);
   }
   else{
-    if(buf) g_free(buf);
+    //if(buf) g_free(buf);
     fclose(fp);
 
     hg->fcdb_i_max=0;
@@ -2987,7 +2992,8 @@ void trdb_smoka_txt_parse(typHOE *hg) {
   }
 
   while(!feof(fp)){
-    if((buf=fgets_new(fp))==NULL){
+    //if((buf=fgets_new(fp))==NULL){
+    if(!fgets(buf,BUFFSIZE-1,fp)){
 #ifdef GTK_MSG
       popup_message(POPUP_TIMEOUT*2,
 		    "Error: File cannot be read.",
@@ -3002,7 +3008,7 @@ void trdb_smoka_txt_parse(typHOE *hg) {
       return;
     }
     else if(strncmp(buf,"</pre>",strlen("</pre>"))==0){
-      if(buf) g_free(buf);
+      //if(buf) g_free(buf);
       break;
     }
     else{
@@ -3110,7 +3116,7 @@ void trdb_smoka_txt_parse(typHOE *hg) {
       if(hg->fcdb[i_list].obs) g_free(hg->fcdb[i_list].obs);
       hg->fcdb[i_list].obs=g_strstrip(g_strndup(cp,len_obs));
 
-      if(buf) g_free(buf);
+      //if(buf) g_free(buf);
       i_list++;
       if(i_list==MAX_FCDB) break;
     }

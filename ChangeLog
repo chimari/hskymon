@@ -1,3 +1,5 @@
+2017.12.26 ver3.3.1 - Changed fgets_new -> fgets in votable.c .
+
 2017.12.25 ver3.3.0 - Added Gemini archive into "List Query" and FCDB.
                     - "json-c" is now required to parse Gemini archive info.
 
