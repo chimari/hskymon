@@ -1,8 +1,8 @@
-hskymon (3.3.1) unstable; urgency=medium
+hskymon (3.3.1) UNRELEASED; urgency=medium
 
-  * fgets_new() -> fgets() in votable.c .
+c  * 
 
- -- Akito Tajitsu <tajitsu@naoj.org>  Tue, 26 Dec 2017 14:59:15 -1000
+ -- Akito Tajitsu <taji@zekamashi>  Tue, 26 Dec 2017 14:58:54 -1000
 
 hskymon (3.3.0) unstable; urgency=medium
 
