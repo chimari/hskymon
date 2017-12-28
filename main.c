@@ -52,8 +52,6 @@ void ext_play();
 static void show_dss();
 static void show_simbad();
 
-void clear_trdb();
-
 void do_open();
 void do_open_NST();
 void do_open_JPL();
@@ -2268,6 +2266,8 @@ void clear_trdb(typHOE *hg){
     }
     hg->obj[i_list].trdb_band_max=0;
   }
+
+  hg->trdb_i_max=0;
 }
 
 void do_open (GtkWidget *widget, gpointer gdata)
@@ -4495,20 +4495,33 @@ static void ok_trdb_smoka(GtkWidget *w, gpointer gdata)
   typHOE *hg;
   hg=(typHOE *)gdata;
 
-  gtk_main_quit();
+  if((!hg->trdb_smoka_imag)
+     &&(!hg->trdb_smoka_spec)
+     &&(!hg->trdb_smoka_ipol)){
+#ifdef GTK_MSG
+      popup_message(POPUP_TIMEOUT,
+		    "Error: Please select at least one observation mode.",
+		    NULL);
+#else
+      g_print ("Error: Please select at least one observation mode.\n");
+#endif
+  }
+  else{
+    gtk_main_quit();
 
-  trdb_run(hg);
+    trdb_run(hg);
 
-  hg->fcdb_type=hg->fcdb_type_tmp;
-  hg->trdb_used=TRDB_TYPE_SMOKA;
-  hg->trdb_smoka_inst_used=hg->trdb_smoka_inst;
-  hg->trdb_smoka_shot_used=hg->trdb_smoka_shot;
-  hg->trdb_smoka_imag_used=hg->trdb_smoka_imag;
-  hg->trdb_smoka_spec_used=hg->trdb_smoka_spec;
-  hg->trdb_smoka_ipol_used=hg->trdb_smoka_ipol;
-  hg->trdb_arcmin_used=hg->trdb_arcmin;
-  if(hg->trdb_smoka_date_used) g_free(hg->trdb_smoka_date_used);
-  hg->trdb_smoka_date_used=g_strdup(hg->trdb_smoka_date);
+    hg->fcdb_type=hg->fcdb_type_tmp;
+    hg->trdb_used=TRDB_TYPE_SMOKA;
+    hg->trdb_smoka_inst_used=hg->trdb_smoka_inst;
+    hg->trdb_smoka_shot_used=hg->trdb_smoka_shot;
+    hg->trdb_smoka_imag_used=hg->trdb_smoka_imag;
+    hg->trdb_smoka_spec_used=hg->trdb_smoka_spec;
+    hg->trdb_smoka_ipol_used=hg->trdb_smoka_ipol;
+    hg->trdb_arcmin_used=hg->trdb_arcmin;
+    if(hg->trdb_smoka_date_used) g_free(hg->trdb_smoka_date_used);
+    hg->trdb_smoka_date_used=g_strdup(hg->trdb_smoka_date);
+  }
 }
 
 
@@ -4520,6 +4533,13 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
 
   if(hg->i_max<=0){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT,
+		  "Error: Please load your object list.",
+		  NULL);
+#else
+    g_print ("Error: Please load your object list.\n");
+#endif
     return;
   }
 
@@ -4588,8 +4608,13 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
 			       hg->trdb_smoka_shot);
 
+  label = gtk_label_new ("Observation Mode");
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3,
+		   GTK_FILL,GTK_SHRINK,0,0);
+
   hbox = gtk_hbox_new(FALSE,0);
-  gtk_table_attach(GTK_TABLE(table), hbox, 0, 2, 2, 3,
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 2, 3,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
@@ -4715,6 +4740,13 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
 
   if(hg->i_max<=0){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT,
+		  "Error: Please load your object list.",
+		  NULL);
+#else
+    g_print ("Error: Please load your object list.\n");
+#endif
     return;
   }
 
@@ -4957,6 +4989,13 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
 
   if(hg->i_max<=0){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT,
+		  "Error: Please load your object list.",
+		  NULL);
+#else
+    g_print ("Error: Please load your object list.\n");
+#endif
     return;
   }
 
@@ -5357,6 +5396,13 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
 
   if(hg->i_max<=0){
+#ifdef GTK_MSG
+    popup_message(POPUP_TIMEOUT,
+		  "Error: Please load your object list.",
+		  NULL);
+#else
+    g_print ("Error: Please load your object list.\n");
+#endif
     return;
   }
 
@@ -11318,6 +11364,7 @@ void param_init(typHOE *hg){
     }
   }
 
+  hg->trdb_i_max=0;
   hg->trdb_disp_flag=TRUE;
   hg->trdb_smoka_inst=0;
   skymon_set_time_current(hg);

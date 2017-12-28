@@ -268,6 +268,7 @@ void trdb_gemini_json_parse(typHOE *hg) {
     if(i_band_max>=MAX_TRDB_BAND) break;
   }
 
+  if(i_band_max>0)   hg->trdb_i_max++;
   hg->obj[hg->fcdb_i].trdb_band_max=i_band_max;
 
   make_band_str(hg, hg->fcdb_i, TRDB_TYPE_GEMINI);

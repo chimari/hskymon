@@ -1796,6 +1796,7 @@ struct _typHOE{
 
   GtkWidget *trdb_tree;
   GtkWidget *trdb_label;
+  gint trdb_i_max;
   gint trdb_tree_focus;
   gboolean trdb_disp_flag;
   gchar *trdb_label_text;
@@ -2116,6 +2117,8 @@ gint update_allsky();
 #ifdef USE_XMLRPC
 gint update_telstat();
 #endif
+void clear_trdb();
+
 
 //adc.c
 void do_adc();

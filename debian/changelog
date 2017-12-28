@@ -1,3 +1,10 @@
+hskymon (3.3.2) unstable; urgency=medium
+
+  * GUI updates in List Query services.
+  * Changed back fgets() --> fgets_new() in smoka_txt_parse.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Thu, 28 Dec 2017 12:13:47 -1000
+
 hskymon (3.3.1) unstable; urgency=medium
 
   * fgets_new() --> fgets() in smoka_txt_parse (votable.c).
