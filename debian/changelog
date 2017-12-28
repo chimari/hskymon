@@ -1,3 +1,9 @@
+hskymon (3.3.1) unstable; urgency=medium
+
+  * fgets_new() --> fgets() in smoka_txt_parse (votable.c).
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Wed, 27 Dec 2017 16:57:51 -1000
+
 hskymon (3.3.0) unstable; urgency=medium
 
   * Added Gemini archive into List query mode and FCDB.

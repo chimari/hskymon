@@ -501,11 +501,26 @@ gboolean progress_timeout( gpointer data ){
     }
     else{
 #ifdef USE_SSL      
-      if((hg->fc_mode<FC_SKYVIEW_GALEXF)||(hg->fc_mode>FC_SKYVIEW_RGB)){
-	tmp=g_strdup_printf("Waiting for HTTP responce ...");
+      if(flag_getDSS){
+	if((hg->fc_mode<FC_SKYVIEW_GALEXF)||(hg->fc_mode>FC_SKYVIEW_RGB)){
+	  tmp=g_strdup_printf("Waiting for HTTP responce ...");
+	}
+	else{
+	  tmp=g_strdup_printf("Waiting for HTTPS responce ...");
+	}
       }
       else{
-	tmp=g_strdup_printf("Waiting for HTTPS responce ...");
+	switch(hg->fcdb_type){
+	case FCDB_TYPE_GEMINI:
+	case TRDB_TYPE_GEMINI:
+	case TRDB_TYPE_FCDB_GEMINI:
+	  tmp=g_strdup_printf("Waiting for HTTPS responce ...");
+	  break;
+
+	default:
+	  tmp=g_strdup_printf("Waiting for HTTP responce ...");
+	  break;
+	}
       }
 #else
       tmp=g_strdup_printf("Waiting for HTTP responce ...");
