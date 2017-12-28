@@ -5369,7 +5369,7 @@ void trdb_run (typHOE *hg)
   struct ln_equ_posn object;
   struct ln_equ_posn object_prec;
   struct lnh_equ_posn hobject_prec;
-  gint i_list;
+  gint i_list, i_band;
   GtkTreeModel *model;
   GtkTreeIter iter;
   GtkWidget *dialog, *vbox, *label, *button, *sep, *time_label, *stat_label;
@@ -5387,6 +5387,22 @@ void trdb_run (typHOE *hg)
   if(hg->i_max<=0) return;
   if(flag_getFCDB) return;
   flag_getFCDB=TRUE;
+
+  for(i_list=0;i_list<hg->i_max;i_list++){
+    for(i_band=0;i_band<hg->obj[i_list].trdb_band_max;i_band++){
+      if(hg->obj[i_list].trdb_band[i_band]) 
+	g_free(hg->obj[i_list].trdb_band[i_band]);
+      hg->obj[i_list].trdb_band[i_band]=NULL;
+      if(hg->obj[i_list].trdb_mode[i_band]) 
+	g_free(hg->obj[i_list].trdb_mode[i_band]);
+      hg->obj[i_list].trdb_mode[i_band]=NULL;
+      hg->obj[i_list].trdb_exp[i_band]=0;
+      hg->obj[i_list].trdb_shot[i_band]=0;
+    }
+    if(hg->obj[i_list].trdb_str) g_free(hg->obj[i_list].trdb_str);
+    hg->obj[i_list].trdb_str=NULL;
+    hg->obj[i_list].trdb_band_max=0;
+  }
 
   dialog = gtk_dialog_new();
   
