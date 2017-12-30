@@ -1516,6 +1516,8 @@ int http_c_fc(typHOE *hg){
 
     fclose(fp_write);
 
+    check_msg_from_parent();
+    
 #ifndef USE_WIN32
     if((chmod(hg->dss_tmp,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
     g_print("Cannot Chmod Temporary File %s!  Please check!!!\n",hg->dss_tmp);
@@ -1622,10 +1624,15 @@ int http_c_fc(typHOE *hg){
       fprintf(stderr, "Failed to create a new socket.\n");
       return(HSKYMON_HTTP_ERROR_SOCKET);
     }
+
+    check_msg_from_parent();
+    
     if( connect(command_socket, res->ai_addr, res->ai_addrlen) != 0){
       fprintf(stderr, "Failed to connect to %s .\n", hg->dss_host);
       return(HSKYMON_HTTP_ERROR_CONNECT);
     }
+
+    check_msg_from_parent();
 
     // AddrInfo¤Î²òÊü
     freeaddrinfo(res);
@@ -1706,8 +1713,10 @@ int http_c_fc(typHOE *hg){
 	fwrite( &buf , size , 1 , fp_write ); 
       }while(size>0);
       
-      
+     
       fclose(fp_write);
+
+      check_msg_from_parent();
     }
       
     break;
@@ -1721,6 +1730,8 @@ int http_c_fc(typHOE *hg){
       return(HSKYMON_HTTP_ERROR_TEMPFILE);
     }
 
+    check_msg_from_parent();
+    
     while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
       // header lines
       if(debug_flg){
@@ -1737,10 +1748,12 @@ int http_c_fc(typHOE *hg){
     
     
     fclose(fp_write);
+
+    check_msg_from_parent();
+    
     if ( debug_flg ){
       fprintf(stderr," Done.\n");
     }
-    
     break;
   }
 
@@ -2091,6 +2104,8 @@ int http_c_fc_ssl(typHOE *hg){
       return(HSKYMON_HTTP_ERROR_TEMPFILE);
     }
     
+    check_msg_from_parent();
+  
     while((size = ssl_gets(ssl, buf, BUF_LEN)) > 2 ){
       // header lines
       if(debug_flg){
@@ -2108,6 +2123,8 @@ int http_c_fc_ssl(typHOE *hg){
 
     fclose(fp_write);
 
+    check_msg_from_parent();
+    
 #ifndef USE_WIN32
     if((chmod(hg->dss_tmp,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
     g_print("Cannot Chmod Temporary File %s!  Please check!!!\n",hg->dss_tmp);
@@ -2220,6 +2237,9 @@ int http_c_fc_ssl(typHOE *hg){
       fprintf(stderr, "Failed to create a new socket.\n");
       return(HSKYMON_HTTP_ERROR_SOCKET);
     }
+
+    check_msg_from_parent();
+
     if( connect(command_socket, res->ai_addr, res->ai_addrlen) != 0){
       fprintf(stderr, "Failed to connect to %s .\n", hg->dss_host);
       return(HSKYMON_HTTP_ERROR_CONNECT);
@@ -2324,6 +2344,8 @@ int http_c_fc_ssl(typHOE *hg){
       }while(size >0);
       
       fclose(fp_write);
+
+      check_msg_from_parent();
     }
       
     break;
@@ -2336,6 +2358,8 @@ int http_c_fc_ssl(typHOE *hg){
       fprintf(stderr," File Write Error  \"%s\" \n", hg->dss_file);
       return(HSKYMON_HTTP_ERROR_TEMPFILE);
     }
+
+    check_msg_from_parent();
     
     while((size = ssl_gets(ssl, buf,BUF_LEN)) > 2 ){
       // header lines
@@ -2352,10 +2376,12 @@ int http_c_fc_ssl(typHOE *hg){
     }while(size >0);
     
     fclose(fp_write);
+
+    check_msg_from_parent();
+    
     if ( debug_flg ){
       fprintf(stderr," Done.\n");
-    }
-    
+    }    
     break;
   }
   

@@ -430,7 +430,7 @@ void fc_dl (typHOE *hg)
   unlink(hg->dss_file);
   
   hg->plabel=gtk_label_new("Retrieving image from website ...");
-  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
+  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     hg->plabel,FALSE,FALSE,0);
   
@@ -5095,18 +5095,16 @@ void fcdb_dl(typHOE *hg)
     hg->plabel=gtk_label_new("Searching objects in Gemini archive ...");
     break;
   }
-  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
+  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     hg->plabel,FALSE,FALSE,0);
   
-#ifndef USE_WIN32
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    cancel_fcdb, 
 		    (gpointer)hg);
-#endif
   
   gtk_widget_show_all(dialog);
   
@@ -5291,7 +5289,7 @@ void addobj_dl(typHOE *hg)
     hg->plabel=gtk_label_new("Searching objects in Gemini archive ...");
     break;
   }
-  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
+  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     hg->plabel,FALSE,FALSE,0);
   
@@ -5394,7 +5392,8 @@ void trdb_run (typHOE *hg)
   gint i_list, i_band;
   GtkTreeModel *model;
   GtkTreeIter iter;
-  GtkWidget *dialog, *vbox, *label, *button, *sep, *time_label, *stat_label;
+  GtkWidget *dialog, *vbox, *label, *button, *sep, *time_label, *stat_label,
+    *hbox;
 #ifndef USE_WIN32
   static struct sigaction act;
 #endif
@@ -5463,7 +5462,7 @@ void trdb_run (typHOE *hg)
     label=gtk_label_new("Searching objects in Gemini archive ...");
     break;
   }
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
   gtk_widget_show(label);
 
@@ -5514,29 +5513,17 @@ void trdb_run (typHOE *hg)
     hg->plabel=gtk_label_new("Searching objects in Gemini archive ...");
     break;
   }
-  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
+  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
+
+  hbox = gtk_hbox_new(FALSE,5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
-		     hg->plabel,FALSE,FALSE,0);
+		     hbox,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hbox),hg->plabel,FALSE,TRUE,0);
 
-  gtk_box_set_child_packing (GTK_BOX(GTK_DIALOG(dialog)->action_area),
-			     hg->plabel,
-			     FALSE,
-			     FALSE,
-			     5,
-			     GTK_PACK_END);
-
-  //#ifndef USE_WIN32
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
-		     button,FALSE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,TRUE,0);
   my_signal_connect(button,"pressed",cancel_trdb,(gpointer)hg);
-  gtk_box_set_child_packing (GTK_BOX(GTK_DIALOG(dialog)->action_area),
-			     button,
-			     TRUE,
-			     TRUE,
-			     5,
-			     GTK_PACK_END);
-  //#endif
+
 
   gtk_widget_show_all(dialog);
 

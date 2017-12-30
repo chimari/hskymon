@@ -1480,7 +1480,7 @@ struct _typHOE{
   HANDLE hThread_dss;
   HANDLE hThread_stddb;
   HANDLE hThread_fcdb;
-  unsigned int dwThrecadID_allsky;
+  unsigned int dwThreadID_allsky;
   unsigned int dwThreadID_dss;
   unsigned int dwThreadID_stddb;
   unsigned int dwThreadID_fcdb;

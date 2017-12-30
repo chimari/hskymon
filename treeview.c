@@ -7261,8 +7261,8 @@ void stddb_signal(int sig){
     int child_ret;
     child_pid=waitpid(stddb_pid, &child_ret,WNOHANG);
   } while((child_pid>0)||(child_pid!=-1));
-#endif
 }
+#endif
 
 
 void std_make_tree(GtkWidget *widget, gpointer gdata){

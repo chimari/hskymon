@@ -1,3 +1,9 @@
+hskymon (3.3.3) unstable; urgency=medium
+
+  * Revised GUI termination schemes.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Fri, 29 Dec 2017 16:26:57 -1000
+
 hskymon (3.3.2) unstable; urgency=medium
 
   * GUI updates in List Query services.

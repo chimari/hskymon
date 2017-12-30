@@ -11303,6 +11303,13 @@ void param_init(typHOE *hg){
   hg->add_max=0;
   hg->nst_max=0;
 
+#ifdef USE_WIN32
+  hg->dwThreadID_allsky=0;
+  hg->dwThreadID_dss=0;
+  hg->dwThreadID_stddb=0;
+  hg->dwThreadID_fcdb=0;
+#endif
+
   hg->sz_skymon=SKYMON_WINSIZE;
   hg->sz_plot  =  PLOT_WINSIZE;
   hg->sz_fc    =    FC_WINSIZE;
