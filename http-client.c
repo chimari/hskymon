@@ -95,6 +95,19 @@ int debug_flg = 0;
 int allsky_fd[2];
 #endif
 
+void check_msg_from_parent(){
+#ifdef USE_WIN32
+  MSG msg;
+  
+  PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
+
+  if(msg.message==WM_QUIT) {
+    fprintf(stderr,"Terminated from parent.\n");
+    gtk_main_quit();
+    _endthreadex(0);
+  }
+#endif
+}
 
 gchar *make_rand16(){
   int i;
@@ -765,8 +778,6 @@ void allsky_signal(int sig){
 int get_allsky(typHOE *hg){
 #ifdef USE_WIN32
   DWORD dwErrorNumber;
-  unsigned int dwThreadID;
-  HANDLE hThread;
   
   if(flag_getting_allsky) return(-1);
   flag_getting_allsky=TRUE;
@@ -777,15 +788,17 @@ int get_allsky(typHOE *hg){
 				       (GSourceFunc)check_allsky,
 				       (gpointer)hg);
 
-  hThread = (HANDLE)_beginthreadex(NULL,0,
-				   http_c,
-				   (LPVOID)hg, 0, &dwThreadID);
-  if (hThread == NULL) {
+  hg->hThread_allsky = (HANDLE)_beginthreadex(NULL,0,
+					      http_c,
+					      (LPVOID)hg, 
+					      0, 
+					      &hg->dwThreadID_allsky);
+  if (hg->hThread_allsky == NULL) {
     dwErrorNumber = GetLastError();
     fprintf(stderr,"_beginthreadex() error(%ld).\n", dwErrorNumber);
   }
   else{
-    CloseHandle(hThread);
+    CloseHandle(hg->hThread_allsky);
   }
 
 #else
@@ -1220,7 +1233,6 @@ int http_c_fc(typHOE *hg){
 
   gboolean chunked_flag=FALSE;
 
-   
   /* ホストの情報 (IP アドレスなど) を取得 */
   memset(&hints, 0, sizeof(hints));
   hints.ai_socktype = SOCK_STREAM;
@@ -4047,6 +4059,8 @@ int http_c_fcdb(typHOE *hg){
     plen=post_body(hg, FALSE, 0, rand16);
   }
    
+  check_msg_from_parent();
+   
   /* ホストの情報 (IP アドレスなど) を取得 */
   memset(&hints, 0, sizeof(hints));
   hints.ai_socktype = SOCK_STREAM;
@@ -4061,6 +4075,8 @@ int http_c_fcdb(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_GETHOST);
   }
 
+  check_msg_from_parent();
+   
   /* ソケット生成 */
   if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
     fprintf(stderr, "Failed to create a new socket.\n");
@@ -4071,6 +4087,8 @@ int http_c_fcdb(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_SOCKET);
   }
   
+  check_msg_from_parent();
+   
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
     fprintf(stderr, "Failed to connect to %s .\n", hg->fcdb_host);
@@ -4081,6 +4099,8 @@ int http_c_fcdb(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
   
+  check_msg_from_parent();
+   
   // AddrInfoの解放
   freeaddrinfo(res);
 
@@ -4166,6 +4186,8 @@ int http_c_fcdb(typHOE *hg){
   }while(size>0);
       
   fclose(fp_write);
+
+  check_msg_from_parent();
 
   if(chunked_flag) unchunk(hg->fcdb_file);
   // This is a bug fix for SDSS DR14 VOTable output
@@ -4373,31 +4395,35 @@ int http_c_fcdb_ssl(typHOE *hg){
 int get_dss(typHOE *hg){
 #ifdef USE_WIN32
   DWORD dwErrorNumber;
-  unsigned int dwThreadID;
-  HANDLE hThread;
   
 #ifdef USE_SSL
   if((hg->fc_mode<FC_SKYVIEW_GALEXF)||(hg->fc_mode>FC_SKYVIEW_RGB)){
-    hThread = (HANDLE)_beginthreadex(NULL,0,
-				     http_c_fc,
-				     (LPVOID)hg, 0, &dwThreadID);
+    hg->hThread_dss = (HANDLE)_beginthreadex(NULL,0,
+					     http_c_fc,
+					     (LPVOID)hg, 
+					     0, 
+					     &hg->dwThreadID_dss);
   }
   else{
-    hThread = (HANDLE)_beginthreadex(NULL,0,
-				     http_c_fc_ssl,
-				     (LPVOID)hg, 0, &dwThreadID);
+    hg->hThread_dss = (HANDLE)_beginthreadex(NULL,0,
+					     http_c_fc_ssl,
+					     (LPVOID)hg,
+					     0, 
+					     &hg->dwThreadID_dss);
   }
 #else
-  hThread = (HANDLE)_beginthreadex(NULL,0,
-				   http_c_fc,
-				   (LPVOID)hg, 0, &dwThreadID);
+  hg->hThread_dss = (HANDLE)_beginthreadex(NULL,0,
+					   http_c_fc,
+					   (LPVOID)hg,
+					   0, 
+					   &hg->dwThreadID_dss);
 #endif
-  if (hThread == NULL) {
+  if (hg->hThread_dss == NULL) {
     dwErrorNumber = GetLastError();
     fprintf(stderr,"_beginthreadex() error(%ld).\n", dwErrorNumber);
   }
   else{
-    CloseHandle(hThread);
+    CloseHandle(hg->hThread_dss);
   }
 
 #else
@@ -4431,18 +4457,18 @@ int get_dss(typHOE *hg){
 int get_stddb(typHOE *hg){
 #ifdef USE_WIN32
   DWORD dwErrorNumber;
-  unsigned int dwThreadID;
-  HANDLE hThread;
   
-  hThread = (HANDLE)_beginthreadex(NULL,0,
-				   http_c_std,
-				   (LPVOID)hg, 0, &dwThreadID);
-  if (hThread == NULL) {
+  hg->hThread_stddb = (HANDLE)_beginthreadex(NULL,0,
+					     http_c_std,
+					     (LPVOID)hg,
+					     0,
+					     &hg->dwThreadID_stddb);
+  if (hg->hThread_stddb == NULL) {
     dwErrorNumber = GetLastError();
     fprintf(stderr,"_beginthreadex() error(%ld).\n", dwErrorNumber);
   }
   else{
-    CloseHandle(hThread);
+    CloseHandle(hg->hThread_stddb);
   }
 
 #else
@@ -4467,36 +4493,40 @@ int get_stddb(typHOE *hg){
 int get_fcdb(typHOE *hg){
 #ifdef USE_WIN32
   DWORD dwErrorNumber;
-  unsigned int dwThreadID;
-  HANDLE hThread;
 
 #ifdef USE_SSL
   switch(hg->fcdb_type){
   case FCDB_TYPE_GEMINI:
   case TRDB_TYPE_GEMINI:
   case TRDB_TYPE_FCDB_GEMINI:
-    hThread = (HANDLE)_beginthreadex(NULL,0,
-				     http_c_fcdb_ssl,
-				     (LPVOID)hg, 0, &dwThreadID);
+    hg->hThread_fcdb = (HANDLE)_beginthreadex(NULL,0,
+					      http_c_fcdb_ssl,
+					      (LPVOID)hg,
+					      0, 
+					      &hg->dwThreadID_fcdb);
     break;
 
   default:
-    hThread = (HANDLE)_beginthreadex(NULL,0,
-				     http_c_fcdb,
-				     (LPVOID)hg, 0, &dwThreadID);
+    hg->hThread_fcdb = (HANDLE)_beginthreadex(NULL,0,
+					      http_c_fcdb,
+					      (LPVOID)hg,
+					      0,
+					      &hg->dwThreadID_fcdb);
     break;
   }
 #else  
-  hThread = (HANDLE)_beginthreadex(NULL,0,
-				   http_c_fcdb,
-				   (LPVOID)hg, 0, &dwThreadID);
+  hg->hThread_fcdb = (HANDLE)_beginthreadex(NULL,0,
+					    http_c_fcdb,
+					    (LPVOID)hg,
+					    0, 
+					    &hg->dwThreadID_fcdb);
 #endif
-  if (hThread == NULL) {
+  if (hg->hThread_fcdb == NULL) {
     dwErrorNumber = GetLastError();
     fprintf(stderr,"_beginthreadex() error(%ld).\n", dwErrorNumber);
   }
   else{
-    CloseHandle(hThread);
+    CloseHandle(hg->hThread_fcdb);
   }
 
 #else

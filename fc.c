@@ -256,6 +256,7 @@ void fc_dl (typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+  my_signal_connect(dialog,"delete-event",cancel_fc,(gpointer)hg);
   
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
   
@@ -4819,7 +4820,6 @@ static void close_fc_help(GtkWidget *w, GtkWidget *dialog)
   gtk_widget_destroy(dialog);
 }
 
-#ifndef USE_WIN32
 static void cancel_fcdb(GtkWidget *w, gpointer gdata)
 {
   typHOE *hg;
@@ -4827,6 +4827,11 @@ static void cancel_fcdb(GtkWidget *w, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
+#ifdef USE_WIN32
+  PostThreadMessage(hg->dwThreadID_fcdb, WM_QYIT, 0, 0);
+  WaitForSingleObject(hg->hThread_fcdb, INFINITE);
+  gtk_main_quit();
+#else
   if(fcdb_pid){
     kill(fcdb_pid, SIGKILL);
     gtk_main_quit();
@@ -4838,6 +4843,7 @@ static void cancel_fcdb(GtkWidget *w, gpointer gdata)
  
     fcdb_pid=0;
   }
+#endif
 }
 
 static void cancel_trdb(GtkWidget *w, gpointer gdata)
@@ -4848,6 +4854,11 @@ static void cancel_trdb(GtkWidget *w, gpointer gdata)
 
   flag_trdb_kill=TRUE;
 
+#ifdef USE_WIN32
+  PostThreadMessage(hg->dwThreadID_fcdb, WM_QYIT, 0, 0);
+  WaitForSingleObject(hg->hThread_fcdb, INFINITE);
+  gtk_main_quit();
+#else
   if(fcdb_pid){
     kill(fcdb_pid, SIGKILL);
     gtk_main_quit();
@@ -4861,8 +4872,8 @@ static void cancel_trdb(GtkWidget *w, gpointer gdata)
   else{
     gtk_main_quit();
   }
-}
 #endif
+}
 
 void fcdb_dl(typHOE *hg)
 {
@@ -4881,8 +4892,9 @@ void fcdb_dl(typHOE *hg)
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Query to the database");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+  my_signal_connect(dialog,"delete-event", cancel_fcdb, (gpointer)hg);
   
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
 
@@ -5108,9 +5120,9 @@ void fcdb_dl(typHOE *hg)
 
   gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
   if(timer!=-1) gtk_timeout_remove(timer);
-  gtk_widget_destroy(dialog);
 
   flag_getFCDB=FALSE;
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 }
 
 void addobj_dl(typHOE *hg)
@@ -5161,8 +5173,9 @@ void addobj_dl(typHOE *hg)
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Query to the database");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+  my_signal_connect(dialog,"delete-event", cancel_fcdb, (gpointer)hg);
   
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
   
@@ -5414,9 +5427,10 @@ void trdb_run (typHOE *hg)
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Running List Query");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  
+  my_signal_connect(dialog,"delete-event",cancel_trdb, (gpointer)hg);
+ 
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
 
   switch(hg->fcdb_type){
@@ -5495,14 +5509,25 @@ void trdb_run (typHOE *hg)
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     hg->plabel,FALSE,FALSE,0);
 
-#ifndef USE_WIN32
+  gtk_box_set_child_packing (GTK_BOX(GTK_DIALOG(dialog)->action_area),
+			     hg->plabel,
+			     FALSE,
+			     FALSE,
+			     5,
+			     GTK_PACK_END);
+
+  //#ifndef USE_WIN32
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
-  my_signal_connect(button,"pressed",
-		    cancel_trdb, 
-		    (gpointer)hg);
-#endif
+  my_signal_connect(button,"pressed",cancel_trdb,(gpointer)hg);
+  gtk_box_set_child_packing (GTK_BOX(GTK_DIALOG(dialog)->action_area),
+			     button,
+			     TRUE,
+			     TRUE,
+			     5,
+			     GTK_PACK_END);
+  //#endif
 
   gtk_widget_show_all(dialog);
 
@@ -5711,7 +5736,7 @@ void trdb_run (typHOE *hg)
   }
 
   gtk_timeout_remove(fcdb_tree_check_timer);
-  gtk_widget_destroy(dialog);
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 
   make_trdb_label(hg);
   if(flagTree){
@@ -5721,6 +5746,9 @@ void trdb_run (typHOE *hg)
     gtk_list_store_clear (GTK_LIST_STORE(model));
     hg->fcdb_i_max=0;
   }
+
+  if((hg->skymon_mode==SKYMON_CUR) || (hg->skymon_mode==SKYMON_SET))
+    draw_skymon_cairo(hg->skymon_dw,hg, TRUE);
 
   flag_getFCDB=FALSE;
 }

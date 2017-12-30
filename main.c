@@ -747,9 +747,8 @@ static void AddObj(GtkWidget *widget, gpointer gdata){
 
 static void close_child_dialog(GtkWidget *w, GtkWidget *dialog)
 {
-  //gdk_pointer_ungrab(GDK_CURRENT_TIME);
   gtk_main_quit();
-  gtk_widget_destroy(dialog);
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
 }
 
@@ -3133,7 +3132,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
 
   gtk_window_set_default_size (GTK_WINDOW (dialog), 200, 400);
 
-  my_signal_connect(dialog,"destroy",
+  my_signal_connect(dialog,"delete-event",
 		    close_child_dialog, 
 		    GTK_WIDGET(dialog));
 
@@ -3326,7 +3325,7 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Help");
 
-  my_signal_connect(dialog,"destroy",
+  my_signal_connect(dialog,"delete-event",
 		    close_child_dialog, 
 		    GTK_WIDGET(dialog));
   
@@ -3513,9 +3512,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Differential Images of All-Sky Camera");
 
-  my_signal_connect(dialog,"destroy",
-		    close_disp_para, 
-		    GTK_WIDGET(dialog));
+  my_signal_connect(dialog,"delete-event",close_disp_para,GTK_WIDGET(dialog));
 
   frame = gtk_frame_new ("Params for Making Differential Images");
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
@@ -3815,10 +3812,7 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Displaying All-Sky Camera Images");
-
-  my_signal_connect(dialog,"destroy",
-		    change_disp_para, 
-		    (gpointer)cdata);
+  my_signal_connect(dialog,"delete-event", close_disp_para, (gpointer)cdata);
 
   table = gtk_table_new(4,2,FALSE);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
@@ -3973,10 +3967,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Searching Stndards");
-
-  my_signal_connect(dialog,"destroy",
-		    close_disp_para, 
-		    GTK_WIDGET(dialog));
+  my_signal_connect(dialog,"delete-event",close_disp_para,GTK_WIDGET(dialog));
 
   frame = gtk_frame_new ("Sky Area");
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
@@ -4489,7 +4480,6 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
   g_free(cdata);
 }
 
-
 static void ok_trdb_smoka(GtkWidget *w, gpointer gdata)
 {
   typHOE *hg;
@@ -4556,6 +4546,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : SMOKA List Query");
+  my_signal_connect(dialog,"delete-event",gtk_main_quit, NULL);
 
   table = gtk_table_new(2,5,FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
@@ -4698,8 +4689,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   gtk_widget_show_all(dialog);
   gtk_main();
 
-  gtk_widget_destroy(dialog);
-
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
 
   if(!flagTree){
@@ -4763,6 +4753,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : HST archive List Query");
+  my_signal_connect(dialog,"delete-event",gtk_main_quit, NULL);
 
   table = gtk_table_new(2,5,FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
@@ -4941,8 +4932,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
 
   gtk_main();
 
-  gtk_widget_destroy(dialog);
-
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
 
   if(!flagTree){
@@ -5012,6 +5002,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : ESO archive List Query");
+  my_signal_connect(dialog,"delete-event",gtk_main_quit, NULL);
 
   table = gtk_table_new(2,9,FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
@@ -5355,8 +5346,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
 
   gtk_main();
 
-  gtk_widget_destroy(dialog);
-
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
 
   if(!flagTree){
@@ -5365,7 +5355,6 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   raise_tree();
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
 }
-
 
 static void ok_trdb_gemini(GtkWidget *w, gpointer gdata)
 {
@@ -5419,6 +5408,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Gemini archive List Query");
+  my_signal_connect(dialog,"delete-event",gtk_main_quit, NULL);
 
   table = gtk_table_new(2,3,FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
@@ -5545,9 +5535,8 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb[2]),TRUE);
 
   gtk_main();
-
-  gtk_widget_destroy(dialog);
-
+ 
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
 
   if(!flagTree){
@@ -5698,8 +5687,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for database query");
 
-  my_signal_connect(dialog, "destroy",
-		    close_disp_para,GTK_WIDGET(dialog));
+  my_signal_connect(dialog,"delete-event",close_disp_para,GTK_WIDGET(dialog));
 
   hbox1 = gtk_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
@@ -8525,7 +8513,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Properties");
 
-  my_signal_connect(dialog, "destroy",
+  my_signal_connect(dialog, "delete-event",
 		    close_prop,GTK_WIDGET(dialog));
 
   all_note = gtk_notebook_new ();
@@ -11160,7 +11148,7 @@ void close_prop(GtkWidget *w, GtkWidget *dialog)
   //gdk_pointer_ungrab(GDK_CURRENT_TIME);
 
   gtk_main_quit();
-  gtk_widget_destroy(dialog);
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
   flagProp=FALSE;
 }
@@ -11265,7 +11253,7 @@ void cc_radio(GtkWidget *button, gint *gdata)
 void close_disp_para(GtkWidget *w, GtkWidget *dialog)
 {
   gtk_main_quit();
-  gtk_widget_destroy(dialog);
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
 }
 
@@ -15940,7 +15928,7 @@ void popup_message(gint delay, ...){
 			(gpointer)dialog);
   }
 
-  my_signal_connect(dialog,"destroy",destroy_popup, timer);
+  my_signal_connect(dialog,"delete-event",destroy_popup, timer);
 
   hbox=gtk_hbox_new(FALSE,5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hbox, FALSE,FALSE,0);
@@ -15965,6 +15953,8 @@ void popup_message(gint delay, ...){
 
   gtk_widget_show_all(dialog);
   gtk_main();
+
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 
   flagChildDialog=FALSE;
 }

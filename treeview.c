@@ -7349,6 +7349,8 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Add Object");
+  my_signal_connect(dialog,"delete-event", gtk_main_quit, NULL);
+
 
   hbox = gtk_hbox_new(FALSE,2);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
@@ -7425,8 +7427,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
-  my_signal_connect(button,"pressed",
-		    gtk_main_quit, NULL);
+  my_signal_connect(button,"pressed", gtk_main_quit, NULL);
 
   button=gtkut_button_new_from_stock("Add Object",GTK_STOCK_ADD);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
@@ -7437,7 +7438,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   gtk_widget_show_all(dialog);
   gtk_main();
 
-  gtk_widget_destroy(dialog);
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
 }
 
