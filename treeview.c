@@ -7165,6 +7165,7 @@ void stddb_dl(typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+  my_signal_connect(dialog, "delete-event", cancel_stddb, (gpointer)hg);
 
 
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
@@ -7190,14 +7191,10 @@ void stddb_dl(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     hg->plabel,FALSE,FALSE,0);
   
-#ifndef USE_WIN32
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
-  my_signal_connect(button,"pressed",
-		    cancel_stddb, 
-		    (gpointer)hg);
-#endif
+  my_signal_connect(button,"pressed", cancel_stddb, (gpointer)hg);
   
   gtk_widget_show_all(dialog);
 
@@ -7216,24 +7213,30 @@ void stddb_dl(typHOE *hg)
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   
   get_stddb(hg);
-  //#ifndef USE_WIN32  
   gtk_main();
-  //#endif
+
   gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
   if(timer!=-1) gtk_timeout_remove(timer);
-  gtk_widget_destroy(dialog);
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 
   flag_getSTD=FALSE;
 }
 
 static void cancel_stddb(GtkWidget *w, gpointer gdata)
 {
-#ifndef USE_WIN32
   typHOE *hg;
   pid_t child_pid=0;
 
   hg=(typHOE *)gdata;
 
+#ifdef USE_WIN32
+  if(hg->dwThreadID_stddb){
+    PostThreadMessage(hg->dwThreadID_stddb, WM_QUIT, 0, 0);
+    WaitForSingleObject(hg->hThread_stddb, INFINITE);
+    CloseHandle(hg->hThread_stddb);
+    gtk_main_quit();
+  }
+#else
   if(stddb_pid){
     kill(stddb_pid, SIGKILL);
     gtk_main_quit();
@@ -7245,8 +7248,8 @@ static void cancel_stddb(GtkWidget *w, gpointer gdata)
  
     stddb_pid=0;
   }
-}
 #endif
+}
 
 #ifndef USE_WIN32
 void stddb_signal(int sig){

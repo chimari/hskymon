@@ -2241,5 +2241,6 @@ void trdb_eso_vo_parse();
 void addobj_vo_parse();
 void stddb_vo_parse();
 
-
-
+//jason_parse.c
+void fcdb_gemini_jason_parse();
+void trdb_gemini_jason_parse();

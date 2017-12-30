@@ -60,9 +60,7 @@ int http_c_fc_ssl();
 
 gboolean check_allsky();
 
-#ifndef USE_WIN32
 static void cancel_allsky();
-#endif
 
 void unchunk();
 
@@ -800,7 +798,7 @@ int get_allsky(typHOE *hg){
   else{
     CloseHandle(hg->hThread_allsky);
   }
-
+  hg->dwThreadID_allsky=0;
 #else
   int status = 0;
   static int pid;
@@ -1233,6 +1231,8 @@ int http_c_fc(typHOE *hg){
 
   gboolean chunked_flag=FALSE;
 
+  check_msg_from_parent();
+
   /* ホストの情報 (IP アドレスなど) を取得 */
   memset(&hints, 0, sizeof(hints));
   hints.ai_socktype = SOCK_STREAM;
@@ -1247,6 +1247,8 @@ int http_c_fc(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_GETHOST);
   }
 
+  check_msg_from_parent();
+
   /* ソケット生成 */
   if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
     fprintf(stderr, "Failed to create a new socket.\n");
@@ -1257,6 +1259,8 @@ int http_c_fc(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_SOCKET);
   }
   
+  check_msg_from_parent();
+
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
     fprintf(stderr, "Failed to connect to %s .\n", hg->dss_host);
@@ -1266,6 +1270,8 @@ int http_c_fc(typHOE *hg){
 #endif
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
+
+  check_msg_from_parent();
 
   // bin mode
   object.ra=ra_to_deg(hg->obj[hg->dss_i].ra);
@@ -1738,6 +1744,8 @@ int http_c_fc(typHOE *hg){
     break;
   }
 
+  check_msg_from_parent();
+
   if(chunked_flag) unchunk(hg->dss_file);
 
 #ifndef USE_WIN32
@@ -1797,6 +1805,7 @@ int http_c_fc_ssl(typHOE *hg){
   SSL *ssl;
   SSL_CTX *ctx;
 
+  check_msg_from_parent();
    
   /* ホストの情報 (IP アドレスなど) を取得 */
   memset(&hints, 0, sizeof(hints));
@@ -1812,6 +1821,8 @@ int http_c_fc_ssl(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_GETHOST);
   }
 
+  check_msg_from_parent();
+
   /* ソケット生成 */
   if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
     fprintf(stderr, "Failed to create a new socket.\n");
@@ -1822,6 +1833,8 @@ int http_c_fc_ssl(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_SOCKET);
   }
   
+  check_msg_from_parent();
+
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
     fprintf(stderr, "Failed to connect to %s .\n", hg->dss_host);
@@ -1831,6 +1844,8 @@ int http_c_fc_ssl(typHOE *hg){
 #endif
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
+
+  check_msg_from_parent();
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -1847,6 +1862,8 @@ int http_c_fc_ssl(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_SSL);
   }
   
+  check_msg_from_parent();
+
   // bin mode
   object.ra=ra_to_deg(hg->obj[hg->dss_i].ra);
   object.dec=dec_to_deg(hg->obj[hg->dss_i].dec);
@@ -2187,6 +2204,8 @@ int http_c_fc_ssl(typHOE *hg){
     }
     
     fclose(fp_read);
+
+    check_msg_from_parent();
     
     SSL_shutdown(ssl);
     SSL_free(ssl);
@@ -2206,6 +2225,8 @@ int http_c_fc_ssl(typHOE *hg){
       return(HSKYMON_HTTP_ERROR_CONNECT);
     }
 
+    check_msg_from_parent();
+
     // AddrInfoの解放
     freeaddrinfo(res);
 
@@ -2224,6 +2245,8 @@ int http_c_fc_ssl(typHOE *hg){
       return(HSKYMON_HTTP_ERROR_SSL);
     }
     
+    check_msg_from_parent();
+
     if(cp3){
       switch(hg->fc_mode){
       case FC_ESO_DSS1R:
@@ -2336,6 +2359,8 @@ int http_c_fc_ssl(typHOE *hg){
     break;
   }
   
+  check_msg_from_parent();
+
   if(chunked_flag) unchunk(hg->dss_file);
 
 #ifndef USE_WIN32
@@ -2413,6 +2438,8 @@ int http_c_std(typHOE *hg){
   gboolean chunked_flag=FALSE;
   gchar *cp;
    
+  check_msg_from_parent();
+
   /* ホストの情報 (IP アドレスなど) を取得 */
   memset(&hints, 0, sizeof(hints));
   hints.ai_socktype = SOCK_STREAM;
@@ -2427,6 +2454,8 @@ int http_c_std(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_GETHOST);
   }
 
+  check_msg_from_parent();
+
   /* ソケット生成 */
   if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
     fprintf(stderr, "Failed to create a new socket.\n");
@@ -2437,6 +2466,8 @@ int http_c_std(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_SOCKET);
   }
   
+  check_msg_from_parent();
+
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
     fprintf(stderr, "Failed to connect to %s .\n", hg->std_host);
@@ -2447,6 +2478,8 @@ int http_c_std(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
   
+  check_msg_from_parent();
+
   // AddrInfoの解放
   freeaddrinfo(res);
 
@@ -2489,6 +2522,8 @@ int http_c_std(typHOE *hg){
   }while(size>0);
       
   fclose(fp_write);
+
+  check_msg_from_parent();
 
   if(chunked_flag) unchunk(hg->std_file);
 
@@ -4253,6 +4288,8 @@ int http_c_fcdb_ssl(typHOE *hg){
   }
   */
    
+  check_msg_from_parent();
+
   /* ホストの情報 (IP アドレスなど) を取得 */
   memset(&hints, 0, sizeof(hints));
   hints.ai_socktype = SOCK_STREAM;
@@ -4267,6 +4304,8 @@ int http_c_fcdb_ssl(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_GETHOST);
   }
 
+  check_msg_from_parent();
+
     /* ソケット生成 */
   if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
     fprintf(stderr, "Failed to create a new socket.\n");
@@ -4276,6 +4315,8 @@ int http_c_fcdb_ssl(typHOE *hg){
 #endif
     return(HSKYMON_HTTP_ERROR_SOCKET);
   }
+
+  check_msg_from_parent();
   
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
@@ -4286,6 +4327,8 @@ int http_c_fcdb_ssl(typHOE *hg){
 #endif
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
+
+  check_msg_from_parent();
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -4301,6 +4344,8 @@ int http_c_fcdb_ssl(typHOE *hg){
 #endif
     return(HSKYMON_HTTP_ERROR_SSL);
   }
+
+  check_msg_from_parent();
   
   // AddrInfoの解放
   freeaddrinfo(res);
@@ -4357,6 +4402,7 @@ int http_c_fcdb_ssl(typHOE *hg){
       
   fclose(fp_write);
 
+  check_msg_from_parent();
 
   if(chunked_flag) unchunk(hg->fcdb_file);
   // This is a bug fix for SDSS DR14 VOTable output
@@ -4425,7 +4471,7 @@ int get_dss(typHOE *hg){
   else{
     CloseHandle(hg->hThread_dss);
   }
-
+  hg->dwThreadID_dss=0;
 #else
   waitpid(fc_pid,0,WNOHANG);
 
@@ -4470,7 +4516,7 @@ int get_stddb(typHOE *hg){
   else{
     CloseHandle(hg->hThread_stddb);
   }
-
+  hg->dwThreadID_stddb=0;
 #else
   waitpid(stddb_pid,0,WNOHANG);
 
@@ -4528,7 +4574,7 @@ int get_fcdb(typHOE *hg){
   else{
     CloseHandle(hg->hThread_fcdb);
   }
-
+  hg->dwThreadID_fcdb=0;
 #else
   waitpid(fcdb_pid,0,WNOHANG);
 
@@ -4616,11 +4662,17 @@ gboolean check_allsky (gpointer gdata){
 
 }
 
-#ifndef USE_WIN32
 void cancel_allsky(typHOE *hg)
 {
   pid_t child_pid=0;
 
+#ifdef USE_WIN32
+  if(hg->dwThreadID_allsky){
+    PostThreadMessage(hg->dwThreadID_allsky, WM_QUIT, 0, 0);
+    WaitForSingleObject(hg->hThread_allsky, INFINITE);
+    CloseHandle(hg->hThread_allsky);
+  }
+#else
   if(allsky_pid){
     kill(allsky_pid, SIGKILL);
 
@@ -4631,8 +4683,8 @@ void cancel_allsky(typHOE *hg)
  
     allsky_pid=0;
   }
-}
 #endif
+}
 
 GdkPixbuf* diff_pixbuf(GdkPixbuf *pixbuf1, GdkPixbuf* pixbuf2, 
 		       gint mag, gint base, guint dpix,

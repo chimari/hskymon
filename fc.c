@@ -22,9 +22,7 @@ void fc_dl ();
 void do_fc();
 void create_fc_dialog();
 static void close_fc();
-#ifndef USE_WIN32
 static void cancel_fc();
-#endif
 void draw_fc_pixmap();
 static gboolean expose_draw_fc();
 static gboolean configure_draw_fc();
@@ -436,14 +434,12 @@ void fc_dl (typHOE *hg)
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     hg->plabel,FALSE,FALSE,0);
   
-#ifndef USE_WIN32
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    cancel_fc, 
 		    (gpointer)hg);
-#endif
   
   gtk_widget_show_all(dialog);
 
@@ -1818,7 +1814,6 @@ void trdb_signal(int sig){
 }
 #endif
 
-#ifndef USE_WIN32
 static void cancel_fc(GtkWidget *w, gpointer gdata)
 {
   typHOE *hg;
@@ -1826,6 +1821,14 @@ static void cancel_fc(GtkWidget *w, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
+#ifdef USE_WIN32
+  if(hg->dwThreadID_dss){
+    PostThreadMessage(hg->dwThreadID_dss, WM_QUIT, 0, 0);
+    WaitForSingleObject(hg->hThread_dss, INFINITE);
+    CloseHandle(hg->hThread_dss);
+    gtk_main_quit();
+  }
+#else
   if(fc_pid){
     kill(fc_pid, SIGKILL);
     gtk_main_quit();
@@ -1837,8 +1840,8 @@ static void cancel_fc(GtkWidget *w, gpointer gdata)
  
     fc_pid=0;
   }
-}
 #endif
+}
 
 
 void translate_to_center(cairo_t *cr, int width, int height, int width_file, int height_file, gfloat r, typHOE *hg)
@@ -4828,9 +4831,12 @@ static void cancel_fcdb(GtkWidget *w, gpointer gdata)
   hg=(typHOE *)gdata;
 
 #ifdef USE_WIN32
-  PostThreadMessage(hg->dwThreadID_fcdb, WM_QYIT, 0, 0);
-  WaitForSingleObject(hg->hThread_fcdb, INFINITE);
-  gtk_main_quit();
+  if(hg->dwThreadID_fcdb){
+    PostThreadMessage(hg->dwThreadID_fcdb, WM_QUIT, 0, 0);
+    WaitForSingleObject(hg->hThread_fcdb, INFINITE);
+    CloseHandle(hg->hThread_fcdb);
+    gtk_main_quit();
+  }
 #else
   if(fcdb_pid){
     kill(fcdb_pid, SIGKILL);
@@ -4855,9 +4861,12 @@ static void cancel_trdb(GtkWidget *w, gpointer gdata)
   flag_trdb_kill=TRUE;
 
 #ifdef USE_WIN32
-  PostThreadMessage(hg->dwThreadID_fcdb, WM_QYIT, 0, 0);
-  WaitForSingleObject(hg->hThread_fcdb, INFINITE);
-  gtk_main_quit();
+  if(hg->dwThreadID_fcdb){
+    PostThreadMessage(hg->dwThreadID_fcdb, WM_QUIT, 0, 0);
+    WaitForSingleObject(hg->hThread_fcdb, INFINITE);
+    CloseHandle(hg->hThread_fcdb);
+    gtk_main_quit();
+  }
 #else
   if(fcdb_pid){
     kill(fcdb_pid, SIGKILL);
