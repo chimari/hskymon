@@ -16553,6 +16553,10 @@ int main(int argc, char* argv[]){
   int nErrorStatus;
 #endif
 
+#ifdef __USE_POSIX
+  tzset();
+#endif
+
   hg=g_malloc0(sizeof(typHOE));
   
   setlocale(LC_ALL,"");

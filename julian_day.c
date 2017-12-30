@@ -446,7 +446,9 @@ void ln_zonedate_to_date (struct ln_zonedate * zonedate, struct ln_date * date)
 
 int get_gmtoff_from_sys ()
 {
-#ifdef _BSD_SOURCE
+#ifdef __USE_POSIX
+  return((int)(timezone/60));
+#elif defined(_BSD_SOURCE)
   time_t curtime;
   struct tm *lotime;
   

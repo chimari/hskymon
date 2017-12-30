@@ -1,5 +1,7 @@
 2017.12.29 ver3.3.3 - Thread cancel function in WIN32 version.
 	            - Revised schemes in GUI termination (by WM).
+	            - Fized time stamp problem in AllSky images.
+ 	              (using tzset() in POSIX).
 
 2017.12.28 ver3.3.2 - Back fgets() --> fgets_new() in smoka parse.
 	            - GUI updates in List query services.
