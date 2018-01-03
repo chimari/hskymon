@@ -1258,6 +1258,7 @@ static void add_item (typHOE *hg)
   tree_update_azel_item(hg, model, iter, i);
   
   remake_tree(hg);
+  trdb_make_tree(hg);
 }
 
 void add_item_fcdb(GtkWidget *w, gpointer gdata){
@@ -1350,6 +1351,7 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   tree_update_azel_item(hg, model, iter, i);
   
   remake_tree(hg);
+  trdb_make_tree(hg);
 }
 
 void add_item_std(GtkWidget *w, gpointer gdata){
@@ -1417,6 +1419,7 @@ void add_item_std(GtkWidget *w, gpointer gdata){
   tree_update_azel_item(hg, model, iter, i);
   
   remake_tree(hg);
+  trdb_make_tree(hg);
 }
 
 
@@ -1445,6 +1448,7 @@ remove_item (GtkWidget *widget, gpointer data)
     hg->i_max--;
     
     remake_tree(hg);
+    trdb_make_tree(hg);
 
     gtk_tree_path_free (path);
   }
@@ -3161,7 +3165,7 @@ focus_item (GtkWidget *widget, gpointer data)
 	
 	if(i_list==hg->tree_focus){
 	  gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->trdb_tree), 
-				   path, NULL, FALSE);
+	  			   path, NULL, FALSE);
 	  break;
 	}
 	else{

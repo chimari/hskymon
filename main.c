@@ -2429,6 +2429,7 @@ void do_open_NST (GtkWidget *widget, gpointer gdata)
 
       if(flagTree){
 	remake_tree(hg);
+	trdb_make_tree(hg);
       }
     }
     else{
@@ -2518,6 +2519,7 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
 
       if(flagTree){
 	remake_tree(hg);
+	trdb_make_tree(hg);
       }
     }
     else{
@@ -2690,6 +2692,7 @@ void do_reload_ope (GtkWidget *widget, gpointer gdata)
       
       if(flagTree){
 	remake_tree(hg);
+	trdb_make_tree(hg);
       }
     }
     else{
@@ -2873,6 +2876,7 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
       
       if(flagTree){
 	remake_tree(hg);
+	trdb_make_tree(hg);
       }
     }
     else{
@@ -2959,6 +2963,7 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
       
       if(flagTree){
 	remake_tree(hg);
+	trdb_make_tree(hg);
       }
     }
     else{
@@ -3054,6 +3059,7 @@ void do_merge (GtkWidget *widget, gpointer gdata)
       
       if(flagTree){
 	remake_tree(hg);
+	trdb_make_tree(hg);
       }
     }
     else{
@@ -3237,7 +3243,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
   
-  label = gtk_label_new ("Copyright (C) 2003-17 Akito Tajitsu <tajitsu@naoj.org>");
+  label = gtk_label_new ("Copyright (C) 2003-18 Akito Tajitsu <tajitsu@naoj.org>");
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
 
@@ -15898,6 +15904,7 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
       
       if(flagTree){
 	remake_tree(hg);
+	trdb_make_tree(hg);
       }
     }
     else{

@@ -1,3 +1,9 @@
+hskymon (3.3.4) instable; urgency=medium
+
+  * A Bug fix for crushes with opening two or more target lists.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Tue, 02 Jan 2018 19:22:57 -1000
+
 hskymon (3.3.3) unstable; urgency=medium
 
   * Revised GUI termination schemes.

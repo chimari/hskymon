@@ -3,8 +3,8 @@
 #                         Document file
 #
 #
-#                                  ver 3.3.3    2017/12/29
-#                               Copyright (C) 2003-17 Akito Tajitsu
+#                                  ver 3.3.4    2018/01/02
+#                               Copyright (C) 2003-18 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #      Subaru Telescope, National Astronomical Observatory of Japan
 #########################################################################
@@ -171,7 +171,7 @@ From the main menu, HORIZONS files can be converted into the TSC format.
 
 
 *** Copyright
-   The code in this distribution is Copyright 2003-2017 by Akito Tajitsu.
+   The code in this distribution is Copyright 2003-2018 by Akito Tajitsu.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

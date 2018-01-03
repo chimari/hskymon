@@ -5,7 +5,7 @@
 //                                       2003.10.23  A.Tajitsu
 //
 //  configfile.c  : Save Data Access for hskymon
-//                                copyright A.tajitsu 2003-2017
+//                                copyright A.tajitsu 2003-2018
 //       (diverting from original program of XMMS)
 //
 //       XMMS - Cross-platform multimedia player

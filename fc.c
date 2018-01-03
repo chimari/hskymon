@@ -5738,6 +5738,8 @@ void trdb_run (typHOE *hg)
   if(flagTree){
     trdb_make_tree(hg);
 
+    gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
+
     model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
     gtk_list_store_clear (GTK_LIST_STORE(model));
     hg->fcdb_i_max=0;
@@ -6898,8 +6900,6 @@ void trdb_make_tree(typHOE *hg){
 
   make_trdb_label(hg);
   gtk_label_set_text(GTK_LABEL(hg->trdb_label), hg->trdb_label_text);
-
-  gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
 }
 
 
