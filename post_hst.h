@@ -84,5 +84,5 @@ static const PARAMpost hst_post[] = {
   {POST_CONST,   "coordformat",       "dec"},
   {POST_INPUT,   "outputformat",       NULL},  // VOTable or HTML_Table
   {POST_CONST,   "max_records",      "5001"},
-  {POST_CONST,   "max_rpp",       "500"},
+  {POST_CONST,   "max_rpp",       "5000"},
   {POST_NULL,  NULL, NULL}};

@@ -179,7 +179,11 @@
 #define DSS_ARCMIN_MIN 1
 #define DSS_ARCMIN 3
 #define DSS_ARCMIN_MAX 120
-#define DSS_PIX 1000
+#define DSS_PIX 1500
+
+#define FCDB_ARCMIN_MAX 100
+#define FCDB_PS1_ARCMIN_MAX 60
+#define FCDB_USNO_ARCMIN_MAX 24
 
 #define STDDB_PATH_SSLOC "/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&output.max=%d&OutputMode=LIST&output.format=VOTABLE"
 #define STDDB_PATH_RAPID "/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s&submit=submit%%20query&output.max=%d&OutputMode=LIST&output.format=VOTABLE"
@@ -198,31 +202,31 @@
 #define FCDB_NED_PATH "/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=%.2lf&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY%sout_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=0&img_stamp=YES&of=xml_main"
 
 #define FCDB_HOST_GSC "gsss.stsci.edu"
-#define FCDB_GSC_PATH "/webservices/vo/ConeSearch.aspx?RA=%lf&DEC=%+lf&SR=%lf&MAX_OBJ=500&FORMAT=VOTABLE"
+#define FCDB_GSC_PATH "/webservices/vo/ConeSearch.aspx?RA=%lf&DEC=%+lf&SR=%lf%sMAX_OBJ=5000&FORMAT=VOTABLE"
 
 #define FCDB_HOST_PS1 "gsss.stsci.edu"
-#define FCDB_PS1_PATH  "/webservices/vo/CatalogSearch.aspx?CAT=PS1V3OBJECTS&RA=%lf&DEC=%+lf&SR=%lf&MINDET=%d&MAXOBJ=500"
+#define FCDB_PS1_PATH  "/webservices/vo/CatalogSearch.aspx?CAT=PS1V3OBJECTS&RA=%lf&DEC=%+lf&SR=%lf&MINDET=%d%sMAXOBJ=5000"
 
 #define FCDB_HOST_SDSS "skyserver.sdss.org"
 #define FCDB_SDSS_PATH "/dr14/en/tools/search/x_results.aspx"
 
 #define FCDB_HOST_USNO "www.nofs.navy.mil"
-#define FCDB_USNO_PATH "/cgi-bin/vo_cone.cgi?CAT=USNO-B1&RA=%lf&DEC=%+lf&SR=%lf&VERB=1"
+#define FCDB_USNO_PATH "/cgi-bin/vo_cone.cgi?CAT=USNO-B1&RA=%lf&DEC=%+lf&SR=%lf%sVERB=1"
 
 #define FCDB_HOST_GAIA "vizier.u-strasbg.fr"
-#define FCDB_GAIA_PATH "/viz-bin/votable?-source=I/337/gaia&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=500&-out.form=VOTable"
+#define FCDB_GAIA_PATH "/viz-bin/votable?-source=I/337/gaia&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=5000%s-out.form=VOTable"
 
 #define FCDB_HOST_2MASS "gsss.stsci.edu"
-#define FCDB_2MASS_PATH "/webservices/vo/CatalogSearch.aspx?CAT=2MASS&RA=%lf&DEC=%+lf&SR=%lf&MAXOBJ=500"
+#define FCDB_2MASS_PATH "/webservices/vo/CatalogSearch.aspx?CAT=2MASS&RA=%lf&DEC=%+lf&SR=%lf%sMAXOBJ=5000"
 
 #define FCDB_HOST_WISE "vizier.u-strasbg.fr"
-#define FCDB_WISE_PATH "/viz-bin/votable?-source=II/311/wise&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=500&-out.form=VOTable"
+#define FCDB_WISE_PATH "/viz-bin/votable?-source=II/311/wise&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=5000%s-out.form=VOTable"
 
 #define FCDB_HOST_IRC "vizier.u-strasbg.fr"
-#define FCDB_IRC_PATH "/viz-bin/votable?-source=II/297/irc&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=500&-out.form=VOTable"
+#define FCDB_IRC_PATH "/viz-bin/votable?-source=II/297/irc&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=5000&-out.form=VOTable"
 
 #define FCDB_HOST_FIS "vizier.u-strasbg.fr"
-#define FCDB_FIS_PATH "/viz-bin/votable?-source=II/298/fis&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=500&-out.form=VOTable"
+#define FCDB_FIS_PATH "/viz-bin/votable?-source=II/298/fis&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=5000&-out.form=VOTable"
 
 #define FCDB_HOST_LAMOST "dr3.lamost.org"
 #define FCDB_LAMOST_PATH "/q"

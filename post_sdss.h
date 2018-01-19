@@ -18,7 +18,7 @@ static const PARAMpost sdss_post[] = {
   {POST_INPUT, "searchtool", NULL},  //Imaging or Spectro
   {POST_INPUT, "TaskName", NULL},  //"Skyserver.Search.IQS" or "Skyserver.Search.SQS"
   {POST_CONST, "ReturnHtml", "false"},
-  {POST_CONST, "limit", "500"},
+  {POST_CONST, "limit", "5000"},
   {POST_CONST, "format", "votable"},
   {POST_NULL, "TableName", NULL},
   {POST_CONST, "imgparams", "typical"},

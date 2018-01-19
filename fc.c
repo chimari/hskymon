@@ -1935,6 +1935,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
   int width, height;
   int width_file, height_file;
   gfloat r_w,r_h, r;
+  gint shift_x, shift_y;
 
   gchar *tmp;
   GdkPixbuf *pixbuf_flip=NULL;
@@ -3208,10 +3209,31 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
       else{
 	tmp=g_strdup_printf("x%d : %.1lfx%.1lf arcsec",hg->fc_mag,xsec,ysec);
       }
+
+      // Edge for magnification
+      {
+	shift_x=-(hg->fc_magx*hg->fc_mag-width/2/hg->fc_mag);
+	shift_y=-(hg->fc_magy*hg->fc_mag-height/2/hg->fc_mag);
+      
+	if(shift_x>0){
+	  shift_x=0;
+	}
+	else if((width+shift_x)<widget->allocation.width){
+	  shift_x=widget->allocation.width-width;
+	}
+
+	if(shift_y>0){
+	  shift_y=0;
+	}
+	else if((height+shift_y)<widget->allocation.height){
+	  shift_y=widget->allocation.height-height;
+	}
+      }
+
       cairo_text_extents (cr, tmp, &extents);
       cairo_translate(cr,
-           	      width/(gdouble)hg->fc_mag+(hg->fc_magx*hg->fc_mag-width/2/hg->fc_mag),
-		      height/(gdouble)hg->fc_mag+(hg->fc_magy*hg->fc_mag-height/2/hg->fc_mag));
+           	      width/(gdouble)hg->fc_mag-shift_x,
+		      height/(gdouble)hg->fc_mag-shift_y);
       cairo_move_to(cr,
 		    -extents.width-wh_small*0.02,
 		    -wh_small*0.02);
@@ -3284,8 +3306,8 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
     cx=((gdouble)width-(gdouble)width_file*r)/2+(gdouble)width_file*r/2;
     cy=((gdouble)height-(gdouble)height_file*r)/2+(gdouble)height_file*r/2;
     if(hg->fc_mag!=1){
-      cx-=(hg->fc_magx*hg->fc_mag-width/2/hg->fc_mag);
-      cy-=(hg->fc_magy*hg->fc_mag-height/2/hg->fc_mag);
+      cx-=-shift_x;
+      cy-=-shift_y;
     }
 
     ptx0=((gdouble)hg->fc_ptx1-cx);
@@ -3678,8 +3700,8 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 
       if(hg->fc_mag!=1){
 	cairo_translate(cr,
-			(hg->fc_magx*hg->fc_mag-width/2/hg->fc_mag),
-			(hg->fc_magy*hg->fc_mag-height/2/hg->fc_mag));
+			-shift_x,
+			-shift_y);
       }
 
       cairo_move_to(cr,hg->fc_ptx1-5,hg->fc_pty1-5);
@@ -3765,15 +3787,14 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 			height);
     }
     else{
-      gdk_draw_drawable(hg->pixmap_fc,
-			widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-			pixmap_fcbk,
-			0,
-			0,
-			-(hg->fc_magx*hg->fc_mag-width/2/hg->fc_mag),
-			-(hg->fc_magy*hg->fc_mag-height/2/hg->fc_mag),
-			width,
-			height);
+      {
+	gdk_draw_drawable(hg->pixmap_fc,
+			  widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
+			  pixmap_fcbk,
+			  0, 0, shift_x, shift_y,
+			  width,
+			  height);
+      }
     }
     g_object_unref(G_OBJECT(pixmap_fcbk));
 
@@ -5754,7 +5775,7 @@ void trdb_run (typHOE *hg)
 void fcdb_item2 (typHOE *hg)
 {
   gdouble ra_0, dec_0, d_ra0, d_dec0;
-  gchar *mag_str, *otype_str;
+  gchar *mag_str, *otype_str, *url_param=NULL;
   struct lnh_equ_posn hobject;
   struct ln_equ_posn object;
   struct ln_equ_posn object_prec;
@@ -5963,19 +5984,22 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
 
-    if((double)hg->dss_arcmin<(double)hg->fcdb_gsc_diam/60.){
-      hg->fcdb_path=g_strdup_printf(FCDB_GSC_PATH,
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    (double)hg->dss_arcmin/2./60.);
+    if(hg->fcdb_gsc_fil){
+      url_param=g_strdup_printf("&MAGRANGE=0,%d&",hg->fcdb_gsc_mag);
     }
     else{
-      hg->fcdb_path=g_strdup_printf(FCDB_GSC_PATH,
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    (double)hg->fcdb_gsc_diam/2./60./60.);
+      url_param=g_strdup("&");
     }
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_GSC_PATH,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  (hg->dss_arcmin < hg->fcdb_gsc_diam) ?
+				  ((double)hg->dss_arcmin/2./60.) :
+				  ((double)hg->fcdb_gsc_diam/2./60.),
+				  url_param);
 
+    if(url_param) g_free(url_param);
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
 			      G_DIR_SEPARATOR_S,
@@ -5997,21 +6021,23 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
-    if((double)hg->dss_arcmin<(double)hg->fcdb_ps1_diam/60.){
-      hg->fcdb_path=g_strdup_printf(FCDB_PS1_PATH,
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    (double)hg->dss_arcmin/2./60.,
-				    hg->fcdb_ps1_mindet);
+    if(hg->fcdb_ps1_fil){
+      url_param=g_strdup_printf("&MAGRANGE=0,%d&",hg->fcdb_ps1_mag);
     }
     else{
-      hg->fcdb_path=g_strdup_printf(FCDB_PS1_PATH,
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    (double)hg->fcdb_ps1_diam/2./60./60.,
-				    hg->fcdb_ps1_mindet);
+      url_param=g_strdup("&");
     }
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_PS1_PATH,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  (hg->dss_arcmin < hg->fcdb_ps1_diam) ?
+				  ((double)hg->dss_arcmin/2./60.) :
+				  ((double)hg->fcdb_ps1_diam/2./60.),
+				  hg->fcdb_ps1_mindet,
+				  url_param);
 
+    if(url_param) g_free(url_param);
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
 			      G_DIR_SEPARATOR_S,
@@ -6075,20 +6101,23 @@ void fcdb_item2 (typHOE *hg)
 
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
-    
-    if((double)hg->dss_arcmin<(double)hg->fcdb_usno_diam/60.){
-      hg->fcdb_path=g_strdup_printf(FCDB_USNO_PATH,
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    (double)hg->dss_arcmin/2./60.);
+
+    if(hg->fcdb_usno_fil){
+      url_param=g_strdup_printf("&clr=R2&fai=%d&",hg->fcdb_usno_mag);
     }
     else{
-      hg->fcdb_path=g_strdup_printf(FCDB_USNO_PATH,
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    (double)hg->fcdb_usno_diam/2./60./60.);
+      url_param=g_strdup("&");
     }
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_USNO_PATH,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  (hg->dss_arcmin < hg->fcdb_usno_diam) ?
+				  ((double)hg->dss_arcmin/2./60.) :
+				  ((double)hg->fcdb_usno_diam/2./60.),
+				  url_param);
 
+    if(url_param) g_free(url_param);
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
 			      G_DIR_SEPARATOR_S,
@@ -6109,21 +6138,25 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
-    if(hg->dss_arcmin*60<hg->fcdb_gaia_diam){
-      hg->fcdb_path=g_strdup_printf(FCDB_GAIA_PATH,
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    hg->dss_arcmin*30,
-				    hg->dss_arcmin*30);
+    if(hg->fcdb_gaia_fil){
+      url_param=g_strdup_printf("&%%3CGmag%%3E=%%3C%d&",hg->fcdb_gaia_mag);
     }
     else{
-      hg->fcdb_path=g_strdup_printf(FCDB_GAIA_PATH,
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    (gint)(hg->fcdb_gaia_diam/2),
-				    (gint)(hg->fcdb_gaia_diam/2));
+      url_param=g_strdup("&");
     }
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_GAIA_PATH,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  (hg->dss_arcmin < hg->fcdb_gaia_diam) ?
+				  (hg->dss_arcmin*30) : 
+				  (hg->fcdb_gaia_diam*30),
+				  (hg->dss_arcmin < hg->fcdb_gaia_diam) ?
+				  (hg->dss_arcmin*30) : 
+				  (hg->fcdb_gaia_diam*30),
+				  url_param);
 
+    if(url_param) g_free(url_param);
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
 			      G_DIR_SEPARATOR_S,
@@ -6144,19 +6177,22 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
-    if((double)hg->dss_arcmin<(double)hg->fcdb_2mass_diam/60.){
-      hg->fcdb_path=g_strdup_printf(FCDB_2MASS_PATH,
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    (double)hg->dss_arcmin/2./60.);
+    if(hg->fcdb_2mass_fil){
+      url_param=g_strdup_printf("&MAGRANGE=0,%d&",hg->fcdb_2mass_mag);
     }
     else{
-      hg->fcdb_path=g_strdup_printf(FCDB_2MASS_PATH,
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    (double)hg->fcdb_2mass_diam/2./60./60.);
+      url_param=g_strdup("&");
     }
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_2MASS_PATH,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  (hg->dss_arcmin < hg->fcdb_2mass_diam) ?
+				  ((double)hg->dss_arcmin/2./60.) :
+				  ((double)hg->fcdb_2mass_diam/2./60.),
+				  url_param);
 
+    if(url_param) g_free(url_param);
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
 			      G_DIR_SEPARATOR_S,
@@ -6177,21 +6213,25 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
-    if(hg->fcdb_wise_diam > hg->dss_arcmin){
-      hg->fcdb_path=g_strdup_printf(FCDB_WISE_PATH,
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    hg->dss_arcmin*30,
-				    hg->dss_arcmin*30);
+    if(hg->fcdb_wise_fil){
+      url_param=g_strdup_printf("&W1mag=%%3C%d&",hg->fcdb_wise_mag);
     }
     else{
-      hg->fcdb_path=g_strdup_printf(FCDB_WISE_PATH,
-				    hg->fcdb_d_ra0,
-				    hg->fcdb_d_dec0,
-				    hg->fcdb_wise_diam*30,
-				    hg->fcdb_wise_diam*30);
+      url_param=g_strdup("&");
     }
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_WISE_PATH,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  (hg->fcdb_wise_diam > hg->dss_arcmin) ?
+				  (hg->dss_arcmin*30) :
+				  (hg->fcdb_wise_diam*30),
+				  (hg->fcdb_wise_diam > hg->dss_arcmin) ?
+				  (hg->dss_arcmin*30) :
+				  (hg->fcdb_wise_diam*30),
+				  url_param);
 
+    if(url_param) g_free(url_param);
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
 			      G_DIR_SEPARATOR_S,

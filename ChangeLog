@@ -1,3 +1,9 @@
+2018.01.19 ver3.3.5 - Changed default and maximum search diameters for FCDB.
+	                USNO-B :  --> 24 arcmin
+	                Pan-STARRS 1 :  --> 60 arcmin
+	                others : --> 100 arcmin
+	            - Revised edge magnification process in FC.
+
 2018.01.02 ver3.3.4 - A bug fix for crushes with opening two or more target
 	              lists.
 

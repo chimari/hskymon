@@ -1,3 +1,9 @@
+hskymon (3.3.5) UNRELEASED; urgency=medium
+
+  * Changed maximum and default search diamters for FCDB.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Fri, 19 Jan 2018 12:38:55 -1000
+
 hskymon (3.3.4) instable; urgency=medium
 
   * A Bug fix for crushes with opening two or more target lists.
@@ -86,8 +92,7 @@ hskymon (3.0.2) unstable; urgency=medium
 
 hskymon (3.0.1) unstable; urgency=medium
 
-  *  Bug fix on fgets_new() [The blank line at the begnning of OPE file
-	caused a file read error.].
+  *  Bug fix on fgets_new() [The blank line at the begnning of OPE file	caused a file read error.].
 
  -- Akito Tajitsu <tajitsu@naoj.org>  Fri, 28 Jul 2017 04:25:56 -1000
 

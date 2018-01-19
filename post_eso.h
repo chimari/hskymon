@@ -234,7 +234,7 @@ static const PARAMesoinst eso_sam[NUM_ESO_SAM] = {
 
 static const PARAMpost eso_post[] = {
   {POST_INPUT, "wdbo",              NULL}, //"votable/display" or "html/display"
-  {POST_CONST, "max_rows_returned", "500"},
+  {POST_CONST, "max_rows_returned", "5000"},
   {POST_NULL,  "instrument",        NULL},
   {POST_CONST, "tab_object",        "on"},
   {POST_NULL,  "target",            NULL},

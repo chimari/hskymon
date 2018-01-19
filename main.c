@@ -6038,7 +6038,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_ned_diam,
-					    2, 60, 1, 1, 0);
+					    1, FCDB_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -6144,16 +6144,16 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_gsc_diam,
-					    20, 600, 10, 10, 0);
+					    1, FCDB_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_gsc_diam);
 
-  label = gtk_label_new ("[arcsec]"); 
+  label = gtk_label_new ("[arcmin]"); 
  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
 
@@ -6208,16 +6208,16 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_ps1_diam,
-					    20, 600, 10, 10, 0);
+					    1, FCDB_PS1_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_ps1_diam);
 
-  label = gtk_label_new ("[arcsec]"); 
+  label = gtk_label_new ("[arcmin]"); 
  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
 
@@ -6288,7 +6288,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_sdss_diam,
-					    1, 60, 1, 1, 0);
+					    1, FCDB_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -6428,16 +6428,16 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_usno_diam,
-					    20, 600, 10, 10, 0);
+					    1, FCDB_USNO_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_usno_diam);
 
-  label = gtk_label_new ("[arcsec]"); 
+  label = gtk_label_new ("[arcmin]"); 
  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
 
@@ -6492,16 +6492,16 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_gaia_diam,
-					    20, 600, 10, 10, 0);
+					    1, FCDB_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_gaia_diam);
 
-  label = gtk_label_new ("[arcsec x arcsec]"); 
+  label = gtk_label_new ("[arcmin x arcmin]"); 
  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
 
@@ -6556,16 +6556,16 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_2mass_diam,
-					    20, 600, 10, 10, 0);
+					    1, FCDB_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_2mass_diam);
 
-  label = gtk_label_new ("[arcsec]"); 
+  label = gtk_label_new ("[arcmin]"); 
  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
 
@@ -6620,7 +6620,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(tmp_wise_diam,
-					    1, 110, 1, 1, 0);
+					    1, FCDB_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -7377,17 +7377,17 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_band  = FCDB_BAND_NOP;
       hg->fcdb_mag   = 15;
       hg->fcdb_otype = FCDB_OTYPE_ALL;
-      hg->fcdb_ned_diam = 40;
+      hg->fcdb_ned_diam = FCDB_ARCMIN_MAX;
       hg->fcdb_ned_otype = FCDB_NED_OTYPE_ALL;
       if(hg->fcdb_type!=FCDB_TYPE_SIMBAD) rebuild_flag=TRUE;
       hg->fcdb_type  = FCDB_TYPE_SIMBAD;
       hg->fcdb_ned_ref = FALSE;
       hg->fcdb_gsc_fil = TRUE;
       hg->fcdb_gsc_mag = 19;
-      hg->fcdb_gsc_diam = 180;
+      hg->fcdb_gsc_diam = FCDB_ARCMIN_MAX;
       hg->fcdb_ps1_fil = TRUE;
       hg->fcdb_ps1_mag = 19;
-      hg->fcdb_ps1_diam = 180;
+      hg->fcdb_ps1_diam = FCDB_PS1_ARCMIN_MAX;
       hg->fcdb_ps1_mindet = 2;
       hg->fcdb_sdss_search = FCDB_SDSS_SEARCH_IMAG;
       for(i=0;i<NUM_SDSS_BAND;i++){
@@ -7395,19 +7395,19 @@ void create_fcdb_para_dialog (typHOE *hg)
 	hg->fcdb_sdss_magmin[i] = 0;
 	hg->fcdb_sdss_magmax[i] = 20;
       }
-      hg->fcdb_sdss_diam = 60;
+      hg->fcdb_sdss_diam = FCDB_ARCMIN_MAX;
       hg->fcdb_usno_fil = TRUE;
       hg->fcdb_usno_mag = 19;
-      hg->fcdb_usno_diam = 180;
+      hg->fcdb_usno_diam = FCDB_USNO_ARCMIN_MAX;
       hg->fcdb_gaia_fil = TRUE;
       hg->fcdb_gaia_mag = 19;
-      hg->fcdb_gaia_diam = 180;
+      hg->fcdb_gaia_diam = FCDB_ARCMIN_MAX;
       hg->fcdb_2mass_fil = TRUE;
       hg->fcdb_2mass_mag = 12;
-      hg->fcdb_2mass_diam = 180;
+      hg->fcdb_2mass_diam = FCDB_ARCMIN_MAX;
       hg->fcdb_wise_fil = TRUE;
       hg->fcdb_wise_mag = 15;
-      hg->fcdb_wise_diam = 25;
+      hg->fcdb_wise_diam = FCDB_ARCMIN_MAX;
       hg->fcdb_smoka_shot  = FALSE;
       for(i=0;i<NUM_SMOKA_SUBARU;i++){
 	hg->fcdb_smoka_subaru[i]  = TRUE;
@@ -11532,16 +11532,16 @@ void param_init(typHOE *hg){
   hg->fcdb_band=FCDB_BAND_NOP;
   hg->fcdb_mag=15;
   hg->fcdb_otype=FCDB_OTYPE_ALL;
-  hg->fcdb_ned_diam=40;
+  hg->fcdb_ned_diam=FCDB_ARCMIN_MAX;
   hg->fcdb_ned_otype=FCDB_NED_OTYPE_ALL;
   hg->fcdb_auto=FALSE;
   hg->fcdb_ned_ref=FALSE;
   hg->fcdb_gsc_fil=TRUE;
   hg->fcdb_gsc_mag=19;
-  hg->fcdb_gsc_diam=180;
+  hg->fcdb_gsc_diam=FCDB_ARCMIN_MAX;
   hg->fcdb_ps1_fil=TRUE;
   hg->fcdb_ps1_mag=19;
-  hg->fcdb_ps1_diam=180;
+  hg->fcdb_ps1_diam=FCDB_PS1_ARCMIN_MAX;
   hg->fcdb_ps1_mindet=2;
   hg->fcdb_sdss_search = FCDB_SDSS_SEARCH_IMAG;
   for(i=0;i<NUM_SDSS_BAND;i++){
@@ -11549,19 +11549,19 @@ void param_init(typHOE *hg){
     hg->fcdb_sdss_magmin[i]=0;
     hg->fcdb_sdss_magmax[i]=20;
   }
-  hg->fcdb_sdss_diam=60;
+  hg->fcdb_sdss_diam=FCDB_ARCMIN_MAX;
   hg->fcdb_usno_fil=TRUE;
   hg->fcdb_usno_mag=19;
-  hg->fcdb_usno_diam=180;
+  hg->fcdb_usno_diam=FCDB_USNO_ARCMIN_MAX;
   hg->fcdb_gaia_fil=TRUE;
   hg->fcdb_gaia_mag=19;
-  hg->fcdb_gaia_diam=180;
+  hg->fcdb_gaia_diam=FCDB_ARCMIN_MAX;
   hg->fcdb_2mass_fil=TRUE;
   hg->fcdb_2mass_mag=12;
-  hg->fcdb_2mass_diam=180;
+  hg->fcdb_2mass_diam=FCDB_ARCMIN_MAX;
   hg->fcdb_wise_fil=TRUE;
   hg->fcdb_wise_mag=15;
-  hg->fcdb_wise_diam=25;
+  hg->fcdb_wise_diam=FCDB_ARCMIN_MAX;
   hg->fcdb_smoka_shot  = FALSE;
   for(i=0;i<NUM_SMOKA_SUBARU;i++){
     hg->fcdb_smoka_subaru[i]  = TRUE;

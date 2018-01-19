@@ -2639,7 +2639,9 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket,
 		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.1lf\r\n",
 		  rand16,
 		  sdss_post[ip].key,
-		  (hg->dss_arcmin<60) ? (gdouble)hg->dss_arcmin/2.0 : 30.0);
+		  (hg->dss_arcmin < hg->fcdb_sdss_diam) ?
+		  ((gdouble)hg->dss_arcmin/2.0) :
+		  ((gdouble)hg->fcdb_sdss_diam/2.0));
 	}
 	else if(strcmp(sdss_post[ip].key,"magMin")==0){
 	  send_mesg[0]=0x00;

@@ -124,7 +124,7 @@ static const PARAMpost smoka_post[] = {
   {POST_CONST,  "dispcol",   "ENG_FLAG"},
   {POST_CONST,  "orderby",   "DATE_OBS"},
   {POST_CONST,  "asc",       "1"},
-  {POST_CONST,  "diff",      "500"},
+  {POST_CONST,  "diff",      "5000"},
   {POST_CONST,  "output_equinox",      "J2000"},
   {POST_CONST,  "from",      "0"},
   {POST_NULL,  NULL, NULL}};
