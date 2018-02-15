@@ -1349,7 +1349,7 @@ int http_c_fc(typHOE *hg){
       tmp_scale=g_strdup("Linear");
     }
     tmp=g_strdup_printf(hg->dss_path,
-			hg->dss_src, hg->obj[hg->dss_i].equinox,
+			hg->dss_src, 2000,
 			tmp_scale,
 			(hg->dss_invert) ? "&invert=on&" : "&",
 			(gdouble)hg->dss_arcmin/60.,
@@ -1379,7 +1379,7 @@ int http_c_fc(typHOE *hg){
       tmp_scale=g_strdup("Linear");
     }
     tmp=g_strdup_printf(hg->dss_path,
-			hg->dss_src, hg->obj[hg->dss_i].equinox,
+			hg->dss_src, 2000,
 			tmp_scale,
 			(gdouble)hg->dss_arcmin/60.,
 			(gdouble)hg->dss_arcmin/60.,
@@ -1953,7 +1953,7 @@ int http_c_fc_ssl(typHOE *hg){
       tmp_scale=g_strdup("Linear");
     }
     tmp=g_strdup_printf(hg->dss_path,
-			hg->dss_src, hg->obj[hg->dss_i].equinox,
+			hg->dss_src, 2000.0,
 			tmp_scale,
 			(hg->dss_invert) ? "&invert=on&" : "&",
 			(gdouble)hg->dss_arcmin/60.,
@@ -1983,7 +1983,7 @@ int http_c_fc_ssl(typHOE *hg){
       tmp_scale=g_strdup("Linear");
     }
     tmp=g_strdup_printf(hg->dss_path,
-			hg->dss_src, hg->obj[hg->dss_i].equinox,
+			hg->dss_src, 2000.0,
 			tmp_scale,
 			(gdouble)hg->dss_arcmin/60.,
 			(gdouble)hg->dss_arcmin/60.,
@@ -5013,67 +5013,67 @@ GdkPixbuf* diff_pixbuf(GdkPixbuf *pixbuf1, GdkPixbuf* pixbuf2,
 
 
 void unchunk(gchar *dss_tmp){
-   FILE *fp_read, *fp_write;
-   gchar *unchunk_tmp;
-   gchar cbuf[BUFFSIZE];
-   gchar *dbuf=NULL;
-   gchar *cpp;
-   gchar *chunkptr, *endptr;
-   long chunk_size;
-   gint i, read_size=0, crlf_size=0;
-
-   if ( debug_flg ){
-     fprintf(stderr, "Decoding chunked file \"%s\".\n", dss_tmp);fflush(stderr);
-   }
-
-   fp_read=fopen(dss_tmp,"r");
-   unchunk_tmp=g_strconcat(dss_tmp,"_unchunked",NULL);
-   fp_write=fopen(unchunk_tmp,"w");
-
-   while(!feof(fp_read)){
-     if(fgets(cbuf,BUFFSIZE-1,fp_read)){
-       cpp=cbuf;
-       
-       read_size=strlen(cpp);
-       for(i=read_size;i>=0;i--){
-	 if(isalnum(cpp[i])){
-	   crlf_size=read_size-i-1;
-	   break;
-	 }
-	 else{
-	   cpp[i]='\0';
-	 }
-       }
-       chunkptr=g_strdup_printf("0x%s",cpp);
-       chunk_size=strtol(chunkptr, &endptr, 0);
-       g_free(chunkptr);
-	  
-       if(chunk_size==0) break;
-
-       if((dbuf = (gchar *)g_malloc(sizeof(gchar)*(chunk_size+crlf_size+1)))==NULL){
-	 fprintf(stderr, "!!! Memory allocation error in unchunk() \"%s\".\n", dss_tmp);
-	 fflush(stderr);
-	 break;
-       }
-       if(fread(dbuf,1, chunk_size+crlf_size, fp_read)){
-	 fwrite( dbuf , chunk_size , 1 , fp_write ); 
-	 if(dbuf) g_free(dbuf);
-       }
-       else{
-	 break;
-       }
-     }
-   }
-
-   fclose(fp_read);
-   fclose(fp_write);
-
-   unlink(dss_tmp);
-
-   rename(unchunk_tmp,dss_tmp);
-
-   g_free(unchunk_tmp);
- }
+  FILE *fp_read, *fp_write;
+  gchar *unchunk_tmp;
+  gchar cbuf[BUFFSIZE];
+  gchar *dbuf=NULL;
+  gchar *cpp;
+  gchar *chunkptr, *endptr;
+  long chunk_size;
+  gint i, read_size=0, crlf_size=0;
+  
+  if ( debug_flg ){
+    fprintf(stderr, "Decoding chunked file \"%s\".\n", dss_tmp);fflush(stderr);
+  }
+  
+  fp_read=fopen(dss_tmp,"r");
+  unchunk_tmp=g_strconcat(dss_tmp,"_unchunked",NULL);
+  fp_write=fopen(unchunk_tmp,"w");
+  
+  while(!feof(fp_read)){
+    if(fgets(cbuf,BUFFSIZE-1,fp_read)){
+      cpp=cbuf;
+      
+      read_size=strlen(cpp);
+      for(i=read_size;i>=0;i--){
+	if(isalnum(cpp[i])){
+	  crlf_size=read_size-i-1;
+	  break;
+	}
+	else{
+	  cpp[i]='\0';
+	}
+      }
+      chunkptr=g_strdup_printf("0x%s",cpp);
+      chunk_size=strtol(chunkptr, &endptr, 0);
+      g_free(chunkptr);
+      
+      if(chunk_size==0) break;
+      
+      if((dbuf = (gchar *)g_malloc(sizeof(gchar)*(chunk_size+crlf_size+1)))==NULL){
+	fprintf(stderr, "!!! Memory allocation error in unchunk() \"%s\".\n", dss_tmp);
+	fflush(stderr);
+	break;
+      }
+      if(fread(dbuf,1, chunk_size+crlf_size, fp_read)){
+	fwrite( dbuf , chunk_size , 1 , fp_write ); 
+	if(dbuf) g_free(dbuf);
+      }
+      else{
+	break;
+      }
+    }
+  }
+  
+  fclose(fp_read);
+  fclose(fp_write);
+  
+  unlink(dss_tmp);
+  
+  rename(unchunk_tmp,dss_tmp);
+  
+  g_free(unchunk_tmp);
+}
 
 
 #ifdef USE_SSL

@@ -617,7 +617,7 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",create_disp_para_dialog, (gpointer)hg);
 
-  ////Search Param.
+  ////Database
 #ifdef GTK_STOCK_ABOUT
   image=gtk_image_new_from_stock (GTK_STOCK_ABOUT, GTK_ICON_SIZE_MENU);
 #else
@@ -6294,7 +6294,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_sdss_diam);
 
   label = gtk_label_new ("[arcmin]"); 
@@ -6626,7 +6626,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_wise_diam);
 
   label = gtk_label_new ("[arcmin x arcmin]"); 
@@ -7492,7 +7492,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"Gemini archive");
     }
 
-    if((rebuild_flag)&&(flagTree)) rebuild_tree(hg);
+    if((rebuild_flag)&&(flagTree)) rebuild_fcdb_tree(hg);
   }
 
   flagChildDialog=FALSE;
@@ -10908,7 +10908,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     
     update_c_label(hg);
     if(flagTree){
-      rebuild_tree(hg);
+      rebuild_fcdb_tree(hg);
       tree_update_azel((gpointer)hg);
     }
   }
@@ -11024,7 +11024,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     
     update_c_label(hg);
     if(flagTree){
-      rebuild_tree(hg);
+      rebuild_fcdb_tree(hg);
       tree_update_azel((gpointer)hg);
     }
   }
@@ -11412,6 +11412,7 @@ void param_init(typHOE *hg){
   hg->skymon_timer=-1;
 
   hg->plot_mode=PLOT_EL;
+  hg->plot_moon=TRUE;
   hg->plot_timer=-1;
   hg->plot_center=PLOT_CENTER_CURRENT;
   hg->plot_ihst0=PLOT_HST0;
@@ -12861,8 +12862,8 @@ void ReadListOPE(typHOE *hg, gint ope_max){
     }
     else{
       if((!new_fmt_flag)
-	 && (g_ascii_strncasecmp(buf,"</COMMAND>",
-				 strlen("</COMMAND>"))==0)){
+	 && (g_ascii_strncasecmp(buf,"</PARAMETER_LIST>",
+				 strlen("</PARAMETER_LIST>"))==0)){
 	escape=TRUE;
       }
       else if((new_fmt_flag)

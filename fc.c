@@ -58,9 +58,9 @@ void fcdb_dl();
 #ifndef USE_WIN32
 void fcdb_signal();
 void trdb_signal();
+#endif
 static void cancel_fcdb();
 static void cancel_trdb();
-#endif
 void fcdb_make_tree();
 void trdb_make_tree();
 void fcdb_clear_tree();
@@ -5231,83 +5231,13 @@ void addobj_dl(typHOE *hg)
   
   unlink(hg->fcdb_file);
   
-  switch(hg->fcdb_type){
+  switch(hg->addobj_type){
   case FCDB_TYPE_SIMBAD:
     hg->plabel=gtk_label_new("Searching objects in SIMBAD ...");
     break;
 
   case FCDB_TYPE_NED:
     hg->plabel=gtk_label_new("Searching objects in NED ...");
-    break;
-
-  case FCDB_TYPE_GSC:
-    hg->plabel=gtk_label_new("Searching objects in GSC 2.3 ...");
-    break;
-
-  case FCDB_TYPE_PS1:
-    hg->plabel=gtk_label_new("Searching objects in PanSTARRS1 ...");
-    break;
-
-  case FCDB_TYPE_SDSS:
-    hg->plabel=gtk_label_new("Searching objects in SDSS ...");
-    break;
-
-  case FCDB_TYPE_LAMOST:
-    hg->plabel=gtk_label_new("Searching objects in LAMOST DR3 ...");
-    break;
-
-  case FCDB_TYPE_USNO:
-    hg->plabel=gtk_label_new("Searching objects in USNO-B ...");
-    break;
-
-  case FCDB_TYPE_GAIA:
-    hg->plabel=gtk_label_new("Searching objects in GAIA ...");
-    break;
-
-  case FCDB_TYPE_2MASS:
-    hg->plabel=gtk_label_new("Searching objects in 2MASS ...");
-    break;
-
-  case FCDB_TYPE_WISE:
-    hg->plabel=gtk_label_new("Searching objects in WISE ...");
-    break;
-
-  case FCDB_TYPE_IRC:
-    hg->plabel=gtk_label_new("Searching objects in AKARI/IRC ...");
-    break;
-
-  case FCDB_TYPE_FIS:
-    hg->plabel=gtk_label_new("Searching objects in AKARI/FIS ...");
-    break;
-
-  case FCDB_TYPE_SMOKA:
-  case FCDB_TYPE_WWWDB_SMOKA:
-  case TRDB_TYPE_SMOKA:
-  case TRDB_TYPE_WWWDB_SMOKA:
-  case TRDB_TYPE_FCDB_SMOKA:
-    hg->plabel=gtk_label_new("Searching objects in SMOKA ...");
-    break;
-
-  case FCDB_TYPE_HST:
-  case FCDB_TYPE_WWWDB_HST:
-  case TRDB_TYPE_HST:
-  case TRDB_TYPE_WWWDB_HST:
-  case TRDB_TYPE_FCDB_HST:
-    hg->plabel=gtk_label_new("Searching objects in HST archive ...");
-    break;
-
-  case FCDB_TYPE_ESO:
-  case FCDB_TYPE_WWWDB_ESO:
-  case TRDB_TYPE_ESO:
-  case TRDB_TYPE_WWWDB_ESO:
-  case TRDB_TYPE_FCDB_ESO:
-    hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
-    break;
-
-  case FCDB_TYPE_GEMINI:
-  case TRDB_TYPE_GEMINI:
-  case TRDB_TYPE_FCDB_GEMINI:
-    hg->plabel=gtk_label_new("Searching objects in Gemini archive ...");
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);

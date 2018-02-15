@@ -1,3 +1,7 @@
+2018.02.14 ver3.3.6 - Accelerated lunar position calculation by buffering
+	              (in Plot).
+	            - Small bug fixes (imported from HDS OPE file Editor).
+
 2018.01.19 ver3.3.5 - Changed default and maximum search diameters for FCDB.
 	                USNO-B :  --> 24 arcmin
 	                Pan-STARRS 1 :  --> 60 arcmin

@@ -43,6 +43,13 @@ void do_print();
 static void draw_page();
 
 void calc_moon_topocen();
+gdouble get_moon_sep();
+
+gdouble paz_moon[200],pel_moon[200], hst_moon[200];
+gdouble JD_moon;
+struct ln_zonedate moon_transit;
+gdouble moon_tr_el;
+gint i_moon_max;
 
 void close_plot(GtkWidget *w, gpointer gdata)
 {
@@ -446,9 +453,10 @@ gboolean draw_plot_cairo(GtkWidget *widget,
   gint from_set, to_rise;
   double dx,dy,lx,ly;
   double y0,y1,ymin,ymax;
+  double x_pos, y_pos;
 
   double put[200],plst[200],paz[200],pel[200],ppa[200],pad[200], phst[200];
-  double paz_moon[200],pel_moon[200],sep[200],phpa[200];
+  double sep[200],phpa[200];
   
   double  alambda; //=LONGITUDE_SUBARU;  //longitude[deg]
   double  alamh;   //=alambda/360.*24.;    //[hour]
@@ -470,6 +478,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
   int hour, min;
   gdouble sec;
   gfloat ihst0, ihst1;
+  gfloat ihst1_moon;
   //int ihst0=17, ihst1=31;
   double utstart,utend;
   double ut_offset;
@@ -2298,54 +2307,58 @@ gboolean draw_plot_cairo(GtkWidget *widget,
   /* Lunar RA, DEC */
   if(((hg->plot_moon)&&(hg->plot_mode==PLOT_EL))
      ||(hg->plot_mode==PLOT_MOONSEP)){
-    gdouble m_tr_el;
 
     JD = ln_get_julian_local_date(&zonedate);
 
-    ln_get_lunar_rst (JD, &observer, &orst);
-    ln_get_date (orst.transit, &odate);
-    ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*60);
-    ln_get_lunar_equ_coords (orst.transit, &oequ_geoc);
-    calc_moon_topocen(hg, orst.transit, &oequ_geoc, &oequ);
+    if(fabs(JD-JD_moon)>0.3){
+      ln_get_lunar_rst (JD, &observer, &orst);
+      ln_get_date (orst.transit, &odate);
+      ln_date_to_zonedate(&odate,&moon_transit,(long)hg->obs_timezone*60);
+      ln_get_lunar_equ_coords (orst.transit, &oequ_geoc);
+      calc_moon_topocen(hg, orst.transit, &oequ_geoc, &oequ);
 
-    ln_get_hrz_from_equ (&oequ, &observer, orst.transit, &ohrz);
-    m_tr_el=ohrz.alt;
+      ln_get_hrz_from_equ (&oequ, &observer, orst.transit, &ohrz);
+      moon_tr_el=ohrz.alt;
+    }
     
     ut=utstart;
     
     i=1;
-    if(hg->plot_mode==PLOT_MOONSEP){
-      d_ut=(gdouble)(ihst1-ihst0)/190.0;
-    }
-    else{
-      d_ut=(gdouble)(ihst1-ihst0)/30.0;
-    }
-    hst=(gdouble)ihst0;
+    ihst1_moon=ihst1+(ihst1-ihst0);
+    d_ut=(ihst1_moon-ihst0)/190.0;
+    hst=ihst0;
     
     JD_hst = ln_get_julian_local_date(&zonedate);
     
-    while(hst<=(gdouble)ihst1+d_ut){
-      ln_get_lunar_equ_coords (JD_hst, &oequ_geoc);
-      calc_moon_topocen(hg, JD_hst, &oequ_geoc, &oequ);
+    while(hst<=ihst1_moon+d_ut){
+      if(fabs(JD-JD_moon)>0.3){
+	ln_get_lunar_equ_coords (JD_hst, &oequ_geoc);
+	calc_moon_topocen(hg, JD_hst, &oequ_geoc, &oequ);
       
-      ln_get_hrz_from_equ (&oequ, &observer, JD_hst, &ohrz);
-      if(ohrz.az>180) ohrz.az-=360;
+	ln_get_hrz_from_equ (&oequ, &observer, JD_hst, &ohrz);
+	if(ohrz.az>180) ohrz.az-=360;
+
+	paz_moon[i]=ohrz.az;
+	pel_moon[i]=ohrz.alt;
+	hst_moon[i]=hst;
+      }
       
       put[i]=ut;
       phst[i]=hst;
-      
-      paz_moon[i]=ohrz.az;
-      pel_moon[i]=ohrz.alt;
       
       ut=ut+d_ut;
       JD_hst+=d_ut/24.;
       hst+=d_ut;
       
-      i=i+1;
-      
+      i=i+1;      
     }
     
     iend=i-1;
+
+    if(fabs(JD-JD_moon)>0.3){
+      i_moon_max=iend;
+      JD_moon = JD;
+    }
     
     cairo_rectangle(cr, dx,dy,lx,ly);
     cairo_clip(cr);
@@ -2359,12 +2372,12 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	cairo_set_source_rgba(cr, 0.8, 0.6, 0.0, 0.5);
 	cairo_set_line_width(cr,5.0*scale);
 	
-	for(i=1;i<=iend-1;i++){
-	  x=dx+lx*(phst[i]-ihst0)/(ihst1-ihst0);
+	for(i=1;i<=i_moon_max-1;i++){
+	  x=dx+lx*(hst_moon[i]-ihst0)/(ihst1-ihst0);
 	  y=dy+ly*(90-pel_moon[i])/90;
 	  cairo_move_to(cr,x,y);
 	    
-	  x=dx+lx*(phst[i+1]-ihst0)/(ihst1-ihst0);
+	  x=dx+lx*(hst_moon[i+1]-ihst0)/(ihst1-ihst0);
 	  y=dy+ly*(90-pel_moon[i+1])/90;
 	  cairo_line_to(cr,x,y);
 	  
@@ -2372,12 +2385,13 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  
 	}
 	
-	x_tr=((transit.hours<(gint)ihst0)?((gdouble)transit.hours+24.):((gdouble)transit.hours))
-	  +(gdouble)transit.minutes/60.;
+	x_tr=((moon_transit.hours<(gint)ihst0)?
+	      ((gdouble)moon_transit.hours+24.):
+	      ((gdouble)moon_transit.hours))+(gdouble)moon_transit.minutes/60.;
 	
 	if((x_tr>ihst0)&&(x_tr<ihst1)){
 	  cairo_move_to(cr,dx+lx*(x_tr-(gdouble)ihst0)/(gdouble)(ihst1-ihst0),
-			dy+ly*(90.-m_tr_el)/90.);
+			dy+ly*(90.-moon_tr_el)/90.);
 	  
 	  cairo_set_source_rgba(cr, 0.8, 0.6, 0.0, 1.0);
 	  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
@@ -2451,7 +2465,8 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	pel[i]=ohrz.alt;
 	
 	if(hg->plot_mode==PLOT_MOONSEP){
-	  sep[i]=deg_sep(paz[i]-180,pel[i],paz_moon[i],pel_moon[i]);
+	  //sep[i]=deg_sep(paz[i]-180,pel[i],paz_moon[i],pel_moon[i]);
+	  sep[i]=get_moon_sep(paz[i]-180,pel[i],hst);
 	}
 
 	ha=flst-a0;             //hour angle [hour]
@@ -2506,12 +2521,13 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	
 	ppa[i]=padeg;
 	pad[i]=adsec;
+	// HDS PA w/o ImR
+	phpa[i]=hdspa_deg(phi*M_PI/180.,d0rad,ha1rad);
+
 	ut=ut+d_ut;
 	JD_hst+=d_ut/24.;
 	hst+=d_ut;
 
-	// HDS PA w/o ImR
-	phpa[i]=hdspa_deg(phi*M_PI/180.,d0rad,ha1rad);
 	
 	i=i+1;
       }
@@ -2524,7 +2540,6 @@ gboolean draw_plot_cairo(GtkWidget *widget,
       cairo_new_path(cr);
       
       {
-	
 	x_tr=((transit.hours<(gint)ihst0)?((gdouble)transit.hours+24.):((gdouble)transit.hours))
 	  +(gdouble)transit.minutes/60.;
       }
@@ -2604,6 +2619,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	    cairo_text_extents (cr, tmp, &extents);
 	    cairo_save(cr);
 	    cairo_rotate (cr,-M_PI/2);
+	    cairo_get_current_point(cr,&x_pos,&y_pos);
 	    cairo_rel_move_to(cr,5.*scale,+extents.height/2.);
 	    cairo_reset_clip(cr);
 	    cairo_show_text(cr,tmp);
@@ -2907,7 +2923,7 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	  }
 	  
 	  for(i=1;i<=iend-2;i++){
-	    if((pel[i]>0)&&(pel[i+1]>0)){
+	    if(((pel[i]>0)&&(pel[i+1]>0))&&((sep[i]>0)&&sep[i+1]>0)){
 	      x=dx+lx*(phst[i]-ihst0)/(ihst1-ihst0);
 	      y=dy+ly*(180-sep[i])/180;
 	      cairo_move_to(cr,x,y);
@@ -2916,25 +2932,13 @@ gboolean draw_plot_cairo(GtkWidget *widget,
 	      y=dy+ly*(180-sep[i+1])/180;
 	      cairo_line_to(cr,x,y);
 
-	      if(pel_moon[i]<0){
-		if(i_list==hg->plot_i){
-		  cairo_set_source_rgba(cr, 0.4, 0.4, 1.0, 0.5);
-		  cairo_set_line_width(cr,1.5*scale);
-		}
-		else{
-		  cairo_set_source_rgba(cr, 0.2, 0.2, 0.6, 0.2);
-		  cairo_set_line_width(cr,0.5*scale);
-		}
+	      if(i_list==hg->plot_i){
+		cairo_set_source_rgba(cr, 0.4, 0.4, 1.0, 1.0);
+		cairo_set_line_width(cr,3.0*scale);
 	      }
 	      else{
-		if(i_list==hg->plot_i){
-		  cairo_set_source_rgba(cr, 0.4, 0.4, 1.0, 1.0);
-		  cairo_set_line_width(cr,3.0*scale);
-		}
-		else{
-		  cairo_set_source_rgba(cr, 0.2, 0.2, 0.6, 0.5);
-		  cairo_set_line_width(cr,1.0*scale);
-		}
+		cairo_set_source_rgba(cr, 0.2, 0.2, 0.6, 0.5);
+		cairo_set_line_width(cr,1.0*scale);
 	      }
 
 	      cairo_stroke(cr);
@@ -5204,4 +5208,34 @@ gdouble date_to_jd(gdouble date){
   JD=ln_get_julian_local_date(&local_date);
   
   return(JD);
+}
+
+gdouble get_moon_sep(gdouble paz, gdouble pel, gdouble hst){
+  gint i, i_moon=-1;
+  gdouble d_hst1, d_hst2, d_hst;
+  gdouble az_moon, el_moon;
+
+  for (i=0;i<i_moon_max-1;i++){
+    if(hst_moon[i]<hst){
+      if(hst<hst_moon[i+1]){
+	i_moon=i;
+	break;
+      }
+    }
+  }
+
+  if(i_moon<=0) return(-1);
+
+  d_hst1=hst-hst_moon[i_moon];
+  d_hst2=hst_moon[i_moon+1]-hst;
+
+  d_hst=d_hst1+d_hst2;
+  az_moon=paz_moon[i_moon]*d_hst2/d_hst
+    +paz_moon[i_moon+1]*d_hst1/d_hst;
+  el_moon=pel_moon[i_moon]*d_hst2/d_hst
+    +pel_moon[i_moon+1]*d_hst1/d_hst;
+
+  if(el_moon<0) return(-1);
+
+  return(deg_sep(paz,pel,az_moon,el_moon));
 }

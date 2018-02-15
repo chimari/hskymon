@@ -402,7 +402,7 @@ void trdb_out(typHOE *hg, FILE *fp){
 	      hg->obj[i_list].name,
 	      hg->obj[i_list].ra,
 	      hg->obj[i_list].dec,
-	      hg->obj[i_list].note,
+	      (hg->obj[i_list].note) ? (hg->obj[i_list].note) : "--",
 	      hg->obj[i_list].trdb_str);
     }
     else{
@@ -410,7 +410,7 @@ void trdb_out(typHOE *hg, FILE *fp){
 	      hg->obj[i_list].name,
 	      hg->obj[i_list].ra,
 	      hg->obj[i_list].dec,
-	      hg->obj[i_list].note);
+	      (hg->obj[i_list].note) ? (hg->obj[i_list].note) : "--");
     }
   }
 }

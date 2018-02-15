@@ -2452,8 +2452,6 @@ void fcdb_lamost_vo_parse(typHOE *hg) {
      else{
        hg->fcdb[i_list].u=-1;
      }
-     i_all++;
-     i_list++;
    }
    else if (vtabledata_move->colomn == columns[4]){ // log g
      if(vtabledata_move->value){
@@ -2496,6 +2494,8 @@ void fcdb_lamost_vo_parse(typHOE *hg) {
      else{
        hg->fcdb[i_list].ref=0;
      }
+     i_all++;
+     i_list++;
    }
   }
   hg->fcdb_i_max=i_list;

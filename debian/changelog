@@ -1,8 +1,14 @@
-hskymon (3.3.5) UNRELEASED; urgency=medium
+hskymon (3.3.6) instable; urgency=medium
+
+  * Accelerated lunar calc by buffering.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Wed, 14 Feb 2018 16:34:41 -1000
+
+hskymon (3.3.5) instable; urgency=medium
 
   * Changed maximum and default search diamters for FCDB.
 
- -- Akito Tajitsu <tajitsu@naoj.org>  Fri, 19 Jan 2018 12:38:55 -1000
+ -- Akito Tajitsu <tajitsu@naoj.org>  Wed, 14 Feb 2018 16:34:41 -1000
 
 hskymon (3.3.4) instable; urgency=medium
 

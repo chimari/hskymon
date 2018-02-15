@@ -1754,6 +1754,7 @@ struct _typHOE{
   gint  fcdb_i_max;
   gint  fcdb_i_all;
   GtkWidget *fcdb_tree;
+  GtkWidget *fcdb_sw;
   GtkWidget *fcdb_label;
   GtkWidget *fcdb_frame;
   GtkWidget *fcdb_button;
@@ -2032,8 +2033,6 @@ struct _typHOE{
   gint std_mag2;
   gchar *std_band;
   gchar *std_sptype2;
-
-  SSLpara ssl;
 };
 
 
@@ -2208,13 +2207,14 @@ int get_rope();
 //treeview.c
 void make_tree();
 void remake_tree();
-void rebuild_tree();
+void rebuild_fcdb_tree();
 gint tree_update_azel();
 gchar* make_tgt();
 gchar *make_simbad_id();
 void addobj_dialog();
 void raise_tree();
 void str_replace();
+void fcdb_append_tree();
 
 
 //utility.c
