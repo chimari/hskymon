@@ -225,7 +225,7 @@ void fc_dl (typHOE *hg)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		    "Error: Please select a target in the Object List.",
 		    NULL);
 #else
@@ -237,7 +237,7 @@ void fc_dl (typHOE *hg)
   }
   else if(hg->dss_i>=hg->i_max){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Error: Please select a target in the Object List.",
 		  NULL);
 #else
@@ -376,6 +376,22 @@ void fc_dl (typHOE *hg)
     
   case FC_SKYVIEW_WISE22:
     label=gtk_label_new("Retrieving WISE (22um) image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+    
+  case FC_SKYVIEW_AKARIN60:
+    label=gtk_label_new("Retrieving AKARI N60 image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+
+  case FC_SKYVIEW_AKARIWS:
+    label=gtk_label_new("Retrieving AKARI WIDE-S image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+
+  case FC_SKYVIEW_AKARIWL:
+    label=gtk_label_new("Retrieving AKARI WIDE-L image from \"" FC_HOST_SKYVIEW "\" ...");
+    break;
+
+  case FC_SKYVIEW_AKARIN160:
+    label=gtk_label_new("Retrieving AKARI N160 image from \"" FC_HOST_SKYVIEW "\" ...");
     break;
     
   case FC_SKYVIEW_NVSS:
@@ -1045,6 +1061,26 @@ void create_fc_dialog(typHOE *hg)
     gtk_list_store_set(store, &iter, 0, "SkyView: WISE (22um)",
 		       1, FC_SKYVIEW_WISE22, 2, TRUE, -1);
     if(hg->fc_mode==FC_SKYVIEW_WISE22) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI N60",
+		       1, FC_SKYVIEW_AKARIN60, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_AKARIN60) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI WIDE-S",
+		       1, FC_SKYVIEW_AKARIWS, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_AKARIWS) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI WIDE-L",
+		       1, FC_SKYVIEW_AKARIWL, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_AKARIWL) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI N160",
+		       1, FC_SKYVIEW_AKARIN160, 2, TRUE, -1);
+    if(hg->fc_mode==FC_SKYVIEW_AKARIN160) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "SkyView: NVSS (1.4GHz)",
@@ -2871,6 +2907,26 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
 			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
       break;
 
+    case FC_SKYVIEW_AKARIN60:
+      tmp=g_strdup_printf("AKARI N60  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
+    case FC_SKYVIEW_AKARIWS:
+      tmp=g_strdup_printf("AKARI WIDE-S  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
+    case FC_SKYVIEW_AKARIWL:
+      tmp=g_strdup_printf("AKARI WIDE-L  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
+    case FC_SKYVIEW_AKARIN160:
+      tmp=g_strdup_printf("AKARI N160  %dx%d arcmin",
+			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+      break;
+
     case FC_SKYVIEW_NVSS:
       tmp=g_strdup_printf("NVSS (1.4GHz)  %dx%d arcmin",
 			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
@@ -4382,6 +4438,18 @@ void set_dss_src_RGB (typHOE *hg, gint i)
   case FC_SKYVIEW_WISE22:
     hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_WISE22);
     break;
+  case FC_SKYVIEW_AKARIN60:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_AKARIN60);
+    break;
+  case FC_SKYVIEW_AKARIWS:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_AKARIWS);
+    break;
+  case FC_SKYVIEW_AKARIWL:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_AKARIWL);
+    break;
+  case FC_SKYVIEW_AKARIN160:
+    hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_AKARIN160);
+    break;
 
   case FC_SKYVIEW_NVSS:
     hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_NVSS);
@@ -4479,6 +4547,10 @@ void set_fc_mode (typHOE *hg)
   case FC_SKYVIEW_WISE46:
   case FC_SKYVIEW_WISE12:
   case FC_SKYVIEW_WISE22:
+  case FC_SKYVIEW_AKARIN60:
+  case FC_SKYVIEW_AKARIWS:
+  case FC_SKYVIEW_AKARIWL:
+  case FC_SKYVIEW_AKARIN160:
   case FC_SKYVIEW_NVSS:
     if(hg->dss_host) g_free(hg->dss_host);
     hg->dss_host             =g_strdup(FC_HOST_SKYVIEW);
@@ -4550,6 +4622,18 @@ void set_fc_mode (typHOE *hg)
       break;
     case FC_SKYVIEW_WISE22:
       hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_WISE22);
+      break;
+    case FC_SKYVIEW_AKARIN60:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_AKARIN60);
+      break;
+    case FC_SKYVIEW_AKARIWS:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_AKARIWS);
+      break;
+    case FC_SKYVIEW_AKARIWL:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_AKARIWL);
+      break;
+    case FC_SKYVIEW_AKARIN160:
+      hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_AKARIN160);
       break;
     case FC_SKYVIEW_NVSS:
       hg->dss_src             =g_strdup(FC_SRC_SKYVIEW_NVSS);
@@ -4904,6 +4988,97 @@ static void cancel_trdb(GtkWidget *w, gpointer gdata)
   }
 #endif
 }
+
+void ver_dl(typHOE *hg)
+{
+  GtkTreeIter iter;
+  GtkWidget *dialog, *vbox, *label, *button;
+#ifndef USE_WIN32
+  static struct sigaction act;
+#endif
+  gint timer=-1;
+  gint fcdb_type_tmp;
+  
+  if(flag_getFCDB) return;
+  flag_getFCDB=TRUE;
+  
+  fcdb_type_tmp=hg->fcdb_type;
+  hg->fcdb_type=-1;
+
+  if(hg->fcdb_host) g_free(hg->fcdb_host);
+  hg->fcdb_host=g_strdup(VER_HOST);
+  if(hg->fcdb_path) g_free(hg->fcdb_path);
+  hg->fcdb_path=g_strdup(VER_PATH);
+  if(hg->fcdb_file) g_free(hg->fcdb_file);
+  hg->fcdb_file=g_strconcat(hg->temp_dir,
+			   G_DIR_SEPARATOR_S,
+			   FCDB_FILE_TXT,NULL);
+
+  dialog = gtk_dialog_new();
+  
+  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
+  gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
+  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+  my_signal_connect(dialog, "delete-event", cancel_fcdb, (gpointer)hg);
+
+
+  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
+  
+  label=gtk_label_new("Checking the latest version of hskymon ...");
+
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
+  gtk_widget_show(label);
+  
+  hg->pbar=gtk_progress_bar_new();
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar,TRUE,TRUE,0);
+  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
+  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
+				    GTK_PROGRESS_RIGHT_TO_LEFT);
+  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
+  gtk_widget_show(hg->pbar);
+  
+  unlink(hg->fcdb_file);
+  
+  hg->plabel=gtk_label_new("Checking the latest version of hskymon ...");
+  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     hg->plabel,FALSE,FALSE,0);
+  
+  button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+		     button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed", cancel_fcdb, (gpointer)hg);
+  
+  gtk_widget_show_all(dialog);
+
+  timer=g_timeout_add(100, 
+		      (GSourceFunc)progress_timeout,
+		      (gpointer)hg);
+  
+#ifndef USE_WIN32
+  act.sa_handler=fcdb_signal;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags=0;
+  if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
+#endif
+  
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
+  
+  get_fcdb(hg);
+  gtk_main();
+
+  gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
+  if(timer!=-1) gtk_timeout_remove(timer);
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+
+  hg->fcdb_type=fcdb_type_tmp;
+  flag_getFCDB=FALSE;
+}
+
 
 void fcdb_dl(typHOE *hg)
 {
@@ -7074,6 +7249,22 @@ gchar *rgb_source_txt(typHOE *hg, gint i){
     
   case FC_SKYVIEW_WISE22:
     tmp=g_strdup("WISE (22um)");
+    break;
+
+  case FC_SKYVIEW_AKARIN60:
+    tmp=g_strdup("AKARI N60");
+    break;
+
+  case FC_SKYVIEW_AKARIWS:
+    tmp=g_strdup("AKARI WS");
+    break;
+
+  case FC_SKYVIEW_AKARIWL:
+    tmp=g_strdup("AKARI WL");
+    break;
+
+  case FC_SKYVIEW_AKARIN160:
+    tmp=g_strdup("AKARI N160");
     break;
 
   case FC_SKYVIEW_NVSS:

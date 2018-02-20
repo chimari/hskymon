@@ -372,7 +372,7 @@ void Extract_Att_VO_Table(xmlTextReaderPtr reader,
       ret = xmlTextReaderRead(reader);
       if(ret==-1){
 #ifdef GTK_MSG
-	popup_message(POPUP_TIMEOUT*2,
+	popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		      "Error : XML table cannot be parsed.",
 		      " ",
 		      fname,
@@ -2533,7 +2533,7 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
 
   if((fp=fopen(hg->fcdb_file,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->fcdb_file,
@@ -2548,7 +2548,7 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
   while(!feof(fp)){
     if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be read.",
 		    " ",
 		    hg->fcdb_file,
@@ -2573,7 +2573,7 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
 
   if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be read.",
 		  " ",
 		  hg->fcdb_file,
@@ -2679,7 +2679,7 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
   while(!feof(fp)){
     if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be read.",
 		    " ",
 		    hg->fcdb_file,
@@ -2839,7 +2839,7 @@ void trdb_smoka_txt_parse(typHOE *hg) {
 
   if((fp=fopen(hg->fcdb_file,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->fcdb_file,
@@ -2856,7 +2856,7 @@ void trdb_smoka_txt_parse(typHOE *hg) {
   while(!feof(fp)){
     if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be read.",
 		    " ",
 		    hg->fcdb_file,
@@ -2881,7 +2881,7 @@ void trdb_smoka_txt_parse(typHOE *hg) {
 
   if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be read.",
 		  " ",
 		  hg->fcdb_file,
@@ -2990,7 +2990,7 @@ void trdb_smoka_txt_parse(typHOE *hg) {
   while(!feof(fp)){
     if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be read.",
 		    " ",
 		    hg->fcdb_file,

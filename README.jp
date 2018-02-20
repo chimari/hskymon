@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 3.3.6    2018/02/14
+#                                  ver 3.3.7    2018/02/16
 #                               Copyright (C) 2003-18 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #      Subaru Telescope, National Astronomical Observatory of Japan
@@ -36,8 +36,7 @@ X Window Systemが稼働しているUNIX環境、もしくは MS Windows/macOS環境
 でも利用が可能です。
 Win/Mac用にはバイナリー配布をしています。
 
-sourceからコンパイルするためにはGtk+が必要(Windows版は 32bit: msys+Gtk-dev,
-64bit: msys2を使用)です。
+sourceからコンパイルするためにはGtk+が必要(Windows版はmsys2を使用)です。
 Gtk+についてはcairoグラフィックライブラリを使用しているため、最低限ver2.8以降
 が必要、推奨はver2.10以降となります。
 libxml2, openssl, json-cも必要となります。
@@ -70,23 +69,6 @@ Subaru Gen2と接続し、望遠鏡のステータスをとる場合(Gen2 summitネットワーク内
 て使用して頂いてもかまいません。
 make に関しては、各種ライブラリとそれに対応する開発環境が必要です。
 (gtk+2-dev, xmlrpc-c3-dev, libcurl4-openssl-dev ... etc.)
-
-
-▼make (Windows版)
-基本的にWindows版はバイナリ配布としますが、一応メモ代わりに。
-開発環境はmsys + min-gw + gtk-devです。
-メイラのsylpheed-win32のwikiなどを参照にすると良いと思います。
-   http://sylpheed.sraoss.jp/wiki/index.php?Sylpheed%2FWin32
-
-  - % ./configure -with-win32
- 
-  - % make
-
-同様のmakeをしてくれるスクリプトを "makewin32.sh", "makewin64.sh"として
-パッケージに同梱しています。最後のインストール先ディレクトリを適当に変更
-して使用してください。
-
-Windows/Mac版の制限として、後述のXMLRPCに関する機能は現在ありません。
 
 
 ▼コマンドラインオプション

@@ -2105,6 +2105,22 @@ gboolean draw_plot_cairo(GtkWidget *widget,
     else{
       get_current_obs_time(hg,&iyear, &month, &iday, &hour, &min, &sec);
     }
+    if(hg->plot_ihst0<0){
+      zonedate.years=iyear;
+      zonedate.months=month;
+      zonedate.days=iday;
+      zonedate.hours=(gint)ihst0;
+      zonedate.minutes=(gint)((ihst0-(gint)ihst0)*60.);
+      zonedate.seconds=0.0;
+      zonedate.gmtoff=(long)hg->obs_timezone*60;
+      JD = ln_get_julian_local_date(&zonedate);
+      JD -= 1.0;
+      ln_get_local_date(JD, &zonedate,hg->obs_timezone*60);
+
+      iyear=zonedate.years;
+      month=zonedate.months;
+      iday=zonedate.days;
+    }
 
     if((hg->plot_center!=PLOT_CENTER_CURRENT)&&(hour<10)){
       add_day(hg, &iyear, &month, &iday, -1);

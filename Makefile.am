@@ -27,6 +27,7 @@ EXTRA_DIST = autogen.sh\
              hskymon.1\
              makewin32.sh\
              makewin64.sh\
+             makeosx.sh\
              ar_u0.xpm\
              ar_u1.xpm\
              ar_u2.xpm\

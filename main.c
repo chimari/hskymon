@@ -51,6 +51,9 @@ void CheckGmap();
 void ext_play();
 static void show_dss();
 static void show_simbad();
+void ver_txt_parse();
+void CheckVer();
+static void uri_clicked();
 
 void do_open();
 void do_open_NST();
@@ -705,6 +708,14 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_widget_show (menu);
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
   
+  //Info/CheckVer
+  image=gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_MENU);
+  popup_button =gtk_image_menu_item_new_with_label ("Check the latest ver.");
+  gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+  gtk_widget_show (popup_button);
+  gtk_container_add (GTK_CONTAINER (menu), popup_button);
+  my_signal_connect (popup_button, "activate",CheckVer, (gpointer)hg);
+
   //Info/About
 #ifdef GTK_STOCK_ABOUT
   image=gtk_image_new_from_stock (GTK_STOCK_ABOUT, GTK_ICON_SIZE_MENU);
@@ -2225,6 +2236,156 @@ void ext_play(char *exe_command)
 }
 
 
+void ver_txt_parse(typHOE *hg) {
+  FILE *fp;
+  gchar *buf=NULL, *cp, *cpp, *tmp_char=NULL, *head=NULL, *tmp_p;
+  gint major=0, minor=0, micro=0;
+  gboolean update_flag=FALSE;
+  gint c_major, c_minor, c_micro;
+  gchar *tmp;
+  
+
+  if((fp=fopen(hg->fcdb_file,"rb"))==NULL){
+#ifdef GTK_MSG
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+		  "Error: File cannot be opened.",
+		  " ",
+		  hg->fcdb_file,
+		  NULL);
+#else
+    fprintf(stderr," File Open Error  \"%s\".\n",hg->fcdb_file);
+#endif
+    return;
+  }
+
+  c_major=g_strtod(MAJOR_VERSION,NULL);
+  c_minor=g_strtod(MINOR_VERSION,NULL);
+  c_micro=g_strtod(MICRO_VERSION,NULL);
+  
+  while((buf=fgets_new(fp))!=NULL){
+    tmp_char=(char *)strtok(buf,",");
+    
+    if(strncmp(tmp_char,"MAJOR",strlen("MAJOR"))==0){
+      if((tmp_p=strtok(NULL,","))!=NULL){
+	major=g_strtod(tmp_p,NULL);
+      }
+    }
+    else if(strncmp(tmp_char,"MINOR",strlen("MINOR"))==0){
+      if((tmp_p=strtok(NULL,","))!=NULL){
+	minor=g_strtod(tmp_p,NULL);
+      }
+    }
+    else if(strncmp(tmp_char,"MICRO",strlen("MICRO"))==0){
+      if((tmp_p=strtok(NULL,","))!=NULL){
+	micro=g_strtod(tmp_p,NULL);
+      }
+    }
+  }
+  fclose(fp);
+
+  if(major>c_major){
+    update_flag=TRUE;
+  }
+  else if(major==c_major){
+    if(minor>c_minor){
+      update_flag=TRUE;
+    }
+    else if(minor==c_minor){
+      if(micro>c_micro){
+	update_flag=TRUE;
+      }
+    }
+  }
+
+  if(update_flag){
+    GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox;
+
+    flagChildDialog=TRUE;
+  
+    dialog = gtk_dialog_new_with_buttons("Sky Monitor : Download the latest version?",
+				       NULL,
+				       GTK_DIALOG_MODAL,
+				       GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+				       GTK_STOCK_OK,GTK_RESPONSE_OK,
+				       NULL);
+
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK); 
+    gtk_widget_grab_focus(gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog),
+							     GTK_RESPONSE_OK));
+
+
+    hbox = gtk_hbox_new(FALSE,2);
+    gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+		       hbox,FALSE, FALSE, 0);
+    
+    pixmap=gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION,
+				     GTK_ICON_SIZE_DIALOG);
+    
+    gtk_box_pack_start(GTK_BOX(hbox), pixmap,FALSE, FALSE, 0);
+    
+    vbox = gtk_vbox_new(FALSE,2);
+    gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+    gtk_box_pack_start(GTK_BOX(hbox),vbox,FALSE, FALSE, 0);
+
+    tmp=g_strdup_printf("The current version : ver. %d.%d.%d",
+			c_major,c_minor,c_micro);
+    label = gtk_label_new (tmp);
+    gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
+    gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
+    if(tmp) g_free(tmp);
+
+    tmp=g_strdup_printf("The latest version  : ver. %d.%d.%d",
+			major,minor,micro);
+    label = gtk_label_new (tmp);
+    gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
+    gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
+    if(tmp) g_free(tmp);
+    
+
+    label = gtk_label_new ("");
+    gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
+    gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
+
+    label = gtk_label_new ("Do you go to the web page to download the latest version?");
+    gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
+    gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
+
+    label = gtk_label_new ("");
+    gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
+    gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
+
+
+    gtk_widget_show_all(dialog);
+
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+      uri_clicked(NULL, (gpointer)hg);
+    }
+    gtk_widget_destroy(dialog);
+    
+    flagChildDialog=FALSE;
+  }
+  else{
+#ifdef GTK_MSG
+    tmp=g_strdup_printf("hskymon ver. %d.%d.%d is the latest version.",
+			major,minor,micro);
+    popup_message(GTK_STOCK_OK, POPUP_TIMEOUT*1,
+		  tmp,
+		  NULL);
+    if(tmp) g_free(tmp);
+#endif
+  }
+}
+
+
+void CheckVer(GtkWidget *w, gpointer gdata){
+  typHOE *hg;
+  
+  hg=(typHOE *)gdata;
+  ver_dl(hg);
+  ver_txt_parse(hg);
+}
+
 void do_quit (GtkWidget *widget, gpointer gdata)
 {
   typHOE *hg;
@@ -2344,11 +2505,11 @@ void do_open (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
-		  " ",
-		  fname,
-		  NULL);
+		    " ",
+		    fname,
+		    NULL);
 #else
       g_print ("Cannot Open %s\n",
 	       fname);
@@ -2434,11 +2595,11 @@ void do_open_NST (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
-		  " ",
-		  fname,
-		  NULL);
+		    " ",
+		    fname,
+		    NULL);
 #else
       g_print ("Cannot Open %s\n",
 	       fname);
@@ -2524,11 +2685,11 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
-		  " ",
-		  fname,
-		  NULL);
+		    " ",
+		    fname,
+		    NULL);
 #else
       g_print ("Cannot Open %s\n",
 	       fname);
@@ -2602,7 +2763,7 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -2697,7 +2858,7 @@ void do_reload_ope (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    hg->filename_ope,
@@ -2792,11 +2953,11 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
-		  " ",
-		  fname,
-		  NULL);
+		    " ",
+		    fname,
+		    NULL);
 #else
       g_print ("Cannot Open %s\n",
 	       fname);
@@ -2881,11 +3042,11 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
-		  " ",
-		  fname,
-		  NULL);
+		    " ",
+		    fname,
+		    NULL);
 #else
       g_print ("Cannot Open %s\n",
 	       fname);
@@ -2968,11 +3129,11 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
-		  " ",
-		  fname,
-		  NULL);
+		    " ",
+		    fname,
+		    NULL);
 #else
       g_print ("Cannot Open %s\n",
 	       fname);
@@ -3064,7 +3225,7 @@ void do_merge (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -3275,6 +3436,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
 				      GTK_SHADOW_IN);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
 		     scrolledwin, TRUE, TRUE, 0);
+  gtk_widget_set_size_request (scrolledwin, 400, 250);
   
   text = gtk_text_view_new();
   gtk_text_view_set_editable(GTK_TEXT_VIEW(text), FALSE);
@@ -3286,6 +3448,58 @@ void show_version (GtkWidget *widget, gpointer gdata)
   buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text));
   gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
   
+  gtk_text_buffer_insert(buffer, &iter,
+			 "This program (hskymon) accesses to the following astronomical online database services via WWW. The author of the program (AT) acknowledge with thanks to all of them.\n\n"
+
+			 "[SIMBAD]\n"
+			 "    http://simbad.u-strasbg.fr/\n"
+			 "    http://simbad.harvard.edu/\n\n"
+
+			 "[The NASA/IPAC Extragalactic Database (NED)]\n"
+			 "    http://ned.ipac.caltech.edu/\n\n"
+			 
+			 "[SkyView by NASA]\n"
+			 "    https://skyview.gsfc.nasa.gov/\n\n"
+
+			 "[SLOAN DIGITAL SKY SURVEY : SkyServer]\n"
+			 "    http://skyserver.sdss.org/\n\n"
+
+			 "[The Mikulski Archive for Space Telescopes (MAST)]\n"
+			 "    http://archive.stsci.edu/\n\n"
+
+			 "[Gemini Observatory Archive Search]\n"
+			 "    https://archive.gemini.edu/\n\n"
+
+			 "[NASA/IPAC Infrared Science Archive (IRSA)]\n"
+			 "    http://irsa.ipac.caltech.edu\n\n"
+
+			 "[The Combined Atlas of Sources with Spitzer IRS Spectra (CASSIS)]\n"
+			 "    http://cassis.sirtf.com/\n\n"
+
+			 "[Large Sky Area Multi-Object Fiber Spectroscoic Telescope (LAMOST)]\n"
+			 "    http://www.lamost.org/\n\n"
+
+			 "[The Subaru-Mitaka-Okayama-Kiso-Archive (SMOKA)]\n"
+			 "    http://smoka.nao.ac.jp/\n\n"
+
+			 "[The ESO Science Archive Facility]\n"
+			 "    http://archive.eso.org/\n\n"
+
+			 "[Keck Observatory Archive]\n"
+			 "    https://koa.ipac.caltech.edu/\n\n"
+
+			 "[Pan-STARRS1 data archive]\n"
+			 "    https://panstarrs.stsci.edu/\n\n"
+
+			 "[The VizieR catalogue access tool, CDS, Strasbourg, France]\n"
+			 "    http://vizier.u-strasbg.fr/\n\n",
+			 -1);
+
+  gtk_text_buffer_insert(buffer, &iter,
+			 "\n======================================================\n\n"
+			 , -1);
+
+ 
   gtk_text_buffer_insert(buffer, &iter,
 			 "This program is free software; you can redistribute it and/or modify "
 			 "it under the terms of the GNU General Public License as published by "
@@ -4495,7 +4709,7 @@ static void ok_trdb_smoka(GtkWidget *w, gpointer gdata)
      &&(!hg->trdb_smoka_spec)
      &&(!hg->trdb_smoka_ipol)){
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		    "Error: Please select at least one observation mode.",
 		    NULL);
 #else
@@ -4530,7 +4744,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
 
   if(hg->i_max<=0){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Error: Please load your object list.",
 		  NULL);
 #else
@@ -4737,7 +4951,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
 
   if(hg->i_max<=0){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Error: Please load your object list.",
 		  NULL);
 #else
@@ -4986,7 +5200,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
 
   if(hg->i_max<=0){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Error: Please load your object list.",
 		  NULL);
 #else
@@ -5392,7 +5606,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
 
   if(hg->i_max<=0){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Error: Please load your object list.",
 		  NULL);
 #else
@@ -7559,7 +7773,7 @@ void do_save_pdf (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -7630,7 +7844,7 @@ void do_save_OpeDef (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -7698,7 +7912,7 @@ void do_save_TextList (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -7848,7 +8062,7 @@ void do_save_FCDB_List (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -8086,7 +8300,7 @@ void do_save_TRDB_CSV (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -8182,11 +8396,11 @@ void do_open_TRDB (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
-		  " ",
-		  fname,
-		  NULL);
+		    " ",
+		    fname,
+		    NULL);
 #else
       g_print ("Cannot Open %s\n",
 	       fname);
@@ -8256,7 +8470,7 @@ void do_save_TRDB (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -8335,7 +8549,7 @@ void do_save_fc_pdf (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -10067,6 +10281,26 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     if(hg->fc_mode_def==FC_SKYVIEW_WISE22) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI N60",
+		       1, FC_SKYVIEW_AKARIN60, 2, TRUE, -1);
+    if(hg->fc_mode_def==FC_SKYVIEW_AKARIN60) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI WIDE-S",
+		       1, FC_SKYVIEW_AKARIWS, 2, TRUE, -1);
+    if(hg->fc_mode_def==FC_SKYVIEW_AKARIWS) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI WIDE-L",
+		       1, FC_SKYVIEW_AKARIWL, 2, TRUE, -1);
+    if(hg->fc_mode_def==FC_SKYVIEW_AKARIWL) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI N160",
+		       1, FC_SKYVIEW_AKARIN160, 2, TRUE, -1);
+    if(hg->fc_mode_def==FC_SKYVIEW_AKARIN160) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "SkyView: NVSS (1.4GHz)",
 		       1, FC_SKYVIEW_NVSS, 2, TRUE, -1);
     if(hg->fc_mode_def==FC_SKYVIEW_NVSS) iter_set=iter;
@@ -10282,6 +10516,26 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       gtk_list_store_set(store, &iter, 0, "SkyView: WISE (22um)",
 			 1, FC_SKYVIEW_WISE22, 2, TRUE, -1);
       if(hg->fc_mode_RGB[i]==FC_SKYVIEW_WISE22) iter_set=iter;
+
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "SkyView: AKARI N60",
+			 1, FC_SKYVIEW_AKARIN60, 2, TRUE, -1);
+      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_AKARIN60) iter_set=iter;
+
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "SkyView: AKARI WIDE-S",
+			 1, FC_SKYVIEW_AKARIWS, 2, TRUE, -1);
+      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_AKARIWS) iter_set=iter;
+
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "SkyView: AKARI WIDE-L",
+			 1, FC_SKYVIEW_AKARIWL, 2, TRUE, -1);
+      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_AKARIWL) iter_set=iter;
+
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "SkyView: AKARI N160",
+			 1, FC_SKYVIEW_AKARIN160, 2, TRUE, -1);
+      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_AKARIN160) iter_set=iter;
 
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, 0, "SkyView: NVSS (1.4GHz)",
@@ -11836,7 +12090,7 @@ void MergeNST(typHOE *hg, gint ope_max){
   struct ln_zonedate zonedate, zonedate1;
   
   if(hg->i_max>=MAX_OBJECT){
-    popup_message(POPUP_TIMEOUT,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Warning: Object Number exceeds the limit.",
 		  NULL);
     return;
@@ -11845,7 +12099,7 @@ void MergeNST(typHOE *hg, gint ope_max){
 
   if((fp=fopen(hg->filename_nst,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_nst,
@@ -11867,7 +12121,7 @@ void MergeNST(typHOE *hg, gint ope_max){
   for(i=0;i<6;i++){
     if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: TSC File format might be incorrect.",
 		    " ",
 		    hg->filename_nst,
@@ -11898,7 +12152,7 @@ void MergeNST(typHOE *hg, gint ope_max){
   if(buf) g_free(buf);
   if(hg->nst[hg->nst_max].i_max<=0){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: TSC File format might be incorrect.",
 		  " ",
 		  hg->filename_nst,
@@ -12008,7 +12262,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 
   
   if(hg->i_max>=MAX_OBJECT){
-    popup_message(POPUP_TIMEOUT,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Warning: Object Number exceeds the limit.",
 		  NULL);
     return;
@@ -12017,7 +12271,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 
   if((fp=fopen(hg->filename_jpl,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
@@ -12070,7 +12324,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 	  if(tmp_center) g_free(tmp_center);
 	  fclose(fp);
 #ifdef GTK_MSG
-	  popup_message(POPUP_TIMEOUT*2,
+	  popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 			"Error: Invalid HORIZONS File.",
 			"Center-site must be \"GEOCENTRIC\".",
 			" ",
@@ -12092,7 +12346,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 
   if((fp=fopen(hg->filename_jpl,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
@@ -12107,7 +12361,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 
   if(i_soe>=i_eoe){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: Invalid HORIZONS File.",
 		  " ",
 		  hg->filename_jpl,
@@ -12127,7 +12381,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
   for(i=0;i<i_soe;i++){
     if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
@@ -12182,7 +12436,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
   }
   else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
@@ -12197,7 +12451,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
   for(i=i_soe+1;i<i_eoe;i++){
     if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
@@ -12373,7 +12627,7 @@ void ConvJPL(typHOE *hg){
   gint i_delt;
   
   if(hg->i_max>=MAX_OBJECT){
-    popup_message(POPUP_TIMEOUT,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Warning: Object Number exceeds the limit.",
 		  NULL);
     return;
@@ -12382,7 +12636,7 @@ void ConvJPL(typHOE *hg){
 
   if((fp=fopen(hg->filename_jpl,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
@@ -12396,7 +12650,7 @@ void ConvJPL(typHOE *hg){
 
   if((fp_w=fopen(hg->filename_tscconv,"wb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
@@ -12445,7 +12699,7 @@ void ConvJPL(typHOE *hg){
 	  if(tmp_center) g_free(tmp_center);
 	  fclose(fp);
 #ifdef GTK_MSG
-	  popup_message(POPUP_TIMEOUT*2,
+	  popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 			"Error: Invalid HORIZONS File.",
 			"Center-site must be \"GEOCENTRIC\".",
 			" ",
@@ -12467,7 +12721,7 @@ void ConvJPL(typHOE *hg){
 
   if((fp=fopen(hg->filename_jpl,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
@@ -12482,7 +12736,7 @@ void ConvJPL(typHOE *hg){
 
   if(i_soe>=i_eoe){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: Invalid HORIZONS File.",
 		  " ",
 		  hg->filename_jpl,
@@ -12498,7 +12752,7 @@ void ConvJPL(typHOE *hg){
   for(i=0;i<i_soe;i++){
     if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
@@ -12553,7 +12807,7 @@ void ConvJPL(typHOE *hg){
   }
   else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
@@ -12584,7 +12838,7 @@ void ConvJPL(typHOE *hg){
   for(i=i_soe+1;i<i_eoe;i++){
     if((buf=fgets_new(fp))==NULL){
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
@@ -12713,7 +12967,7 @@ void ReadList(typHOE *hg, gint ope_max){
   
   if((fp=fopen(hg->filename_list,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_list,
@@ -12811,7 +13065,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 
   if((fp=fopen(hg->filename_ope,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_ope,
@@ -13015,7 +13269,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	      i_list++;
 	      hg->i_max=i_list;
 	      if(i_list==MAX_OBJECT-1){
-		popup_message(POPUP_TIMEOUT,
+		popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 			      "Warning: Object Number exceeds the limit.",
 			      NULL);
 		escape=TRUE;
@@ -13192,7 +13446,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  }
 	  else{
 #ifdef GTK_MSG
-	    popup_message(POPUP_TIMEOUT*2,
+	    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 			  "Error: PRM File cannot be opened.",
 			  " ",
 			  prmname,
@@ -13261,7 +13515,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 
   if((fp=fopen(hg->filename_ope,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_ope,
@@ -13449,7 +13703,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	      i_list++;
 	      
 	      if(hg->i_max==MAX_OBJECT-1){
-		popup_message(POPUP_TIMEOUT,
+		popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 			      "Warning: Object Number exceeds the limit.",
 			      NULL);
 		escape=TRUE;
@@ -13630,7 +13884,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  }
 	  else{
 #ifdef GTK_MSG
-	    popup_message(POPUP_TIMEOUT*2,
+	    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 			  "Error: PRM File cannot be opened.",
 			  " ",
 			  prmname,
@@ -13694,7 +13948,7 @@ void MergeListPRM(typHOE *hg){
   
   if((fp=fopen(hg->filename_prm,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_prm,
@@ -13856,7 +14110,7 @@ void MergeListPRM(typHOE *hg){
 
 	    hg->i_max++;
 	    if(hg->i_max==MAX_OBJECT-1){
-	      popup_message(POPUP_TIMEOUT,
+	      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 			    "Warning: Object Number exceeds the limit.",
 			    NULL);
 	      escape=TRUE;
@@ -13900,7 +14154,7 @@ void MergeListPRM2(typHOE *hg){
   
   if((fp=fopen(hg->filename_prm,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_prm,
@@ -14069,7 +14323,7 @@ void MergeListPRM2(typHOE *hg){
 
 		hg->i_max++;
 		if(hg->i_max==MAX_OBJECT-1){
-		  popup_message(POPUP_TIMEOUT,
+		  popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 				"Warning: Object Number exceeds the limit.",
 				NULL);
 		  escape=TRUE;
@@ -14126,7 +14380,7 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
   
   if((fp=fopen(hg->filename_ope,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_ope,
@@ -14305,7 +14559,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
   
   if((fp=fopen(hg->filename_ope,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_ope,
@@ -14463,7 +14717,7 @@ void MergeList(typHOE *hg, gint ope_max){
   
   if((fp=fopen(hg->filename_list,"rb"))==NULL){
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_list,
@@ -14899,24 +15153,64 @@ void ReadConf(typHOE *hg)
       hg->www_com=g_strdup(WWW_BROWSER);
      
     // DSS.
-    if(xmms_cfg_read_int  (cfgfile, "DSS", "Mode",  &i_buf))
-      hg->fc_mode_def=i_buf;
+    if(xmms_cfg_read_int  (cfgfile, "DSS", "Mode",  &i_buf)){
+      switch(i_buf){
+      case FC_SEP1:
+      case FC_SEP2:
+      case FC_SEP3:
+	hg->fc_mode_def=FC_SKYVIEW_DSS2R;
+	break;
+      default:
+	hg->fc_mode_def=i_buf;
+	break;
+      }
+    }
     else
       hg->fc_mode_def=FC_SKYVIEW_DSS2R;
     if(xmms_cfg_read_int  (cfgfile, "DSS", "ArcMin",  &i_buf))
       hg->dss_arcmin=i_buf;
     else
       hg->dss_arcmin=DSS_ARCMIN;
-    if(xmms_cfg_read_int  (cfgfile, "DSS", "Red",  &i_buf))
-      hg->fc_mode_RGB[0]=i_buf;
+    if(xmms_cfg_read_int  (cfgfile, "DSS", "Red",  &i_buf)){
+      switch(i_buf){
+      case FC_SEP1:
+      case FC_SEP2:
+      case FC_SEP3:
+	hg->fc_mode_RGB[0]=FC_SKYVIEW_DSS2IR;
+	break;
+      default:
+	hg->fc_mode_RGB[0]=i_buf;
+	break;
+      }
+    }
     else
       hg->fc_mode_RGB[0]=FC_SKYVIEW_DSS2IR;
-    if(xmms_cfg_read_int  (cfgfile, "DSS", "Green",  &i_buf))
-      hg->fc_mode_RGB[1]=i_buf;
+    if(xmms_cfg_read_int  (cfgfile, "DSS", "Green",  &i_buf)){
+      switch(i_buf){
+      case FC_SEP1:
+      case FC_SEP2:
+      case FC_SEP3:
+	hg->fc_mode_RGB[1]=FC_SKYVIEW_DSS2R;
+	break;
+      default:
+	hg->fc_mode_RGB[1]=i_buf;
+	break;
+      }
+    }
     else
       hg->fc_mode_RGB[1]=FC_SKYVIEW_DSS2R;
-    if(xmms_cfg_read_int  (cfgfile, "DSS", "Blue",  &i_buf))
-      hg->fc_mode_RGB[2]=i_buf;
+    if(xmms_cfg_read_int  (cfgfile, "DSS", "Blue",  &i_buf)){
+      switch(i_buf){
+      case FC_SEP1:
+      case FC_SEP2:
+      case FC_SEP3:
+	hg->fc_mode_RGB[2]=FC_SKYVIEW_DSS2R;
+	break;
+      default:
+	hg->fc_mode_RGB[2]=i_buf;
+	break;
+      }
+    }
     else
       hg->fc_mode_RGB[2]=FC_SKYVIEW_DSS2B;
     if(xmms_cfg_read_int  (cfgfile, "DSS", "RedS",  &i_buf))
@@ -15717,7 +16011,7 @@ gboolean is_number(gchar *s, gint line, const gchar* sect){
   if(!s){
     msg=g_strdup_printf(" Line=%d  /  Sect=\"%s\"", line, sect);
 #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: Input File is invalid.",
 		  " ",
 		  msg,
@@ -15735,7 +16029,7 @@ gboolean is_number(gchar *s, gint line, const gchar* sect){
       msg=g_strdup_printf(" Line=%d  /  Sect=\"%s\"\n Irregal character code : \"%02x\"", 
 			  line, sect,*s);
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT*2,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: Input File is invalid.",
 		    " ",
 		    msg,
@@ -15786,7 +16080,7 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
 
   if((ret=get_rope(hg, ROPE_ALL))==-2){
  #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: Unconnected to the Telescope Status server.",
 		  NULL);
 #else
@@ -15795,7 +16089,7 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
   }
   else if (ret<=0){
  #ifdef GTK_MSG
-    popup_message(POPUP_TIMEOUT*2,
+    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: No OPE files are opend in IntegGUI.",
 		  " ",
 		  "         Please open at least one OPE file in IntegGUI!!",
@@ -15918,15 +16212,15 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
 #endif
 
 
-void popup_message(gint delay, ...){
+void popup_message(gchar* stock_id, gint delay, ...){
   va_list args;
   gchar *msg1;
   GtkWidget *dialog;
   GtkWidget *label;
   GtkWidget *button;
+  GtkWidget *pixmap;
   GtkWidget *hbox, *vbox;
   gint timer;
-  GtkWidget *image;
 
   va_start(args, delay);
 
@@ -15949,8 +16243,10 @@ void popup_message(gint delay, ...){
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hbox, FALSE,FALSE,0);
 
   //// File
-  image=gtk_image_new_from_stock (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
-  gtk_box_pack_start(GTK_BOX(hbox),image, FALSE,FALSE,0);
+  pixmap=gtk_image_new_from_stock (stock_id,
+				   GTK_ICON_SIZE_DIALOG);
+
+  gtk_box_pack_start(GTK_BOX(hbox), pixmap,FALSE, FALSE, 0);
 
   vbox=gtk_vbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(hbox),vbox, FALSE,FALSE,0);
@@ -15970,8 +16266,6 @@ void popup_message(gint delay, ...){
   gtk_main();
 
   if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
-
-  flagChildDialog=FALSE;
 }
 
 gboolean close_popup(gpointer data)

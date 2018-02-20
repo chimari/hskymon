@@ -1567,7 +1567,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
 
       if(hg->obj[i].hash==-1){
 #ifdef GTK_MSG
-	popup_message(POPUP_TIMEOUT,
+	popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		      "Error: The target does not have a HASH ID.",
 		      NULL);
 #else
@@ -7134,7 +7134,7 @@ void stddb_dl(typHOE *hg)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(POPUP_TIMEOUT,
+      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		    "Error: Please select a target in the Object List.",
 		    NULL);
 #else

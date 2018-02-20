@@ -77,6 +77,8 @@
 #define WWW_BROWSER "firefox"
 
 #define DEFAULT_URL "http://www.naoj.org/Observing/tools/hskymon"
+#define VER_HOST "www.naoj.org"
+#define VER_PATH "/Observing/tools/hskymon/ver"
 
 #ifdef USE_WIN32
 #define DSS_URL "http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey"
@@ -295,6 +297,10 @@
 #define FC_SRC_SKYVIEW_WISE46 "WISE%204.6"
 #define FC_SRC_SKYVIEW_WISE12 "WISE%2012"
 #define FC_SRC_SKYVIEW_WISE22 "WISE%2022"
+#define FC_SRC_SKYVIEW_AKARIN60 "AKARI%20N60"
+#define FC_SRC_SKYVIEW_AKARIWS "AKARI%20WIDE-S"
+#define FC_SRC_SKYVIEW_AKARIWL "AKARI%20WIDE-L"
+#define FC_SRC_SKYVIEW_AKARIN160 "AKARI%20N160"
 #define FC_SRC_SKYVIEW_NVSS "NVSS"
 
 #define FC_HOST_SDSS "casjobs.sdss.org"
@@ -344,6 +350,10 @@ enum{FC_STSCI_DSS1R,
      FC_SKYVIEW_WISE46,
      FC_SKYVIEW_WISE12,
      FC_SKYVIEW_WISE22,
+     FC_SKYVIEW_AKARIN60,
+     FC_SKYVIEW_AKARIWS,
+     FC_SKYVIEW_AKARIWL,
+     FC_SKYVIEW_AKARIN160,
      FC_SKYVIEW_NVSS,
      FC_SKYVIEW_RGB,
      FC_SEP3,
@@ -2123,7 +2133,7 @@ void do_save_fc_pdf();
 void do_quit();
 void do_plot();
 void do_update_azel();
-void popup_message(gint , ...);
+void popup_message(gchar*, gint , ...);
 void create_fcdb_para_dialog();
 gboolean is_separator();
 GtkWidget *make_menu();
@@ -2165,6 +2175,7 @@ void trdb_run();
 gboolean draw_fc_cairo();
 void fcdb_tree_update_azel_item();
 void trdb_tree_update_azel_item();
+void ver_dl();
 void addobj_dl();
 gdouble current_yrs();
 gboolean progress_timeout();

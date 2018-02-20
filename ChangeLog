@@ -1,3 +1,6 @@
+2018.02.16 ver3.3.7 - Added AKARI images via SkyView for FC.
+	            - Added "Check the latest ver.".
+
 2018.02.14 ver3.3.6 - Accelerated lunar position calculation by buffering
 	              (in Plot).
 	            - Small bug fixes (imported from HDS OPE file Editor).

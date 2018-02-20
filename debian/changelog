@@ -1,3 +1,9 @@
+hskymon (3.3.7) instable; urgency=medium
+
+  * Added checking the latest version via http.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Tue, 20 Feb 2018 01:44:17 -1000
+
 hskymon (3.3.6) instable; urgency=medium
 
   * Accelerated lunar calc by buffering.
