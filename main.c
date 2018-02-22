@@ -16237,7 +16237,7 @@ void popup_message(gchar* stock_id, gint delay, ...){
 			(gpointer)dialog);
   }
 
-  my_signal_connect(dialog,"delete-event",destroy_popup, timer);
+  my_signal_connect(dialog,"destroy",destroy_popup, timer);
 
   hbox=gtk_hbox_new(FALSE,5);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hbox, FALSE,FALSE,0);
