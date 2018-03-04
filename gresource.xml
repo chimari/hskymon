@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+    <gresource prefix="/icons">
+      <file alias="chrome_icon.png"  preprocess="to-pixdata">icons/chrome_icon.png</file>
+      <file alias="comet_icon.png"   preprocess="to-pixdata">icons/comet_icon.png</file>
+      <file alias="dl_icon.png"      preprocess="to-pixdata">icons/dl_icon.png</file>
+      <file alias="efs_icon.png"     preprocess="to-pixdata">icons/efs_icon.png</file>
+      <file alias="etc_icon.png"     preprocess="to-pixdata">icons/etc_icon.png</file>
+      <file alias="feed_icon.png"    preprocess="to-pixdata">icons/feed_icon.png</file>
+      <file alias="firefox_icon.png" preprocess="to-pixdata">icons/firefox_icon.png</file>
+      <file alias="google_icon.png"  preprocess="to-pixdata">icons/google_icon.png</file>
+      <file alias="hoe_icon.png"     preprocess="to-pixdata">icons/hoe_icon.png</file>
+      <file alias="hsc_icon.png"     preprocess="to-pixdata">icons/hsc_icon.png</file>
+      <file alias="ie_icon.png"      preprocess="to-pixdata">icons/ie_icon.png</file>
+      <file alias="moon_icon.png"    preprocess="to-pixdata">icons/moon_icon.png</file>
+      <file alias="pdf_icon.png"     preprocess="to-pixdata">icons/pdf_icon.png</file>
+      <file alias="safari_icon.png"  preprocess="to-pixdata">icons/safari_icon.png</file>
+      <file alias="sky_icon.png"     preprocess="to-pixdata">icons/sky_icon.png</file>
+      <file alias="subaru_icon.png"  preprocess="to-pixdata">icons/subaru_icon.png</file>
+    </gresource>
+</gresources>

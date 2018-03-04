@@ -29,10 +29,6 @@ void ChildTerm();
 
 static void AddObj();
 static void close_child_dialog();
-static void fs_set_opeext();
-static void fs_set_list1ext();
-static void fs_set_list2ext();
-static void fs_set_list3ext();
 void cc_get_neg ();
 static void cc_std_sptype();
 static void ToggleDiffAllSky();
@@ -78,8 +74,6 @@ void show_properties();
 
 void ChangeColorAlpha();
 void ChangeFontButton();
-void ReadListGUI();
-void UpdateFileGUI();
 
 void save_prop();
 void default_prop();
@@ -576,8 +570,7 @@ GtkWidget *make_menu(typHOE *hg){
   my_signal_connect (popup_button, "activate",do_update_azel,(gpointer)hg);
 
   //// ASC
-  pixbuf = gdk_pixbuf_new_from_inline(sizeof(icon_feed), icon_feed, 
-				      FALSE, NULL);
+  pixbuf = gdk_pixbuf_new_from_resource ("/icons/feed_icon.png", NULL);
   pixbuf2=gdk_pixbuf_scale_simple(pixbuf,
 				  16,16,GDK_INTERP_BILINEAR);
   image=gtk_image_new_from_pixbuf (pixbuf2);
@@ -763,49 +756,6 @@ static void close_child_dialog(GtkWidget *w, GtkWidget *dialog)
   flagChildDialog=FALSE;
 }
 
-static void fs_set_opeext (GtkWidget *widget, gpointer gdata)
-{
-  GtkWidget *fdialog;
-
-  fdialog=(GtkWidget *)gdata;
-  
-  gtk_file_selection_complete (GTK_FILE_SELECTION (fdialog), 
-				   "*." OPE_EXTENSION);
-}
-
-static void fs_set_list1ext (GtkWidget *widget, gpointer gdata)
-{
-  GtkWidget *fdialog;
-
-  fdialog=(GtkWidget *)gdata;
-  
-  gtk_file_selection_complete (GTK_FILE_SELECTION (fdialog), 
-				   "*." LIST1_EXTENSION);
-}
-
-
-static void fs_set_list2ext (GtkWidget *widget, gpointer gdata)
-{
-  GtkWidget *fdialog;
-
-  fdialog=(GtkWidget *)gdata;
-  
-  gtk_file_selection_complete (GTK_FILE_SELECTION (fdialog), 
-				   "*." LIST2_EXTENSION);
-}
-
-
-static void fs_set_list3ext (GtkWidget *widget, gpointer gdata)
-{
-  GtkWidget *fdialog;
-
-  fdialog=(GtkWidget *)gdata;
-  
-  gtk_file_selection_complete (GTK_FILE_SELECTION (fdialog), 
-				   "*." LIST3_EXTENSION);
-}
-
-
 void cc_get_toggle (GtkWidget * widget, gboolean * gdata)
 {
   *gdata=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
@@ -813,12 +763,12 @@ void cc_get_toggle (GtkWidget * widget, gboolean * gdata)
 
 void cc_get_adj (GtkWidget *widget, gint * gdata)
 {
-  *gdata=GTK_ADJUSTMENT(widget)->value;
+  *gdata=(gint)gtk_adjustment_get_value(GTK_ADJUSTMENT(widget));
 }
 
 void cc_get_adj_double (GtkWidget *widget, gdouble * gdata)
 {
-  *gdata=GTK_ADJUSTMENT(widget)->value;
+  *gdata=gtk_adjustment_get_value(GTK_ADJUSTMENT(widget));
 }
 
 void cc_get_entry (GtkWidget *widget, gchar **gdata)
@@ -887,7 +837,7 @@ static void ToggleDiffAllSky (GtkWidget *widget,  gpointer * gdata)
   typHOE *hg;
   hg=(typHOE *)gdata;
 
-  if(GTK_CHECK_MENU_ITEM(widget)->active){
+  if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget))){
     hg->allsky_diff_flag=TRUE;
   }
   else{
@@ -2316,7 +2266,7 @@ void ver_txt_parse(typHOE *hg) {
 
     hbox = gtk_hbox_new(FALSE,2);
     gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
-    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		       hbox,FALSE, FALSE, 0);
     
     pixmap=gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION,
@@ -3306,11 +3256,10 @@ void show_version (GtkWidget *widget, gpointer gdata)
 
   hbox = gtk_hbox_new(FALSE,2);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox,FALSE, FALSE, 0);
 
-  icon = gdk_pixbuf_new_from_inline(sizeof(icon_subaru), icon_subaru, 
-				    FALSE, NULL);
+  icon = gdk_pixbuf_new_from_resource ("/icons/subaru_icon.png", NULL);
   pixmap = gtk_image_new_from_pixbuf(icon);
   g_object_unref(icon);
 
@@ -3434,7 +3383,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
 				 GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledwin),
 				      GTK_SHADOW_IN);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     scrolledwin, TRUE, TRUE, 0);
   gtk_widget_set_size_request (scrolledwin, 400, 250);
   
@@ -3521,7 +3470,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
 
 
   button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_child_dialog, 
@@ -3553,11 +3502,10 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     table,FALSE, FALSE, 0);
 
-  icon = gdk_pixbuf_new_from_inline(sizeof(icon_feed), icon_feed, 
-				      FALSE, NULL);
+  icon = gdk_pixbuf_new_from_resource ("/icons/feed_icon.png", NULL);
   pixbuf=gdk_pixbuf_scale_simple(icon, 16,16,GDK_INTERP_BILINEAR);
   pixmap=gtk_image_new_from_pixbuf (pixbuf);
   g_object_unref(G_OBJECT(icon));
@@ -3594,8 +3542,7 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 2, 3,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
-  icon = gdk_pixbuf_new_from_inline(sizeof(icon_subaru), icon_subaru, 
-				    FALSE, NULL);
+  icon = gdk_pixbuf_new_from_resource ("/icons/subaru_icon.png", NULL);
   pixbuf=gdk_pixbuf_scale_simple(icon, 16,16,GDK_INTERP_BILINEAR);
   pixmap=gtk_image_new_from_pixbuf (pixbuf);
   g_object_unref(G_OBJECT(icon));
@@ -3679,7 +3626,7 @@ static void show_help (GtkWidget *widget, gpointer gdata)
 
 
   button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_child_dialog, 
@@ -3735,7 +3682,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
   my_signal_connect(dialog,"delete-event",close_disp_para,GTK_WIDGET(dialog));
 
   frame = gtk_frame_new ("Params for Making Differential Images");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   
@@ -3854,7 +3801,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 
 
   frame = gtk_frame_new ("Params for Clouds Detection");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   
@@ -3910,21 +3857,21 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 
 
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
 
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
 
   button=gtkut_button_new_from_stock("Remake Images",GTK_STOCK_OK);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    change_disp_para, 
@@ -4035,7 +3982,7 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
   my_signal_connect(dialog,"delete-event", close_disp_para, (gpointer)cdata);
 
   table = gtk_table_new(4,2,FALSE);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     table,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 5);
@@ -4102,21 +4049,21 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
 
 
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
 
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
 
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    change_disp_para, 
@@ -4190,7 +4137,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
   my_signal_connect(dialog,"delete-event",close_disp_para,GTK_WIDGET(dialog));
 
   frame = gtk_frame_new ("Sky Area");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   
@@ -4242,7 +4189,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 		     &tmp_ddec);
 
   frame = gtk_frame_new ("Standard Star Locator");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   
@@ -4468,7 +4415,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 
 
   frame = gtk_frame_new ("Rapid Rotators for High Dispersion Spectroscopy");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   
@@ -4569,7 +4516,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
   }
 
   frame = gtk_frame_new ("Mid-IR Standard for COMICS");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   
@@ -4624,21 +4571,21 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 
 
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
 
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
 
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    change_disp_para, 
@@ -4772,7 +4719,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     table,FALSE, FALSE, 0);
 
   label = gtk_label_new ("Subaru Instrument");
@@ -4895,13 +4842,13 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
 		     &hg->trdb_smoka_date);
 
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    ok_trdb_smoka, (gpointer)hg);
@@ -4979,7 +4926,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     table,FALSE, FALSE, 0);
 
   rb[0]=gtk_radio_button_new_with_label(NULL, "Imaging");
@@ -5130,13 +5077,13 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
 		     &hg->trdb_hst_date);
 
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    ok_trdb_hst, (gpointer)hg);
@@ -5228,7 +5175,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     table,FALSE, FALSE, 0);
 
   rb[0]=gtk_radio_button_new_with_label(NULL, "Imaging");
@@ -5536,13 +5483,13 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
 		     &hg->trdb_eso_eddate);
 
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    ok_trdb_eso, (gpointer)hg);
@@ -5634,7 +5581,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     table,FALSE, FALSE, 0);
 
   label = gtk_label_new ("Gemini Instrument");
@@ -5734,13 +5681,13 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
 		     &hg->trdb_gemini_date);
 
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    ok_trdb_gemini, (gpointer)hg);
@@ -5910,7 +5857,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect(dialog,"delete-event",close_disp_para,GTK_WIDGET(dialog));
 
   hbox1 = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox1,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox1), 0);
 
@@ -5970,7 +5917,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (rb[7], "toggled", radio_fcdb, (gpointer)hg);
 
   hbox1 = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox1,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox1), 0);
 
@@ -6034,7 +5981,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   cdata->fcdb_type=hg->fcdb_type;
 
   frame = gtk_frame_new ("Query parameters");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
@@ -7038,7 +6985,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 		   GTK_FILL,GTK_SHRINK,0,0);
 
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
@@ -7483,14 +7430,14 @@ void create_fcdb_para_dialog (typHOE *hg)
 
 
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
 
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    change_fcdb_para, 
@@ -8739,7 +8686,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   all_note = gtk_notebook_new ();
   gtk_notebook_set_tab_pos (GTK_NOTEBOOK (all_note), GTK_POS_TOP);
   gtk_notebook_set_scrollable (GTK_NOTEBOOK (all_note), TRUE);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     all_note,FALSE, FALSE, 0);
 
 
@@ -8925,8 +8872,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   {  
     GdkPixbuf *icon;
 
-    icon = gdk_pixbuf_new_from_inline(sizeof(google_icon), google_icon, 
-				      FALSE, NULL);
+    icon = gdk_pixbuf_new_from_resource ("/icons/google_icon.png", NULL);
     button=gtkut_button_new_from_pixbuf("Check Position on Google Map", icon);
     g_object_unref(icon);
   }
@@ -10982,21 +10928,21 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
 
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_prop, 
 		    (gpointer)cdata);
 
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_prop, 
 		    GTK_WIDGET(dialog));
 
   button=gtkut_button_new_from_stock("Save",GTK_STOCK_SAVE);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    save_prop, 
@@ -11308,8 +11254,8 @@ void do_plot(GtkWidget *widget, gpointer gdata){
   hg=(typHOE *)gdata;
 
   if(flagPlot){
-    gdk_window_deiconify(hg->plot_main->window);
-    gdk_window_raise(hg->plot_main->window);
+    gdk_window_deiconify(gtk_widget_get_window(hg->plot_main));
+    gdk_window_raise(gtk_widget_get_window(hg->plot_main));
     return;
   }
   else{
@@ -11335,40 +11281,6 @@ void ChangeFontButton(GtkWidget *w, gchar **gdata)
 
   *gdata
     =g_strdup(gtk_font_button_get_font_name(GTK_FONT_BUTTON(w)));
-}
-
-
-void ReadListGUI(GtkWidget *w, gpointer gdata)
-{ 
-  confArg *cdata;
-
-  cdata=(confArg *)gdata;
-
-  if(access(gtk_file_selection_get_filename(cdata->fs),F_OK)==0){
-    cdata->filename=g_strdup(gtk_file_selection_get_filename(cdata->fs));
-    cdata->update=TRUE;
-  }
-  else{
-    g_print ("Cannot Open %s\n",
-	     gtk_file_selection_get_filename (cdata->fs));
-  }
-  
-  gtk_main_quit();
-  gtk_widget_destroy(GTK_WIDGET(cdata->fs));
-}
-
-
-void UpdateFileGUI(GtkWidget *w, gpointer gdata)
-{ 
-  confArg *cdata;
-
-  cdata=(confArg *)gdata;
-
-  cdata->filename=g_strdup(gtk_file_selection_get_filename(cdata->fs));
-  cdata->update=TRUE;
-  
-  gtk_main_quit();
-  gtk_widget_destroy(GTK_WIDGET(cdata->fs));
 }
 
 
@@ -11678,9 +11590,6 @@ void param_init(typHOE *hg){
 #ifdef USE_XMLRPC
   hg->pixmap_skymonbg=NULL;
 #endif
-  hg->pixmap_fc=NULL;
-  hg->pixmap_plot=NULL;
-  hg->pixmap_adc=NULL;
   hg->allsky_flag=FALSE;
   hg->allsky_diff_flag=TRUE;
   hg->allsky_diff_base=ALLSKY_DIFF_BASE;
@@ -16113,7 +16022,7 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
     gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
     
     table = gtk_table_new(3, hg->max_rope, FALSE);
-    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		       table,FALSE, FALSE, 0);
     gtk_container_set_border_width (GTK_CONTAINER (table), 5);
     gtk_table_set_row_spacings (GTK_TABLE (table), 5);
@@ -16240,7 +16149,7 @@ void popup_message(gchar* stock_id, gint delay, ...){
   my_signal_connect(dialog,"destroy",destroy_popup, timer);
 
   hbox=gtk_hbox_new(FALSE,5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hbox, FALSE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hbox, FALSE,FALSE,0);
 
   //// File
   pixmap=gtk_image_new_from_stock (stock_id,
@@ -16875,8 +16784,7 @@ int main(int argc, char* argv[]){
   gdk_rgb_init();
 
 #ifndef USE_WIN32  
-  icon = gdk_pixbuf_new_from_inline(sizeof(icon_subaru), icon_subaru, 
-				    FALSE, NULL);
+  icon = gdk_pixbuf_new_from_resource ("/icons/subaru_icon.png", NULL);
   gtk_window_set_default_icon(icon);
 #endif
 

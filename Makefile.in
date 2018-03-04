@@ -110,7 +110,7 @@ am_hskymon_OBJECTS = main.$(OBJEXT) calcpa.$(OBJEXT) fc.$(OBJEXT) \
 	dynamical_time.$(OBJEXT) http-client.$(OBJEXT) \
 	configfile.$(OBJEXT) skymon.$(OBJEXT) treeview.$(OBJEXT) \
 	telstat.$(OBJEXT) remoteObjects.$(OBJEXT) votable.$(OBJEXT) \
-	json_parse.$(OBJEXT)
+	json_parse.$(OBJEXT) resources.$(OBJEXT)
 hskymon_OBJECTS = $(am_hskymon_OBJECTS)
 hskymon_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
@@ -284,7 +284,8 @@ AWK = @AWK@
 BUILD_REVISION = @BUILD_REVISION@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
-CFLAGS = @CFLAGS@
+CFLAGS = @CFLAGS@ -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED \
+	-DGSEAL_ENABLE
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -424,15 +425,17 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = . libnova std_data debian sample
 hskymon_SOURCES = \
-	 main.c calcpa.c fc.c fc_output.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c json_parse.c votable.h remoteObjects.h configfile.h hskymon_icon.h google_icon.h esostd.h ssl.h gen2.h post.h post_sdss.h post_lamost.h post_smoka.h post_hst.h post_eso.h get_gemini.h
+	 main.c calcpa.c fc.c fc_output.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c json_parse.c resources.c votable.h remoteObjects.h configfile.h esostd.h ssl.h gen2.h post.h post_sdss.h post_lamost.h post_smoka.h post_hst.h post_eso.h get_gemini.h resources.h
 
-CLEANFILES = *~ libnova/*~ std_data/*~ debian/*~ sample/*~
-DISTCLEANFILES = .deps/*.P
+CLEANFILES = *~ libnova/*~ std_data/*~ debian/*~ sample/*~ icons/*~ \
+	$(BUILT_SOURCES)
+DISTCLEANFILES = 
 AM_CPPFLAGS = -DLOCALEDIR=\""$(localedir)"\"
 @HAVE_WINDRES_FALSE@HSKYMON_RES = 
 @HAVE_WINDRES_TRUE@HSKYMON_RES = hskymon.res
 EXTRA_DIST = autogen.sh\
 	     README.jp\
+	     gresource.xml\
              subaru_logo.ico\
              hskymon.ico\
              hskymon_res.rc.in\
@@ -451,13 +454,15 @@ EXTRA_DIST = autogen.sh\
              ar_d2.xpm\
              ar_d3.xpm
 
+BUILT_SOURCES = resources.c resources.h
 man_MANS = hskymon.1
+resource_files = $(shell $(GLIB_COMPILE_RESOURCES) --sourcedir=$(srcdir) --generate-dependencies $(srcdir)/gresource.xml)
 INCLUDES = @GTK_CFLAGS@ $(GTKMAC_CFLAGS) $(XMLRPC_CFLAGS) $(XML_CPPFLAGS) $(DISABLE_DEPRECATED)
 LDADD = @GTK_LIBS@ $(GTKMAC_LIBS) $(WINMM_LIBS) $(WINSOCK_LIBS) $(XMLRPC_LIBS) $(XML_LIBS) $(HSKYMON_RES)
 GZIP_ENV = 
 BZIP2_ENV = 
 TAR = tar
-all: config.h
+all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
@@ -595,6 +600,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pluto.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/precession.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/remoteObjects.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resources.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rise_set.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/saturn.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sidereal_time.Po@am__quote@
@@ -977,14 +983,16 @@ distcleancheck: distclean
 	       $(distcleancheck_listfiles) ; \
 	       exit 1; } >&2
 check-am: all-am
-check: check-recursive
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-recursive
 all-am: Makefile $(PROGRAMS) $(MANS) config.h
 installdirs: installdirs-recursive
 installdirs-am:
 	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-recursive
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
 uninstall: uninstall-recursive
@@ -1016,6 +1024,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-recursive
 
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
@@ -1091,7 +1100,8 @@ uninstall-am: uninstall-binPROGRAMS uninstall-man
 
 uninstall-man: uninstall-man1
 
-.MAKE: $(am__recursive_targets) all install-am install-strip
+.MAKE: $(am__recursive_targets) all check install install-am \
+	install-strip
 
 .PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am \
 	am--refresh check check-am clean clean-binPROGRAMS \
@@ -1114,6 +1124,12 @@ uninstall-man: uninstall-man1
 
 @HAVE_WINDRES_TRUE@hskymon.res: hskymon_res.rc
 @HAVE_WINDRES_TRUE@	$(WINDRES) $< -O coff -o $@
+
+resources.h:
+	$(AM_V_GEN) $(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=$(srcdir) --generate-header $(srcdir)/gresource.xml
+
+resources.c: gresource.xml $(resource_files) resources.h
+	$(AM_V_GEN) $(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=$(srcdir) --generate-source $(srcdir)/gresource.xml
 
 #ACLOCAL_AMFLAGS = -I m4
 

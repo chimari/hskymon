@@ -79,6 +79,9 @@ AM_PATH_GLIB_2_0(2.8.0,, AC_MSG_ERROR([glib-2.x is required]), gthread gobject)
 AM_PATH_GTK_2_0(2.8.0,, AC_MSG_ERROR([gtk+-2.x is required]), gthread gobject)
 AC_DEFINE([USE_GTK2],[],[Use Gtk+2.x instead of Gtk+1.2])
 
+dnl gresource
+AC_PATH_PROG([GLIB_COMPILE_RESOURCES], [glib-compile-resources])
+
 dnl GtkMACIntegration
  AC_ARG_WITH(gtkmac,
  		 AC_HELP_STRING([--with-gtkmac],

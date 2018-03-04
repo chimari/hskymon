@@ -18,10 +18,6 @@
 #include<sys/time.h>
 #endif
 
-
-
-
-
 void draw_skymon_pixmap();
 static gboolean configure_skymon();
 static gboolean expose_skymon();
@@ -270,8 +266,7 @@ void create_skymon_dialog(typHOE *hg)
 
   hbox1 = gtk_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox1);
-  icon = gdk_pixbuf_new_from_inline(sizeof(icon_feed), icon_feed, 
-				    FALSE, NULL);
+  icon = gdk_pixbuf_new_from_resource ("/icons/feed_icon.png", NULL);
 
   button=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
@@ -313,9 +308,7 @@ void create_skymon_dialog(typHOE *hg)
 #endif
 
 #ifdef USE_XMLRPC
-  icon = gdk_pixbuf_new_from_inline(sizeof(icon_subaru), icon_subaru, 
-				    FALSE, NULL);
-
+  icon = gdk_pixbuf_new_from_resource ("/icons/subaru_icon.png", NULL);
   hg->skymon_button_telstat=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_button_telstat), 0);
@@ -468,16 +461,22 @@ void create_skymon_dialog(typHOE *hg)
 
 void draw_skymon_pixmap(GtkWidget *widget, typHOE *hg){
   if(hg->pixmap_skymon){
-    gdk_window_set_back_pixmap(widget->window,
+    GtkAllocation *allocation=g_new(GtkAllocation, 1);
+    GtkStyle *style=gtk_widget_get_style(widget);
+    gtk_widget_get_allocation(widget,allocation);
+    
+    gdk_window_set_back_pixmap(gtk_widget_get_window(widget),
 			       hg->pixmap_skymon,
 			       FALSE);
     
-    gdk_draw_drawable(widget->window,
-		      widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
+    gdk_draw_drawable(gtk_widget_get_window(widget),
+		      style->fg_gc[gtk_widget_get_state(widget)],
 		      hg->pixmap_skymon,
 		      0,0,0,0,
-		      hg->skymon_dw->allocation.width,
-		      hg->skymon_dw->allocation.height);
+		      allocation->width,
+		      allocation->height);
+
+    g_free(allocation);
   }
 }
 
@@ -548,8 +547,15 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
   skymon_debug_print("family %s  size%d\n",hg->fontfamily_all, hg->skymon_allsz);
 
   int width, height;
-  width= widget->allocation.width;
-  height= widget->allocation.height;
+  {
+    GtkAllocation *allocation=g_new(GtkAllocation, 1);
+    gtk_widget_get_allocation(widget,allocation);
+
+    width= allocation->width;
+    height=allocation->height;
+    g_free(allocation);
+  }
+
   if(width<=1){
     gtk_window_get_size(GTK_WINDOW(hg->skymon_main), &width, &height);
   }
@@ -563,7 +569,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
     hg->win_r=hg->win_cy*0.9;
   }
   
-  pixmap_skymonbk = gdk_pixmap_new(widget->window,
+  pixmap_skymonbk = gdk_pixmap_new(gtk_widget_get_window(widget),
 				   width,
 				   height,
 				   -1);
@@ -1846,30 +1852,34 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 
   cairo_destroy(cr);
 
-  if(hg->pixmap_skymon) g_object_unref(G_OBJECT(hg->pixmap_skymon));
-  hg->pixmap_skymon = gdk_pixmap_new(widget->window,
-				     width,
-				     height,
-				     -1);
-  gdk_draw_drawable(hg->pixmap_skymon,
-		    widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-		    pixmap_skymonbk,
-		    0,0,0,0,
-		    width,
-		    height);
-#ifdef USE_XMLRPC
-  if(hg->pixmap_skymonbg) g_object_unref(G_OBJECT(hg->pixmap_skymonbg));
-  hg->pixmap_skymonbg = gdk_pixmap_new(widget->window,
+  {
+    GtkStyle *style=gtk_widget_get_style(widget);
+
+    if(hg->pixmap_skymon) g_object_unref(G_OBJECT(hg->pixmap_skymon));
+    hg->pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
 				       width,
 				       height,
 				       -1);
-  gdk_draw_drawable(hg->pixmap_skymonbg,
-		    widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-		    pixmap_skymonbk,
-		    0,0,0,0,
-		    width,
-		    height);
+    gdk_draw_drawable(hg->pixmap_skymon,
+		      style->fg_gc[gtk_widget_get_state(widget)],
+		      pixmap_skymonbk,
+		      0,0,0,0,
+		      width,
+		      height);
+#ifdef USE_XMLRPC
+    if(hg->pixmap_skymonbg) g_object_unref(G_OBJECT(hg->pixmap_skymonbg));
+    hg->pixmap_skymonbg = gdk_pixmap_new(gtk_widget_get_window(widget),
+					 width,
+					 height,
+					 -1);
+    gdk_draw_drawable(hg->pixmap_skymonbg,
+		      style->fg_gc[gtk_widget_get_state(widget)],
+		      pixmap_skymonbk,
+		      0,0,0,0,
+		      width,
+		      height);
 #endif
+  }
 
   g_object_unref(G_OBJECT(pixmap_skymonbk));
   gtk_widget_show_all(widget);
@@ -1932,14 +1942,21 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
   skymon_debug_print("Starting draw_skymon_cairo\n");
 
   int width, height;
-  width= widget->allocation.width;
-  height= widget->allocation.height;
+  {
+    GtkAllocation *allocation=g_new(GtkAllocation, 1);
+    gtk_widget_get_allocation(widget,allocation);
+
+    width= allocation->width;
+    height=allocation->height;
+    g_free(allocation);
+  }
+
   if(width<=1){
     gtk_window_get_size(GTK_WINDOW(hg->skymon_main), &width, &height);
   }
 
   if(hg->skymon_mode==SKYMON_CUR){
-    pixmap_skymon_with_telstat = gdk_pixmap_new(widget->window,
+    pixmap_skymon_with_telstat = gdk_pixmap_new(gtk_widget_get_window(widget),
 						width,
 						height,
 						-1);
@@ -1947,7 +1964,7 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
 
     if(hg->pixmap_skymonbg)
       gdk_draw_drawable(pixmap_skymon_with_telstat,
-			widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
+			widget->style->fg_gc[gtk_widget_get_state(widget)],
 			hg->pixmap_skymonbg,
 			0,0,0,0,
 			width,
@@ -2006,13 +2023,13 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
     cairo_destroy(cr);
 
     if(hg->pixmap_skymon) g_object_unref(G_OBJECT(hg->pixmap_skymon));
-    hg->pixmap_skymon = gdk_pixmap_new(widget->window,
+    hg->pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
 				       width,
 				       height,
 				       -1);
 					  
     gdk_draw_drawable(hg->pixmap_skymon,
-		      widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
+		      widget->style->fg_gc[gtk_widget_get_state(widget)],
 		      pixmap_skymon_with_telstat,
 		      0,0,0,0,
 		      width,
@@ -2022,12 +2039,12 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
   }
   else{
     if(hg->pixmap_skymon) g_object_unref(G_OBJECT(hg->pixmap_skymon));
-    hg->pixmap_skymon = gdk_pixmap_new(widget->window,
+    hg->pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
 				       width,
 				       height,
 				       -1);
     gdk_draw_drawable(hg->pixmap_skymon,
-		      widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
+		      widget->style->fg_gc[gtk_widget_get_state(widget)],
 		      hg->pixmap_skymonbg,
 		      0,0,0,0,
 		      width,
@@ -3847,7 +3864,7 @@ static gint button_signal(GtkWidget *widget,
   hg=(typHOE *)userdata;
 
   if ( event->button==1 ) {
-    gdk_window_get_pointer(widget->window,&x,&y,NULL);
+    gdk_window_get_pointer(gtk_widget_get_window(widget),&x,&y,NULL);
 
     if((x-hg->win_cx)*(x-hg->win_cx)+(y-hg->win_cy)*(y-hg->win_cy)<
        (hg->win_r*hg->win_r)){

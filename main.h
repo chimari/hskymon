@@ -43,8 +43,6 @@
 #endif
 
 #include "libnova/libnova.h"
-#include"hskymon_icon.h"
-#include"google_icon.h"
 
 #include "gen2.h"
 
@@ -1915,9 +1913,6 @@ struct _typHOE{
 #ifdef USE_XMLRPC
   GdkPixmap *pixmap_skymonbg;
 #endif
-  GdkPixmap *pixmap_fc;
-  GdkPixmap *pixmap_plot;
-  GdkPixmap *pixmap_adc;
   gboolean allsky_flag;
   gboolean allsky_diff_flag;
   gchar *allsky_name;
@@ -2058,13 +2053,6 @@ typedef struct{
   struct ln_dms *latitude;
   gchar *www_com;
 }confPos;
-
-// Struct for Callback
-typedef struct{
-  GtkFileSelection *fs;
-  gchar *filename;
-  gboolean update;
-}confArg;
 
 // Struct for Callback
 typedef struct{

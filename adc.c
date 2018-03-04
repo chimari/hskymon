@@ -12,9 +12,6 @@
 void adc_item();
 void cc_get_adc_inst();
 void create_adc_dialog();
-void draw_adc_pixmap();
-static gboolean configure_adc();
-static gboolean expose_adc();
 void close_adc();
 static void refresh_adc();
 gboolean update_adc();
@@ -82,9 +79,9 @@ void cc_get_adc_inst (GtkWidget *widget,  gpointer * gdata)
 }
 void do_adc(typHOE *hg){
   if(flagADC){
-    gdk_window_deiconify(hg->adc_main->window);
-    gdk_window_raise(hg->adc_main->window);
-    draw_adc_cairo(hg->adc_dw,(gpointer)hg);
+    gdk_window_deiconify(gtk_widget_get_window(hg->adc_main));
+    gdk_window_raise(gtk_widget_get_window(hg->adc_main));
+    draw_adc_cairo(hg->adc_dw,NULL,(gpointer)hg);
     return;
   }
   else{
@@ -343,13 +340,10 @@ void create_adc_dialog(typHOE *hg)
   gtk_widget_show(hg->adc_dw);
 
   gtk_widget_set_events(hg->adc_dw, GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK);
-  my_signal_connect(hg->adc_dw, 
-		    "configure-event", 
-		    configure_adc,
-		    (gpointer)hg);
+
   my_signal_connect(hg->adc_dw, 
 		    "expose-event", 
-		    expose_adc,
+		    draw_adc_cairo,
 		    (gpointer)hg);
 
   gtk_widget_show_all(hg->adc_main);
@@ -358,52 +352,10 @@ void create_adc_dialog(typHOE *hg)
 			      (GSourceFunc)update_adc,
 			      (gpointer)hg);
 
-  gdk_window_raise(hg->adc_main->window);
-  draw_adc_cairo(hg->adc_dw,(gpointer)hg);
+  gdk_window_raise(gtk_widget_get_window(hg->adc_main));
+  draw_adc_cairo(hg->adc_dw,NULL,(gpointer)hg);
 }
 
-
-void draw_adc_pixmap(GtkWidget *widget, typHOE *hg){
-  gdk_window_set_back_pixmap(widget->window,
-			     hg->pixmap_adc,
-			     FALSE);
-      
-  gdk_draw_drawable(widget->window,
-		    widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-		    hg->pixmap_adc,
-		    0,0,0,0,
-		    hg->adc_dw->allocation.width,
-		    hg->adc_dw->allocation.height);
-}
-
-static gboolean
-configure_adc (GtkWidget *widget, GdkEventConfigure *event, 
-	       gpointer data)
-{
-  if(!flagADC) return(TRUE);
-
-  typHOE *hg = (typHOE *)data;
-  if(!hg->pixmap_adc) return(TRUE);
-
-  draw_adc_cairo(hg->adc_dw,(gpointer)hg);
-
-  return(TRUE);
-}
-
-static gboolean
-expose_adc (GtkWidget *widget, GdkEventExpose *event, 
-	    gpointer data)
-{
-  if(!flagADC) return(TRUE);
-  if(event->count!=0) return(TRUE);
-
-  typHOE *hg = (typHOE *)data;
-  if(!hg->pixmap_adc) return(TRUE);
-
-  draw_adc_pixmap(hg->adc_dw,hg);
-
-  return(TRUE);
-}
 
 void close_adc(GtkWidget *w, gpointer gdata)
 {
@@ -420,13 +372,15 @@ void close_adc(GtkWidget *w, gpointer gdata)
 }
 
 
-gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
+gboolean draw_adc_cairo(GtkWidget *widget, 
+			GdkEventExpose *event, 
+			gpointer userdata){
   cairo_t *cr;
   cairo_surface_t *surface;
   typHOE *hg;
   cairo_text_extents_t extents;
   double x,y;
-  GdkPixmap *pixmap_adcbk,*pixmap_adcbk2;
+  GdkPixmap *pixmap_adcbk;
   int width, height;
 
   gchar *tmp;
@@ -442,9 +396,15 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
 
   hg=(typHOE *)userdata;
   
+  {
+    GtkAllocation *allocation=g_new(GtkAllocation, 1);
+    gtk_widget_get_allocation(widget,allocation);
 
-  width= widget->allocation.width;
-  height= widget->allocation.height;
+    width= allocation->width;
+    height=allocation->height;
+    g_free(allocation);
+  }
+
   if(width<=1){
     gtk_window_get_size(GTK_WINDOW(hg->adc_main), &width, &height);
   }
@@ -457,13 +417,13 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
   }
   scale=hg->adc_size/size;
   
-  pixmap_adcbk = gdk_pixmap_new(widget->window,
-				size,
-				size,
+  pixmap_adcbk = gdk_pixmap_new(gtk_widget_get_window(widget),
+				width,
+				height,
 				-1);
   
   cr = gdk_cairo_create(pixmap_adcbk);
-
+  
   cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
 
   
@@ -473,6 +433,12 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
   
   cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
 
+  if(width>height){
+    cairo_translate(cr,(width-size)/2,0);
+  }
+  else{
+    cairo_translate(cr,0,(height-size)/2);
+  }
 
   cairo_rectangle(cr, 0,0,
 		  size,
@@ -862,58 +828,20 @@ gboolean draw_adc_cairo(GtkWidget *widget, gpointer userdata){
     cairo_restore(cr);
   }
     
-
   cairo_destroy(cr);
 
-  pixmap_adcbk2 = gdk_pixmap_new(widget->window,
-				 width,
-				 height,
-				 -1);
-  cr = gdk_cairo_create(pixmap_adcbk2);
+  {
+    GtkStyle *style=gtk_widget_get_style(widget);
 
-  cairo_rectangle(cr, 0,0,
-		  width,
-		  height);
-  cairo_set_source_rgba(cr, 0.8, 0.8, 0.8, 1.0);
-  cairo_fill(cr);
-
-  if(width>height){
-    gdk_draw_drawable(pixmap_adcbk2,
-		      widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
+    gdk_draw_drawable(gtk_widget_get_window(widget),
+		      style->fg_gc[gtk_widget_get_state(widget)],
 		      pixmap_adcbk,
-		      0,0,(width-height)/2,0,
-		      size,
-		      size);
-  }
-  else{
-    gdk_draw_drawable(pixmap_adcbk2,
-		      widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-		      pixmap_adcbk,
-		      0,0,0,(height-width)/2,
-		      size,
-		      size);
-  }
-
-  cairo_destroy(cr);
-  g_object_unref(G_OBJECT(pixmap_adcbk));
-  
-  if(hg->pixmap_adc) g_object_unref(G_OBJECT(hg->pixmap_adc));
-  hg->pixmap_adc = gdk_pixmap_new(widget->window,
-				  width,
-				  height,
-				  -1);
-  
-  gdk_draw_drawable(hg->pixmap_adc,
-		    widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-		      pixmap_adcbk2,
 		      0,0,0,0,
 		      width,
 		      height);
+    g_object_unref(G_OBJECT(pixmap_adcbk));
+  }
 
-  g_object_unref(G_OBJECT(pixmap_adcbk2));
-  gtk_widget_show_all(widget);
-  draw_adc_pixmap(widget,hg);
-  gtk_widget_queue_draw(widget);
 
   return TRUE;
 
@@ -931,7 +859,7 @@ static void refresh_adc (GtkWidget *widget, gpointer data)
     else{
       calcpa2_main(hg);
     }
-    draw_adc_cairo(hg->adc_dw,(gpointer)hg);
+    draw_adc_cairo(hg->adc_dw,NULL,(gpointer)hg);
   }
 }
 
@@ -939,7 +867,7 @@ gboolean update_adc (gpointer data){
   typHOE *hg = (typHOE *)data;
 
   if(flagADC){
-    draw_adc_cairo(hg->adc_dw,(gpointer)hg);
+    draw_adc_cairo(hg->adc_dw,NULL,(gpointer)hg);
   }
 
   return(TRUE);

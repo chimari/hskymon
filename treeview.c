@@ -2306,7 +2306,7 @@ static trdb_dbtab (GtkWidget *widget, gpointer data)
     if(flagFC) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_button),
 					    TRUE);
     hg->fcdb_flag=TRUE;
-    if(flagFC)  draw_fc_cairo(hg->fc_dw, hg);
+    if(flagFC)  draw_fc_cairo(hg->fc_dw, NULL,(gpointer)hg);
   }
 }
 
@@ -3193,11 +3193,11 @@ focus_item (GtkWidget *widget, gpointer data)
   draw_skymon(hg->skymon_dw,hg, FALSE);
 
   if(flagPlot){
-    draw_plot_cairo(hg->plot_dw,(gpointer)hg);
+    draw_plot_cairo(hg->plot_dw,NULL,(gpointer)hg);
   }
 
   if(flagADC){
-    draw_adc_cairo(hg->adc_dw,(gpointer)hg);
+    draw_adc_cairo(hg->adc_dw,NULL,(gpointer)hg);
   }
 }
 
@@ -3247,7 +3247,7 @@ static void fcdb_focus_item (GtkWidget *widget, gpointer data)
       
       gtk_tree_path_free (path);
       
-      if(flagFC)  draw_fc_cairo(hg->fc_dw, hg);
+      if(flagFC)  draw_fc_cairo(hg->fc_dw, NULL,(gpointer)hg);
     }
 }
 
@@ -3298,11 +3298,11 @@ static void trdb_focus_item (GtkWidget *widget, gpointer data)
     draw_skymon(hg->skymon_dw,hg, FALSE);
 
     if(flagPlot){
-      draw_plot_cairo(hg->plot_dw,(gpointer)hg);
+      draw_plot_cairo(hg->plot_dw,NULL,(gpointer)hg);
     }
 
     if(flagADC){
-      draw_adc_cairo(hg->adc_dw,(gpointer)hg);
+      draw_adc_cairo(hg->adc_dw,NULL,(gpointer)hg);
     }
   }
 }
@@ -6180,19 +6180,15 @@ do_editable_cells (typHOE *hg)
 			 &hg->wwwdb_mode);
 
 #ifdef USE_OSX
-      icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
-					FALSE, NULL);
+      icon = gdk_pixbuf_new_from_resource ("/icons/safari_icon.png", NULL);
 #elif defined(USE_WIN32)
-      icon = gdk_pixbuf_new_from_inline(sizeof(ie_icon), ie_icon, 
-					FALSE, NULL);
+      icon = gdk_pixbuf_new_from_resource ("/icons/ie_icon.png", NULL);
 #else
       if(strcmp(hg->www_com,"firefox")==0){
-	icon = gdk_pixbuf_new_from_inline(sizeof(firefox_icon), firefox_icon, 
-					  FALSE, NULL);
+	icon = gdk_pixbuf_new_from_resource ("/icons/firefox_icon.png", NULL);
       }
       else{
-	icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
-					  FALSE, NULL);
+	icon = gdk_pixbuf_new_from_resource ("/icons/chrome_icon.png", NULL);
       }
 #endif
       button=gtkut_button_new_from_pixbuf("Go", icon);
@@ -6355,19 +6351,15 @@ do_editable_cells (typHOE *hg)
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
 #ifdef USE_OSX
-    icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
-				      FALSE, NULL);
+    icon = gdk_pixbuf_new_from_resource ("/icons/safari_icon.png", NULL);
 #elif defined(USE_WIN32)
-    icon = gdk_pixbuf_new_from_inline(sizeof(ie_icon), ie_icon, 
-				      FALSE, NULL);
+    icon = gdk_pixbuf_new_from_resource ("/icons/ie_icon.png", NULL);
 #else
     if(strcmp(hg->www_com,"firefox")==0){
-      icon = gdk_pixbuf_new_from_inline(sizeof(firefox_icon), firefox_icon, 
-					FALSE, NULL);
+      icon = gdk_pixbuf_new_from_resource ("/icons/firefox_icon.png", NULL);
       }
     else{
-      icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
-					FALSE, NULL);
+      icon = gdk_pixbuf_new_from_resource ("/icons/chrome_icon.png", NULL);
     }
 #endif
     button=gtkut_button_new_from_pixbuf("Browse", icon);
@@ -6459,19 +6451,15 @@ do_editable_cells (typHOE *hg)
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
     
 #ifdef USE_OSX
-    icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
-				      FALSE, NULL);
+    icon = gdk_pixbuf_new_from_resource ("/icons/safari_icon.png", NULL);
 #elif defined(USE_WIN32)
-    icon = gdk_pixbuf_new_from_inline(sizeof(ie_icon), ie_icon, 
-				      FALSE, NULL);
+    icon = gdk_pixbuf_new_from_resource ("/icons/ie_icon.png", NULL);
 #else
     if(strcmp(hg->www_com,"firefox")==0){
-      icon = gdk_pixbuf_new_from_inline(sizeof(firefox_icon), firefox_icon, 
-					FALSE, NULL);
+      icon = gdk_pixbuf_new_from_resource ("/icons/firefox_icon.png", NULL);
     }
     else{
-      icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
-					FALSE, NULL);
+      icon = gdk_pixbuf_new_from_resource ("/icons/chrome_icon.png", NULL);
     }
 #endif
     button=gtkut_button_new_from_pixbuf("Browse", icon);
@@ -6596,19 +6584,15 @@ do_editable_cells (typHOE *hg)
 		       G_CALLBACK (trdb_dbtab), (gpointer)hg);
 
 #ifdef USE_OSX
-    icon = gdk_pixbuf_new_from_inline(sizeof(safari_icon), safari_icon, 
-				      FALSE, NULL);
+    icon = gdk_pixbuf_new_from_resource ("/icons/safari_icon.png", NULL);
 #elif defined(USE_WIN32)
-    icon = gdk_pixbuf_new_from_inline(sizeof(ie_icon), ie_icon, 
-				      FALSE, NULL);
+    icon = gdk_pixbuf_new_from_resource ("/icons/ie_icon.png", NULL);
 #else
     if(strcmp(hg->www_com,"firefox")==0){
-      icon = gdk_pixbuf_new_from_inline(sizeof(firefox_icon), firefox_icon, 
-					FALSE, NULL);
+      icon = gdk_pixbuf_new_from_resource ("/icons/firefox_icon.png", NULL);
     }
     else{
-      icon = gdk_pixbuf_new_from_inline(sizeof(chrome_icon), chrome_icon, 
-					FALSE, NULL);
+      icon = gdk_pixbuf_new_from_resource ("/icons/chrome_icon.png", NULL);
     }
 #endif
     button=gtkut_button_new_from_pixbuf("Browse", icon);
@@ -6634,7 +6618,7 @@ do_editable_cells (typHOE *hg)
   if((hg->tree_x!=-1)||(hg->tree_y!=-1))
     gtk_window_move(GTK_WINDOW(window),hg->tree_x, hg->tree_y);
 
-  if (!GTK_WIDGET_VISIBLE (window))
+  if (!gtk_widget_get_visible(window))
     gtk_widget_show_all (window);
   else
     {
@@ -6670,9 +6654,7 @@ void make_tree(GtkWidget *widget, gpointer gdata){
 
 #ifdef USE_XMLRPC
     if(!pix_lock) {
-      pixbuf = gdk_pixbuf_new_from_inline(sizeof(icon_subaru), 
-					  icon_subaru,
-					  FALSE, NULL);
+      pixbuf = gdk_pixbuf_new_from_resource ("/icons/subaru_icon.png", NULL);
       pix_lock=gdk_pixbuf_scale_simple(pixbuf,20,20,GDK_INTERP_BILINEAR);
       g_object_unref(G_OBJECT(pixbuf));
     }
@@ -6683,8 +6665,8 @@ void make_tree(GtkWidget *widget, gpointer gdata){
     
   }
   else{
-    gdk_window_deiconify(window->window);
-    gdk_window_raise(window->window);
+    gdk_window_deiconify(gtk_widget_get_window(window));
+    gdk_window_raise(gtk_widget_get_window(window));
   }
 
 }
@@ -7149,7 +7131,7 @@ void stddb_dl(typHOE *hg)
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
+  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   my_signal_connect(dialog, "delete-event", cancel_stddb, (gpointer)hg);
@@ -7160,11 +7142,11 @@ void stddb_dl(typHOE *hg)
   label=gtk_label_new("Searching standards in SIMBAD ...");
 
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
   gtk_widget_show(label);
   
   hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
   gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
 				    GTK_PROGRESS_RIGHT_TO_LEFT);
@@ -7175,11 +7157,11 @@ void stddb_dl(typHOE *hg)
   
   hg->plabel=gtk_label_new("Searching standards in SIMBAD ...");
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     hg->plabel,FALSE,FALSE,0);
   
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed", cancel_stddb, (gpointer)hg);
   
@@ -7343,7 +7325,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 
 
   hbox = gtk_hbox_new(FALSE,2);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
   
@@ -7367,11 +7349,11 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   my_signal_connect(button,"pressed", addobj_ned_query, (gpointer)hg);
 
   bar = gtk_hseparator_new();
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     bar,FALSE, FALSE, 0);
 
   hbox = gtk_hbox_new(FALSE,2);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
@@ -7381,11 +7363,11 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 
 
   bar = gtk_hseparator_new();
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     bar,FALSE, FALSE, 0);
  
   hbox = gtk_hbox_new(FALSE,2);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
@@ -7415,12 +7397,12 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   
 
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed", gtk_main_quit, NULL);
 
   button=gtkut_button_new_from_stock("Add Object",GTK_STOCK_ADD);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    ok_addobj, (gpointer)hg);
@@ -7433,8 +7415,8 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 }
 
 void raise_tree(){
-  gdk_window_deiconify(window->window);
-  gdk_window_raise(window->window);
+  gdk_window_deiconify(gtk_widget_get_window(window));
+  gdk_window_raise(gtk_widget_get_window(window));
 }
 
 

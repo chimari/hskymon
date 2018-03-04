@@ -23,9 +23,6 @@ void do_fc();
 void create_fc_dialog();
 static void close_fc();
 static void cancel_fc();
-void draw_fc_pixmap();
-static gboolean expose_draw_fc();
-static gboolean configure_draw_fc();
 static gboolean resize_draw_fc();
 static gboolean button_draw_fc();
 void rot_pa();
@@ -251,7 +248,7 @@ void fc_dl (typHOE *hg)
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
+  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   my_signal_connect(dialog,"delete-event",cancel_fc,(gpointer)hg);
@@ -432,11 +429,11 @@ void fc_dl (typHOE *hg)
     
   }
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
   gtk_widget_show(label);
   
   hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
   gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
 				    GTK_PROGRESS_RIGHT_TO_LEFT);
@@ -447,11 +444,11 @@ void fc_dl (typHOE *hg)
   
   hg->plabel=gtk_label_new("Retrieving image from website ...");
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     hg->plabel,FALSE,FALSE,0);
   
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    cancel_fc, 
@@ -489,7 +486,7 @@ gboolean progress_timeout( gpointer data ){
   glong sz;
   gchar *tmp;
 
-  if(GTK_WIDGET_REALIZED(hg->pbar)){
+  if(gtk_widget_get_realized(hg->pbar)){
 
     if(flag_getDSS){
       sz=get_file_size(hg->dss_file);
@@ -583,7 +580,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 		    GTK_WIDGET(dialog));
 
   hbox = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox,FALSE, FALSE, 0);
 
 
@@ -650,7 +647,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 
 
   frame = gtk_frame_new ("5-point parameters");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
@@ -701,7 +698,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 
 
   frame = gtk_frame_new ("N-point parameters");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
@@ -772,7 +769,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 
 
   frame = gtk_frame_new ("Pointing Offset");
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
@@ -823,13 +820,13 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 
 
   button=gtkut_button_new_from_stock("Redraw",GTK_STOCK_REFRESH);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (refresh_fc), (gpointer)hg);
 
   button=gtkut_button_new_from_stock("Close",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_hsc_dither, 
@@ -843,10 +840,10 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 
 void do_fc(typHOE *hg){
   if(flagFC){
-    gdk_window_deiconify(hg->fc_main->window);
-    gdk_window_raise(hg->fc_main->window);
+    gdk_window_deiconify(gtk_widget_get_window(hg->fc_main));
+    gdk_window_raise(gtk_widget_get_window(hg->fc_main));
     hg->fc_output=FC_OUTPUT_WINDOW;
-    draw_fc_cairo(hg->fc_dw,(gpointer)hg);
+    draw_fc_cairo(hg->fc_dw,NULL,(gpointer)hg);
   }
   else{
     flagFC=TRUE;
@@ -890,9 +887,7 @@ void create_fc_dialog(typHOE *hg)
   gtk_table_set_row_spacings (GTK_TABLE (table), 0);
   gtk_table_set_col_spacings (GTK_TABLE (table), 3);
 
-  icon = gdk_pixbuf_new_from_inline(sizeof(icon_dl), icon_dl, 
-				    FALSE, NULL);
-
+  icon = gdk_pixbuf_new_from_resource ("/icons/dl_icon.png", NULL);
   button=gtkut_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
   my_signal_connect (button, "clicked",
@@ -1513,8 +1508,7 @@ void create_fc_dialog(typHOE *hg)
 
 
 
-  icon = gdk_pixbuf_new_from_inline(sizeof(spline_icon), spline_icon, 
-				    FALSE, NULL);
+  icon = gdk_pixbuf_new_from_resource ("/icons/comet_icon.png", NULL);
   button=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
   gtk_container_set_border_width (GTK_CONTAINER (button), 0);
@@ -1527,8 +1521,7 @@ void create_fc_dialog(typHOE *hg)
 			      "Draw Non-Sidereal Orbit");
 #endif
 
-  icon = gdk_pixbuf_new_from_inline(sizeof(hsc_icon), hsc_icon, 
-				    FALSE, NULL);
+  icon = gdk_pixbuf_new_from_resource ("/icons/hsc_icon.png", NULL);
   button=gtkut_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
   gtk_container_set_border_width (GTK_CONTAINER (button), 0);
@@ -1541,8 +1534,7 @@ void create_fc_dialog(typHOE *hg)
 #endif
 
 
-  icon = gdk_pixbuf_new_from_inline(sizeof(icon_pdf), icon_pdf, 
-				    FALSE, NULL);
+  icon = gdk_pixbuf_new_from_resource ("/icons/pdf_icon.png", NULL);
   button=gtkut_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
   my_signal_connect (button, "clicked",
@@ -1596,13 +1588,10 @@ void create_fc_dialog(typHOE *hg)
 
   
   gtk_widget_set_events(hg->fc_dw, GDK_STRUCTURE_MASK | GDK_EXPOSURE_MASK);
-  my_signal_connect(hg->fc_dw, 
-		    "configure-event", 
-		    configure_draw_fc,
-		    (gpointer)hg);
+
   my_signal_connect(hg->fc_dw, 
 		    "expose-event", 
-		    expose_draw_fc,
+		    draw_fc_cairo,
 		    (gpointer)hg);
   
   gtk_widget_set_events(ebox, GDK_SCROLL_MASK |
@@ -1621,9 +1610,9 @@ void create_fc_dialog(typHOE *hg)
 
   gtk_widget_show_all(hg->fc_main);
   
-  gdk_window_raise(hg->fc_main->window);
+  gdk_window_raise(gtk_widget_get_window(hg->fc_main));
 
-  draw_fc_cairo(hg->fc_dw,hg);
+  draw_fc_cairo(hg->fc_dw,NULL,(gpointer)hg);
 }
 
 
@@ -1650,7 +1639,7 @@ gboolean resize_draw_fc(GtkWidget *widget,
 				 (gdouble)(hg->dss_pa+5));
       }
       hg->fc_output=FC_OUTPUT_WINDOW;
-      draw_fc_cairo(hg->fc_dw,(gpointer)hg);
+      draw_fc_cairo(hg->fc_dw,NULL,(gpointer)hg);
     }
     else if(event->state & GDK_CONTROL_MASK){
       if(direction & GDK_SCROLL_DOWN){
@@ -1662,11 +1651,15 @@ gboolean resize_draw_fc(GtkWidget *widget,
 				 (gdouble)(hg->dss_pa+1));
       }
       hg->fc_output=FC_OUTPUT_WINDOW;
-      draw_fc_cairo(hg->fc_dw,(gpointer)hg);
+      draw_fc_cairo(hg->fc_dw,NULL,(gpointer)hg);
     }
     else if(event->state & GDK_MOD1_MASK){
-      width= widget->allocation.width;
-      height=widget->allocation.height;
+      GtkAllocation *allocation=g_new(GtkAllocation, 1);
+      gtk_widget_get_allocation(widget,allocation);
+
+      width= allocation->width;
+      height=allocation->height;
+      g_free(allocation);
 
       x=width/2;
       y=height/2;
@@ -1709,13 +1702,19 @@ gboolean resize_draw_fc(GtkWidget *widget,
 	  hg->fc_magx=magx0+(x-width/2)/mag0;
 	  hg->fc_magy=magy0+(y-height/2)/mag0;
 	}
-	gtk_drawing_area_size (GTK_DRAWING_AREA(hg->fc_dw),
-			       hg->fc_dw->allocation.width*hg->fc_mag,
-			       hg->fc_dw->allocation.height*hg->fc_mag);
+	{
+	  GtkAllocation *allocation=g_new(GtkAllocation, 1);
+	  gtk_widget_get_allocation(hg->fc_dw,allocation);
+
+	  gtk_drawing_area_size (GTK_DRAWING_AREA(hg->fc_dw),
+				 allocation->width*hg->fc_mag,
+				 allocation->height*hg->fc_mag);
+	  g_free(allocation);
+	}
       }
     }
     else{
-      gdk_window_get_pointer(widget->window,&x,&y,NULL);
+      gdk_window_get_pointer(gtk_widget_get_window(widget),&x,&y,NULL);
       
       mag0=hg->fc_mag;
       magx0=hg->fc_magx;
@@ -1752,15 +1751,25 @@ gboolean resize_draw_fc(GtkWidget *widget,
 	  hg->fc_magy=y;
 	}
 	else{
-	  width= widget->allocation.width;
-	  height=widget->allocation.height;
-	  
+	  GtkAllocation *allocation=g_new(GtkAllocation, 1);
+	  gtk_widget_get_allocation(widget,allocation);
+
+	  width= allocation->width;
+	  height=allocation->height;
+	  g_free(allocation);
+
 	  hg->fc_magx=magx0+(x-width/2)/mag0;
 	  hg->fc_magy=magy0+(y-height/2)/mag0;
 	}
-	gtk_drawing_area_size (GTK_DRAWING_AREA(hg->fc_dw),
-			       hg->fc_dw->allocation.width*hg->fc_mag,
-			       hg->fc_dw->allocation.height*hg->fc_mag);
+	{
+	  GtkAllocation *allocation=g_new(GtkAllocation, 1);
+	  gtk_widget_get_allocation(hg->fc_dw,allocation);
+	  
+	  gtk_drawing_area_size (GTK_DRAWING_AREA(hg->fc_dw),
+				 allocation->width*hg->fc_mag,
+				 allocation->height*hg->fc_mag);
+	  g_free(allocation);
+	}
       }
     }
   }
@@ -1769,15 +1778,15 @@ gboolean resize_draw_fc(GtkWidget *widget,
 }
   
 static gboolean button_draw_fc(GtkWidget *widget, 
-			GdkEventButton *event, 
-			gpointer userdata){
+			       GdkEventButton *event, 
+			       gpointer userdata){
   typHOE *hg;
   gint x,y, width, height;
 
   hg=(typHOE *)userdata;
 
   if(flagFC){
-    gdk_window_get_pointer(widget->window,&x,&y,NULL);
+    gdk_window_get_pointer(gtk_widget_get_window(widget),&x,&y,NULL);
 
     if((event->button==1)&&(hg->fcdb_flag)&&(hg->fcdb_i==hg->dss_i)){
       hg->fc_ptn=-1;
@@ -1785,8 +1794,12 @@ static gboolean button_draw_fc(GtkWidget *widget,
       hg->fc_pty1=y;
     }
     else if(event->button==2){
-      width= widget->allocation.width;
-      height=widget->allocation.height;
+      GtkAllocation *allocation=g_new(GtkAllocation, 1);
+      gtk_widget_get_allocation(widget,allocation);
+
+      width= allocation->width;
+      height=allocation->height;
+      g_free(allocation);
 	  
       hg->fc_magx+=(x-width/2)/hg->fc_mag;
       hg->fc_magy+=(y-height/2)/hg->fc_mag;
@@ -1807,7 +1820,7 @@ static gboolean button_draw_fc(GtkWidget *widget,
       }
     }
 
-    draw_fc_cairo(hg->fc_dw,hg);
+    draw_fc_cairo(hg->fc_dw,NULL,(gpointer)hg);
   }
 
   return(TRUE);
@@ -1960,7 +1973,9 @@ void translate_to_center(cairo_t *cr, int width, int height, int width_file, int
     }
 }
 
-gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
+gboolean draw_fc_cairo(GtkWidget *widget, 
+		       GdkEventExpose *event, 
+		       typHOE *hg){
   cairo_t *cr;
   cairo_surface_t *surface;
   cairo_text_extents_t extents;
@@ -1971,7 +1986,7 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
   int width, height;
   int width_file, height_file;
   gfloat r_w,r_h, r;
-  gint shift_x, shift_y;
+  gint shift_x=0, shift_y=0;
 
   gchar *tmp;
   GdkPixbuf *pixbuf_flip=NULL;
@@ -2008,14 +2023,39 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
     cairo_set_source_rgb(cr, 1, 1, 1);
   }
   else{
-    width= widget->allocation.width*hg->fc_mag;
-    height= widget->allocation.height*hg->fc_mag;
+    GtkAllocation *allocation=g_new(GtkAllocation, 1);
+    gtk_widget_get_allocation(widget,allocation);
+
+    width= allocation->width*hg->fc_mag;
+    height=allocation->height*hg->fc_mag;
+
     if(width<=1){
       gtk_window_get_size(GTK_WINDOW(hg->fc_main), &width, &height);
     }
     scale=(gdouble)(hg->skymon_objsz)/(gdouble)(SKYMON_DEF_OBJSZ);
 
-    pixmap_fcbk = gdk_pixmap_new(widget->window,
+    // Edge for magnification
+    if(hg->fc_mag!=1){
+      shift_x=-(hg->fc_magx*hg->fc_mag-width/2/hg->fc_mag);
+      shift_y=-(hg->fc_magy*hg->fc_mag-height/2/hg->fc_mag);
+      
+      if(shift_x>0){
+	shift_x=0;
+      }
+      else if((width+shift_x)<allocation->width){
+	shift_x=allocation->width-width;
+      }
+      
+      if(shift_y>0){
+	shift_y=0;
+      }
+      else if((height+shift_y)<allocation->height){
+	shift_y=allocation->height-height;
+      }
+    }
+    g_free(allocation);
+    
+    pixmap_fcbk = gdk_pixmap_new(gtk_widget_get_window(widget),
 				 width,
 				 height,
 				 -1);
@@ -3267,25 +3307,6 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
       }
 
       // Edge for magnification
-      {
-	shift_x=-(hg->fc_magx*hg->fc_mag-width/2/hg->fc_mag);
-	shift_y=-(hg->fc_magy*hg->fc_mag-height/2/hg->fc_mag);
-      
-	if(shift_x>0){
-	  shift_x=0;
-	}
-	else if((width+shift_x)<widget->allocation.width){
-	  shift_x=widget->allocation.width-width;
-	}
-
-	if(shift_y>0){
-	  shift_y=0;
-	}
-	else if((height+shift_y)<widget->allocation.height){
-	  shift_y=widget->allocation.height-height;
-	}
-      }
-
       cairo_text_extents (cr, tmp, &extents);
       cairo_translate(cr,
            	      width/(gdouble)hg->fc_mag-shift_x,
@@ -3829,84 +3850,22 @@ gboolean draw_fc_cairo(GtkWidget *widget, typHOE *hg){
   }
 
   if(hg->fc_output==FC_OUTPUT_WINDOW){
-    if(hg->pixmap_fc) g_object_unref(G_OBJECT(hg->pixmap_fc));
-    hg->pixmap_fc = gdk_pixmap_new(widget->window,
-				   width,
-				   height,
-				   -1);
-    if(hg->fc_mag==1){
-      gdk_draw_drawable(hg->pixmap_fc,
-			widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-			pixmap_fcbk,
-			0,0,0,0,
-			width,
-			height);
-    }
-    else{
-      {
-	gdk_draw_drawable(hg->pixmap_fc,
-			  widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-			  pixmap_fcbk,
-			  0, 0, shift_x, shift_y,
-			  width,
-			  height);
-      }
-    }
-    g_object_unref(G_OBJECT(pixmap_fcbk));
+    GtkStyle *style=gtk_widget_get_style(widget);
 
-    gtk_widget_show_all(widget);
-    draw_fc_pixmap(widget, hg);
-    gtk_widget_queue_draw(widget);
+    gdk_draw_drawable(gtk_widget_get_window(widget),
+		      style->fg_gc[gtk_widget_get_state(widget)],
+		      pixmap_fcbk,
+		      0,0,shift_x,shift_y,
+		      width,
+		      height);
+
+    g_object_unref(G_OBJECT(pixmap_fcbk));
   }
 
   return TRUE;
 
 }
 
-static 
-gboolean configure_draw_fc (GtkWidget *widget, 
-			    GdkEventConfigure *event, 
-			    gpointer data)
-{
-  if(!flagFC) return(TRUE);
-
-  typHOE *hg = (typHOE *)data;
-  if(!hg->pixmap_fc) return(TRUE);
-
-  draw_fc_cairo(hg->fc_dw,hg);
-  draw_fc_pixmap(widget,hg);
-
-  return(TRUE);
-}
-
-static
-gboolean expose_draw_fc (GtkWidget *widget, 
-			 GdkEventExpose *event, 
-			 gpointer data)
-{
-  if(!flagFC) return(TRUE);
-  if(event->count!=0) return(TRUE);
-
-  typHOE *hg = (typHOE *)data;
-  if(!hg->pixmap_fc) return(TRUE);
-
-  draw_fc_pixmap(hg->fc_dw,hg);
-
-  return(TRUE);
-}
-
-void draw_fc_pixmap(GtkWidget *widget, typHOE *hg){
-  gdk_window_set_back_pixmap(widget->window,
-			     hg->pixmap_fc,
-			     FALSE);
-      
-  gdk_draw_drawable(widget->window,
-		    widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-		    hg->pixmap_fc,
-		    0,0,0,0,
-		    hg->fc_dw->allocation.width,
-		    hg->fc_dw->allocation.height);
-}
 
 static void refresh_fc (GtkWidget *widget, gpointer data)
 {
@@ -3914,7 +3873,7 @@ static void refresh_fc (GtkWidget *widget, gpointer data)
 
   if(flagFC){
     hg->fc_output=FC_OUTPUT_WINDOW;
-    draw_fc_cairo(hg->fc_dw, hg);
+    draw_fc_cairo(hg->fc_dw, NULL,(gpointer)hg);
   }
 }
 
@@ -3926,7 +3885,7 @@ static void orbit_fc (GtkWidget *widget, gpointer data)
     hg->orbit_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   
     hg->fc_output=FC_OUTPUT_WINDOW;
-    draw_fc_cairo(hg->fc_dw, hg);
+    draw_fc_cairo(hg->fc_dw, NULL,(gpointer)hg);
   }
 }
 
@@ -4094,7 +4053,7 @@ static void hsc_dith_back (GtkWidget *widget,  gpointer * gdata)
     if(hg->hsc_dithi>1){
       hg->hsc_dithi--;
       set_hsc_dith_label(hg);
-      if(flagFC)  draw_fc_cairo(hg->fc_dw,(gpointer)hg);
+      if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL,(gpointer)hg);
     }
     break;
   }
@@ -4115,7 +4074,7 @@ static void hsc_dith_forward (GtkWidget *widget,  gpointer * gdata)
     if(hg->hsc_dithi<5){
       hg->hsc_dithi++;
       set_hsc_dith_label(hg);
-      if(flagFC)  draw_fc_cairo(hg->fc_dw,(gpointer)hg);
+      if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL,(gpointer)hg);
     }
     break;
 
@@ -4123,7 +4082,7 @@ static void hsc_dith_forward (GtkWidget *widget,  gpointer * gdata)
     if(hg->hsc_dithi<hg->hsc_ndith){
       hg->hsc_dithi++;
       set_hsc_dith_label(hg);
-      if(flagFC)  draw_fc_cairo(hg->fc_dw,(gpointer)hg);
+      if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL,(gpointer)hg);
     }
     break;
   }
@@ -4148,7 +4107,7 @@ static void cc_get_hsc_dith (GtkWidget *widget,  gpointer * gdata)
 
     set_hsc_dith_label(hg);
 
-    if(flagFC)  draw_fc_cairo(hg->fc_dw,(gpointer)hg);
+    if(flagFC)  draw_fc_cairo(hg->fc_dw,NULL,(gpointer)hg);
   }
 }
 
@@ -4302,7 +4261,7 @@ void pdf_fc (typHOE *hg)
   hg->fc_output=FC_OUTPUT_PDF;
 
   if(flagFC){
-    draw_fc_cairo(hg->fc_dw, hg);
+    draw_fc_cairo(hg->fc_dw, NULL,(gpointer)hg);
   }
 
   hg->fc_output=FC_OUTPUT_WINDOW;
@@ -4336,7 +4295,7 @@ static void draw_page (GtkPrintOperation *operation,
   hg->fc_output=FC_OUTPUT_PRINT;
   hg->context=context;
   if(flagFC){
-    draw_fc_cairo(hg->fc_dw, hg);
+    draw_fc_cairo(hg->fc_dw, NULL,(gpointer)hg);
   }
 
   hg->fc_output=FC_OUTPUT_WINDOW;
@@ -4755,11 +4714,10 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
   gtk_container_set_border_width (GTK_CONTAINER (table), 5);
   gtk_table_set_row_spacings (GTK_TABLE (table), 10);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     table,FALSE, FALSE, 0);
 
-  icon = gdk_pixbuf_new_from_inline(sizeof(icon_dl), icon_dl, 
-				    FALSE, NULL);
+  icon = gdk_pixbuf_new_from_resource ("/icons/dl_icon.png", NULL);
   pixbuf=gdk_pixbuf_scale_simple(icon,16,16,GDK_INTERP_BILINEAR);
 
   pixmap = gtk_image_new_from_pixbuf(pixbuf);
@@ -4887,34 +4845,34 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
 
   label = gtk_label_new ("");
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     label,FALSE, FALSE, 0);
 
 
   label = gtk_label_new ("Please use SkyView or SDSS for large FOV (> 60\') to save the traffic.");
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     label,FALSE, FALSE, 0);
 
   label = gtk_label_new ("ESO and STSci cannot change their pixel scale.");
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     label,FALSE, FALSE, 0);
 
   label = gtk_label_new ("Because the maximum pixel sizes for SkyView (1000pix) and SDSS (2000pix) are limited,");
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     label,FALSE, FALSE, 0);
 
   label = gtk_label_new ("the downloaded FC image for large FOV (> 13\' for SDSS) should be degraded from the original.");
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     label,FALSE, FALSE, 0);
 
 
 
   button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_fc_help, 
@@ -5018,7 +4976,7 @@ void ver_dl(typHOE *hg)
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
+  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   my_signal_connect(dialog, "delete-event", cancel_fcdb, (gpointer)hg);
@@ -5029,11 +4987,11 @@ void ver_dl(typHOE *hg)
   label=gtk_label_new("Checking the latest version of hskymon ...");
 
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
   gtk_widget_show(label);
   
   hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
   gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
 				    GTK_PROGRESS_RIGHT_TO_LEFT);
@@ -5044,11 +5002,11 @@ void ver_dl(typHOE *hg)
   
   hg->plabel=gtk_label_new("Checking the latest version of hskymon ...");
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     hg->plabel,FALSE,FALSE,0);
   
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed", cancel_fcdb, (gpointer)hg);
   
@@ -5096,7 +5054,7 @@ void fcdb_dl(typHOE *hg)
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
+  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Query to the database");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   my_signal_connect(dialog,"delete-event", cancel_fcdb, (gpointer)hg);
@@ -5203,11 +5161,11 @@ void fcdb_dl(typHOE *hg)
   }
 
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
   gtk_widget_show(label);
   
   hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
   gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
 				    GTK_PROGRESS_RIGHT_TO_LEFT);
@@ -5292,11 +5250,11 @@ void fcdb_dl(typHOE *hg)
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     hg->plabel,FALSE,FALSE,0);
   
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    cancel_fcdb, 
@@ -5375,7 +5333,7 @@ void addobj_dl(typHOE *hg)
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
+  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Query to the database");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   my_signal_connect(dialog,"delete-event", cancel_fcdb, (gpointer)hg);
@@ -5393,11 +5351,11 @@ void addobj_dl(typHOE *hg)
   }
 
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
   gtk_widget_show(label);
   
   hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
   gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
 				    GTK_PROGRESS_RIGHT_TO_LEFT);
@@ -5416,12 +5374,12 @@ void addobj_dl(typHOE *hg)
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     hg->plabel,FALSE,FALSE,0);
   
 #ifndef USE_WIN32
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    cancel_fcdb, 
@@ -5560,7 +5518,7 @@ void trdb_run (typHOE *hg)
 
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),5);
+  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Running List Query");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   my_signal_connect(dialog,"delete-event",cancel_trdb, (gpointer)hg);
@@ -5589,11 +5547,11 @@ void trdb_run (typHOE *hg)
     break;
   }
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),label,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
   gtk_widget_show(label);
 
   hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
   gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
 				    GTK_PROGRESS_RIGHT_TO_LEFT);
@@ -5601,7 +5559,7 @@ void trdb_run (typHOE *hg)
   gtk_widget_show(hg->pbar);
 
   hg->pbar2=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hg->pbar2,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar2,TRUE,TRUE,0);
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar2), 
 				    GTK_PROGRESS_LEFT_TO_RIGHT);
   sprintf(tmp,"Searching [ 1 / %d ] Objects", hg->i_max);
@@ -5610,16 +5568,16 @@ void trdb_run (typHOE *hg)
 
   sprintf(tmp,"Estimated time left : ---");
   time_label=gtk_label_new(tmp);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     time_label,TRUE,TRUE,5);
 
   sep=gtk_hseparator_new();
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     sep,FALSE,TRUE,5);
 
   sprintf(tmp,"%s : hit ---", hg->obj[0].name);
   stat_label=gtk_label_new(tmp);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     stat_label,TRUE,TRUE,5);
 
   switch(hg->fcdb_type){
@@ -5642,7 +5600,7 @@ void trdb_run (typHOE *hg)
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
 
   hbox = gtk_hbox_new(FALSE,5);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     hbox,TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),hg->plabel,FALSE,TRUE,0);
 
@@ -6514,7 +6472,7 @@ void fcdb_item2 (typHOE *hg)
 			       TRUE);
   hg->fcdb_flag=TRUE;
 
-  if(flagFC)  draw_fc_cairo(hg->fc_dw, hg);
+  if(flagFC)  draw_fc_cairo(hg->fc_dw, NULL,(gpointer)hg);
 }
 
 static void fc_item (GtkWidget *widget, gpointer data)
@@ -7085,7 +7043,7 @@ fcdb_toggle (GtkWidget *widget, gpointer data)
 
   hg->fcdb_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
-  if(flagFC)  draw_fc_cairo(hg->fc_dw, hg);
+  if(flagFC)  draw_fc_cairo(hg->fc_dw, NULL,(gpointer)hg);
 }
 
 GdkPixbuf* rgb_pixbuf(GdkPixbuf *pixbufR, GdkPixbuf* pixbufG, 
