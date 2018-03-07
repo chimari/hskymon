@@ -1914,9 +1914,11 @@ struct _typHOE{
 
   GdkPixbuf *pixbuf;
   GdkPixbuf *pixbuf2;
+#ifndef USE_GTK3
   GdkPixmap *pixmap_skymon;
 #ifdef USE_XMLRPC
   GdkPixmap *pixmap_skymonbg;
+#endif
 #endif
   gboolean allsky_flag;
   gboolean allsky_diff_flag;

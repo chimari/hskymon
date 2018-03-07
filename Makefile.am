@@ -56,10 +56,10 @@ resources.h:
 resources.c: gresource.xml $(resource_files) resources.h
 	$(AM_V_GEN) $(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=$(srcdir) --generate-source $(srcdir)/gresource.xml
 
-INCLUDES        = @GTK_CFLAGS@  $(GTK3_CFLAGS) $(GTKMAC_CFLAGS) $(XMLRPC_CFLAGS) $(XML_CPPFLAGS) $(DISABLE_DEPRECATED)
+INCLUDES        = @GTK_CFLAGS@  $(GTK3_CFLAGS) $(GTKMAC_CFLAGS) $(XMLRPC_CFLAGS) $(XML_CPPFLAGS)
 LDADD           = @GTK_LIBS@  $(GTK3_LIBS) $(GTKMAC_LIBS) $(WINMM_LIBS) $(WINSOCK_LIBS) $(XMLRPC_LIBS) $(XML_LIBS) $(HSKYMON_RES)
 
-CFLAGS+= -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE
+CFLAGS+=
 
 GZIP_ENV =
 BZIP2_ENV =
