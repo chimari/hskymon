@@ -193,9 +193,6 @@ void create_plot_dialog(typHOE *hg)
 		    close_plot, 
 		    (gpointer)hg);
 
-  gtk_widget_set_app_paintable(hg->plot_main, TRUE);
-  
-
   vbox = gtk_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (hg->plot_main), vbox);
 

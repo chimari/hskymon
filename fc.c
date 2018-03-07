@@ -883,8 +883,6 @@ void create_fc_dialog(typHOE *hg)
 		    close_fc, 
 		    (gpointer)hg);
 
-  gtk_widget_set_app_paintable(hg->fc_main, TRUE);
-  
   vbox = gtk_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (hg->fc_main), vbox);
 

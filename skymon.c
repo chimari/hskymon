@@ -183,9 +183,6 @@ void create_skymon_dialog(typHOE *hg)
   my_signal_connect(hg->skymon_main, "destroy",
 		    do_quit,(gpointer)hg);
 
-  gtk_widget_set_app_paintable(hg->skymon_main, TRUE);
-  
-
   vbox = gtk_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (hg->skymon_main), vbox);
 

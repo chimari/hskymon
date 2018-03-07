@@ -11586,9 +11586,11 @@ void param_init(typHOE *hg){
 
   hg->pixbuf=NULL;
   hg->pixbuf2=NULL;
+#ifndef USE_GTK3
   hg->pixmap_skymon=NULL;
 #ifdef USE_XMLRPC
   hg->pixmap_skymonbg=NULL;
+#endif
 #endif
   hg->allsky_flag=FALSE;
   hg->allsky_diff_flag=TRUE;
