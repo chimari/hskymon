@@ -109,8 +109,11 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* Use Gtk+2.x instead of Gtk+1.2 */
+/* Use Gtk+2.x instead of Gtk+3 */
 #undef USE_GTK2
+
+/* Use Gtk+3.x instead of Gtk+2 */
+#undef USE_GTK3
 
 /* With gtkmacintegration */
 #undef USE_GTKMACINTEGRATION

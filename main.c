@@ -16134,6 +16134,7 @@ void popup_message(gchar* stock_id, gint delay, ...){
   va_start(args, delay);
 
   dialog = gtk_dialog_new();
+  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
 
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_MOUSE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -16845,6 +16846,5 @@ int main(int argc, char* argv[]){
 			  (gpointer)hg);
 
   gtk_main();
-
 }
 

@@ -17,5 +17,13 @@
       <file alias="safari_icon.png"  preprocess="to-pixdata">icons/safari_icon.png</file>
       <file alias="sky_icon.png"     preprocess="to-pixdata">icons/sky_icon.png</file>
       <file alias="subaru_icon.png"  preprocess="to-pixdata">icons/subaru_icon.png</file>
+      <file alias="ar_u0.xpm"        preprocess="to-pixdata">icons/ar_u0.xpm</file>
+      <file alias="ar_u1.xpm"        preprocess="to-pixdata">icons/ar_u1.xpm</file>
+      <file alias="ar_u2.xpm"        preprocess="to-pixdata">icons/ar_u2.xpm</file>
+      <file alias="ar_u3.xpm"        preprocess="to-pixdata">icons/ar_u3.xpm</file>
+      <file alias="ar_d0.xpm"        preprocess="to-pixdata">icons/ar_d0.xpm</file>
+      <file alias="ar_d1.xpm"        preprocess="to-pixdata">icons/ar_d1.xpm</file>
+      <file alias="ar_d2.xpm"        preprocess="to-pixdata">icons/ar_d2.xpm</file>
+      <file alias="ar_d3.xpm"        preprocess="to-pixdata">icons/ar_d3.xpm</file>
     </gresource>
 </gresources>

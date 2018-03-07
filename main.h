@@ -1619,6 +1619,7 @@ struct _typHOE{
   GtkWidget *skymon_dw;
   GtkWidget *skymon_frame_mode;
   GtkWidget *skymon_frame_date;
+  GtkWidget *skymon_e_date;
   GtkWidget *skymon_frame_time;
   GtkWidget *skymon_frame_sz;
   GtkWidget *skymon_button_set;
@@ -1692,6 +1693,10 @@ struct _typHOE{
   gint fc_output;
   GtkWidget *fc_frame_col;
   GtkWidget *fc_button_flip;
+#ifdef USE_GTK3
+  gint fc_shift_x;
+  gint fc_shift_y;
+#endif
   gint dss_arcmin;
   gint dss_arcmin_ip;
   gint dss_pix;

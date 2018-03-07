@@ -13,10 +13,19 @@ void adc_item();
 void cc_get_adc_inst();
 void create_adc_dialog();
 void close_adc();
+#ifdef USE_GTK3
+gboolean draw_adc_cb();
+gboolean configure_adc_cb();
+#else
+gboolean expose_adc_cairo();
+#endif
 static void refresh_adc();
 gboolean update_adc();
 
 
+#ifdef USE_GTK3
+  GdkPixbuf *pixbuf_adc=NULL;
+#endif
 
 
 void adc_item2 (GtkWidget *widget, gpointer data)
@@ -81,7 +90,7 @@ void do_adc(typHOE *hg){
   if(flagADC){
     gdk_window_deiconify(gtk_widget_get_window(hg->adc_main));
     gdk_window_raise(gtk_widget_get_window(hg->adc_main));
-    draw_adc_cairo(hg->adc_dw,NULL,(gpointer)hg);
+    draw_adc_cairo(hg->adc_dw,hg);
     return;
   }
   else{
@@ -341,10 +350,22 @@ void create_adc_dialog(typHOE *hg)
 
   gtk_widget_set_events(hg->adc_dw, GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK);
 
+#ifdef USE_GTK3
+  my_signal_connect(hg->adc_dw, 
+		    "draw", 
+		    draw_adc_cb,
+		    (gpointer)hg);
+
+  my_signal_connect(hg->adc_dw, 
+		    "configure-event", 
+		    configure_adc_cb,
+		    (gpointer)hg);
+#else
   my_signal_connect(hg->adc_dw, 
 		    "expose-event", 
-		    draw_adc_cairo,
+		    expose_adc_cairo,
 		    (gpointer)hg);
+#endif
 
   gtk_widget_show_all(hg->adc_main);
 
@@ -353,8 +374,37 @@ void create_adc_dialog(typHOE *hg)
 			      (gpointer)hg);
 
   gdk_window_raise(gtk_widget_get_window(hg->adc_main));
-  draw_adc_cairo(hg->adc_dw,NULL,(gpointer)hg);
+  draw_adc_cairo(hg->adc_dw,hg);
 }
+
+
+#ifdef USE_GTK3
+gboolean draw_adc_cb(GtkWidget *widget,
+		     cairo_t *cr, 
+		     gpointer userdata){
+  typHOE *hg=(typHOE *)userdata;
+  if(!pixbuf_adc) draw_adc_cairo(widget,hg);
+  gdk_cairo_set_source_pixbuf(cr, pixbuf_adc, 0, 0);
+  cairo_paint(cr);
+  return(TRUE);
+}
+
+gboolean configure_adc_cb(GtkWidget *widget,
+			  GdkEventConfigure *event, 
+			  gpointer userdata){
+  typHOE *hg=(typHOE *)userdata;
+  draw_adc_cairo(widget,hg);
+  return(TRUE);
+}
+#else
+gboolean expose_adc_cairo(GtkWidget *widget,
+			  GdkEventExpose *event, 
+			  gpointer userdata){
+  typHOE *hg=(typHOE *)userdata;
+  draw_adc_cairo(hg->adc_dw,hg);
+  return (FALSE);
+}
+#endif
 
 
 void close_adc(GtkWidget *w, gpointer gdata)
@@ -372,15 +422,14 @@ void close_adc(GtkWidget *w, gpointer gdata)
 }
 
 
-gboolean draw_adc_cairo(GtkWidget *widget, 
-			GdkEventExpose *event, 
-			gpointer userdata){
+gboolean draw_adc_cairo(GtkWidget *widget, typHOE *hg){
   cairo_t *cr;
   cairo_surface_t *surface;
-  typHOE *hg;
   cairo_text_extents_t extents;
   double x,y;
+#ifndef USE_GTK3
   GdkPixmap *pixmap_adcbk;
+#endif
   int width, height;
 
   gchar *tmp;
@@ -394,8 +443,6 @@ gboolean draw_adc_cairo(GtkWidget *widget,
   
   if(!flagADC) return (FALSE);
 
-  hg=(typHOE *)userdata;
-  
   {
     GtkAllocation *allocation=g_new(GtkAllocation, 1);
     gtk_widget_get_allocation(widget,allocation);
@@ -417,12 +464,19 @@ gboolean draw_adc_cairo(GtkWidget *widget,
   }
   scale=hg->adc_size/size;
   
+#ifdef USE_GTK3
+    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+					 width, height);
+
+    cr = cairo_create(surface);
+#else
   pixmap_adcbk = gdk_pixmap_new(gtk_widget_get_window(widget),
 				width,
 				height,
 				-1);
   
   cr = gdk_cairo_create(pixmap_adcbk);
+#endif
   
   cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
 
@@ -830,6 +884,12 @@ gboolean draw_adc_cairo(GtkWidget *widget,
     
   cairo_destroy(cr);
 
+#ifdef USE_GTK3
+  if(pixbuf_adc) g_object_unref(G_OBJECT(pixbuf_adc));
+  pixbuf_adc=gdk_pixbuf_get_from_surface(surface,0,0,width,height);
+  cairo_surface_destroy(surface);
+  gtk_widget_queue_draw(widget);
+#else
   {
     GtkStyle *style=gtk_widget_get_style(widget);
 
@@ -841,6 +901,7 @@ gboolean draw_adc_cairo(GtkWidget *widget,
 		      height);
     g_object_unref(G_OBJECT(pixmap_adcbk));
   }
+#endif
 
 
   return TRUE;
@@ -859,7 +920,7 @@ static void refresh_adc (GtkWidget *widget, gpointer data)
     else{
       calcpa2_main(hg);
     }
-    draw_adc_cairo(hg->adc_dw,NULL,(gpointer)hg);
+    draw_adc_cairo(hg->adc_dw,hg);
   }
 }
 
@@ -867,7 +928,7 @@ gboolean update_adc (gpointer data){
   typHOE *hg = (typHOE *)data;
 
   if(flagADC){
-    draw_adc_cairo(hg->adc_dw,NULL,(gpointer)hg);
+    draw_adc_cairo(hg->adc_dw,hg);
   }
 
   return(TRUE);

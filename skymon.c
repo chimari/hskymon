@@ -18,9 +18,18 @@
 #include<sys/time.h>
 #endif
 
+void set_skymon_e_date();
+void select_skymon_calendar();
+void popup_skymon_calendar();
+
 void draw_skymon_pixmap();
+#ifdef USE_GTK3
+gboolean draw_skymon_cb();
+gboolean configure_skymon_cb();
+#else
 static gboolean configure_skymon();
 static gboolean expose_skymon();
+#endif
 
 void my_cairo_arc_center();
 void my_cairo_arc_center2();
@@ -63,13 +72,86 @@ gint skymon_back();
 static gint button_signal();
 void draw_stderr_graph();
 
-
+#ifdef USE_GTK3
+GdkPixbuf *pixbuf_skymon=NULL;
+#endif
 gboolean flagDrawing=FALSE;
 gboolean supports_alpha = FALSE;
 gint old_width=0, old_height=0, old_w=0, old_h=0;
 gdouble old_r=0;
 
 static gint work_page=0;
+
+
+void set_skymon_e_date(typHOE *hg){
+  gchar *tmp;
+  
+  tmp=g_strdup_printf("%4d/%02d/%02d",
+		      hg->skymon_year,
+		      hg->skymon_month,
+		      hg->skymon_day);
+
+  gtk_entry_set_text(GTK_ENTRY(hg->skymon_e_date),tmp);
+  g_free(tmp);
+}
+
+void select_skymon_calendar (GtkWidget *widget, gpointer gdata){
+  typHOE *hg=(typHOE *)gdata;
+
+  gtk_calendar_get_date(GTK_CALENDAR(widget),
+			&hg->skymon_year,
+			&hg->skymon_month,
+			&hg->skymon_day);
+  hg->skymon_month++;
+
+  set_skymon_e_date(hg);
+
+  if(hg->skymon_mode==SKYMON_SET){
+    calcpa2_skymon(hg);
+    draw_skymon_cairo(hg->skymon_dw,hg);
+  }
+
+  gtk_main_quit();
+}
+
+void popup_skymon_calendar (GtkWidget *widget, gpointer gdata)
+{
+  GtkWidget *dialog, *calendar;
+  GtkAllocation *allocation=g_new(GtkAllocation, 1);
+  gint root_x, root_y;
+  typHOE *hg=(typHOE *)gdata;
+  gtk_widget_get_allocation(widget,allocation);
+
+  dialog = gtk_dialog_new();
+  gtk_window_get_position(GTK_WINDOW(hg->skymon_main),&root_x,&root_y);
+
+  my_signal_connect(dialog,"delete-event",gtk_main_quit,NULL);
+  gtk_window_set_decorated(GTK_WINDOW(dialog), FALSE);
+
+  calendar=gtk_calendar_new();
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     calendar,FALSE, FALSE, 0);
+
+  gtk_calendar_select_month(GTK_CALENDAR(calendar),
+			    hg->skymon_month-1,
+			    hg->skymon_year);
+
+  gtk_calendar_select_day(GTK_CALENDAR(calendar),
+			  hg->skymon_day);
+
+  my_signal_connect(calendar,
+		    "day-selected-double-click",
+		    select_skymon_calendar, 
+		    (gpointer)hg);
+
+  gtk_widget_show_all(dialog);
+  gtk_window_move(GTK_WINDOW(dialog),
+		  root_x+allocation->x,
+		  root_y+allocation->y);
+  g_free(allocation);
+  gtk_main();
+  gtk_widget_destroy(dialog);
+}
 
 
 // Create Sky Monitor Window
@@ -181,44 +263,18 @@ void create_skymon_dialog(typHOE *hg)
 
   skymon_set_time_current(hg);
 
-  hg->skymon_adj_year = (GtkAdjustment *)gtk_adjustment_new(hg->skymon_year,
-							    hg->skymon_year-10, 
-							    hg->skymon_year+99,
-							    1.0, 1.0, 0);
-  spinner =  gtk_spin_button_new (hg->skymon_adj_year, 0, 0);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox1),spinner,FALSE,FALSE,0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
-  my_signal_connect (hg->skymon_adj_year, "value_changed",
-		     cc_get_adj,
-		     &hg->skymon_year);
+  hg->skymon_e_date = gtk_entry_new();
+  gtk_box_pack_start(GTK_BOX(hbox1),hg->skymon_e_date,FALSE,FALSE,0);
+  gtk_editable_set_editable(GTK_EDITABLE(hg->skymon_e_date),FALSE);
+  my_entry_set_width_chars(GTK_ENTRY(hg->skymon_e_date),10);
 
-  hg->skymon_adj_month = (GtkAdjustment *)gtk_adjustment_new(hg->skymon_month,
-							     1, 12, 1.0, 1.0, 0);
-  spinner =  gtk_spin_button_new (hg->skymon_adj_month, 0, 0);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox1),spinner,FALSE,FALSE,0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
-  my_signal_connect (hg->skymon_adj_month, "value_changed",
-		     cc_get_adj,
-		     &hg->skymon_month);
+  set_skymon_e_date(hg);
 
-  hg->skymon_adj_day = (GtkAdjustment *)gtk_adjustment_new(hg->skymon_day,
-							   1, 31, 1.0, 1.0, 0);
-  spinner =  gtk_spin_button_new (hg->skymon_adj_day, 0, 0);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox1),spinner,FALSE,FALSE,0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
-  my_signal_connect (hg->skymon_adj_day, "value_changed",
-		     cc_get_adj,
-		     &hg->skymon_day);
-  
+  button=gtkut_button_new_from_stock(NULL,GTK_STOCK_GO_DOWN);
+  gtk_box_pack_start(GTK_BOX(hbox1),button,TRUE,TRUE,0);
+  my_signal_connect(button,"pressed",
+  		    popup_skymon_calendar, 
+  		    (gpointer)hg);
 
   hg->skymon_frame_time = gtk_frame_new (hg->obs_tzname);
   gtk_box_pack_start(GTK_BOX(hbox), hg->skymon_frame_time, FALSE, FALSE, 0);
@@ -437,14 +493,27 @@ void create_skymon_dialog(typHOE *hg)
   gtk_widget_show(hg->skymon_dw);
 
   gtk_widget_set_events(hg->skymon_dw, GDK_STRUCTURE_MASK | GDK_EXPOSURE_MASK);
+#ifdef USE_GTK3
+  my_signal_connect(hg->skymon_dw, 
+		    "draw", 
+		    draw_skymon_cb,
+		    (gpointer)hg);
+
+  my_signal_connect(hg->skymon_dw, 
+		    "configure-event", 
+		    configure_skymon_cb,
+		    (gpointer)hg);
+#else
   my_signal_connect(hg->skymon_dw, 
 		    "configure-event", 
 		    configure_skymon,
 		    (gpointer)hg);
+
   my_signal_connect(hg->skymon_dw, 
 		    "expose-event", 
 		    expose_skymon,
 		    (gpointer)hg);
+#endif
 
   gtk_widget_set_events(ebox, GDK_BUTTON_PRESS_MASK);
   my_signal_connect(ebox, 
@@ -481,6 +550,25 @@ void draw_skymon_pixmap(GtkWidget *widget, typHOE *hg){
 }
 
 
+#ifdef USE_GTK3
+gboolean draw_skymon_cb(GtkWidget *widget,
+			cairo_t *cr, 
+			gpointer userdata){
+  typHOE *hg=(typHOE *)userdata;
+  if(!pixbuf_skymon) draw_skymon_cairo(widget,hg, FALSE);
+  gdk_cairo_set_source_pixbuf(cr, pixbuf_skymon, 0, 0);
+  cairo_paint(cr);
+  return(TRUE);
+}
+
+gboolean configure_skymon_cb(GtkWidget *widget,
+			     GdkEventConfigure *event, 
+			     gpointer userdata){
+  typHOE *hg=(typHOE *)userdata;
+  draw_skymon_cairo(widget,hg, FALSE);
+  return(TRUE);
+}
+#else
 static gboolean configure_skymon (GtkWidget *widget, 
 			   GdkEventConfigure *event, 
 			   gpointer data)
@@ -504,10 +592,10 @@ static gboolean expose_skymon(GtkWidget *widget,
   hg=(typHOE *)userdata;
   if(!hg->pixmap_skymon) return (TRUE);
 
-  draw_skymon_pixmap(widget, hg);
+  draw_skymon_cairo(widget, hg, FALSE);
   return (TRUE);
 }
-
+#endif
 
 gboolean draw_skymon(GtkWidget *widget, typHOE *hg, gboolean force_flag){
   draw_skymon_cairo(widget, hg, force_flag);
@@ -517,8 +605,7 @@ gboolean draw_skymon(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 }
 
 
-gboolean draw_skymon_cairo(GtkWidget *widget, 
-			   typHOE *hg, gboolean force_flag){
+gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
   cairo_t *cr;
   cairo_text_extents_t extents;
   double x,y;
@@ -533,7 +620,9 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
   gboolean as_flag=FALSE;
   double y_ul, y_bl, y_ur, y_br;
   cairo_status_t cr_stat;
+#ifndef USE_GTK3
   GdkPixmap *pixmap_skymonbk;
+#endif
 
   if(flagDrawing){
     allsky_debug_print("!!! Collision in DrawSkymon, skipped...\n");
@@ -569,14 +658,19 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
     hg->win_r=hg->win_cy*0.9;
   }
   
+#ifdef USE_GTK3
+  surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+				       width, height);
+
+  cr = cairo_create(surface);
+#else
   pixmap_skymonbk = gdk_pixmap_new(gtk_widget_get_window(widget),
 				   width,
 				   height,
 				   -1);
 
-
-  
   cr = gdk_cairo_create(pixmap_skymonbk);
+#endif
 
   cr_stat=cairo_status(cr);
   if(cr_stat!=CAIRO_STATUS_SUCCESS){
@@ -1852,6 +1946,12 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
 
   cairo_destroy(cr);
 
+#ifdef USE_GTK3
+    if(pixbuf_skymon) g_object_unref(G_OBJECT(pixbuf_skymon));
+    pixbuf_skymon=gdk_pixbuf_get_from_surface(surface,0,0,width,height);
+    cairo_surface_destroy(surface);
+    gtk_widget_queue_draw(widget);
+#else
   {
     GtkStyle *style=gtk_widget_get_style(widget);
 
@@ -1882,15 +1982,14 @@ gboolean draw_skymon_cairo(GtkWidget *widget,
   }
 
   g_object_unref(G_OBJECT(pixmap_skymonbk));
+#endif
   gtk_widget_show_all(widget);
 #ifdef USE_XMLRPC
   if(!hg->telstat_flag){
     draw_skymon_pixmap(widget,hg);
-    gtk_widget_queue_draw(widget);
   }
 #else
   draw_skymon_pixmap(widget,hg);
-  gtk_widget_queue_draw(widget);
 #endif
 
   if(hg->skymon_mode==SKYMON_LAST){
@@ -1962,16 +2061,19 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
 						-1);
     
 
-    if(hg->pixmap_skymonbg)
+    if(hg->pixmap_skymonbg){
+      GtkStyle *style=gtk_widget_get_style(widget);
+
       gdk_draw_drawable(pixmap_skymon_with_telstat,
-			widget->style->fg_gc[gtk_widget_get_state(widget)],
+			style->fg_gc[gtk_widget_get_state(widget)],
 			hg->pixmap_skymonbg,
 			0,0,0,0,
 			width,
 			height);
-    else
+    }
+    else{
       return(FALSE);
-      
+    }
 
     as_flag=hg->allsky_flag;
     
@@ -2027,13 +2129,17 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
 				       width,
 				       height,
 				       -1);
-					  
-    gdk_draw_drawable(hg->pixmap_skymon,
-		      widget->style->fg_gc[gtk_widget_get_state(widget)],
-		      pixmap_skymon_with_telstat,
-		      0,0,0,0,
-		      width,
-		      height);
+		
+    {
+      GtkStyle *style=gtk_widget_get_style(widget);
+     
+      gdk_draw_drawable(hg->pixmap_skymon,
+			style->fg_gc[gtk_widget_get_state(widget)],
+			pixmap_skymon_with_telstat,
+			0,0,0,0,
+			width,
+			height);
+    }
     
     g_object_unref(G_OBJECT(pixmap_skymon_with_telstat));
   }
@@ -2043,18 +2149,20 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
 				       width,
 				       height,
 				       -1);
-    gdk_draw_drawable(hg->pixmap_skymon,
-		      widget->style->fg_gc[gtk_widget_get_state(widget)],
-		      hg->pixmap_skymonbg,
-		      0,0,0,0,
-		      width,
-		      height);
+    {
+      GtkStyle *style=gtk_widget_get_style(widget);
 
+      gdk_draw_drawable(hg->pixmap_skymon,
+			style->fg_gc[gtk_widget_get_state(widget)],
+			hg->pixmap_skymonbg,
+			0,0,0,0,
+			width,
+			height);
+    }
   }
 
   gtk_widget_show_all(widget);
   draw_skymon_pixmap(widget,hg);
-  gtk_widget_queue_draw(widget);
 
   skymon_debug_print("Finishing draw_skymon_with_telstat_cairo\n");
   return TRUE;
@@ -3448,9 +3556,7 @@ static void skymon_set_and_draw (GtkWidget *widget,   gpointer gdata)
     
     skymon_set_time_current(hg);
     
-    gtk_adjustment_set_value(hg->skymon_adj_year, (gdouble)hg->skymon_year);
-    gtk_adjustment_set_value(hg->skymon_adj_month,(gdouble)hg->skymon_month);
-    gtk_adjustment_set_value(hg->skymon_adj_day,  (gdouble)hg->skymon_day);
+    set_skymon_e_date(hg);
     gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
     gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_min);
 
@@ -3593,9 +3699,7 @@ static void skymon_morning (GtkWidget *widget,   gpointer gdata)
     if(hg->skymon_hour>10){
       add_day(hg, &hg->skymon_year, &hg->skymon_month, &hg->skymon_day, +1);
       
-      gtk_adjustment_set_value(hg->skymon_adj_year, (gdouble)hg->skymon_year);
-      gtk_adjustment_set_value(hg->skymon_adj_month,(gdouble)hg->skymon_month);
-      gtk_adjustment_set_value(hg->skymon_adj_day,  (gdouble)hg->skymon_day);
+      set_skymon_e_date(hg);
     }
     hg->skymon_hour=hg->sun.s_rise.hours;
     hg->skymon_min=hg->sun.s_rise.minutes-SUNRISE_OFFSET;
@@ -3631,9 +3735,7 @@ static void skymon_evening (GtkWidget *widget,   gpointer gdata)
     if(hg->skymon_hour<10){
       add_day(hg, &hg->skymon_year, &hg->skymon_month, &hg->skymon_day, -1);
       
-      gtk_adjustment_set_value(hg->skymon_adj_year, (gdouble)hg->skymon_year);
-      gtk_adjustment_set_value(hg->skymon_adj_month,(gdouble)hg->skymon_month);
-      gtk_adjustment_set_value(hg->skymon_adj_day,  (gdouble)hg->skymon_day);
+      set_skymon_e_date(hg);
     }
     hg->skymon_hour=hg->sun.s_set.hours;
     hg->skymon_min=hg->sun.s_set.minutes+SUNSET_OFFSET;
@@ -3698,9 +3800,7 @@ gint skymon_go(typHOE *hg){
     hg->skymon_hour-=24;
     add_day(hg, &hg->skymon_year, &hg->skymon_month, &hg->skymon_day, +1);
 
-    gtk_adjustment_set_value(hg->skymon_adj_year, (gdouble)hg->skymon_year);
-    gtk_adjustment_set_value(hg->skymon_adj_month,(gdouble)hg->skymon_month);
-    gtk_adjustment_set_value(hg->skymon_adj_day,  (gdouble)hg->skymon_day);
+    set_skymon_e_date(hg);
   }
 
   gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
@@ -3788,9 +3888,7 @@ gint skymon_back(typHOE *hg){
     hg->skymon_hour+=24;
     add_day(hg, &hg->skymon_year, &hg->skymon_month, &hg->skymon_day, -1);
 
-    gtk_adjustment_set_value(hg->skymon_adj_year, (gdouble)hg->skymon_year);
-    gtk_adjustment_set_value(hg->skymon_adj_month,(gdouble)hg->skymon_month);
-    gtk_adjustment_set_value(hg->skymon_adj_day,  (gdouble)hg->skymon_day);
+    set_skymon_e_date(hg);
   }
 
   gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);

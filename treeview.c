@@ -9,15 +9,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "ar_u0.xpm"
-#include "ar_u1.xpm"
-#include "ar_u2.xpm"
-#include "ar_u3.xpm"
-#include "ar_d0.xpm"
-#include "ar_d1.xpm"
-#include "ar_d2.xpm"
-#include "ar_d3.xpm"
-
 #include "esostd.h"
 
 static GtkWidget *window = NULL;
@@ -2306,7 +2297,7 @@ static trdb_dbtab (GtkWidget *widget, gpointer data)
     if(flagFC) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_button),
 					    TRUE);
     hg->fcdb_flag=TRUE;
-    if(flagFC)  draw_fc_cairo(hg->fc_dw, NULL,(gpointer)hg);
+    if(flagFC)  draw_fc_cairo(hg->fc_dw,hg);
   }
 }
 
@@ -3193,11 +3184,11 @@ focus_item (GtkWidget *widget, gpointer data)
   draw_skymon(hg->skymon_dw,hg, FALSE);
 
   if(flagPlot){
-    draw_plot_cairo(hg->plot_dw,NULL,(gpointer)hg);
+    draw_plot_cairo(hg->plot_dw,hg);
   }
 
   if(flagADC){
-    draw_adc_cairo(hg->adc_dw,NULL,(gpointer)hg);
+    draw_adc_cairo(hg->adc_dw,hg);
   }
 }
 
@@ -3247,7 +3238,7 @@ static void fcdb_focus_item (GtkWidget *widget, gpointer data)
       
       gtk_tree_path_free (path);
       
-      if(flagFC)  draw_fc_cairo(hg->fc_dw, NULL,(gpointer)hg);
+      if(flagFC)  draw_fc_cairo(hg->fc_dw,hg);
     }
 }
 
@@ -3298,11 +3289,11 @@ static void trdb_focus_item (GtkWidget *widget, gpointer data)
     draw_skymon(hg->skymon_dw,hg, FALSE);
 
     if(flagPlot){
-      draw_plot_cairo(hg->plot_dw,NULL,(gpointer)hg);
+      draw_plot_cairo(hg->plot_dw,hg);
     }
 
     if(flagADC){
-      draw_adc_cairo(hg->adc_dw,NULL,(gpointer)hg);
+      draw_adc_cairo(hg->adc_dw,hg);
     }
   }
 }
@@ -6643,14 +6634,22 @@ void make_tree(GtkWidget *widget, gpointer gdata){
     flagTree=TRUE;
     Flag_tree_editing=FALSE;
 
-    if(!pix_u0)  pix_u0 = gdk_pixbuf_new_from_xpm_data(ar_u0_xpm);
-    if(!pix_u1)  pix_u1 = gdk_pixbuf_new_from_xpm_data(ar_u1_xpm);
-    if(!pix_u2)  pix_u2 = gdk_pixbuf_new_from_xpm_data(ar_u2_xpm);
-    if(!pix_u3)  pix_u3 = gdk_pixbuf_new_from_xpm_data(ar_u3_xpm);
-    if(!pix_d0)  pix_d0 = gdk_pixbuf_new_from_xpm_data(ar_d0_xpm);
-    if(!pix_d1)  pix_d1 = gdk_pixbuf_new_from_xpm_data(ar_d1_xpm);
-    if(!pix_d2)  pix_d2 = gdk_pixbuf_new_from_xpm_data(ar_d2_xpm);
-    if(!pix_d3)  pix_d3 = gdk_pixbuf_new_from_xpm_data(ar_d3_xpm);
+    if(!pix_u0)  
+      pix_u0 = gdk_pixbuf_new_from_resource ("/icons/ar_u0.xpm", NULL);
+    if(!pix_u1)  
+      pix_u1 = gdk_pixbuf_new_from_resource ("/icons/ar_u1.xpm", NULL);
+    if(!pix_u2)  
+      pix_u2 = gdk_pixbuf_new_from_resource ("/icons/ar_u2.xpm", NULL);
+    if(!pix_u3)  
+      pix_u3 = gdk_pixbuf_new_from_resource ("/icons/ar_u3.xpm", NULL);
+    if(!pix_d0)  
+      pix_d0 = gdk_pixbuf_new_from_resource ("/icons/ar_d0.xpm", NULL);
+    if(!pix_d1)  
+      pix_d1 = gdk_pixbuf_new_from_resource ("/icons/ar_d1.xpm", NULL);
+    if(!pix_d2)  
+      pix_d2 = gdk_pixbuf_new_from_resource ("/icons/ar_d2.xpm", NULL);
+    if(!pix_d3)  
+      pix_d3 = gdk_pixbuf_new_from_resource ("/icons/ar_d3.xpm", NULL);
 
 #ifdef USE_XMLRPC
     if(!pix_lock) {
@@ -7148,8 +7147,13 @@ void stddb_dl(typHOE *hg)
   hg->pbar=gtk_progress_bar_new();
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
   gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
+#ifdef USE_GTK3
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
+				  GTK_ORIENTATION_HORIZONTAL);
+#else
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
 				    GTK_PROGRESS_RIGHT_TO_LEFT);
+#endif
   gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
   gtk_widget_show(hg->pbar);
   
