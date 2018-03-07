@@ -552,7 +552,7 @@ int close_telstat(typHOE *hg){
 
     hg->stat_initflag=FALSE;
     if(hg->telstat_timer!=-1){
-      gtk_timeout_remove(hg->telstat_timer);
+      g_source_remove(hg->telstat_timer);
       hg->telstat_timer=-1;
     }
     hg->telstat_flag=FALSE;

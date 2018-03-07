@@ -5907,7 +5907,7 @@ do_editable_cells (typHOE *hg)
 
     entry = gtk_entry_new ();
     gtk_box_pack_start(GTK_BOX(hbox), entry,FALSE, FALSE, 0);
-    gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+    gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
     my_entry_set_width_chars(GTK_ENTRY(entry),10);
     my_signal_connect (entry, "changed", cc_search_text, (gpointer)hg);
     my_signal_connect (entry, "activate", search_item, (gpointer)hg);
@@ -6377,7 +6377,7 @@ do_editable_cells (typHOE *hg)
     
     hg->std_tgt = gtk_entry_new ();
     gtk_box_pack_start(GTK_BOX(hbox),hg->std_tgt,TRUE, TRUE, 0);
-    gtk_entry_set_editable(GTK_ENTRY(hg->std_tgt),FALSE);
+    gtk_editable_set_editable(GTK_EDITABLE(hg->std_tgt),FALSE);
     my_entry_set_width_chars(GTK_ENTRY(hg->std_tgt),50);
 
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_COPY);
@@ -6477,7 +6477,7 @@ do_editable_cells (typHOE *hg)
     
     hg->fcdb_tgt = gtk_entry_new ();
     gtk_box_pack_start(GTK_BOX(hbox),hg->fcdb_tgt,TRUE, TRUE, 0);
-    gtk_entry_set_editable(GTK_ENTRY(hg->fcdb_tgt),FALSE);
+    gtk_editable_set_editable(GTK_EDITABLE(hg->fcdb_tgt),FALSE);
     my_entry_set_width_chars(GTK_ENTRY(hg->fcdb_tgt),50);
 
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_COPY);
@@ -6520,7 +6520,7 @@ do_editable_cells (typHOE *hg)
 
     entry = gtk_entry_new ();
     gtk_box_pack_start(GTK_BOX(hbox), entry,FALSE, FALSE, 0);
-    gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+    gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
     my_entry_set_width_chars(GTK_ENTRY(entry),10);
     my_signal_connect (entry, "changed", trdb_cc_search_text, (gpointer)hg);
     my_signal_connect (entry, "activate", trdb_search_item, (gpointer)hg);
@@ -7136,8 +7136,6 @@ void stddb_dl(typHOE *hg)
   my_signal_connect(dialog, "delete-event", cancel_stddb, (gpointer)hg);
 
 
-  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
-  
   label=gtk_label_new("Searching standards in SIMBAD ...");
 
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
@@ -7189,7 +7187,7 @@ void stddb_dl(typHOE *hg)
   gtk_main();
 
   gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
-  if(timer!=-1) gtk_timeout_remove(timer);
+  if(timer!=-1) g_source_remove(timer);
   if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 
   flag_getSTD=FALSE;
@@ -7341,7 +7339,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   gtk_box_pack_start(GTK_BOX(hbox),entry,FALSE, FALSE, 0);
   my_signal_connect (entry, "changed", cc_get_entry, &hg->addobj_name);
   gtk_entry_set_text(GTK_ENTRY(entry), "(New Object)");
-  gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(entry),30);
 
   button=gtkut_button_new_from_stock("SIMBAD", GTK_STOCK_FIND);
@@ -7382,7 +7380,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   hg->addobj_entry_ra = gtk_entry_new ();
   gtk_box_pack_start(GTK_BOX(hbox),hg->addobj_entry_ra,FALSE, FALSE, 0);
   gtk_entry_set_text(GTK_ENTRY(hg->addobj_entry_ra), "000000.00");
-  gtk_entry_set_editable(GTK_ENTRY(hg->addobj_entry_ra),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(hg->addobj_entry_ra),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(hg->addobj_entry_ra),12);
   my_signal_connect (hg->addobj_entry_ra, "changed", 
 		     cc_get_entry_double, &hg->addobj_ra);
@@ -7394,7 +7392,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   hg->addobj_entry_dec = gtk_entry_new ();
   gtk_box_pack_start(GTK_BOX(hbox),hg->addobj_entry_dec,FALSE, FALSE, 0);
   gtk_entry_set_text(GTK_ENTRY(hg->addobj_entry_dec), "000000.00");
-  gtk_entry_set_editable(GTK_ENTRY(hg->addobj_entry_dec),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(hg->addobj_entry_dec),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(hg->addobj_entry_dec),12);
   my_signal_connect (hg->addobj_entry_dec, "changed", 
 		     cc_get_entry_double, &hg->addobj_dec);

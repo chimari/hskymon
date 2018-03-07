@@ -263,8 +263,6 @@ void fc_dl (typHOE *hg)
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   my_signal_connect(dialog,"delete-event",cancel_fc,(gpointer)hg);
   
-  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
-  
   if(hg->fc_mode==FC_SKYVIEW_RGB){
     mode=hg->fc_mode_RGB[hg->i_RGB];
   }
@@ -490,7 +488,7 @@ void fc_dl (typHOE *hg)
   gtk_main();
 
   gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
-  if(timer!=-1) gtk_timeout_remove(timer);
+  if(timer!=-1) g_source_remove(timer);
   gtk_widget_destroy(dialog);
   
   flag_getDSS=FALSE;
@@ -682,7 +680,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -702,7 +700,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 3, 4, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -733,7 +731,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -753,7 +751,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 3, 4, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -773,7 +771,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 1.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 5, 6, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -804,7 +802,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -824,7 +822,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 3, 4, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -1179,7 +1177,7 @@ void create_fc_dialog(typHOE *hg)
    			    1.0, 1.0, 0);
   spinner =  gtk_spin_button_new (hg->fc_adj_dss_arcmin, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox2),spinner,FALSE,FALSE,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
@@ -1386,7 +1384,7 @@ void create_fc_dialog(typHOE *hg)
 						       1.0, 1.0, 0);
   spinner =  gtk_spin_button_new (hg->fc_adj_dss_pa, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox2),spinner,FALSE,FALSE,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -1731,9 +1729,9 @@ gboolean resize_draw_fc(GtkWidget *widget,
 	  GtkAllocation *allocation=g_new(GtkAllocation, 1);
 	  gtk_widget_get_allocation(hg->fc_dw,allocation);
 
-	  gtk_drawing_area_size (GTK_DRAWING_AREA(hg->fc_dw),
-				 allocation->width*hg->fc_mag,
-				 allocation->height*hg->fc_mag);
+	  gtk_widget_set_size_request (hg->fc_dw,
+				       allocation->width*hg->fc_mag,
+				       allocation->height*hg->fc_mag);
 	  g_free(allocation);
 	}
       }
@@ -1790,9 +1788,9 @@ gboolean resize_draw_fc(GtkWidget *widget,
 	  GtkAllocation *allocation=g_new(GtkAllocation, 1);
 	  gtk_widget_get_allocation(hg->fc_dw,allocation);
 	  
-	  gtk_drawing_area_size (GTK_DRAWING_AREA(hg->fc_dw),
-				 allocation->width*hg->fc_mag,
-				 allocation->height*hg->fc_mag);
+	  gtk_widget_set_size_request (hg->fc_dw,
+				       allocation->width*hg->fc_mag,
+				       allocation->height*hg->fc_mag);
 	  g_free(allocation);
 	}
       }
@@ -5059,8 +5057,6 @@ void ver_dl(typHOE *hg)
   my_signal_connect(dialog, "delete-event", cancel_fcdb, (gpointer)hg);
 
 
-  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
-  
   label=gtk_label_new("Checking the latest version of hskymon ...");
 
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
@@ -5112,7 +5108,7 @@ void ver_dl(typHOE *hg)
   gtk_main();
 
   gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
-  if(timer!=-1) gtk_timeout_remove(timer);
+  if(timer!=-1) g_source_remove(timer);
   if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 
   hg->fcdb_type=fcdb_type_tmp;
@@ -5141,8 +5137,6 @@ void fcdb_dl(typHOE *hg)
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   my_signal_connect(dialog,"delete-event", cancel_fcdb, (gpointer)hg);
   
-  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
-
   switch(hg->fcdb_type){
   case FCDB_TYPE_SDSS:
   case FCDB_TYPE_LAMOST:
@@ -5367,7 +5361,7 @@ void fcdb_dl(typHOE *hg)
   gtk_main();
 
   gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
-  if(timer!=-1) gtk_timeout_remove(timer);
+  if(timer!=-1) g_source_remove(timer);
 
   flag_getFCDB=FALSE;
   if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
@@ -5424,8 +5418,6 @@ void addobj_dl(typHOE *hg)
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Query to the database");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   my_signal_connect(dialog,"delete-event", cancel_fcdb, (gpointer)hg);
-  
-  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
   
   switch(hg->addobj_type){
   case FCDB_TYPE_SIMBAD:
@@ -5498,7 +5490,7 @@ void addobj_dl(typHOE *hg)
   gtk_main();
 
   gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
-  if(timer!=-1) gtk_timeout_remove(timer);
+  if(timer!=-1) g_source_remove(timer);
   gtk_widget_destroy(dialog);
 
   flag_getFCDB=FALSE;
@@ -5615,8 +5607,6 @@ void trdb_run (typHOE *hg)
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
   my_signal_connect(dialog,"delete-event",cancel_trdb, (gpointer)hg);
  
-  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
-
   switch(hg->fcdb_type){
   case TRDB_TYPE_SMOKA:
     hg->fcdb_post=TRUE;
@@ -5853,7 +5843,7 @@ void trdb_run (typHOE *hg)
     
     get_fcdb(hg);
     gtk_main();
-    gtk_timeout_remove(timer);
+    g_source_remove(timer);
 
     if(flag_trdb_kill){
       flag_trdb_kill=FALSE;
@@ -5917,7 +5907,7 @@ void trdb_run (typHOE *hg)
     }
   }
 
-  gtk_timeout_remove(fcdb_tree_check_timer);
+  g_source_remove(fcdb_tree_check_timer);
   if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 
   make_trdb_label(hg);

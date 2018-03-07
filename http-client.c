@@ -847,7 +847,7 @@ int get_allsky(typHOE *hg){
     hg->allsky_date=g_strdup("Error: fork");
 
     if(hg->allsky_check_timer!=-1)
-      gtk_timeout_remove(hg->allsky_check_timer);
+      g_source_remove(hg->allsky_check_timer);
     hg->allsky_check_timer=-1;
     
     flag_getting_allsky=FALSE;
@@ -862,7 +862,7 @@ int get_allsky(typHOE *hg){
       hg->allsky_date=g_strdup("Error: pipe close");
 
       if(hg->allsky_check_timer!=-1)
-	gtk_timeout_remove(hg->allsky_check_timer);
+	g_source_remove(hg->allsky_check_timer);
       hg->allsky_check_timer=-1;
       
       flag_getting_allsky=FALSE;
@@ -875,7 +875,7 @@ int get_allsky(typHOE *hg){
       hg->allsky_date=g_strdup("Error: pipe duplicate");
 
       if(hg->allsky_check_timer!=-1)
-	gtk_timeout_remove(hg->allsky_check_timer);
+	g_source_remove(hg->allsky_check_timer);
       hg->allsky_check_timer=-1;
       
       flag_getting_allsky=FALSE;
@@ -888,7 +888,7 @@ int get_allsky(typHOE *hg){
       hg->allsky_date=g_strdup("Error: pipe close");
 
       if(hg->allsky_check_timer!=-1)
-	gtk_timeout_remove(hg->allsky_check_timer);
+	g_source_remove(hg->allsky_check_timer);
       hg->allsky_check_timer=-1;
       
       flag_getting_allsky=FALSE;

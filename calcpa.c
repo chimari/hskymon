@@ -63,7 +63,7 @@ void close_plot(GtkWidget *w, gpointer gdata)
   hg=(typHOE *)gdata;
 
   if(hg->plot_timer!=-1){
-    gtk_timeout_remove(hg->plot_timer);
+    g_source_remove(hg->plot_timer);
     hg->plot_timer=-1;
   }
 

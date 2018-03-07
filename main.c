@@ -4159,7 +4159,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 					    5.0,5.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -4179,7 +4179,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 					    5.0,5.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 3, 4, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -4258,7 +4258,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 					    1,1,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
@@ -4335,7 +4335,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 					    1,1,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
@@ -4437,7 +4437,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 					    10,10,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -4457,7 +4457,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 					    1,1,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -4538,7 +4538,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 					    1,1,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -4558,7 +4558,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 					    1,1,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table), spinner, 3, 4, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -4815,7 +4815,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
 					    1, 10, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -4834,7 +4834,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   gtk_table_attach(GTK_TABLE(table), entry, 1, 2, 4, 5,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(entry), hg->trdb_smoka_date);
-  gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(entry),25);
   my_signal_connect (entry,
 		     "changed",
@@ -5050,7 +5050,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
 					    1, 10, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -5069,7 +5069,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   gtk_table_attach(GTK_TABLE(table), entry, 1, 2, 4, 5,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(entry), hg->trdb_hst_date);
-  gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(entry),25);
   my_signal_connect (entry,
 		     "changed",
@@ -5439,7 +5439,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
 					    1, 10, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -5461,7 +5461,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   entry = gtk_entry_new ();
   gtk_box_pack_start(GTK_BOX(hbox), entry, FALSE, FALSE, 0);
   gtk_entry_set_text(GTK_ENTRY(entry), hg->trdb_eso_stdate);
-  gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(entry),15);
   my_signal_connect (entry,
 		     "changed",
@@ -5475,7 +5475,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   entry = gtk_entry_new ();
   gtk_box_pack_start(GTK_BOX(hbox), entry, FALSE, FALSE, 0);
   gtk_entry_set_text(GTK_ENTRY(entry), hg->trdb_eso_eddate);
-  gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(entry),15);
   my_signal_connect (entry,
 		     "changed",
@@ -5654,7 +5654,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
 					    1, 10, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -5673,7 +5673,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   gtk_table_attach(GTK_TABLE(table), entry, 1, 2, 3, 4,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(entry), hg->trdb_gemini_date);
-  gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(entry),25);
   my_signal_connect (entry,
 		     "changed",
@@ -6088,7 +6088,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    8, 25, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -6202,7 +6202,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    1, FCDB_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -6308,7 +6308,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    1, FCDB_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -6341,7 +6341,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    12, 22, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -6372,7 +6372,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    1, FCDB_PS1_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -6405,7 +6405,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    12, 22, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -6420,7 +6420,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    1, 25, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 2, 3,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -6452,7 +6452,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    1, FCDB_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -6520,7 +6520,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					      0, 30, 1, 1, 0);
     spinner =  gtk_spin_button_new (adj, 0, 0);
     gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-    gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+    gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			   FALSE);
     gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, i, i+1,
 		     GTK_FILL,GTK_SHRINK,0,0);
@@ -6544,7 +6544,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					      0, 30, 1, 1, 0);
     spinner =  gtk_spin_button_new (adj, 0, 0);
     gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-    gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+    gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			   FALSE);
     gtk_table_attach(GTK_TABLE(table1), spinner, 5, 6, i, i+1,
 		     GTK_FILL,GTK_SHRINK,0,0);
@@ -6592,7 +6592,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    1, FCDB_USNO_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -6625,7 +6625,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    12, 22, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -6656,7 +6656,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    1, FCDB_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -6689,7 +6689,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    12, 22, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -6720,7 +6720,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    1, FCDB_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -6753,7 +6753,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    8, 16, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -6784,7 +6784,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    1, FCDB_ARCMIN_MAX, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -6817,7 +6817,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 					    8, 18, 1, 1, 0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -8915,7 +8915,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    1.0,1.0,0);
   spinner =  gtk_spin_button_new (hg->obs_adj_lodd, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
@@ -8933,7 +8933,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					  1.0,1.0,0);
   spinner =  gtk_spin_button_new (hg->obs_adj_lomm, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -8951,7 +8951,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					  1.0,1.0,0);
   spinner =  gtk_spin_button_new (hg->obs_adj_loss, 2, 2);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
@@ -9015,7 +9015,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					  1.0,1.0,0);
   spinner =  gtk_spin_button_new (hg->obs_adj_ladd, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
@@ -9034,7 +9034,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					  1.0,1.0,0);
   spinner =  gtk_spin_button_new (hg->obs_adj_lamm, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
@@ -9052,7 +9052,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					  1.0,1.0,0);
   spinner =  gtk_spin_button_new (hg->obs_adj_lass, 2, 2);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
@@ -9110,7 +9110,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					  1.0,10.0,0);
   spinner =  gtk_spin_button_new (hg->obs_adj_alt, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table2), spinner, 1, 2, 2, 3,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -9130,7 +9130,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 						       15.0, 15.0, 0);
   spinner =  gtk_spin_button_new (hg->obs_adj_tz, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table2), spinner, 1, 2, 3, 4,
 		   GTK_FILL,GTK_SHRINK,0,0);
@@ -9151,7 +9151,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz),
 		     hg->obs_tzname);
-  gtk_entry_set_editable(GTK_ENTRY(hg->obs_entry_tz),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(hg->obs_entry_tz),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(hg->obs_entry_tz),10);
   my_signal_connect (hg->obs_entry_tz,
 		     "changed",
@@ -9181,7 +9181,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    0.1,0.1,0);
   spinner =  gtk_spin_button_new (adj, 2, 2);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -9201,7 +9201,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    0.1,0.1,0);
   spinner =  gtk_spin_button_new (adj, 2, 2);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 3, 4, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -9234,7 +9234,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    0.01,0.01,0);
   spinner =  gtk_spin_button_new (adj, 2, 2);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -9254,7 +9254,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    0.01,0.01,0);
   spinner =  gtk_spin_button_new (adj, 2, 2);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 3, 4, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -9443,7 +9443,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		   GTK_FILL|GTK_EXPAND,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host),
 		     hg->allsky_host);
-  gtk_entry_set_editable(GTK_ENTRY(hg->allsky_entry_host),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(hg->allsky_entry_host),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(hg->allsky_entry_host),40);
   my_signal_connect (hg->allsky_entry_host,
 		     "changed",
@@ -9461,7 +9461,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path),
 		     hg->allsky_path);
-  gtk_entry_set_editable(GTK_ENTRY(hg->allsky_entry_path),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(hg->allsky_entry_path),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(hg->allsky_entry_path),40);
   my_signal_connect (hg->allsky_entry_path,
 		     "changed",
@@ -9479,7 +9479,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file),
 		     hg->allsky_file);
-  gtk_entry_set_editable(GTK_ENTRY(hg->allsky_entry_file),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(hg->allsky_entry_file),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(hg->allsky_entry_file),40);
   my_signal_connect (hg->allsky_entry_file,
 		     "changed",
@@ -9496,7 +9496,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file),
 		     hg->allsky_last_file00);
-  gtk_entry_set_editable(GTK_ENTRY(hg->allsky_entry_last_file),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(hg->allsky_entry_last_file),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(hg->allsky_entry_last_file),40);
   my_signal_connect (hg->allsky_entry_last_file,
 		     "changed",
@@ -9529,7 +9529,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    1.0,1.0,0);
   spinner =  gtk_spin_button_new (hg->allsky_adj_centerx, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -9550,7 +9550,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    1.0,1.0,0);
   spinner =  gtk_spin_button_new (hg->allsky_adj_centery, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -9571,7 +9571,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    1.0,1.0,0);
   spinner =  gtk_spin_button_new (hg->allsky_adj_diameter, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -9592,7 +9592,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    0.1,0.1,0);
   spinner =  gtk_spin_button_new (hg->allsky_adj_angle, 1, 1);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),6);
@@ -9648,7 +9648,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    10.0,10.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
@@ -9705,7 +9705,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    100.0,100.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -9750,7 +9750,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    100.0,100.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -9771,7 +9771,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    100.0,100.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 3, 4, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -9792,7 +9792,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    1.0,1.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -9813,7 +9813,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    1.0,1.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 3, 4, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -9975,7 +9975,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(entry),
 		     hg->ro_ns_host);
-  gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(entry),40);
   my_signal_connect (entry,
 		     "changed",
@@ -9992,7 +9992,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    1.0,100.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -10042,7 +10042,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(entry),
 		     hg->www_com);
-  gtk_entry_set_editable(GTK_ENTRY(entry),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(entry),20);
   my_signal_connect (entry,
 		     "changed",
@@ -10638,7 +10638,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_dss_arcmin);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -10658,7 +10658,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_dss_pix);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -10677,7 +10677,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_sdss_pix);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -10772,7 +10772,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    1.0,1.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
@@ -10849,7 +10849,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    20.0,20.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -10870,7 +10870,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    20.0,20.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 3, 4, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -10891,7 +10891,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    20.0,20.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 1, 2, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -10912,7 +10912,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 					    20.0,20.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_entry_set_editable(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
   gtk_table_attach(GTK_TABLE(table1), spinner, 3, 4, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
@@ -11087,9 +11087,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     if(hg->allsky_flag){
       if(hg->allsky_timer!=-1){
 	if(hg->allsky_check_timer!=-1)
-	  gtk_timeout_remove(hg->allsky_check_timer);
+	  g_source_remove(hg->allsky_check_timer);
 	hg->allsky_check_timer=-1;
-	gtk_timeout_remove(hg->allsky_timer);
+	g_source_remove(hg->allsky_timer);
       }
       hg->allsky_timer=-1;
 
@@ -11203,9 +11203,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     if(hg->allsky_flag){
       if(hg->allsky_timer!=-1){
 	if(hg->allsky_check_timer!=-1)
-	  gtk_timeout_remove(hg->allsky_check_timer);
+	  g_source_remove(hg->allsky_check_timer);
 	hg->allsky_check_timer=-1;
-	gtk_timeout_remove(hg->allsky_timer);
+	g_source_remove(hg->allsky_timer);
       }
       hg->allsky_timer=-1;
 
@@ -16142,8 +16142,6 @@ void popup_message(gchar* stock_id, gint delay, ...){
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
 
-  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),FALSE);
-
   if(delay>0){
     timer=g_timeout_add(delay*1000, (GSourceFunc)close_popup,
 			(gpointer)dialog);
@@ -16194,7 +16192,7 @@ gboolean close_popup(gpointer data)
 
 static void destroy_popup(GtkWidget *w, guint data)
 {
-  gtk_timeout_remove(data);
+  g_source_remove(data);
   gtk_main_quit();
 }
 
@@ -16773,10 +16771,6 @@ int main(int argc, char* argv[]){
 
   hg=g_malloc0(sizeof(typHOE));
   
-  setlocale(LC_ALL,"");
-
-  gtk_set_locale();
-
   gtk_init(&argc, &argv);
 
   param_init(hg);
@@ -16784,7 +16778,9 @@ int main(int argc, char* argv[]){
   get_option(argc, argv, hg);
 
   // Required for Gdk-Pixbuf
+#if !GTK_CHECK_VERSION(2,21,8)
   gdk_rgb_init();
+#endif
 
 #ifndef USE_WIN32  
   icon = gdk_pixbuf_new_from_resource ("/icons/subaru_icon.png", NULL);
