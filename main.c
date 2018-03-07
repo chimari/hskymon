@@ -3229,7 +3229,7 @@ static void uri_clicked(GtkButton *button,
 void show_version (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox, *ebox;
-  GdkPixbuf *icon;
+  GdkPixbuf *pixbuf, *pixbuf2;
 #if HAVE_SYS_UTSNAME_H
   struct utsname utsbuf;
 #endif
@@ -3259,9 +3259,12 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox,FALSE, FALSE, 0);
 
-  icon = gdk_pixbuf_new_from_resource ("/icons/subaru_icon.png", NULL);
-  pixmap = gtk_image_new_from_pixbuf(icon);
-  g_object_unref(icon);
+  pixbuf = gdk_pixbuf_new_from_resource ("/icons/subaru_icon.png", NULL);
+  pixbuf2=gdk_pixbuf_scale_simple(pixbuf,
+				  128,128,GDK_INTERP_BILINEAR);
+  pixmap = gtk_image_new_from_pixbuf(pixbuf2);
+  g_object_unref(pixbuf);
+  g_object_unref(pixbuf2);
 
   gtk_box_pack_start(GTK_BOX(hbox), pixmap,FALSE, FALSE, 0);
 
@@ -16133,10 +16136,12 @@ void popup_message(gchar* stock_id, gint delay, ...){
   GtkWidget *hbox, *vbox;
   gint timer;
 
+  dialog = gtk_dialog_new();
+
   va_start(args, delay);
 
   dialog = gtk_dialog_new();
-  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+  gtk_window_set_decorated(GTK_WINDOW(dialog),FALSE);
 
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_MOUSE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -16173,6 +16178,7 @@ void popup_message(gchar* stock_id, gint delay, ...){
   va_end(args);
 
   gtk_widget_show_all(dialog);
+  
   gtk_main();
 
   if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
