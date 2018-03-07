@@ -1653,6 +1653,7 @@ gboolean resize_draw_fc(GtkWidget *widget,
 
   if(flagFC){
     if(event->state & GDK_SHIFT_MASK){
+      // Change Position Angle -- 5 deg step
       if(direction & GDK_SCROLL_DOWN){
 	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
 				 (gdouble)(hg->dss_pa-5));
@@ -1665,6 +1666,7 @@ gboolean resize_draw_fc(GtkWidget *widget,
       draw_fc_cairo(hg->fc_dw,hg);
     }
     else if(event->state & GDK_CONTROL_MASK){
+      // Change Position Angle -- 1 deg step
       if(direction & GDK_SCROLL_DOWN){
 	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
 				 (gdouble)(hg->dss_pa-1));
@@ -1677,6 +1679,7 @@ gboolean resize_draw_fc(GtkWidget *widget,
       draw_fc_cairo(hg->fc_dw,hg);
     }
     else if(event->state & GDK_MOD1_MASK){
+      // Change Magnification w/ fixed center
       GtkAllocation *allocation=g_new(GtkAllocation, 1);
       gtk_widget_get_allocation(widget,allocation);
 
@@ -1725,18 +1728,13 @@ gboolean resize_draw_fc(GtkWidget *widget,
 	  hg->fc_magx=magx0+(x-width/2)/mag0;
 	  hg->fc_magy=magy0+(y-height/2)/mag0;
 	}
-	{
-	  GtkAllocation *allocation=g_new(GtkAllocation, 1);
-	  gtk_widget_get_allocation(hg->fc_dw,allocation);
-
-	  gtk_widget_set_size_request (hg->fc_dw,
-				       allocation->width*hg->fc_mag,
-				       allocation->height*hg->fc_mag);
-	  g_free(allocation);
+	if(hg->fc_mag!=mag0){
+	  draw_fc_cairo(hg->fc_dw,hg);
 	}
       }
     }
     else{
+      // Draw points at cursor position
       gdk_window_get_pointer(gtk_widget_get_window(widget),&x,&y,NULL);
       
       mag0=hg->fc_mag;
@@ -1784,14 +1782,9 @@ gboolean resize_draw_fc(GtkWidget *widget,
 	  hg->fc_magx=magx0+(x-width/2)/mag0;
 	  hg->fc_magy=magy0+(y-height/2)/mag0;
 	}
-	{
-	  GtkAllocation *allocation=g_new(GtkAllocation, 1);
-	  gtk_widget_get_allocation(hg->fc_dw,allocation);
-	  
-	  gtk_widget_set_size_request (hg->fc_dw,
-				       allocation->width*hg->fc_mag,
-				       allocation->height*hg->fc_mag);
-	  g_free(allocation);
+
+	if(hg->fc_mag!=mag0){
+	  draw_fc_cairo(hg->fc_dw,hg);
 	}
       }
     }

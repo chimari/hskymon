@@ -1982,12 +1982,15 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
   g_object_unref(G_OBJECT(pixmap_skymonbk));
 #endif
   gtk_widget_show_all(widget);
+
+#ifndef USE_GTK3
 #ifdef USE_XMLRPC
   if(!hg->telstat_flag){
     draw_skymon_pixmap(widget,hg);
   }
 #else
   draw_skymon_pixmap(widget,hg);
+#endif
 #endif
 
   if(hg->skymon_mode==SKYMON_LAST){
