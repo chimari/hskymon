@@ -11820,6 +11820,20 @@ void param_init(typHOE *hg){
   hg->std_mag2  =STD_MAG2;
   hg->std_band  =g_strdup(STD_BAND);
   hg->std_sptype2  =g_strdup(STD_SPTYPE_ALL);
+
+  hg->filename_list=NULL;
+  hg->filename_ope=NULL;
+  hg->filename_prm=NULL;
+  hg->filename_pdf=NULL;
+  hg->filename_txt=NULL;
+  hg->filename_fcdb=NULL;
+  hg->filename_trdb=NULL;
+  hg->filename_trdb_save=NULL;
+  hg->filename_nst=NULL;
+  hg->filename_jpl=NULL;
+  hg->filename_tscconv=NULL;
+  hg->filehead=NULL;
+  
   
   calc_moon(hg);
 }

@@ -3096,6 +3096,8 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     }
   }
  
+  cairo_destroy(cr);
+
   switch(hg->plot_output){
   case PLOT_OUTPUT_PDF:
     cairo_show_page(cr); 
@@ -3103,11 +3105,9 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     break;
   
   case PLOT_OUTPUT_PRINT:
-    cairo_destroy(cr);
     break;
 
   default:
-    cairo_destroy(cr);
 #ifdef USE_GTK3
     if(pixbuf_plot) g_object_unref(G_OBJECT(pixbuf_plot));
     pixbuf_plot=gdk_pixbuf_get_from_surface(surface,0,0,width,height);
