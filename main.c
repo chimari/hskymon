@@ -11984,10 +11984,10 @@ gchar *cut_spc(gchar * obj_name){
 }
 
 gchar *make_filehead(const gchar *file_head, gchar * obj_name){
-  gchar *tgt_name, *ret_name;
+  gchar tgt_name[BUFFSIZE], *ret_name;
   gint  i_obj,i_tgt;
 
-  tgt_name=strdup(file_head);
+  strcpy(tgt_name, file_head);
   i_tgt=strlen(tgt_name);
 
   for(i_obj=0;i_obj<strlen(obj_name);i_obj++){
@@ -12003,7 +12003,6 @@ gchar *make_filehead(const gchar *file_head, gchar * obj_name){
   tgt_name[i_tgt]='\0';
   ret_name=g_strdup(tgt_name);
 
-  if(tgt_name) g_free(tgt_name);
   return(ret_name);
 }
 
