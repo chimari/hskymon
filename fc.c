@@ -3893,10 +3893,9 @@ gboolean draw_fc_cairo(GtkWidget *widget,
     cairo_restore(cr);
   }
   
-  cairo_destroy(cr);
-
   switch(hg->fc_output){
   case FC_OUTPUT_PDF:
+    cairo_destroy(cr);
     cairo_show_page(cr); 
     cairo_surface_destroy(surface);
     break;
@@ -3906,6 +3905,7 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 
   default:
     gtk_widget_show_all(widget);
+    cairo_destroy(cr);
 #ifdef USE_GTK3
     hg->fc_shift_x=shift_x;
     hg->fc_shift_y=shift_y;
