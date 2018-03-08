@@ -17,6 +17,8 @@
 #ifndef USE_WIN32
 #include<sys/time.h>
 #endif
+static gint time_spin_input();
+static gint time_spin_output();
 
 void set_skymon_e_date();
 void select_skymon_calendar();
@@ -82,26 +84,27 @@ gdouble old_r=0;
 
 static gint work_page=0;
 
-void cc_get_adj_time (GtkWidget *widget, gint * gdata)
+static int adj_change=0;
+static int val_pre=0;
+
+static gint cc_set_adj_time (GtkAdjustment *adj) 
 {
-  //*gdata=(gint)gtk_adjustment_get_value(GTK_ADJUSTMENT(widget));
-  //printf("Time=%d\n",*gdata);
+  adj_change=(gint)gtk_adjustment_get_value(adj);
 }
 
-static gint time_spin_input(GtkSpinButton *spin, gint *new_time){
+
+static gint time_spin_input(GtkSpinButton *spin, 
+			    gdouble *new_val,
+			    gpointer gdata){
   const gchar *text;
-  GtkAdjustment *adj;
   gchar **str;
   gboolean found=FALSE;
-  typHOE *hg;
   gint hours;
   gint minutes;
   gchar *endh;
   gchar *endm;
-  gchar *buf;
+  typHOE *hg=(typHOE *)gdata;
 
-  printf("spin_input\n");
-  adj=gtk_spin_button_get_adjustment (spin);
   text=gtk_entry_get_text(GTK_ENTRY(spin));
   str=g_strsplit(text, ":", 2);
   
@@ -109,44 +112,62 @@ static gint time_spin_input(GtkSpinButton *spin, gint *new_time){
     hours=strtol(str[0], &endh, 10);
     minutes=strtol(str[1], &endm, 10);
     if(!*endh && !*endm &&
-       0 <= hours && hours < 31 &&
+       0 <= hours && hours < 24 &&
        0 <= minutes && minutes < 60){
 
-      printf("%s , %s : %s   vs  %d : %d \n",text,str[0],str[1],hours,minutes);
-
-      *new_time=hours*60+minutes;
+      hg->skymon_time=hours*60+minutes;
+      hg->skymon_hour=hours;
+      hg->skymon_min=minutes;
       found=TRUE;
     }
   }
-  
   g_strfreev(str);
-  
+
   if(!found){
-    *new_time=0;
     return GTK_INPUT_ERROR;
   }
-  return FALSE;
+
+  val_pre=0;
+  return TRUE;
 }
 
 
-static gint time_spin_output(GtkSpinButton *spin, gint skymon_time){
+static gint time_spin_output(GtkSpinButton *spin, gpointer gdata){
   GtkAdjustment *adj;
-  gchar *buf;
+  gchar *buf=NULL;
   gdouble hours;
   gdouble minutes;
-  
-  printf("spin_output\n");
-  adj=gtk_spin_button_get_adjustment (spin);
-  hours = gtk_adjustment_get_value(adj)/60.0;
-  //hours=(gdouble)(skymon_time)/60.0;
+  gint time_val;
+  gint adj_val;
+  typHOE *hg=(typHOE *)gdata;
+
+  adj=gtk_spin_button_get_adjustment(spin);
+  adj_val=(gint)gtk_adjustment_get_value(adj);
+  hours = (gdouble)adj_val/60.0;
   minutes = (hours-floor(hours))*60.0;
-  buf=g_strdup_printf("%02.0lf:%02.0lf",floor(hours),floor(minutes+0.5));
-  if(strcmp(buf,gtk_entry_get_text(GTK_ENTRY(spin))))
-    gtk_entry_set_text(GTK_ENTRY(spin),buf);
-  g_free(buf);
+  time_val=(gint)hours*60+(gint)(floor(minutes+0.5));
+  if(time_val==hg->skymon_time){
+    buf=g_strdup_printf("%02.0lf:%02.0lf",floor(hours),floor(minutes+0.5));
+  }
+  else if(adj_val!=0){
+    hg->skymon_time+=adj_change-val_pre;
+    val_pre=adj_change;
+    if(hg->skymon_time>60*24) hg->skymon_time-=60*24;
+    if(hg->skymon_time<0)     hg->skymon_time+=60*24;
+    hg->skymon_hour=hg->skymon_time/60;
+    hg->skymon_min=hg->skymon_time-hg->skymon_hour*60;
+
+    buf=g_strdup_printf("%02d:%02d",hg->skymon_hour,hg->skymon_min);
+  }
+  if(buf){
+    if(strcmp(buf, gtk_entry_get_text(GTK_ENTRY(spin))))
+      gtk_entry_set_text(GTK_ENTRY(spin),buf);
+    g_free(buf);
+  }
 
   return TRUE;
 }
+
 
 void set_skymon_e_date(typHOE *hg){
   gchar *tmp;
@@ -205,7 +226,7 @@ void popup_skymon_calendar (GtkWidget *widget, gpointer gdata)
 			  hg->skymon_day);
 
   my_signal_connect(calendar,
-		    "day-selected-double-click",
+		    "day-selected",
 		    select_skymon_calendar, 
 		    (gpointer)hg);
 
@@ -349,7 +370,7 @@ void create_skymon_dialog(typHOE *hg)
 
   hg->skymon_adj_min = (GtkAdjustment *)gtk_adjustment_new(hg->skymon_time,
 							   0, 24*60,
-							   1.0, 10.0, 0);
+							   10.0, 60.0, 0);
   spinner =  gtk_spin_button_new (hg->skymon_adj_min, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spinner), FALSE);
@@ -357,15 +378,18 @@ void create_skymon_dialog(typHOE *hg)
 			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox1),spinner,FALSE,FALSE,0);
   my_entry_set_width_chars(GTK_ENTRY(GTK_SPIN_BUTTON(spinner)),5);
-  my_signal_connect (hg->skymon_adj_min, "value_changed",
-  		     cc_get_adj_time,
-  		     &hg->skymon_time);
-  my_signal_connect (GTK_SPIN_BUTTON(spinner), "input",
-		     time_spin_input,
-		     &hg->skymon_time);
+  my_signal_connect (hg->skymon_adj_min, "value-changed",
+  		     cc_set_adj_time,
+  		     NULL);
   my_signal_connect (GTK_SPIN_BUTTON(spinner), "output",
-		     time_spin_output,
-		     hg->skymon_time);
+  		     time_spin_output,
+		     (gpointer)hg);
+  my_signal_connect (GTK_SPIN_BUTTON(spinner), "input",
+  		     time_spin_input,
+  		     (gpointer)hg);
+  //my_signal_connect (GTK_SPIN_BUTTON(spinner), "value_changed",
+  //		     time_spin_changed,
+  //		     (gpointer)hg);
 
   /*
   hg->skymon_adj_hour = (GtkAdjustment *)gtk_adjustment_new(hg->skymon_hour,
