@@ -82,6 +82,71 @@ gdouble old_r=0;
 
 static gint work_page=0;
 
+void cc_get_adj_time (GtkWidget *widget, gint * gdata)
+{
+  //*gdata=(gint)gtk_adjustment_get_value(GTK_ADJUSTMENT(widget));
+  //printf("Time=%d\n",*gdata);
+}
+
+static gint time_spin_input(GtkSpinButton *spin, gint *new_time){
+  const gchar *text;
+  GtkAdjustment *adj;
+  gchar **str;
+  gboolean found=FALSE;
+  typHOE *hg;
+  gint hours;
+  gint minutes;
+  gchar *endh;
+  gchar *endm;
+  gchar *buf;
+
+  printf("spin_input\n");
+  adj=gtk_spin_button_get_adjustment (spin);
+  text=gtk_entry_get_text(GTK_ENTRY(spin));
+  str=g_strsplit(text, ":", 2);
+  
+  if(g_strv_length(str)==2){
+    hours=strtol(str[0], &endh, 10);
+    minutes=strtol(str[1], &endm, 10);
+    if(!*endh && !*endm &&
+       0 <= hours && hours < 31 &&
+       0 <= minutes && minutes < 60){
+
+      printf("%s , %s : %s   vs  %d : %d \n",text,str[0],str[1],hours,minutes);
+
+      *new_time=hours*60+minutes;
+      found=TRUE;
+    }
+  }
+  
+  g_strfreev(str);
+  
+  if(!found){
+    *new_time=0;
+    return GTK_INPUT_ERROR;
+  }
+  return FALSE;
+}
+
+
+static gint time_spin_output(GtkSpinButton *spin, gint skymon_time){
+  GtkAdjustment *adj;
+  gchar *buf;
+  gdouble hours;
+  gdouble minutes;
+  
+  printf("spin_output\n");
+  adj=gtk_spin_button_get_adjustment (spin);
+  hours = gtk_adjustment_get_value(adj)/60.0;
+  //hours=(gdouble)(skymon_time)/60.0;
+  minutes = (hours-floor(hours))*60.0;
+  buf=g_strdup_printf("%02.0lf:%02.0lf",floor(hours),floor(minutes+0.5));
+  if(strcmp(buf,gtk_entry_get_text(GTK_ENTRY(spin))))
+    gtk_entry_set_text(GTK_ENTRY(spin),buf);
+  g_free(buf);
+
+  return TRUE;
+}
 
 void set_skymon_e_date(typHOE *hg){
   gchar *tmp;
@@ -280,6 +345,29 @@ void create_skymon_dialog(typHOE *hg)
   hbox1 = gtk_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (hg->skymon_frame_time), hbox1);
 
+  hg->skymon_time=hg->skymon_hour*60+hg->skymon_min;
+
+  hg->skymon_adj_min = (GtkAdjustment *)gtk_adjustment_new(hg->skymon_time,
+							   0, 24*60,
+							   1.0, 10.0, 0);
+  spinner =  gtk_spin_button_new (hg->skymon_adj_min, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
+  gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
+			 TRUE);
+  gtk_box_pack_start(GTK_BOX(hbox1),spinner,FALSE,FALSE,0);
+  my_entry_set_width_chars(GTK_ENTRY(GTK_SPIN_BUTTON(spinner)),5);
+  my_signal_connect (hg->skymon_adj_min, "value_changed",
+  		     cc_get_adj_time,
+  		     &hg->skymon_time);
+  my_signal_connect (GTK_SPIN_BUTTON(spinner), "input",
+		     time_spin_input,
+		     &hg->skymon_time);
+  my_signal_connect (GTK_SPIN_BUTTON(spinner), "output",
+		     time_spin_output,
+		     hg->skymon_time);
+
+  /*
   hg->skymon_adj_hour = (GtkAdjustment *)gtk_adjustment_new(hg->skymon_hour,
 							    0, 23,
 							    1.0, 1.0, 0);
@@ -308,6 +396,7 @@ void create_skymon_dialog(typHOE *hg)
   my_signal_connect (hg->skymon_adj_min, "value_changed",
 		     cc_get_adj,
 		     &hg->skymon_min);
+  */
 
 #ifdef USE_XMLRPC
   frame = gtk_frame_new ("ASC/Telstat");
@@ -357,7 +446,7 @@ void create_skymon_dialog(typHOE *hg)
 		    (gpointer)hg);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
-			      "Hide Objects and Characters");
+			      "Hideg Objects and Characters");
 #endif
 
 #ifdef USE_XMLRPC
@@ -3558,9 +3647,7 @@ static void skymon_set_and_draw (GtkWidget *widget,   gpointer gdata)
     skymon_set_time_current(hg);
     
     set_skymon_e_date(hg);
-    gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
-    gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_min);
-
+    gtk_adjustment_set_value(hg->skymon_adj_min,(gdouble)hg->skymon_time);
   }
 }
 
@@ -3708,9 +3795,9 @@ static void skymon_morning (GtkWidget *widget,   gpointer gdata)
       hg->skymon_min+=60;
       hg->skymon_hour-=1;
     }
+    hg->skymon_time=hg->skymon_hour*60+hg->skymon_min;
 
-    gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
-    gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_min);
+    gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_time);
     
     calcpa2_skymon(hg);
     
@@ -3744,9 +3831,9 @@ static void skymon_evening (GtkWidget *widget,   gpointer gdata)
       hg->skymon_min-=60;
       hg->skymon_hour+=1;
     }
+    hg->skymon_time=hg->skymon_hour*60+hg->skymon_min;
     
-    gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
-    gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_min);
+    gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_time);
     
     calcpa2_skymon(hg);
     
@@ -3803,9 +3890,9 @@ gint skymon_go(typHOE *hg){
 
     set_skymon_e_date(hg);
   }
-
-  gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
-  gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_min);
+  hg->skymon_time=hg->skymon_hour*60+hg->skymon_min;
+    
+  gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_time);
 
 
   if((hg->skymon_hour==7)||(hg->skymon_hour==7+24)){
@@ -3891,9 +3978,9 @@ gint skymon_back(typHOE *hg){
 
     set_skymon_e_date(hg);
   }
+  hg->skymon_time=hg->skymon_hour*60+hg->skymon_min;
 
-  gtk_adjustment_set_value(hg->skymon_adj_hour, (gdouble)hg->skymon_hour);
-  gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_min);
+  gtk_adjustment_set_value(hg->skymon_adj_min,  (gdouble)hg->skymon_time);
 	     
 
   if((hg->skymon_hour==18)||(hg->skymon_hour==18-24)){
@@ -3933,6 +4020,7 @@ void skymon_set_time_current(typHOE *hg){
     
   hg->skymon_hour=hour;
   hg->skymon_min=min;
+  hg->skymon_time=hour*60+min;
 }
 
 
