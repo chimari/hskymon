@@ -11082,7 +11082,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     if(hg->fontname_all) g_free(hg->fontname_all);
     hg->fontname_all         =g_strdup(tmp_fontname_all);
     get_font_family_size(hg);
-    gtk_adjustment_set_value(hg->skymon_adj_objsz, (gdouble)hg->skymon_objsz);
+    //gtk_adjustment_set_value(hg->skymon_adj_objsz, (gdouble)hg->skymon_objsz);
 
     WriteConf(hg);
 
@@ -11198,7 +11198,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     if(hg->fontname_all) g_free(hg->fontname_all);
     hg->fontname_all=g_strdup(SKYMON_FONT);
     get_font_family_size(hg);
-    gtk_adjustment_set_value(hg->skymon_adj_objsz, (gdouble)hg->skymon_objsz);
+    //gtk_adjustment_set_value(hg->skymon_adj_objsz, (gdouble)hg->skymon_objsz);
 
     WriteConf(hg);
 

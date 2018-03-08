@@ -317,6 +317,19 @@
 #define FC_PATH_PANY "/cgi-bin/ps1cutouts?pos=%lf+%+lf&filter=y&filetypes=stack&auxiliary=data&size=%d&output_size=1024&verbose=0&autoscale=99.500000&catlist="
 
 
+static const gchar* cal_month[]={"Jan",
+				 "Feb",
+				 "Mar",
+				 "Apr",
+				 "May",
+				 "Jun",
+				 "Jul",
+				 "Aug",
+				 "Sep",
+				 "Oct",
+				 "Nov",
+				 "Dec"};
+
 // Finding Chart
 enum{FC_STSCI_DSS1R, 
      FC_STSCI_DSS1B, 
@@ -1628,7 +1641,7 @@ struct _typHOE{
   GtkWidget *skymon_button_morn;
   GtkWidget *skymon_button_even;
   GtkAdjustment *skymon_adj_min;
-  GtkAdjustment *skymon_adj_objsz;
+  //GtkAdjustment *skymon_adj_objsz;
   gint skymon_mode;
   gint skymon_year,skymon_month,skymon_day,skymon_min,skymon_hour;
   gint skymon_time;

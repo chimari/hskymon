@@ -171,11 +171,11 @@ static gint time_spin_output(GtkSpinButton *spin, gpointer gdata){
 
 void set_skymon_e_date(typHOE *hg){
   gchar *tmp;
-  
-  tmp=g_strdup_printf("%4d/%02d/%02d",
-		      hg->skymon_year,
-		      hg->skymon_month,
-		      hg->skymon_day);
+    
+  tmp=g_strdup_printf("%s %d, %d",
+		      cal_month[hg->skymon_month-1],
+		      hg->skymon_day,
+		      hg->skymon_year);
 
   gtk_entry_set_text(GTK_ENTRY(hg->skymon_e_date),tmp);
   g_free(tmp);
@@ -226,7 +226,7 @@ void popup_skymon_calendar (GtkWidget *widget, gpointer gdata)
 			  hg->skymon_day);
 
   my_signal_connect(calendar,
-		    "day-selected",
+		    "day-selected-double-click",
 		    select_skymon_calendar, 
 		    (gpointer)hg);
 
@@ -349,7 +349,7 @@ void create_skymon_dialog(typHOE *hg)
   hg->skymon_e_date = gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(hbox1),hg->skymon_e_date,FALSE,FALSE,0);
   gtk_editable_set_editable(GTK_EDITABLE(hg->skymon_e_date),FALSE);
-  my_entry_set_width_chars(GTK_ENTRY(hg->skymon_e_date),10);
+  my_entry_set_width_chars(GTK_ENTRY(hg->skymon_e_date),12);
 
   set_skymon_e_date(hg);
 
@@ -358,6 +358,9 @@ void create_skymon_dialog(typHOE *hg)
   my_signal_connect(button,"pressed",
   		    popup_skymon_calendar, 
   		    (gpointer)hg);
+#ifdef __GTK_TOOLTIP_H__
+  gtk_widget_set_tooltip_text(button,"Selecte Date by Double-Click on calendar");
+#endif
 
   hg->skymon_frame_time = gtk_frame_new (hg->obs_tzname);
   gtk_box_pack_start(GTK_BOX(hbox), hg->skymon_frame_time, FALSE, FALSE, 0);
@@ -565,14 +568,14 @@ void create_skymon_dialog(typHOE *hg)
   gtk_widget_set_sensitive(hg->skymon_button_morn,FALSE);
   gtk_widget_set_sensitive(hg->skymon_button_even,FALSE);
 
-
+  /*
   hg->skymon_frame_sz = gtk_frame_new ("Sz.");
   gtk_box_pack_start(GTK_BOX(hbox), hg->skymon_frame_sz, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_frame_sz), 3);
 
   hbox1 = gtk_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (hg->skymon_frame_sz), hbox1);
-
+  
   hg->skymon_adj_objsz 
     = (GtkAdjustment *)gtk_adjustment_new(hg->skymon_objsz,
 					  0, 32,
@@ -586,7 +589,7 @@ void create_skymon_dialog(typHOE *hg)
   my_signal_connect (hg->skymon_adj_objsz, "value_changed",
 		     cc_get_adj,
 		     &hg->skymon_objsz);
-
+  */
 
 
   
@@ -1153,13 +1156,14 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 
 #ifdef USE_XMLRPC
     if((hg->stat_obcp)&&(hg->skymon_mode==SKYMON_CUR)){
-      tmp=g_strdup_printf("%02d/%02d/%04d  [%s]",month,day,year,hg->stat_obcp);
+      tmp=g_strdup_printf("%s %d, %d  [%s]",cal_month[month-1],
+			  day,year,hg->stat_obcp);
     }
     else{
-      tmp=g_strdup_printf("%02d/%02d/%04d",month,day,year);
+      tmp=g_strdup_printf("%s %d, %d",cal_month[month-1],day,year);
     }
 #else
-    tmp=g_strdup_printf("%02d/%02d/%04d",month,day,year);
+    tmp=g_strdup_printf("%s %d, %d",cal_month[month-1],day,year);
 #endif
     cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
     cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2);
