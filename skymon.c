@@ -716,6 +716,7 @@ gboolean draw_skymon(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 #ifdef USE_XMLRPC
   draw_skymon_with_telstat_cairo(widget, hg);
 #endif
+  return TRUE;
 }
 
 
