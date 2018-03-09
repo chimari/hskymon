@@ -210,7 +210,7 @@ void popup_skymon_calendar (GtkWidget *widget, gpointer gdata)
   gtk_widget_get_allocation(widget,allocation);
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_window_get_position(GTK_WINDOW(hg->skymon_main),&root_x,&root_y);
 

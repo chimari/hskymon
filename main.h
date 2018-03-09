@@ -1517,11 +1517,6 @@ struct _typHOE{
   gint sz_fc;
   gint sz_adc;
 
-  GtkWidget *w_top;
-  GtkWidget *w_box;
-  GtkWidget *all_note;
-  GtkWidget *scrwin;
-
   GtkWidget *pbar;
   GtkWidget *pbar2;
   GtkWidget *plabel;

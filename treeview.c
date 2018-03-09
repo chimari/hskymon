@@ -1559,7 +1559,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
 
       if(hg->obj[i].hash==-1){
 #ifdef GTK_MSG
-	popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+	popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		      "Error: The target does not have a HASH ID.",
 		      NULL);
 #else
@@ -7119,7 +7119,7 @@ void stddb_dl(typHOE *hg)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		    "Error: Please select a target in the Object List.",
 		    NULL);
 #else
@@ -7131,7 +7131,7 @@ void stddb_dl(typHOE *hg)
   }
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -7331,7 +7331,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   hg->addobj_dec=0;
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Add Object");
   my_signal_connect(dialog,"delete-event", gtk_main_quit, NULL);
