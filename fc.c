@@ -589,7 +589,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
   
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : HSC Dithering Parameters");
 
@@ -1573,7 +1573,7 @@ void create_fc_dialog(typHOE *hg)
 
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_INFO);
   my_signal_connect (button, "clicked",
-		     G_CALLBACK (show_fc_help), (gpointer)hg);
+		     G_CALLBACK (show_fc_help), hg->w_top);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
@@ -4776,7 +4776,7 @@ void set_fc_frame_col(typHOE *hg){
   }
 }
 
-static void show_fc_help (GtkWidget *widget, gpointer gdata)
+static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
 {
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox, *table;
   GdkPixbuf *icon, *pixbuf;
@@ -4785,7 +4785,7 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
   gtk_icon_size_lookup(GTK_ICON_SIZE_LARGE_TOOLBAR,&w,&h);
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(parent));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Help for Finding Chart");
 

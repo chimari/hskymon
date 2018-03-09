@@ -731,7 +731,7 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
-  my_signal_connect (popup_button, "activate",show_help, NULL);
+  my_signal_connect (popup_button, "activate",show_help, hg->w_top);
 
 
   //Info/Properties
@@ -2406,7 +2406,7 @@ void do_open (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Input List File",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -2466,7 +2466,7 @@ void do_open (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -2503,7 +2503,7 @@ void do_open_NST (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File [TSC]",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -2556,7 +2556,7 @@ void do_open_NST (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -2592,7 +2592,7 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File  [JPL HRIZONS]",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -2646,7 +2646,7 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -2686,7 +2686,7 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File  [JPL HRIZONS]",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -2724,7 +2724,7 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -2740,7 +2740,7 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
     if(dest_file) g_free(dest_file);
     
     fdialog_w = gtk_file_chooser_dialog_new("Sky Monitor : Input TSC Tracking File to be saved",
-					    GTK_WINDOW(widget),
+					    GTK_WINDOW(hg->w_top),
 					    GTK_FILE_CHOOSER_ACTION_SAVE,
 					    GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					    GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
@@ -2819,7 +2819,7 @@ void do_reload_ope (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    hg->filename_ope,
@@ -2848,7 +2848,7 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select OPE File",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -2914,7 +2914,7 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -2951,7 +2951,7 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select OPE File",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -3003,7 +3003,7 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -3040,7 +3040,7 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select PRM File",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -3090,7 +3090,7 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -3128,7 +3128,7 @@ void do_merge (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Input List File",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -3186,7 +3186,7 @@ void do_merge (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -3499,7 +3499,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
   flagChildDialog=FALSE;
 }
 
-static void show_help (GtkWidget *widget, gpointer gdata)
+static void show_help (GtkWidget *widget, GtkWidget *parent)
 {
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox, *table;
   GdkPixbuf *icon, *pixbuf;
@@ -3509,7 +3509,7 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   gtk_icon_size_lookup(GTK_ICON_SIZE_LARGE_TOOLBAR,&w,&h);
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(parent));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Help");
 
@@ -3701,7 +3701,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
   tmp_thresh=hg->allsky_cloud_thresh;
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Differential Images of All-Sky Camera");
@@ -4003,7 +4003,7 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
   tmp_alpha=hg->allsky_alpha;
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Displaying All-Sky Camera Images");
@@ -4159,7 +4159,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
   tmp_sptype2=g_strdup(hg->std_sptype2);
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Searching Stndards");
@@ -4685,7 +4685,7 @@ static void ok_trdb_smoka(GtkWidget *w, gpointer gdata)
      &&(!hg->trdb_smoka_spec)
      &&(!hg->trdb_smoka_ipol)){
 #ifdef GTK_MSG
-    popup_message(w, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		    "Error: Please select at least one observation mode.",
 		    NULL);
 #else
@@ -4720,7 +4720,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
 
   if(hg->i_max<=0){
 #ifdef GTK_MSG
-    popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Error: Please load your object list.",
 		  NULL);
 #else
@@ -4740,7 +4740,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   hg->fcdb_type=TRDB_TYPE_SMOKA;
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : SMOKA List Query");
   my_signal_connect(dialog,"delete-event",gtk_main_quit, NULL);
@@ -4928,7 +4928,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
 
   if(hg->i_max<=0){
 #ifdef GTK_MSG
-    popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Error: Please load your object list.",
 		  NULL);
 #else
@@ -4948,7 +4948,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   hg->fcdb_type=TRDB_TYPE_HST;
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : HST archive List Query");
   my_signal_connect(dialog,"delete-event",gtk_main_quit, NULL);
@@ -5178,7 +5178,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
 
   if(hg->i_max<=0){
 #ifdef GTK_MSG
-    popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Error: Please load your object list.",
 		  NULL);
 #else
@@ -5198,7 +5198,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   hg->fcdb_type=TRDB_TYPE_ESO;
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : ESO archive List Query");
   my_signal_connect(dialog,"delete-event",gtk_main_quit, NULL);
@@ -5585,7 +5585,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
 
   if(hg->i_max<=0){
 #ifdef GTK_MSG
-    popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Error: Please load your object list.",
 		  NULL);
 #else
@@ -5605,7 +5605,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   hg->fcdb_type=TRDB_TYPE_GEMINI;
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Gemini archive List Query");
   my_signal_connect(dialog,"delete-event",gtk_main_quit, NULL);
@@ -7703,7 +7703,7 @@ void do_save_pdf (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("HOE : Input PDF File to be Saved",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
@@ -7754,7 +7754,7 @@ void do_save_pdf (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -7784,7 +7784,7 @@ void do_save_OpeDef (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("HOE : Ope Def File to be Saved",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
@@ -7825,7 +7825,7 @@ void do_save_OpeDef (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -7852,7 +7852,7 @@ void do_save_TextList (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("HOE : Ope Def File to be Saved",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
@@ -7893,7 +7893,7 @@ void do_save_TextList (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -8002,7 +8002,7 @@ void do_save_FCDB_List (GtkWidget *widget, gpointer gdata)
 
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : CSV File to be Saved (FCDB)",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
@@ -8043,7 +8043,7 @@ void do_save_FCDB_List (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -8240,7 +8240,7 @@ void do_save_TRDB_CSV (GtkWidget *widget, gpointer gdata)
   if(hg->i_max<=0) return;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : CSV file to be Saved (List Query)",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
@@ -8281,7 +8281,7 @@ void do_save_TRDB_CSV (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -8317,7 +8317,7 @@ void do_open_TRDB (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select HSK File",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -8377,7 +8377,7 @@ void do_open_TRDB (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -8410,7 +8410,7 @@ void do_save_TRDB (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : ." 
 					HSKYMON_EXTENSION 
 					" file to be Saved (List Query)",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
@@ -8451,7 +8451,7 @@ void do_save_TRDB (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -8478,7 +8478,7 @@ void do_save_fc_pdf (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Input PDF File to be Saved",
-					GTK_WINDOW(widget),
+					GTK_WINDOW(hg->w_top),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
@@ -8530,7 +8530,7 @@ void do_save_fc_pdf (GtkWidget *widget, gpointer gdata)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
@@ -8710,7 +8710,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   flagChildDialog=TRUE;
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Properties");
@@ -16048,7 +16048,7 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
 
   if((ret=get_rope(hg, ROPE_ALL))==-2){
 #ifdef GTK_MSG
-    popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: Unconnected to the Telescope Status server.",
 		  NULL);
 #else
@@ -16057,7 +16057,7 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
   }
   else if (ret<=0){
  #ifdef GTK_MSG
-    popup_message(widget, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->w_top, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
 		  "Error: No OPE files are opend in IntegGUI.",
 		  " ",
 		  "         Please open at least one OPE file in IntegGUI!!",
@@ -16071,7 +16071,7 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
     flagChildDialog=TRUE;
 
     dialog = gtk_dialog_new_with_buttons("Sky Monitor : Sync OPE files with IntegGUI",
-					 GTK_WINDOW(widget),
+					 GTK_WINDOW(hg->w_top),
 					 GTK_DIALOG_MODAL,
 					 GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					 GTK_STOCK_OK,GTK_RESPONSE_OK,
