@@ -34,6 +34,8 @@
 #include<string.h>
 
 #ifdef USE_WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
 #include <winnt.h>
 #endif

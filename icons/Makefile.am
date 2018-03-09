@@ -1,10 +1,20 @@
 EXTRA_DIST = \
+	ar_d0.xpm\
+	ar_d1.xpm\
+	ar_d2.xpm\
+	ar_d3.xpm\
+	ar_u0.xpm\
+	ar_u1.xpm\
+	ar_u2.xpm\
+	ar_u3.xpm\
 	chrome_icon.png\
 	comet_icon.png\
 	dl_icon.png\
 	efs_icon.png\
 	etc_icon.png\
+	feed_icon.png\
 	firefox_icon.png\
+	google_icon.png\
 	hoe_icon.png\
 	hsc_icon.png\
 	ie_icon.png\

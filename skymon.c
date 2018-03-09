@@ -233,12 +233,12 @@ void popup_skymon_calendar (GtkWidget *widget, gpointer gdata)
 		    select_skymon_calendar, 
 		    (gpointer)hg);
 
-  gtk_widget_show_all(dialog);
+  gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
   gtk_window_move(GTK_WINDOW(dialog),
 		  root_x+allocation->x,
 		  root_y+allocation->y);
-  gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
   g_free(allocation);
+  gtk_widget_show_all(dialog);
   gtk_main();
   gtk_widget_destroy(dialog);
 }
