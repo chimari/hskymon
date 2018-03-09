@@ -235,7 +235,7 @@ void fc_dl (typHOE *hg)
     }
     else{
 #ifdef GTK_MSG
-      popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+      popup_message(hg->w_top,GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		    "Error: Please select a target in the Object List.",
 		    NULL);
 #else
@@ -247,7 +247,7 @@ void fc_dl (typHOE *hg)
   }
   else if(hg->dss_i>=hg->i_max){
 #ifdef GTK_MSG
-    popup_message(GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->w_top,GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
 		  "Error: Please select a target in the Object List.",
 		  NULL);
 #else
@@ -258,6 +258,7 @@ void fc_dl (typHOE *hg)
   }
 
   dialog = gtk_dialog_new();
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -588,6 +589,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
   
   dialog = gtk_dialog_new();
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : HSC Dithering Parameters");
 
@@ -876,6 +878,7 @@ void create_fc_dialog(typHOE *hg)
   GdkPixbuf *icon;
 
   hg->fc_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_transient_for(GTK_WINDOW(hg->fc_main),GTK_WINDOW(hg->w_top));
   //hg->fc_main = gtk_dialog_new();
   gtk_window_set_title(GTK_WINDOW(hg->fc_main), "Sky Monitor : Finding Chart");
   
@@ -4782,6 +4785,7 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
   gtk_icon_size_lookup(GTK_ICON_SIZE_LARGE_TOOLBAR,&w,&h);
 
   dialog = gtk_dialog_new();
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Help for Finding Chart");
 
@@ -5065,6 +5069,7 @@ void ver_dl(typHOE *hg)
 			   FCDB_FILE_TXT,NULL);
 
   dialog = gtk_dialog_new();
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -5146,6 +5151,7 @@ void fcdb_dl(typHOE *hg)
   flag_getFCDB=TRUE;
 
   dialog = gtk_dialog_new();
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -5428,6 +5434,7 @@ void addobj_dl(typHOE *hg)
 			    FCDB_FILE_XML,NULL);
 
   dialog = gtk_dialog_new();
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -5614,6 +5621,7 @@ void trdb_run (typHOE *hg)
   }
 
   dialog = gtk_dialog_new();
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->w_top));
   
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
 

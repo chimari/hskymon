@@ -330,7 +330,8 @@ int Extract_VO_TableData (xmlTextReaderPtr reader,
  
 void Extract_Att_VO_Table(xmlTextReaderPtr reader, 
 			  VOTable *votablePtr,
-			  gchar *fname);
+			  gchar *fname,
+			  GtkWidget *parent);
 /*@}*/
 
 

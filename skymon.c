@@ -210,6 +210,7 @@ void popup_skymon_calendar (GtkWidget *widget, gpointer gdata)
   gtk_widget_get_allocation(widget,allocation);
 
   dialog = gtk_dialog_new();
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(widget));
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_window_get_position(GTK_WINDOW(hg->skymon_main),&root_x,&root_y);
 
@@ -436,7 +437,6 @@ void create_skymon_dialog(typHOE *hg)
   hbox1 = gtk_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox1);
   icon = gdk_pixbuf_new_from_resource ("/icons/feed_icon.png", NULL);
-
   button=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
   gtk_container_set_border_width (GTK_CONTAINER (button), 0);

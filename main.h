@@ -2139,7 +2139,7 @@ void do_save_fc_pdf();
 void do_quit();
 void do_plot();
 void do_update_azel();
-void popup_message(gchar*, gint , ...);
+void popup_message(GtkWidget*, gchar*, gint , ...);
 void create_fcdb_para_dialog();
 gboolean is_separator();
 GtkWidget *make_menu();
