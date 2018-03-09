@@ -3285,27 +3285,27 @@ void fcdb_hst_vo_parse(typHOE *hg) {
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
-    if(xmlStrcmp(vfield_move->name,"Dataset") == 0) 
+    if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Dataset") == 0) 
       columns[0] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Target Name") == 0)
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Target Name") == 0)
       columns[1] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"RA (J2000)") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RA (J2000)") == 0) 
       columns[2] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Dec (J2000)") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Dec (J2000)") == 0) 
       columns[3] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Start Time") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Start Time") == 0) 
       columns[4] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Exp Time") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Exp Time") == 0) 
       columns[5] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Instrument") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Instrument") == 0) 
       columns[6] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Filters/Gratings") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Filters/Gratings") == 0) 
       columns[7] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Central Wavelength") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Central Wavelength") == 0) 
       columns[8] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Proposal ID") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Proposal ID") == 0) 
       columns[9] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Apertures") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Apertures") == 0) 
       columns[10] = vfield_move->position;
  }
 
@@ -3407,27 +3407,27 @@ void trdb_hst_vo_parse(typHOE *hg) {
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
-    if(xmlStrcmp(vfield_move->name,"Dataset") == 0) 
+    if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Dataset") == 0) 
       columns[0] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Target Name") == 0)
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Target Name") == 0)
       columns[1] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"RA (J2000)") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RA (J2000)") == 0) 
       columns[2] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Dec (J2000)") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Dec (J2000)") == 0) 
       columns[3] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Start Time") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Start Time") == 0) 
       columns[4] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Exp Time") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Exp Time") == 0) 
       columns[5] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Instrument") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Instrument") == 0) 
       columns[6] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Filters/Gratings") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Filters/Gratings") == 0) 
       columns[7] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Central Wavelength") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Central Wavelength") == 0) 
       columns[8] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Proposal ID") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Proposal ID") == 0) 
       columns[9] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"Apertures") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Apertures") == 0) 
       columns[10] = vfield_move->position;
  }
 
@@ -3591,23 +3591,23 @@ void fcdb_eso_vo_parse(typHOE *hg) {
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
-    if(xmlStrcmp(vfield_move->name,"object") == 0) 
+    if(xmlStrcmp(vfield_move->name,(const xmlChar *)"object") == 0) 
       columns[0] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"ra") == 0)
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"ra") == 0)
       columns[1] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"dec") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"dec") == 0) 
       columns[2] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"exptime") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"exptime") == 0) 
       columns[3] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"prog_id") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"prog_id") == 0) 
       columns[4] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"dp_id") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"dp_id") == 0) 
       columns[5] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"dp_tech") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"dp_tech") == 0) 
       columns[6] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"ins_id") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"ins_id") == 0) 
       columns[7] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"data_release_date") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"data_release_date") == 0) 
       columns[8] = vfield_move->position;
  }
 
@@ -3697,23 +3697,23 @@ void trdb_eso_vo_parse(typHOE *hg) {
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
-    if(xmlStrcmp(vfield_move->name,"object") == 0) 
+    if(xmlStrcmp(vfield_move->name,(const xmlChar *)"object") == 0) 
       columns[0] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"ra") == 0)
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"ra") == 0)
       columns[1] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"dec") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"dec") == 0) 
       columns[2] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"exptime") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"exptime") == 0) 
       columns[3] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"prog_id") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"prog_id") == 0) 
       columns[4] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"dp_id") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"dp_id") == 0) 
       columns[5] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"dp_tech") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"dp_tech") == 0) 
       columns[6] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"ins_id") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"ins_id") == 0) 
       columns[7] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,"data_release_date") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"data_release_date") == 0) 
       columns[8] = vfield_move->position;
  }
 
@@ -3840,25 +3840,25 @@ void addobj_vo_parse(typHOE *hg) {
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   if(hg->addobj_type==FCDB_TYPE_SIMBAD){
     for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
-      if(xmlStrcmp(vfield_move->name,"MAIN_ID") == 0) 
+      if(xmlStrcmp(vfield_move->name,(const xmlChar *)"MAIN_ID") == 0) 
 	columns[0] = vfield_move->position;
-      else if(xmlStrcmp(vfield_move->name,"RA_d") == 0)
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RA_d") == 0)
 	columns[1] = vfield_move->position;
-      else if(xmlStrcmp(vfield_move->name,"DEC_d") == 0) 
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"DEC_d") == 0) 
 	columns[2] = vfield_move->position;
-      else if(xmlStrcmp(vfield_move->name,"OTYPE_S") == 0) 
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"OTYPE_S") == 0) 
 	columns[3] = vfield_move->position;
     }
   }
   else if (hg->addobj_type==FCDB_TYPE_NED){
     for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
-      if(xmlStrcmp(vfield_move->name,"Object Name") == 0) 
+      if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Object Name") == 0) 
 	columns[0] = vfield_move->position;
-      else if(xmlStrcmp(vfield_move->name,"RA(deg)") == 0)
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RA(deg)") == 0)
 	columns[1] = vfield_move->position;
-      else if(xmlStrcmp(vfield_move->name,"DEC(deg)") == 0) 
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"DEC(deg)") == 0) 
 	columns[2] = vfield_move->position;
-      else if(xmlStrcmp(vfield_move->name,"Type") == 0) 
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Type") == 0) 
 	columns[3] = vfield_move->position;
     }
   }
