@@ -91,6 +91,7 @@ static int val_pre=0;
 static gint cc_set_adj_time (GtkAdjustment *adj) 
 {
   adj_change=(gint)gtk_adjustment_get_value(adj);
+  return 0;
 }
 
 
@@ -920,7 +921,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 	}
       }
       if (pixbuf_flag){
-	if((hg->allsky_sat<1,0)||(hg->allsky_sat>1.0))
+	if((hg->allsky_sat<1.0)||(hg->allsky_sat>1.0))
 	   gdk_pixbuf_saturate_and_pixelate(hg->pixbuf,hg->pixbuf,
 					    (gfloat)hg->allsky_sat,FALSE);
       }

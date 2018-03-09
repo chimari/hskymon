@@ -59,7 +59,7 @@ static void close_fc_help();
 
 static void fcdb_para_item();
 static void fcdb_item();
-void fcdb_dl();
+//void fcdb_dl();
 #ifndef USE_WIN32
 void fcdb_signal();
 void trdb_signal();
@@ -68,8 +68,8 @@ static void delete_fcdb();
 static void cancel_fcdb();
 static void delete_trdb();
 static void cancel_trdb();
-void fcdb_make_tree();
-void trdb_make_tree();
+//void fcdb_make_tree();
+//void trdb_make_tree();
 void fcdb_clear_tree();
 
 static void fcdb_toggle ();

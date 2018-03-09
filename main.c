@@ -12979,7 +12979,7 @@ void ReadList(typHOE *hg, gint ope_max){
       if(!is_number(tmp_char,i_list+1,"Equinox")) break;
       hg->obj[i_list].equinox=(gdouble)g_strtod(tmp_char,NULL);
       
-      if(tmp_char=(char *)strtok(NULL,"\r\n")){
+      if((tmp_char=(char *)strtok(NULL,"\r\n"))!=NULL){
 	hg->obj[i_list].note=cut_spc(tmp_char);
       }
       else{
@@ -14737,7 +14737,7 @@ void MergeList(typHOE *hg, gint ope_max){
 	if(!is_number(tmp_char,hg->i_max-i_base+1,"Equinox")) break;
 	tmp_obj.equinox=(gdouble)g_strtod(tmp_char,NULL);
 	
-	if(tmp_char=(char *)strtok(NULL,"\r\n")){
+	if((tmp_char=(char *)strtok(NULL,"\r\n"))!=NULL){
 	  tmp_obj.note=cut_spc(tmp_char);
 	}
 	else{

@@ -22,6 +22,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<sys/stat.h>
+#include<ctype.h>
 #include<time.h>
 #include<signal.h>
 #include<unistd.h>
@@ -1641,7 +1642,8 @@ struct _typHOE{
   GtkAdjustment *skymon_adj_min;
   //GtkAdjustment *skymon_adj_objsz;
   gint skymon_mode;
-  gint skymon_year,skymon_month,skymon_day,skymon_min,skymon_hour;
+  guint skymon_year,skymon_month,skymon_day;
+  gint skymon_min,skymon_hour;
   gint skymon_time;
   gint skymon_objsz;
 
@@ -1680,8 +1682,8 @@ struct _typHOE{
   gchar *tree_label_text;
   guint tree_focus;
   gboolean tree_editing;
-  guint tree_width;
-  guint tree_height;
+  gint tree_width;
+  gint tree_height;
   gint tree_x;
   gint tree_y;
   GtkWidget *tree_search_label;
@@ -2174,6 +2176,7 @@ void pdf_fc ();
 void set_fc_mode();
 void fc_item2 ();
 void fcdb_item2();
+void fcdb_dl();
 void trdb_run();
 gboolean draw_fc_cairo();
 void fcdb_tree_update_azel_item();
@@ -2183,10 +2186,13 @@ void addobj_dl();
 gdouble current_yrs();
 gboolean progress_timeout();
 void make_trdb_label();
+void fcdb_make_tree();
+void trdb_make_tree();
 
 //fc_output.c
 void Export_FCDB_List();
 void Export_TRDB_List();
+void Export_TRDB_CSV();
 
 //http-client.c
 int get_allsky();
@@ -2196,6 +2202,10 @@ int get_stddb();
 int get_fcdb();
 void allsky_debug_print (const gchar *format, ...) G_GNUC_PRINTF(1, 2);
 int month_from_string_short();
+
+// json_parse
+void fcdb_gemini_json_parse();
+void trdb_gemini_json_parse();
 
 //julian_day.c
 int get_gmtoff_from_sys ();

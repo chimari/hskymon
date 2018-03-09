@@ -38,7 +38,7 @@ void stddb_signal();
 static void delete_stddb();
 static void cancel_stddb();
 void clip_copy();
-
+static void trdb_dbtab();
 
 void cc_search_text();
 void trdb_cc_search_text();
@@ -1044,7 +1044,7 @@ gint tree_update_azel (gpointer gdata)
       if(!gtk_tree_model_iter_next(model, &iter)) break;
     }
   }
-
+  return 0;
 }
 
 
@@ -2118,7 +2118,7 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
 }
 
 
-static trdb_dbtab (GtkWidget *widget, gpointer data)
+static void trdb_dbtab (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
 #ifndef USE_WIN32

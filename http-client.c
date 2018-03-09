@@ -485,7 +485,7 @@ void allsky_read_data(typHOE *hg){
       fprintf(stderr,"fgets error\n");    
       printf_log(hg,"[AllSky] Error: Failed in fgets.");
     }
-    if(buf){
+    else{
       if(hg->allsky_date) g_free(hg->allsky_date);
       hg->allsky_date=g_strdup(buf);
     }
