@@ -235,6 +235,7 @@ void popup_skymon_calendar (GtkWidget *widget, gpointer gdata)
   gtk_window_move(GTK_WINDOW(dialog),
 		  root_x+allocation->x,
 		  root_y+allocation->y);
+  gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
   g_free(allocation);
   gtk_main();
   gtk_widget_destroy(dialog);
@@ -359,6 +360,9 @@ void create_skymon_dialog(typHOE *hg)
   my_signal_connect(button,"pressed",
   		    popup_skymon_calendar, 
   		    (gpointer)hg);
+#ifdef __GTK_TOOLTIP_H__
+  gtk_widget_set_tooltip_text(button,"Doublue-Click on calendar to select a new date");
+#endif
 
   hg->skymon_frame_time = gtk_frame_new (hg->obs_tzname);
   gtk_box_pack_start(GTK_BOX(hbox), hg->skymon_frame_time, FALSE, FALSE, 0);

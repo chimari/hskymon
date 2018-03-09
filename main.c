@@ -16167,8 +16167,6 @@ void popup_message(gchar* stock_id, gint delay, ...){
   GtkWidget *hbox, *vbox;
   gint timer;
 
-  dialog = gtk_dialog_new();
-
   va_start(args, delay);
 
   dialog = gtk_dialog_new();
@@ -16182,10 +16180,11 @@ void popup_message(gchar* stock_id, gint delay, ...){
 			(gpointer)dialog);
   }
 
-  my_signal_connect(dialog,"destroy",destroy_popup, timer);
+  my_signal_connect(dialog,"delete-event",destroy_popup, &timer);
 
   hbox=gtk_hbox_new(FALSE,5);
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hbox, FALSE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     hbox, FALSE,FALSE,0);
 
   //// File
   pixmap=gtk_image_new_from_stock (stock_id,
@@ -16208,10 +16207,8 @@ void popup_message(gchar* stock_id, gint delay, ...){
   va_end(args);
 
   gtk_widget_show_all(dialog);
-  
+  gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
   gtk_main();
-
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 }
 
 gboolean close_popup(gpointer data)
@@ -16226,9 +16223,9 @@ gboolean close_popup(gpointer data)
   return(FALSE);
 }
 
-static void destroy_popup(GtkWidget *w, guint data)
+static void destroy_popup(GtkWidget *w, GdkEvent *event, gint *data)
 {
-  g_source_remove(data);
+  g_source_remove(*data);
   gtk_main_quit();
 }
 
