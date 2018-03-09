@@ -29,6 +29,7 @@ void fc_dl ();
 void do_fc();
 void create_fc_dialog();
 static void close_fc();
+static void delete_fc();
 static void cancel_fc();
 static gboolean resize_draw_fc();
 static gboolean button_draw_fc();
@@ -63,7 +64,9 @@ void fcdb_dl();
 void fcdb_signal();
 void trdb_signal();
 #endif
+static void delete_fcdb();
 static void cancel_fcdb();
+static void delete_trdb();
 static void cancel_trdb();
 void fcdb_make_tree();
 void trdb_make_tree();
@@ -261,7 +264,7 @@ void fc_dl (typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog,"delete-event",cancel_fc,(gpointer)hg);
+  my_signal_connect(dialog,"delete-event",delete_fc,(gpointer)hg);
   
   if(hg->fc_mode==FC_SKYVIEW_RGB){
     mode=hg->fc_mode_RGB[hg->i_RGB];
@@ -1878,6 +1881,11 @@ void trdb_signal(int sig){
   
 }
 #endif
+
+static void delete_fc(GtkWidget *w, GdkEvent *event, gpointer gdata)
+{
+  cancel_fc(w,gdata);
+}
 
 static void cancel_fc(GtkWidget *w, gpointer gdata)
 {
@@ -4954,6 +4962,11 @@ static void close_fc_help(GtkWidget *w, GtkWidget *dialog)
   gtk_widget_destroy(dialog);
 }
 
+static void delete_fcdb(GtkWidget *w, GdkEvent *event, gpointer gdata)
+{
+  cancel_fcdb(w,gdata);
+}
+
 static void cancel_fcdb(GtkWidget *w, gpointer gdata)
 {
   typHOE *hg;
@@ -4981,6 +4994,11 @@ static void cancel_fcdb(GtkWidget *w, gpointer gdata)
     fcdb_pid=0;
   }
 #endif
+}
+
+static void delete_trdb(GtkWidget *w, GdkEvent *event, gpointer gdata)
+{
+  cancel_trdb(w,gdata);
 }
 
 static void cancel_trdb(GtkWidget *w, gpointer gdata)
@@ -5047,7 +5065,7 @@ void ver_dl(typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog, "delete-event", cancel_fcdb, (gpointer)hg);
+  my_signal_connect(dialog, "delete-event", delete_fcdb, (gpointer)hg);
 
 
   label=gtk_label_new("Checking the latest version of hskymon ...");
@@ -5128,7 +5146,7 @@ void fcdb_dl(typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Query to the database");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog,"delete-event", cancel_fcdb, (gpointer)hg);
+  my_signal_connect(dialog,"delete-event", delete_fcdb, (gpointer)hg);
   
   switch(hg->fcdb_type){
   case FCDB_TYPE_SDSS:
@@ -5410,7 +5428,7 @@ void addobj_dl(typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Query to the database");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog,"delete-event", cancel_fcdb, (gpointer)hg);
+  my_signal_connect(dialog,"delete-event", delete_fcdb, (gpointer)hg);
   
   switch(hg->addobj_type){
   case FCDB_TYPE_SIMBAD:
@@ -5598,7 +5616,7 @@ void trdb_run (typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Running List Query");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog,"delete-event",cancel_trdb, (gpointer)hg);
+  my_signal_connect(dialog,"delete-event", delete_trdb, (gpointer)hg);
  
   switch(hg->fcdb_type){
   case TRDB_TYPE_SMOKA:

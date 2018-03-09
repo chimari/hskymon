@@ -209,6 +209,7 @@ void popup_skymon_calendar (GtkWidget *widget, gpointer gdata)
   gtk_widget_get_allocation(widget,allocation);
 
   dialog = gtk_dialog_new();
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_window_get_position(GTK_WINDOW(hg->skymon_main),&root_x,&root_y);
 
   my_signal_connect(dialog,"delete-event",gtk_main_quit,NULL);
@@ -358,9 +359,6 @@ void create_skymon_dialog(typHOE *hg)
   my_signal_connect(button,"pressed",
   		    popup_skymon_calendar, 
   		    (gpointer)hg);
-#ifdef __GTK_TOOLTIP_H__
-  gtk_widget_set_tooltip_text(button,"Selecte Date by Double-Click on calendar");
-#endif
 
   hg->skymon_frame_time = gtk_frame_new (hg->obs_tzname);
   gtk_box_pack_start(GTK_BOX(hbox), hg->skymon_frame_time, FALSE, FALSE, 0);

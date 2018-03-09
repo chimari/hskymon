@@ -28,6 +28,7 @@ void ChildTerm();
 #endif // USE_WIN32
 
 static void AddObj();
+static void delete_child_dialog();
 static void close_child_dialog();
 void cc_get_neg ();
 static void cc_std_sptype();
@@ -77,12 +78,14 @@ void ChangeFontButton();
 
 void save_prop();
 void default_prop();
+void delete_prop();
 void close_prop();
 void default_disp_para();
 void change_disp_para();
 void change_fcdb_para();
 void radio_fcdb();
 void cc_radio();
+void delete_disp_para();
 void close_disp_para();
 void create_diff_para_dialog();
 void create_disp_para_dialog();
@@ -747,6 +750,12 @@ static void AddObj(GtkWidget *widget, gpointer gdata){
 
   make_tree(widget, gdata);
   addobj_dialog(widget, gdata);
+}
+
+static void delete_child_dialog(GtkWidget *w, GdkEvent *event, 
+				GtkWidget *dialog)
+{
+  close_child_dialog(w,dialog);
 }
 
 static void close_child_dialog(GtkWidget *w, GtkWidget *dialog)
@@ -3250,7 +3259,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gtk_window_set_default_size (GTK_WINDOW (dialog), 200, 400);
 
   my_signal_connect(dialog,"delete-event",
-		    close_child_dialog, 
+		    delete_child_dialog, 
 		    GTK_WIDGET(dialog));
 
 
@@ -3498,7 +3507,7 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Help");
 
   my_signal_connect(dialog,"delete-event",
-		    close_child_dialog, 
+		    delete_child_dialog, 
 		    GTK_WIDGET(dialog));
   
   table = gtk_table_new(2,11,FALSE);
@@ -3682,7 +3691,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Differential Images of All-Sky Camera");
 
-  my_signal_connect(dialog,"delete-event",close_disp_para,GTK_WIDGET(dialog));
+  my_signal_connect(dialog,"delete-event",delete_disp_para,GTK_WIDGET(dialog));
 
   frame = gtk_frame_new ("Params for Making Differential Images");
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
@@ -3982,7 +3991,7 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Displaying All-Sky Camera Images");
-  my_signal_connect(dialog,"delete-event", close_disp_para, (gpointer)cdata);
+  my_signal_connect(dialog,"delete-event", delete_disp_para, (gpointer)cdata);
 
   table = gtk_table_new(4,2,FALSE);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
@@ -4137,7 +4146,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
   cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Searching Stndards");
-  my_signal_connect(dialog,"delete-event",close_disp_para,GTK_WIDGET(dialog));
+  my_signal_connect(dialog,"delete-event",delete_disp_para,GTK_WIDGET(dialog));
 
   frame = gtk_frame_new ("Sky Area");
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
@@ -5857,7 +5866,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for database query");
 
-  my_signal_connect(dialog,"delete-event",close_disp_para,GTK_WIDGET(dialog));
+  my_signal_connect(dialog,"delete-event",delete_disp_para,GTK_WIDGET(dialog));
 
   hbox1 = gtk_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
@@ -8684,7 +8693,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Properties");
 
   my_signal_connect(dialog, "delete-event",
-		    close_prop,GTK_WIDGET(dialog));
+		    delete_prop,GTK_WIDGET(dialog));
 
   all_note = gtk_notebook_new ();
   gtk_notebook_set_tab_pos (GTK_NOTEBOOK (all_note), GTK_POS_TOP);
@@ -11318,6 +11327,11 @@ void default_prop(GtkWidget *w, gpointer gdata)
   flagProp=FALSE;
 }
 
+void delete_prop(GtkWidget *w, GdkEvent *event, GtkWidget *dialog)
+{
+  close_prop(w,dialog);
+}
+
 void close_prop(GtkWidget *w, GtkWidget *dialog)
 {
   //gdk_pointer_ungrab(GDK_CURRENT_TIME);
@@ -11424,6 +11438,10 @@ void cc_radio(GtkWidget *button, gint *gdata)
   }
 }
 
+void delete_disp_para(GtkWidget *w, GdkEvent *event, GtkWidget *dialog)
+{
+  close_disp_para(w,dialog);
+}
 
 void close_disp_para(GtkWidget *w, GtkWidget *dialog)
 {
@@ -16789,6 +16807,12 @@ int main(int argc, char* argv[]){
 
   hg=g_malloc0(sizeof(typHOE));
   
+  setlocale(LC_ALL,"");
+
+#ifndef USE_GTK3
+  gtk_set_locale();
+#endif
+
   gtk_init(&argc, &argv);
 
   param_init(hg);

@@ -35,6 +35,7 @@ static void fcdb_item ();
 static void adc_item ();
 void stddb_dl();
 void stddb_signal();
+static void delete_stddb();
 static void cancel_stddb();
 void clip_copy();
 
@@ -7133,7 +7134,7 @@ void stddb_dl(typHOE *hg)
   gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
   gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog, "delete-event", cancel_stddb, (gpointer)hg);
+  my_signal_connect(dialog, "delete-event", delete_stddb, (gpointer)hg);
 
 
   label=gtk_label_new("Searching standards in SIMBAD ...");
@@ -7191,6 +7192,11 @@ void stddb_dl(typHOE *hg)
   if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 
   flag_getSTD=FALSE;
+}
+
+static void delete_stddb(GtkWidget *w, GdkEvent *event, gpointer gdata)
+{
+  cancel_stddb(w,gdata);
 }
 
 static void cancel_stddb(GtkWidget *w, gpointer gdata)
