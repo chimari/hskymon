@@ -1635,7 +1635,7 @@ void fcdb_sdss_vo_parse(typHOE *hg) {
     }
     else if (vtabledata_move->colomn == columns[8]){  // redshift
       if(vtabledata_move->value){
-	if(strcmp(vtabledata_move->value,"0")==0){
+	if(strcmp((const char*)vtabledata_move->value,"0")==0){
 	  hg->fcdb[i_list].nedz=-100;
 	}
 	else{
@@ -1652,7 +1652,7 @@ void fcdb_sdss_vo_parse(typHOE *hg) {
     }
     else if (vtabledata_move->colomn == columns[9]){  // class
       if(hg->fcdb[i_list].otype) g_free(hg->fcdb[i_list].otype);
-      if(strcmp(vtabledata_move->value,"0")==0){
+      if(strcmp((const char*)vtabledata_move->value,"0")==0){
 	hg->fcdb[i_list].otype=g_strdup("---");
       }
       else{
