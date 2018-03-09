@@ -76,6 +76,8 @@ void draw_stderr_graph();
 
 #ifdef USE_GTK3
 GdkPixbuf *pixbuf_skymon=NULL;
+GdkPixbuf *pixbuf_skymonbg=NULL;
+GdkPixbuf *pixbuf_skymon_with_telstat=NULL;
 #endif
 gboolean flagDrawing=FALSE;
 gboolean supports_alpha = FALSE;
@@ -2065,6 +2067,10 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
     pixbuf_skymon=gdk_pixbuf_get_from_surface(surface,0,0,width,height);
     cairo_surface_destroy(surface);
     gtk_widget_queue_draw(widget);
+#ifdef USE_XMLRPC
+    if(pixbuf_skymonbg) g_object_unref(G_OBJECT(pixbuf_skymonbg));
+    pixbuf_skymonbg=gdk_pixbuf_copy(pixbuf_skymon);
+#endif
 #else
   {
     GtkStyle *style=gtk_widget_get_style(widget);
@@ -2140,8 +2146,8 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 #ifdef USE_XMLRPC
 gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget, 
 					typHOE *hg){
-
   cairo_t *cr;
+  cairo_surface_t *surface;
   cairo_text_extents_t extents;
   double x,y;
   gint i_list;
@@ -2149,7 +2155,9 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
   gint w=0,h=0;
   gdouble r=1.0;
   gint off_x, off_y;
+#ifndef USE_GTK3
   GdkPixmap *pixmap_skymon_with_telstat=NULL;
+#endif
   gboolean as_flag=FALSE;
   gchar *tmp;
 
@@ -2172,6 +2180,15 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
   }
 
   if(hg->skymon_mode==SKYMON_CUR){
+#ifdef USE_GTK3
+    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+					 width, height);
+    
+    cr = cairo_create(surface);
+
+    gdk_cairo_set_source_pixbuf(cr, pixbuf_skymonbg, 0, 0);
+    cairo_paint(cr);
+#else
     pixmap_skymon_with_telstat = gdk_pixmap_new(gtk_widget_get_window(widget),
 						width,
 						height,
@@ -2192,9 +2209,10 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
       return(FALSE);
     }
 
-    as_flag=hg->allsky_flag;
-    
     cr = gdk_cairo_create(pixmap_skymon_with_telstat);
+#endif
+    
+    as_flag=hg->allsky_flag;
 
     cairo_set_line_cap  (cr, CAIRO_LINE_CAP_ROUND);
     cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
@@ -2241,6 +2259,12 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
 
     cairo_destroy(cr);
 
+#ifdef USE_GTK3
+    if(pixbuf_skymon) g_object_unref(G_OBJECT(pixbuf_skymon));
+    pixbuf_skymon=gdk_pixbuf_get_from_surface(surface,0,0,width,height);
+    cairo_surface_destroy(surface);
+    gtk_widget_queue_draw(widget);
+#else
     if(hg->pixmap_skymon) g_object_unref(G_OBJECT(hg->pixmap_skymon));
     hg->pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
 				       width,
@@ -2259,8 +2283,14 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
     }
     
     g_object_unref(G_OBJECT(pixmap_skymon_with_telstat));
+#endif
   }
   else{
+#ifdef USE_GTK3
+    if(pixbuf_skymon) g_object_unref(G_OBJECT(pixbuf_skymon));
+    pixbuf_skymon=gdk_pixbuf_copy(pixbuf_skymonbg);
+    gtk_widget_queue_draw(widget);
+#else
     if(hg->pixmap_skymon) g_object_unref(G_OBJECT(hg->pixmap_skymon));
     hg->pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
 				       width,
@@ -2276,10 +2306,13 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
 			width,
 			height);
     }
+#endif
   }
 
   gtk_widget_show_all(widget);
+#ifndef USE_GTK3
   draw_skymon_pixmap(widget,hg);
+#endif
 
   skymon_debug_print("Finishing draw_skymon_with_telstat_cairo\n");
   return TRUE;
