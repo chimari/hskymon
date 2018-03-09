@@ -6628,6 +6628,9 @@ void make_tree(GtkWidget *widget, gpointer gdata){
 #ifdef USE_XMLRPC
   GdkPixbuf *pixbuf;
 #endif
+  gint w,h;
+
+  gtk_icon_size_lookup(GTK_ICON_SIZE_BUTTON,&w,&h);
 
   if(!flagTree){
     hg=(typHOE *)gdata;
@@ -6655,7 +6658,7 @@ void make_tree(GtkWidget *widget, gpointer gdata){
 #ifdef USE_XMLRPC
     if(!pix_lock) {
       pixbuf = gdk_pixbuf_new_from_resource ("/icons/subaru_icon.png", NULL);
-      pix_lock=gdk_pixbuf_scale_simple(pixbuf,20,20,GDK_INTERP_BILINEAR);
+      pix_lock=gdk_pixbuf_scale_simple(pixbuf,w,h,GDK_INTERP_BILINEAR);
       g_object_unref(G_OBJECT(pixbuf));
     }
 #endif

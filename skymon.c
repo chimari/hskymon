@@ -77,7 +77,6 @@ void draw_stderr_graph();
 #ifdef USE_GTK3
 GdkPixbuf *pixbuf_skymon=NULL;
 GdkPixbuf *pixbuf_skymonbg=NULL;
-GdkPixbuf *pixbuf_skymon_with_telstat=NULL;
 #endif
 gboolean flagDrawing=FALSE;
 gboolean supports_alpha = FALSE;

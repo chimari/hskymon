@@ -275,9 +275,12 @@ GtkWidget *make_menu(typHOE *hg){
   GtkWidget *check;
   GtkWidget *image;
   GdkPixbuf *pixbuf, *pixbuf2;
+  gint w,h;
 
   menu_bar=gtk_menu_bar_new();
   gtk_widget_show (menu_bar);
+
+  gtk_icon_size_lookup(GTK_ICON_SIZE_MENU,&w,&h);
 
   //// File
 #ifdef GTK_STOCK_FILE
@@ -574,8 +577,7 @@ GtkWidget *make_menu(typHOE *hg){
 
   //// ASC
   pixbuf = gdk_pixbuf_new_from_resource ("/icons/feed_icon.png", NULL);
-  pixbuf2=gdk_pixbuf_scale_simple(pixbuf,
-				  16,16,GDK_INTERP_BILINEAR);
+  pixbuf2=gdk_pixbuf_scale_simple(pixbuf,w,h,GDK_INTERP_BILINEAR);
   image=gtk_image_new_from_pixbuf (pixbuf2);
   g_object_unref(G_OBJECT(pixbuf));
   g_object_unref(G_OBJECT(pixbuf2));
@@ -3500,7 +3502,10 @@ static void show_help (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox, *table;
   GdkPixbuf *icon, *pixbuf;
+  gint w,h;
   flagChildDialog=FALSE;
+  
+  gtk_icon_size_lookup(GTK_ICON_SIZE_LARGE_TOOLBAR,&w,&h);
 
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -3518,7 +3523,7 @@ static void show_help (GtkWidget *widget, gpointer gdata)
 		     table,FALSE, FALSE, 0);
 
   icon = gdk_pixbuf_new_from_resource ("/icons/feed_icon.png", NULL);
-  pixbuf=gdk_pixbuf_scale_simple(icon, 16,16,GDK_INTERP_BILINEAR);
+  pixbuf=gdk_pixbuf_scale_simple(icon, w,h,GDK_INTERP_BILINEAR);
   pixmap=gtk_image_new_from_pixbuf (pixbuf);
   g_object_unref(G_OBJECT(icon));
   g_object_unref(G_OBJECT(pixbuf));
@@ -3532,7 +3537,8 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 0, 1,
 		    GTK_FILL,GTK_SHRINK,0,0);
   
-  pixmap=gtk_image_new_from_stock (GTK_STOCK_REMOVE, GTK_ICON_SIZE_MENU);
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_REMOVE, 
+				   GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3543,7 +3549,8 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 1, 2,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
-  pixmap=gtk_image_new_from_stock (GTK_STOCK_STRIKETHROUGH, GTK_ICON_SIZE_MENU);
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_STRIKETHROUGH, 
+				   GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 2, 3,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3555,7 +3562,7 @@ static void show_help (GtkWidget *widget, gpointer gdata)
 		    GTK_FILL,GTK_SHRINK,0,0);
 
   icon = gdk_pixbuf_new_from_resource ("/icons/subaru_icon.png", NULL);
-  pixbuf=gdk_pixbuf_scale_simple(icon, 16,16,GDK_INTERP_BILINEAR);
+  pixbuf=gdk_pixbuf_scale_simple(icon, w,h,GDK_INTERP_BILINEAR);
   pixmap=gtk_image_new_from_pixbuf (pixbuf);
   g_object_unref(G_OBJECT(icon));
   g_object_unref(G_OBJECT(pixbuf));
@@ -3569,7 +3576,8 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 3, 4,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
-  pixmap=gtk_image_new_from_stock (GTK_STOCK_APPLY, GTK_ICON_SIZE_MENU);
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_APPLY, 
+				   GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 4, 5,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3586,7 +3594,8 @@ static void show_help (GtkWidget *widget, gpointer gdata)
 		    GTK_FILL,GTK_SHRINK,0,0);
 
 
-  pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_PREVIOUS, GTK_ICON_SIZE_MENU);
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_PREVIOUS,
+				   GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 6, 7,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3596,7 +3605,8 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 6, 7,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
-  pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_REWIND, GTK_ICON_SIZE_MENU);
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_REWIND,
+				   GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 7, 8,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3606,7 +3616,8 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 7, 8,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
-  pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_FORWARD, GTK_ICON_SIZE_MENU);
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_FORWARD,
+				   GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 8, 9,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3616,7 +3627,8 @@ static void show_help (GtkWidget *widget, gpointer gdata)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 8, 9,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
-  pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_NEXT, GTK_ICON_SIZE_MENU);
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_NEXT,
+				   GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 9, 10,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -16377,6 +16389,7 @@ GtkWidget* gtkut_button_new_from_pixbuf(gchar *txt,
   GtkWidget *label;
   GtkWidget *box2;
   GdkPixbuf *pixbuf2;
+  gint w,h;
   
   box2=gtk_hbox_new(TRUE,0);
 
@@ -16385,14 +16398,15 @@ GtkWidget* gtkut_button_new_from_pixbuf(gchar *txt,
 
   gtk_container_set_border_width(GTK_CONTAINER(box),0);
 
+  gtk_icon_size_lookup(GTK_ICON_SIZE_BUTTON,&w,&h);
   
   if(txt){
-    pixbuf2=gdk_pixbuf_scale_simple(pixbuf,20,20,GDK_INTERP_BILINEAR);
+    pixbuf2=gdk_pixbuf_scale_simple(pixbuf,w,h,GDK_INTERP_BILINEAR);
     image=gtk_image_new_from_pixbuf (pixbuf2);
     gtk_box_pack_start(GTK_BOX(box),image, FALSE,FALSE,2);
   }
   else{
-    pixbuf2=gdk_pixbuf_scale_simple(pixbuf,16,16,GDK_INTERP_BILINEAR);
+    pixbuf2=gdk_pixbuf_scale_simple(pixbuf,w,h,GDK_INTERP_BILINEAR);
     image=gtk_image_new_from_pixbuf (pixbuf2);
     gtk_box_pack_start(GTK_BOX(box),image, FALSE,FALSE,0);
   }
@@ -16421,6 +16435,7 @@ GtkWidget* gtkut_toggle_button_new_from_pixbuf(gchar *txt,
   GtkWidget *label;
   GtkWidget *box2;
   GdkPixbuf *pixbuf2;
+  gint w,h;
   
   box2=gtk_hbox_new(TRUE,0);
 
@@ -16429,14 +16444,15 @@ GtkWidget* gtkut_toggle_button_new_from_pixbuf(gchar *txt,
 
   gtk_container_set_border_width(GTK_CONTAINER(box),0);
 
+  gtk_icon_size_lookup(GTK_ICON_SIZE_BUTTON,&w,&h);
   
   if(txt){
-    pixbuf2=gdk_pixbuf_scale_simple(pixbuf,20,20,GDK_INTERP_BILINEAR);
+    pixbuf2=gdk_pixbuf_scale_simple(pixbuf,w,h,GDK_INTERP_BILINEAR);
     image=gtk_image_new_from_pixbuf (pixbuf2);
     gtk_box_pack_start(GTK_BOX(box),image, FALSE,FALSE,2);
   }
   else{
-    pixbuf2=gdk_pixbuf_scale_simple(pixbuf,16,16,GDK_INTERP_BILINEAR);
+    pixbuf2=gdk_pixbuf_scale_simple(pixbuf,w,h,GDK_INTERP_BILINEAR);
     image=gtk_image_new_from_pixbuf (pixbuf2);
     gtk_box_pack_start(GTK_BOX(box),image, FALSE,FALSE,0);
   }

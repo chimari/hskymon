@@ -4777,6 +4777,9 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox, *table;
   GdkPixbuf *icon, *pixbuf;
+  gint w,h;
+  
+  gtk_icon_size_lookup(GTK_ICON_SIZE_LARGE_TOOLBAR,&w,&h);
 
   dialog = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -4794,7 +4797,7 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
 		     table,FALSE, FALSE, 0);
 
   icon = gdk_pixbuf_new_from_resource ("/icons/dl_icon.png", NULL);
-  pixbuf=gdk_pixbuf_scale_simple(icon,16,16,GDK_INTERP_BILINEAR);
+  pixbuf=gdk_pixbuf_scale_simple(icon,w,h,GDK_INTERP_BILINEAR);
 
   pixmap = gtk_image_new_from_pixbuf(pixbuf);
   g_object_unref(icon);
@@ -4810,7 +4813,8 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
 		    GTK_FILL,GTK_SHRINK,0,0);
   
 
-  pixmap=gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_MENU);
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_REFRESH, 
+				   GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -4821,7 +4825,8 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 1, 2,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
-  pixmap=gtk_image_new_from_stock (GTK_STOCK_FIND, GTK_ICON_SIZE_MENU);
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_FIND,
+				   GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 2, 3,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -4832,7 +4837,8 @@ static void show_fc_help (GtkWidget *widget, gpointer gdata)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 2, 3,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
-  pixmap=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
+  pixmap=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES,
+				   GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 3, 4,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);

@@ -55,6 +55,7 @@
 #include "get_gemini.h"
 
 
+
 #ifdef USE_WIN32
 #define USER_CONFFILE "hskymon.ini"
 #else
