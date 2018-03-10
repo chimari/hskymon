@@ -28,15 +28,7 @@ EXTRA_DIST = autogen.sh\
              hskymon.1\
              makewin32.sh\
              makewin64.sh\
-             makeosx.sh\
-             ar_u0.xpm\
-             ar_u1.xpm\
-             ar_u2.xpm\
-             ar_u3.xpm\
-             ar_d0.xpm\
-             ar_d1.xpm\
-             ar_d2.xpm\
-             ar_d3.xpm
+             makeosx.sh
 
 BUILT_SOURCES=resources.c resources.h
 
@@ -58,8 +50,6 @@ resources.c: gresource.xml $(resource_files) resources.h
 
 INCLUDES        = @GTK_CFLAGS@  $(GTK3_CFLAGS) $(GTKMAC_CFLAGS) $(XMLRPC_CFLAGS) $(XML_CPPFLAGS)
 LDADD           = @GTK_LIBS@  $(GTK3_LIBS) $(GTKMAC_LIBS) $(WINMM_LIBS) $(WINSOCK_LIBS) $(XMLRPC_LIBS) $(XML_LIBS) $(HSKYMON_RES)
-
-CFLAGS+="-DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE"
 
 GZIP_ENV =
 BZIP2_ENV =

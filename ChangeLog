@@ -1,3 +1,21 @@
+2018.03.09 ver3.5.0 - The 1st release supporting Gtk+3.
+	              Now, hskymon can be compiled with either Gtk+2
+	              or Gtk+3.
+	              If you want to compile it with Gtk+3, use
+	                 ./configure --with-gtk+3 (and other options)
+	              to create Makefile(So, the default is still Gtk+2).
+	              Now, required Gtk+ versions are
+	                      > 2.24 for Gtk+2
+	                      > 3.22 for Gtk+3
+	            - All deprecated functions are removed from Gtk+2
+	              codes except gdk_draw_drawable.
+	              (This has been already replaced in Gtk+3 codes.)
+                    - Revised Date and Time entry in SkyMon GUI to
+	              save window spaces in Gtk+3.
+	              Date can be chosen by GtkCalendar.
+	              Time can be changed in an editable spinbutton.
+	              (The code for non-digit is a little bit tricky.)
+
 2018.02.21 ver3.3.8 - Bug fix on popup message termination.
 
 2018.02.16 ver3.3.7 - Added AKARI images via SkyView for FC.

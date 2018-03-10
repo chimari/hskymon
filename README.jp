@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 3.3.8    2018/02/21
+#                                  ver 3.5.0    2018/03/09
 #                               Copyright (C) 2003-18 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #      Subaru Telescope, National Astronomical Observatory of Japan
@@ -11,15 +11,16 @@
 
 
 ▼はじめに
-このプログラム(hskymon)は、Gtk+2ベースで開発されたクロスプラットフォームな
-アプリケーションで、国立天文台ハワイ観測所すばる望遠鏡での観測および観測準備で
-使用することを目的とした天体位置のモニター用プログラムです。
-実際の観測時以外にもファインディングチャートの作成や、天体位置の確認等、
-個人の環境での観測準備にも使用することができます。
-すばる望遠鏡に特化している部分が多いですが、観測所の位置等のパラメータを
-適切に設定すれば他の経緯台においても流用できる可能性があります。
-天体リストの入力にはGen2(すばる観測システム)準拠のOPE(観測手順書)ファ
-イルもしくは、CSVテキストのリストを使用できます。
+このプログラム(hskymon)は、国立天文台ハワイ観測所すばる望遠鏡での観測および
+観測準備で使用することを目的とした天体位置のモニター用プログラムです。
+開発はGtk+2/3ベースで行っており、UNIXをはじめWindowsやmac OSでも動作する
+クロスプラットフォームアプリケーションになっています。
+実際の観測時以外にもファインディングチャートの作成や、天体位置の確認等、個人
+の環境での観測準備にも使用することができます。
+すばる望遠鏡に特化している部分が多いですが、観測所の位置等のパラメータを適切
+に設定すれば他の経緯台においても流用できる可能性があります。
+天体リストの入力にはGen2(すばる観測システム)準拠のOPE(観測手順書)ファイルもし
+くは、CSVテキストのリスト、または非恒星天体用の軌道追尾ファイルを使用できます。
 
 最新版release(source および Win/Mac用バイナリ)はNAOJ公式ページ
   http://www.naoj.org/Observing/tools/hskymon
@@ -32,22 +33,25 @@
 
 
 ▼環境
-X Window Systemが稼働しているUNIX環境、もしくは MS Windows/macOS環境
-でも利用が可能です。
+X Window Systemが稼働しているUNIX環境、Microsoft Windows (7以降)、
+もしくは mac OS (Marvericks以降)で利用が可能です。
 Win/Mac用にはバイナリー配布をしています。
 
-sourceからコンパイルするためにはGtk+が必要(Windows版はmsys2を使用)です。
-Gtk+についてはcairoグラフィックライブラリを使用しているため、最低限ver2.8以降
-が必要、推奨はver2.10以降となります。
-libxml2, openssl, json-cも必要となります。
-macOS, Windowsのバイナリー配布版には必要なライブラリはすべて同梱されています。
+sourceからコンパイルするためにはGtk+(2, 3のいずれか)が必要です(Windows版は
+msys2を使用)。
+Gtk+については 
+  >2.24 for Gtk+2
+  >3.22 for Gtk+3
+が必要となります。
+libxml2, openssl, json-cとその開発者環境も必要となります。
 
 Subaru Gen2と接続し、望遠鏡のステータスをとる場合(Gen2 summitネットワーク内
 のみで有効)はxmlrpc-cの開発環境が必要となります。
 ステータスサーバーのアドレス等については必要な場合のみ、観測所OCSグループへ
 問い合わせください。
 
-その他には特別なライブラリは必要としません。
+macOS, Windowsのバイナリー配布版には必要なライブラリはすべて同梱されています
+ので、インストーラ以外は必要ありません。
 
 
 ▼make
@@ -56,19 +60,21 @@ Subaru Gen2と接続し、望遠鏡のステータスをとる場合(Gen2 summitネットワーク内
   - (git からsourceをクローンしたときのみ)
     % touch configure configure.ac aclocal.m4 Makefile.am Makefile.in
 
-  - % ./configure  (--with-xmlrpc : 望遠鏡ステータスをとる場合)
-         (aclocal関連で文句を言われたら ./autogen.sh  を試してみてください)
+  - % ./configure
+      [option]
+        --with-gtk3     : Gtk+3を使用 (これを付けなければGtk+2を使用)
+        --with-xmlrpc   : xmlrpcを使用して望遠鏡のステータスを取得 (Gen2用)
+        --with-win32    : Windows (32bit/64bit) でのmake
+        --with-gtkmac   : mac OSで gtk-mac-integrationを使用
+        --with-maintain : 廃棄予定(deprecated)関数を知らせる(開発者用)
 
   - % make
-
-以上で実行ファイル"hskymon"が作成されます。
+  以上で実行ファイル"hskymon"が作成されます。
 
   - # make install
 
-この実行ファイルのみしか使用しませんので、適当なディレクトリにコピーし
-て使用して頂いてもかまいません。
-make に関しては、各種ライブラリとそれに対応する開発環境が必要です。
-(gtk+2-dev, xmlrpc-c3-dev, libcurl4-openssl-dev ... etc.)
+実行ファイル(hskymon)しか使用しませんので、適当なディレクトリにコピーして
+使用して頂いてもかまいません。
 
 
 ▼コマンドラインオプション

@@ -1,6 +1,6 @@
 Summary: Sky-Monitor for Subaru Telescope, NAOJ
 Name: hskymon
-Version: 3.3.8
+Version: 3.5.0
 Release: 1%{?_dist_release}
 License: GPL3
 Group: Applications/Engineering
@@ -21,7 +21,7 @@ BuildRequires:  openssl-devel
 BuildRequires:  json-c-devel
 
 %description
-hskymon is a GTK+2 based cross-platform application to monitor 
+hskymon is a GTK+2/3 based cross-platform application to monitor 
 celestial objects, sky condition, and telescope in Subaru Telescope 
 Gen2 system. It can be used as a visibility checker, 
 a finding charts creator, and a guiding stars finder 

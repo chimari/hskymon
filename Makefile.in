@@ -285,8 +285,7 @@ AWK = @AWK@
 BUILD_REVISION = @BUILD_REVISION@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
-CFLAGS = @CFLAGS@ "-DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED \
-	-DGSEAL_ENABLE"
+CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -447,15 +446,7 @@ EXTRA_DIST = autogen.sh\
              hskymon.1\
              makewin32.sh\
              makewin64.sh\
-             makeosx.sh\
-             ar_u0.xpm\
-             ar_u1.xpm\
-             ar_u2.xpm\
-             ar_u3.xpm\
-             ar_d0.xpm\
-             ar_d1.xpm\
-             ar_d2.xpm\
-             ar_d3.xpm
+             makeosx.sh
 
 BUILT_SOURCES = resources.c resources.h
 man_MANS = hskymon.1

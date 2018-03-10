@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 3.3.8    2018/02/21
+#                                  ver 3.5.0    2018/03/09
 #                               Copyright (C) 2003-18 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #      Subaru Telescope, National Astronomical Observatory of Japan
@@ -11,8 +11,9 @@
 
 
 *** Introduction
-This program (hskymon) is a GTK+2 based telescope monitoring application
-for SUBARU Telescope, National Astronomical Observatory of Japan.
+This program (hskymon) is a GTK+2/3 based telescope monitoring 
+application for SUBARU Telescope, National Astronomical Observatory
+of Japan.
 It can be useful for actual observation and also for obs preparation 
 as a telescope simulator.
 Basically, hskymon is optimized for Subaru Telescope. However,
@@ -33,11 +34,11 @@ in your terminal.
 
 *** Environment
 hskymon requires UNIX operating system with X window system,
-MS Windows (Win2000 or later), or macOS (Mavericks or later).
+Microsoft Windows (7 or later), or mac OS (Mavericks or later).
 
 To compile this program from its source code, you need to install
-Gtk+ development tools (for Windows, I use msys + Gtk-dev).
-Gtk+2.8 (or later) is required (my recommendation is ver2.10 or later).
+Gtk+ development tools (for Windows, the maintainer is using msys2).
+Either Gtk+2 (>2.24; default) or Gtk+3 (>3.22) is required.
 libxml2, openssl, and json-c are also required to build the program.
 
 In order to get telescope status, hskymon requires xmlrpc-c library.
@@ -47,37 +48,30 @@ to make this program.
 (gtk+2-dev, xmlrpc-c3-dev, libcurl4-openssl-dev ... etc.)
 
 
-
 *** Build from the source code
-  - Enter the archive directory.
+  - Extract the source archive and enter to the extracted directory.
 
   - (only when you cloned the source tree by git)
     % touch configure configure.ac aclocal.m4 Makefile.am Makefile.in
 
-  - % ./configure  (--with-xmlrpc : to get telescope status)
-         (If you failed to make due to aclocal error,
-          Please try  ./autogen.sh  )
+  - % ./configure
+      [option]
+        --with-gtk3   : use Gtk+3 instead of Gtk+2
+        --with-xmlrpc : make w/xmlrpc to get telescope status in Gen2
+        --with-win32  : make for Windows (32bit/64bit)
+        --with-gtkmac : make w/gtk-mac-integration for mac OS
+        --with-maintain : designate deprecated functions (for maintainer)
+
+    If you failed in configure (possiblly aclocal error),
+    Please try
+           % /autogen.sh
+    before your configure session.
 
   - % make
-
-Then, an executable file "hskymon" will be created.
+    Then, an executable file "hskymon" will be created.
 
   - # make install  
-   (or you can copy "hskymon" file to an appropriate directory.)
- 
-
-
-
-*** Build from the source code (Windows ver.)
-Basically, Windows version of hskymon is distributed as a binary
-package with Gtk+ libraries.
-
-If you use msys + min-gw + gtk-dev,
-
-  - % ./configure --with-win32
- 
-  - % make
-  (or makewin32.sh)
+    (or you can copy "hskymon" file to an appropriate directory.)
 
 
 *** Command line option
