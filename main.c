@@ -12968,15 +12968,15 @@ void ReadList(typHOE *hg, gint ope_max){
       hg->obj[i_list].def=NULL;
 
       tmp_char=(char *)strtok(NULL,",");
-      if(!is_number(tmp_char,i_list+1,"RA")) break;
+      if(!is_number(hg->skymon_main,tmp_char,i_list+1,"RA")) break;
       hg->obj[i_list].ra=(gdouble)g_strtod(tmp_char,NULL);
       
       tmp_char=(char *)strtok(NULL,",");
-      if(!is_number(tmp_char,i_list+1,"Dec")) break;
+      if(!is_number(hg->skymon_main,tmp_char,i_list+1,"Dec")) break;
       hg->obj[i_list].dec=(gdouble)g_strtod(tmp_char,NULL);
       
       tmp_char=(char *)strtok(NULL,",");
-      if(!is_number(tmp_char,i_list+1,"Equinox")) break;
+      if(!is_number(hg->skymon_main,tmp_char,i_list+1,"Equinox")) break;
       hg->obj[i_list].equinox=(gdouble)g_strtod(tmp_char,NULL);
       
       if((tmp_char=(char *)strtok(NULL,"\r\n"))!=NULL){
@@ -14726,15 +14726,15 @@ void MergeList(typHOE *hg, gint ope_max){
 
       if(!name_flag){
 	tmp_char=(char *)strtok(NULL,",");
-	if(!is_number(tmp_char,hg->i_max-i_base+1,"RA")) break;
+	if(!is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"RA")) break;
 	tmp_obj.ra=(gdouble)g_strtod(tmp_char,NULL);
 	
 	tmp_char=(char *)strtok(NULL,",");
-	if(!is_number(tmp_char,hg->i_max-i_base+1,"Dec")) break;
+	if(!is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"Dec")) break;
 	tmp_obj.dec=(gdouble)g_strtod(tmp_char,NULL);
       
 	tmp_char=(char *)strtok(NULL,",");
-	if(!is_number(tmp_char,hg->i_max-i_base+1,"Equinox")) break;
+	if(!is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"Equinox")) break;
 	tmp_obj.equinox=(gdouble)g_strtod(tmp_char,NULL);
 	
 	if((tmp_char=(char *)strtok(NULL,"\r\n"))!=NULL){
