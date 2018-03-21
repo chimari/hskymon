@@ -223,6 +223,7 @@ libnova/Makefile
 std_data/Makefile
 debian/Makefile
 sample/Makefile
+icons/Makefile
 ])
 
 

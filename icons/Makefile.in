@@ -86,8 +86,7 @@ am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
-CONFIG_HEADER = $(top_builddir)/config.h \
-	$(top_builddir)/libssh2_config.h
+CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
@@ -146,6 +145,8 @@ GLIB_LIBS = @GLIB_LIBS@
 GLIB_MKENUMS = @GLIB_MKENUMS@
 GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
+GTK3_CFLAGS = @GTK3_CFLAGS@
+GTK3_LIBS = @GTK3_LIBS@
 GTKMAC_CFLAGS = @GTKMAC_CFLAGS@
 GTKMAC_LIBS = @GTKMAC_LIBS@
 GTK_CFLAGS = @GTK_CFLAGS@
@@ -161,8 +162,6 @@ LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
-LIBSSH2_CFLAGS = @LIBSSH2_CFLAGS@
-LIBSSH2_LIBS = @LIBSSH2_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -175,6 +174,7 @@ MINOR_VERSION = @MINOR_VERSION@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
+OBJCOPY = @OBJCOPY@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OPENSSL_CFLAGS = @OPENSSL_CFLAGS@
@@ -202,6 +202,8 @@ WINDRES = @WINDRES@
 WINMM_LIBS = @WINMM_LIBS@
 WINSOCK_LIBS = @WINSOCK_LIBS@
 XML2_CONFIG = @XML2_CONFIG@
+XMLRPC_CFLAGS = @XMLRPC_CFLAGS@
+XMLRPC_LIBS = @XMLRPC_LIBS@
 XML_CPPFLAGS = @XML_CPPFLAGS@
 XML_LIBS = @XML_LIBS@
 abs_builddir = @abs_builddir@
@@ -261,12 +263,22 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 EXTRA_DIST = \
+	ar_d0.xpm\
+	ar_d1.xpm\
+	ar_d2.xpm\
+	ar_d3.xpm\
+	ar_u0.xpm\
+	ar_u1.xpm\
+	ar_u2.xpm\
+	ar_u3.xpm\
 	chrome_icon.png\
 	comet_icon.png\
 	dl_icon.png\
 	efs_icon.png\
 	etc_icon.png\
+	feed_icon.png\
 	firefox_icon.png\
+	google_icon.png\
 	hoe_icon.png\
 	hsc_icon.png\
 	ie_icon.png\

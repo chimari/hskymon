@@ -11628,14 +11628,6 @@ void param_init(typHOE *hg){
   hg->plot_ihst0=PLOT_HST0;
   hg->plot_ihst1=PLOT_HST1;
 
-  hg->pixbuf=NULL;
-  hg->pixbuf2=NULL;
-#ifndef USE_GTK3
-  hg->pixmap_skymon=NULL;
-#ifdef USE_XMLRPC
-  hg->pixmap_skymonbg=NULL;
-#endif
-#endif
   hg->allsky_flag=FALSE;
   hg->allsky_diff_flag=TRUE;
   hg->allsky_diff_base=ALLSKY_DIFF_BASE;

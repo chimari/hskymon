@@ -1703,10 +1703,8 @@ struct _typHOE{
   gint fc_output;
   GtkWidget *fc_frame_col;
   GtkWidget *fc_button_flip;
-#ifdef USE_GTK3
   gint fc_shift_x;
   gint fc_shift_y;
-#endif
   gint dss_arcmin;
   gint dss_arcmin_ip;
   gint dss_pix;
@@ -1922,14 +1920,6 @@ struct _typHOE{
   gdouble adc_size;
   gint adc_timer;
 
-  GdkPixbuf *pixbuf;
-  GdkPixbuf *pixbuf2;
-#ifndef USE_GTK3
-  GdkPixmap *pixmap_skymon;
-#ifdef USE_XMLRPC
-  GdkPixmap *pixmap_skymonbg;
-#endif
-#endif
   gboolean allsky_flag;
   gboolean allsky_diff_flag;
   gchar *allsky_name;

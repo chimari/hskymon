@@ -74,9 +74,15 @@ gint skymon_back();
 static gint button_signal();
 void draw_stderr_graph();
 
+GdkPixbuf *pixbuf_tmp=NULL;
+GdkPixbuf *pixbuf_tmp2=NULL;
+
 #ifdef USE_GTK3
 GdkPixbuf *pixbuf_skymon=NULL;
 GdkPixbuf *pixbuf_skymonbg=NULL;
+#else
+GdkPixmap *pixmap_skymon=NULL;
+GdkPixmap *pixmap_skymonbg=NULL;
 #endif
 gboolean flagDrawing=FALSE;
 gboolean supports_alpha = FALSE;
@@ -643,18 +649,18 @@ void create_skymon_dialog(typHOE *hg)
 
 #ifndef USE_GTK3
 void draw_skymon_pixmap(GtkWidget *widget, typHOE *hg){
-  if(hg->pixmap_skymon){
+  if(pixmap_skymon){
     GtkAllocation *allocation=g_new(GtkAllocation, 1);
     GtkStyle *style=gtk_widget_get_style(widget);
     gtk_widget_get_allocation(widget,allocation);
     
     gdk_window_set_back_pixmap(gtk_widget_get_window(widget),
-			       hg->pixmap_skymon,
+			       pixmap_skymon,
 			       FALSE);
     
     gdk_draw_drawable(gtk_widget_get_window(widget),
 		      style->fg_gc[gtk_widget_get_state(widget)],
-		      hg->pixmap_skymon,
+		      pixmap_skymon,
 		      0,0,0,0,
 		      allocation->width,
 		      allocation->height);
@@ -679,7 +685,7 @@ gboolean configure_skymon_cb(GtkWidget *widget,
 			     GdkEventConfigure *event, 
 			     gpointer userdata){
   typHOE *hg=(typHOE *)userdata;
-  draw_skymon_cairo(widget,hg, FALSE);
+  draw_skymon(widget,hg, FALSE);
   return(TRUE);
 }
 #else
@@ -688,11 +694,10 @@ static gboolean configure_skymon (GtkWidget *widget,
 			   gpointer data)
 {
   typHOE *hg = (typHOE *)data;
-  if(!hg->pixmap_skymon) return(TRUE);
+  if(!pixmap_skymon) return(TRUE);
 
   draw_skymon(widget, hg, FALSE);
-  draw_skymon_pixmap(widget, hg);
-
+  //draw_skymon_pixmap(widget, hg);
   return(TRUE);
 }
 
@@ -704,9 +709,8 @@ static gboolean expose_skymon(GtkWidget *widget,
   if(event->count!=0) return(TRUE);
 
   hg=(typHOE *)userdata;
-  if(!hg->pixmap_skymon) return (TRUE);
-
-  draw_skymon_cairo(widget, hg, FALSE);
+  if(!pixmap_skymon) draw_skymon(widget, hg, FALSE);
+  draw_skymon_pixmap(widget, hg);
   return (TRUE);
 }
 #endif
@@ -832,41 +836,41 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
     cairo_save (cr);
     if(hg->skymon_mode==SKYMON_CUR){
       if((strcmp(hg->allsky_date,hg->allsky_date_old))||force_flag){
-	if(hg->pixbuf)  g_object_unref(G_OBJECT(hg->pixbuf));
+	if(pixbuf_tmp)  g_object_unref(G_OBJECT(pixbuf_tmp));
 	if(!hg->allsky_pixbuf_flag){
 	  if(hg->allsky_limit){
-	    hg->pixbuf
+	    pixbuf_tmp
 	      = gdk_pixbuf_new_from_file_at_size(hg->allsky_file,
 						 ALLSKY_LIMIT,
 						 ALLSKY_LIMIT,
 						 NULL);
 	  }else{
-	    hg->pixbuf = gdk_pixbuf_new_from_file(hg->allsky_file, NULL);
+	    pixbuf_tmp = gdk_pixbuf_new_from_file(hg->allsky_file, NULL);
 	  }
 	}
 	else{
 	  if(hg->allsky_diff_flag){
 	    if(hg->allsky_last_i==1){
 	      if(hg->allsky_last_pixbuf[hg->allsky_last_i-1])
-		hg->pixbuf = 
+		pixbuf_tmp = 
 		  gdk_pixbuf_copy(hg->allsky_last_pixbuf[hg->allsky_last_i-1]);
 	    }
 	    else{
 	      if(hg->allsky_diff_pixbuf[hg->allsky_last_i-1])
-		hg->pixbuf =
+		pixbuf_tmp =
 		  gdk_pixbuf_copy(hg->allsky_diff_pixbuf[hg->allsky_last_i-1]);
 	    }
 	  }
 	  else{
 	    if(hg->allsky_last_pixbuf[hg->allsky_last_i-1])
-	      hg->pixbuf = 
+	      pixbuf_tmp = 
 		gdk_pixbuf_copy(hg->allsky_last_pixbuf[hg->allsky_last_i-1]);
 	  }
 	}
 
-	if(GDK_IS_PIXBUF(hg->pixbuf)){
+	if(GDK_IS_PIXBUF(pixbuf_tmp)){
 	  if((hg->allsky_sat<1.0)||(hg->allsky_sat>1.0))
-	    gdk_pixbuf_saturate_and_pixelate(hg->pixbuf,hg->pixbuf,
+	    gdk_pixbuf_saturate_and_pixelate(pixbuf_tmp,pixbuf_tmp,
 					     (gfloat)hg->allsky_sat,FALSE);
 	  if(hg->allsky_date_old) g_free(hg->allsky_date_old);
 	  pixbuf_flag=TRUE;
@@ -883,20 +887,20 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 
     }
     else if ((hg->skymon_mode==SKYMON_LAST)&&(hg->allsky_last_repeat==0)) {
-      if(hg->pixbuf)  g_object_unref(G_OBJECT(hg->pixbuf));
+      if(pixbuf_tmp)  g_object_unref(G_OBJECT(pixbuf_tmp));
 
       if(!hg->allsky_pixbuf_flag){
 	if(access(hg->allsky_last_file[hg->allsky_last_frame],F_OK)==0){
 	  if(hg->allsky_limit){
-	    hg->pixbuf
+	    pixbuf_tmp
 	      = gdk_pixbuf_new_from_file_at_size(hg->allsky_last_file[hg->allsky_last_frame],
 						 ALLSKY_LIMIT,
 						 ALLSKY_LIMIT,
 						 NULL);
 	  }else{
-	    hg->pixbuf = gdk_pixbuf_new_from_file(hg->allsky_last_file[hg->allsky_last_frame], NULL);
+	    pixbuf_tmp = gdk_pixbuf_new_from_file(hg->allsky_last_file[hg->allsky_last_frame], NULL);
 	  }
-	  if(GDK_IS_PIXBUF(hg->pixbuf)){
+	  if(GDK_IS_PIXBUF(pixbuf_tmp)){
 	    pixbuf_flag=TRUE;
 	  }
 	  else{
@@ -910,11 +914,11 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
       else{
 	if ((hg->allsky_diff_flag)
 	    &&(hg->allsky_diff_pixbuf[hg->allsky_last_frame])){
-	  hg->pixbuf = gdk_pixbuf_copy(hg->allsky_diff_pixbuf[hg->allsky_last_frame]);
+	  pixbuf_tmp = gdk_pixbuf_copy(hg->allsky_diff_pixbuf[hg->allsky_last_frame]);
 	  pixbuf_flag=TRUE;
 	}
 	else if(hg->allsky_last_pixbuf[hg->allsky_last_frame]){
-	  hg->pixbuf = gdk_pixbuf_copy(hg->allsky_last_pixbuf[hg->allsky_last_frame]);
+	  pixbuf_tmp = gdk_pixbuf_copy(hg->allsky_last_pixbuf[hg->allsky_last_frame]);
 	  pixbuf_flag=TRUE;
 	}
 	else{
@@ -923,12 +927,12 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
       }
       if (pixbuf_flag){
 	if((hg->allsky_sat<1.0)||(hg->allsky_sat>1.0))
-	   gdk_pixbuf_saturate_and_pixelate(hg->pixbuf,hg->pixbuf,
+	   gdk_pixbuf_saturate_and_pixelate(pixbuf_tmp,pixbuf_tmp,
 					    (gfloat)hg->allsky_sat,FALSE);
       }
     }
 
-    if(GDK_IS_PIXBUF(hg->pixbuf)){
+    if(GDK_IS_PIXBUF(pixbuf_tmp)){
       if((pixbuf_flag)||(width!=old_width)||(height!=old_height)){
 	if(width>height){
 	  r=(gdouble)height/((gdouble)hg->allsky_diameter/0.9);
@@ -937,14 +941,14 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 	  r=(gdouble)width/((gdouble)hg->allsky_diameter/0.9);
 	}
 	
-	w = gdk_pixbuf_get_width(hg->pixbuf);
-	h = gdk_pixbuf_get_height(hg->pixbuf);
+	w = gdk_pixbuf_get_width(pixbuf_tmp);
+	h = gdk_pixbuf_get_height(pixbuf_tmp);
       
 	w=(gint)((gdouble)w*r);
 	h=(gint)((gdouble)h*r);
 
-	if(hg->pixbuf2) g_object_unref(G_OBJECT(hg->pixbuf2));
-	hg->pixbuf2=gdk_pixbuf_scale_simple(hg->pixbuf,w,h,GDK_INTERP_BILINEAR);
+	if(pixbuf_tmp2) g_object_unref(G_OBJECT(pixbuf_tmp2));
+	pixbuf_tmp2=gdk_pixbuf_scale_simple(pixbuf_tmp,w,h,GDK_INTERP_BILINEAR);
 
 	old_width=width;
 	old_height=height;
@@ -971,7 +975,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
       cairo_rotate (cr,M_PI*hg->allsky_angle/180.);
       cairo_translate(cr,-(gdouble)hg->allsky_centerx*r,
 		      -(gdouble)hg->allsky_centery*r);
-      gdk_cairo_set_source_pixbuf(cr, hg->pixbuf2, 0, 0);
+      gdk_cairo_set_source_pixbuf(cr, pixbuf_tmp2, 0, 0);
       
       my_cairo_arc_center2 (cr, width, height, -off_x,-off_y, 0.0); 
       cairo_fill(cr);
@@ -2076,24 +2080,24 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
   {
     GtkStyle *style=gtk_widget_get_style(widget);
 
-    if(hg->pixmap_skymon) g_object_unref(G_OBJECT(hg->pixmap_skymon));
-    hg->pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
+    if(pixmap_skymon) g_object_unref(G_OBJECT(pixmap_skymon));
+    pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
 				       width,
 				       height,
 				       -1);
-    gdk_draw_drawable(hg->pixmap_skymon,
+    gdk_draw_drawable(pixmap_skymon,
 		      style->fg_gc[gtk_widget_get_state(widget)],
 		      pixmap_skymonbk,
 		      0,0,0,0,
 		      width,
 		      height);
 #ifdef USE_XMLRPC
-    if(hg->pixmap_skymonbg) g_object_unref(G_OBJECT(hg->pixmap_skymonbg));
-    hg->pixmap_skymonbg = gdk_pixmap_new(gtk_widget_get_window(widget),
+    if(pixmap_skymonbg) g_object_unref(G_OBJECT(pixmap_skymonbg));
+    pixmap_skymonbg = gdk_pixmap_new(gtk_widget_get_window(widget),
 					 width,
 					 height,
 					 -1);
-    gdk_draw_drawable(hg->pixmap_skymonbg,
+    gdk_draw_drawable(pixmap_skymonbg,
 		      style->fg_gc[gtk_widget_get_state(widget)],
 		      pixmap_skymonbk,
 		      0,0,0,0,
@@ -2196,12 +2200,12 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
 						-1);
     
 
-    if(hg->pixmap_skymonbg){
+    if(pixmap_skymonbg){
       GtkStyle *style=gtk_widget_get_style(widget);
 
       gdk_draw_drawable(pixmap_skymon_with_telstat,
 			style->fg_gc[gtk_widget_get_state(widget)],
-			hg->pixmap_skymonbg,
+			pixmap_skymonbg,
 			0,0,0,0,
 			width,
 			height);
@@ -2266,8 +2270,8 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
     cairo_surface_destroy(surface);
     gtk_widget_queue_draw(widget);
 #else
-    if(hg->pixmap_skymon) g_object_unref(G_OBJECT(hg->pixmap_skymon));
-    hg->pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
+    if(pixmap_skymon) g_object_unref(G_OBJECT(pixmap_skymon));
+    pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
 				       width,
 				       height,
 				       -1);
@@ -2275,7 +2279,7 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
     {
       GtkStyle *style=gtk_widget_get_style(widget);
      
-      gdk_draw_drawable(hg->pixmap_skymon,
+      gdk_draw_drawable(pixmap_skymon,
 			style->fg_gc[gtk_widget_get_state(widget)],
 			pixmap_skymon_with_telstat,
 			0,0,0,0,
@@ -2292,17 +2296,17 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
     pixbuf_skymon=gdk_pixbuf_copy(pixbuf_skymonbg);
     gtk_widget_queue_draw(widget);
 #else
-    if(hg->pixmap_skymon) g_object_unref(G_OBJECT(hg->pixmap_skymon));
-    hg->pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
+    if(pixmap_skymon) g_object_unref(G_OBJECT(pixmap_skymon));
+    pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
 				       width,
 				       height,
 				       -1);
     {
       GtkStyle *style=gtk_widget_get_style(widget);
 
-      gdk_draw_drawable(hg->pixmap_skymon,
+      gdk_draw_drawable(pixmap_skymon,
 			style->fg_gc[gtk_widget_get_state(widget)],
-			hg->pixmap_skymonbg,
+			pixmap_skymonbg,
 			0,0,0,0,
 			width,
 			height);
