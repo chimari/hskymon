@@ -2115,6 +2115,8 @@ void cc_get_combo_box();
 void cc_get_entry();
 void cc_get_entry_double();
 void my_entry_set_width_chars();
+GtkWidget* gtkut_hbox_new();
+GtkWidget* gtkut_vbox_new();
 GtkWidget* gtkut_button_new_from_stock();
 GtkWidget* gtkut_toggle_button_new_from_stock();
 GtkWidget* gtkut_button_new_from_pixbuf();

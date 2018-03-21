@@ -599,7 +599,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 		    close_hsc_dither, 
 		    GTK_WIDGET(dialog));
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox,FALSE, FALSE, 0);
 
@@ -890,10 +890,10 @@ void create_fc_dialog(typHOE *hg)
 		    close_fc, 
 		    (gpointer)hg);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (hg->fc_main), vbox);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(vbox), 
 		     hbox, FALSE, FALSE, 0);
 
@@ -1178,7 +1178,7 @@ void create_fc_dialog(typHOE *hg)
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
 
-  hbox2 = gtk_hbox_new(FALSE,0);
+  hbox2 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox2);
 
   hg->fc_adj_dss_arcmin = (GtkAdjustment *)gtk_adjustment_new(hg->dss_arcmin,
@@ -1200,7 +1200,7 @@ void create_fc_dialog(typHOE *hg)
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->fc_frame_col), 0);
 
-  hbox2 = gtk_hbox_new(FALSE,0);
+  hbox2 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (hg->fc_frame_col), hbox2);
 
   set_fc_frame_col(hg);
@@ -1261,7 +1261,7 @@ void create_fc_dialog(typHOE *hg)
 		    G_CALLBACK (cc_get_toggle), 
 		    &hg->dss_invert);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(vbox), 
 		     hbox, FALSE, FALSE, 0);
 
@@ -1385,7 +1385,7 @@ void create_fc_dialog(typHOE *hg)
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
 
-  hbox2 = gtk_hbox_new(FALSE,0);
+  hbox2 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox2);
 
   hg->fc_adj_dss_pa = (GtkAdjustment *)gtk_adjustment_new(hg->dss_pa,
@@ -1483,7 +1483,7 @@ void create_fc_dialog(typHOE *hg)
 			      "Query");
 #endif
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach (GTK_TABLE(table), vbox1, 1, 2, 0, 2,
   		    GTK_SHRINK,GTK_SHRINK,0,0);
 
@@ -1519,11 +1519,11 @@ void create_fc_dialog(typHOE *hg)
 #endif
 
   
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(vbox), 
 		     hbox, TRUE, TRUE, 0);
 
-  vbox1 = gtk_vbox_new(FALSE,3);
+  vbox1 = gtkut_vbox_new(FALSE,3);
   gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 3);
 
 
@@ -5726,7 +5726,7 @@ void trdb_run (typHOE *hg)
   }
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
 
-  hbox = gtk_hbox_new(FALSE,5);
+  hbox = gtkut_hbox_new(FALSE,5);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     hbox,TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),hg->plabel,FALSE,TRUE,0);

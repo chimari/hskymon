@@ -118,10 +118,10 @@ void create_adc_dialog(typHOE *hg)
 		    close_adc, 
 		    (gpointer)hg);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (hg->adc_main), vbox);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
 
@@ -207,7 +207,7 @@ void create_adc_dialog(typHOE *hg)
   gtk_table_attach (GTK_TABLE(table), frame, 1, 2, 0, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
 
-  hbox2 = gtk_hbox_new(FALSE,0);
+  hbox2 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox2);
 
   hg->adc_adj_pa = (GtkAdjustment *)gtk_adjustment_new(hg->adc_pa,
@@ -237,7 +237,7 @@ void create_adc_dialog(typHOE *hg)
   gtk_table_attach (GTK_TABLE(table), frame, 2, 3, 0, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
 
-  hbox2 = gtk_hbox_new(FALSE,0);
+  hbox2 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox2);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->adc_slit_width,
@@ -254,14 +254,14 @@ void create_adc_dialog(typHOE *hg)
 		     &hg->adc_slit_width);
 
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
   frame = gtk_frame_new ("Wavelength [A]");
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  hbox2 = gtk_hbox_new(FALSE,0);
+  hbox2 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox2);
 
   label=gtk_label_new("Target");
@@ -303,7 +303,7 @@ void create_adc_dialog(typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
 
-  hbox2 = gtk_hbox_new(FALSE,0);
+  hbox2 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox2);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->adc_seeing,
@@ -324,7 +324,7 @@ void create_adc_dialog(typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
 
-  hbox2 = gtk_hbox_new(FALSE,0);
+  hbox2 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox2);
 
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->adc_size,

@@ -2275,7 +2275,7 @@ void ver_txt_parse(typHOE *hg) {
 							     GTK_RESPONSE_OK));
 
 
-    hbox = gtk_hbox_new(FALSE,2);
+    hbox = gtkut_hbox_new(FALSE,2);
     gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
     gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		       hbox,FALSE, FALSE, 0);
@@ -2285,7 +2285,7 @@ void ver_txt_parse(typHOE *hg) {
     
     gtk_box_pack_start(GTK_BOX(hbox), pixmap,FALSE, FALSE, 0);
     
-    vbox = gtk_vbox_new(FALSE,2);
+    vbox = gtkut_vbox_new(FALSE,2);
     gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
     gtk_box_pack_start(GTK_BOX(hbox),vbox,FALSE, FALSE, 0);
 
@@ -3266,7 +3266,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
 		    GTK_WIDGET(dialog));
 
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox,FALSE, FALSE, 0);
@@ -3280,7 +3280,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
 
   gtk_box_pack_start(GTK_BOX(hbox), pixmap,FALSE, FALSE, 0);
 
-  vbox = gtk_vbox_new(FALSE,2);
+  vbox = gtkut_vbox_new(FALSE,2);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
   gtk_box_pack_start(GTK_BOX(hbox),vbox,FALSE, FALSE, 0);
 
@@ -3838,7 +3838,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
   gtk_table_set_row_spacings (GTK_TABLE (table), 5);
   gtk_table_set_col_spacings (GTK_TABLE (table), 5);
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table), hbox, 0, 4, 0, 1);
 
   check = gtk_check_button_new_with_label("Display Cloud Coverage   ");
@@ -4278,7 +4278,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 4, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
 
@@ -4801,7 +4801,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 2, 3,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -4836,7 +4836,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 3, 4,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 3, 4,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -5072,7 +5072,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 3, 4,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 3, 4,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -5462,7 +5462,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 7, 8,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 7, 8,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -5481,7 +5481,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
   
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 0, 2, 8, 9,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -5653,7 +5653,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   }
 
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 0, 2, 1, 2,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -5678,7 +5678,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 2, 3,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -5890,7 +5890,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 
   my_signal_connect(dialog,"delete-event",delete_disp_para,GTK_WIDGET(dialog));
 
-  hbox1 = gtk_hbox_new(FALSE,0);
+  hbox1 = gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox1,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox1), 0);
@@ -5899,7 +5899,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (hbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
@@ -5916,7 +5916,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (hbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_container_add (GTK_CONTAINER (frame), hbox);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
@@ -5950,7 +5950,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_widget_show (rb[7]);
   my_signal_connect (rb[7], "toggled", radio_fcdb, (gpointer)hg);
 
-  hbox1 = gtk_hbox_new(FALSE,0);
+  hbox1 = gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox1,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox1), 0);
@@ -5959,7 +5959,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (hbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
@@ -5987,7 +5987,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (hbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_container_add (GTK_CONTAINER (frame), hbox);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
@@ -6024,7 +6024,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_notebook_set_scrollable (GTK_NOTEBOOK (hg->query_note), TRUE);
   gtk_container_add (GTK_CONTAINER (frame), hg->query_note);
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("SIMBAD");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -6044,7 +6044,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6212,7 +6212,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   }
 
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("NED");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -6227,7 +6227,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6318,7 +6318,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 			       hg->fcdb_ned_ref);
 
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("GSC 2.3");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -6333,7 +6333,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6362,7 +6362,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
 			       hg->fcdb_gsc_fil);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6382,7 +6382,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_gsc_mag);
 
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("PanSTARRS-1");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -6397,7 +6397,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6426,7 +6426,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
 			       hg->fcdb_ps1_fil);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6462,7 +6462,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_ps1_mindet);
 
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("SDSS DR14");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -6477,7 +6477,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 3, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6587,7 +6587,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   }
 
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("LAMOST DR3");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -6602,7 +6602,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 3, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("USNO-B");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -6617,7 +6617,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6646,7 +6646,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
 			       hg->fcdb_usno_fil);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6666,7 +6666,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_usno_mag);
 
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("GAIA DR1");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -6681,7 +6681,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6710,7 +6710,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
 			       hg->fcdb_gaia_fil);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6730,7 +6730,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_gaia_mag);
 
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("2MASS");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -6745,7 +6745,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6774,7 +6774,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
 			       hg->fcdb_2mass_fil);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6794,7 +6794,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_2mass_mag);
 
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("WISE");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -6809,7 +6809,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 3, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6838,7 +6838,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
 			       hg->fcdb_wise_fil);
 
-  hbox = gtk_hbox_new(FALSE,0);
+  hbox = gtkut_hbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), hbox, 1, 3, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
@@ -6910,7 +6910,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 		   GTK_FILL,GTK_SHRINK,0,0);
 
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("AKARI/IRC");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -6951,7 +6951,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 2, 3, 3, 4,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("AKARI/FIS");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -7025,7 +7025,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 		    default_disp_para, 
 		    (gpointer)cdata);
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("SMOKA");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -7049,7 +7049,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
 			       hg->fcdb_smoka_shot);
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), vbox1, 0, 1, 2, 5,
 		   GTK_FILL,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
@@ -7058,7 +7058,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7072,7 +7072,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 				 hg->fcdb_smoka_subaru[i]);
   }
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), vbox1, 1, 2, 2, 4,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
@@ -7081,7 +7081,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7099,7 +7099,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7113,7 +7113,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 				 hg->fcdb_smoka_oao[i]);
   }
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), vbox1, 2, 3, 2, 3,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
@@ -7122,7 +7122,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7140,7 +7140,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  vbox = gtkut_vbox_new(FALSE,0);  gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
   for(i=0;i<NUM_SMOKA_KANATA;i++){
@@ -7153,12 +7153,12 @@ void create_fcdb_para_dialog (typHOE *hg)
 				 hg->fcdb_smoka_kanata[i]);
   }
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), vbox1, 3, 4, 2, 3,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
 
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("HST");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -7174,7 +7174,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 		   GTK_FILL,GTK_SHRINK,0,0);
 
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), vbox1, 0, 1, 1, 3,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
@@ -7183,7 +7183,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7197,7 +7197,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 				 hg->fcdb_hst_image[i]);
   }
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), vbox1, 1, 2, 1, 3,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
@@ -7206,7 +7206,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7220,7 +7220,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 				 hg->fcdb_hst_spec[i]);
   }
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), vbox1, 2, 3, 1, 2,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
@@ -7229,7 +7229,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7243,11 +7243,11 @@ void create_fcdb_para_dialog (typHOE *hg)
 				 hg->fcdb_hst_other[i]);
   }
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), vbox1, 3, 4, 1, 2,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("ESO");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -7262,7 +7262,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 4, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), vbox1, 0, 1, 1, 3,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
@@ -7271,7 +7271,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7285,7 +7285,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 				 hg->fcdb_eso_image[i]);
   }
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), vbox1, 1, 2, 1, 5,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
@@ -7294,7 +7294,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7308,7 +7308,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 				 hg->fcdb_eso_spec[i]);
   }
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), vbox1, 2, 3, 1, 4,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
@@ -7317,7 +7317,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7335,7 +7335,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7353,7 +7353,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7367,7 +7367,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 				 hg->fcdb_eso_coro[i]);
   }
 
-  vbox1 = gtk_vbox_new(FALSE,0);
+  vbox1 = gtkut_vbox_new(FALSE,0);
   gtk_table_attach(GTK_TABLE(table), vbox1, 3, 4, 1, 2,
 		   GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
@@ -7376,7 +7376,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7394,7 +7394,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-  vbox = gtk_vbox_new(FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
@@ -7410,7 +7410,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 
   
   // Gemini
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("Gemini");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
@@ -8725,7 +8725,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     all_note,FALSE, FALSE, 0);
 
 
-  note_vbox = gtk_vbox_new(FALSE,2);
+  note_vbox = gtkut_vbox_new(FALSE,2);
 
   // Environment for Observatory.
   frame = gtk_frame_new ("Observatory Position");
@@ -8747,7 +8747,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->obs_preset_flag);
   my_signal_connect (button, "toggled", RadioPresetObs, (gpointer)hg);
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach(GTK_TABLE(table1), hbox, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
 
@@ -8939,7 +8939,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_table_attach(GTK_TABLE(table2), label, 0, 1, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach(GTK_TABLE(table2), hbox, 1, 4, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
@@ -9040,7 +9040,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		   GTK_FILL,GTK_SHRINK,0,0);
 
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach(GTK_TABLE(table2), hbox, 1, 4, 1, 2,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
@@ -9304,7 +9304,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   label = gtk_label_new ("Observatory");
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
-  note_vbox = gtk_vbox_new(FALSE,2);
+  note_vbox = gtkut_vbox_new(FALSE,2);
 
   // All Sky Image
   frame = gtk_frame_new ("All-Sky Camera Server");
@@ -9326,7 +9326,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 			       hg->allsky_preset_flag);
   my_signal_connect (button, "toggled", RadioPresetAllSky, (gpointer)hg);
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach(GTK_TABLE(table1), hbox, 1, 2, 0, 1,
 		   GTK_SHRINK,GTK_SHRINK,0,0);
 
@@ -9552,7 +9552,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_table_set_col_spacings (GTK_TABLE (table2), 5);
 
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table2), hbox, 0, 1, 0, 1);
 
   label = gtk_label_new ("Center X [pixel]");
@@ -9573,7 +9573,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_allsky_centerx);
 
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table2), hbox, 0, 1, 1, 2);
 
   label = gtk_label_new ("Center Y [pixel]");
@@ -9594,7 +9594,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_allsky_centery);
 
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table2), hbox, 1, 2, 0, 1);
 
   label = gtk_label_new ("Diameter [pixel]");
@@ -9615,7 +9615,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_allsky_diameter);
 
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table2), hbox, 1, 2, 1, 2);
 
   label = gtk_label_new ("Rotation Angle [deg]");
@@ -9635,7 +9635,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     cc_get_adj_double,
 		     &tmp_allsky_angle);
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table2), hbox, 2, 3, 0, 1);
 
   hg->allsky_check_limit = gtk_check_button_new_with_label("Limit Pixel Size");
@@ -9647,7 +9647,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_allsky_limit);
 
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table2), hbox, 2, 3, 1, 2);
 
   hg->allsky_check_flip = gtk_check_button_new_with_label("Flip");
@@ -9670,7 +9670,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_table_set_row_spacings (GTK_TABLE (table1), 5);
   gtk_table_set_col_spacings (GTK_TABLE (table1), 5);
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table1), hbox, 0, 2, 0, 1);
 
   // Interval
@@ -9695,7 +9695,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
   
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table1), hbox, 2, 3, 0, 1);
 
   button=gtkut_button_new_from_stock("Buffer Clear",GTK_STOCK_CLEAR);
@@ -9759,7 +9759,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   label = gtk_label_new ("AllSkyCamera");
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
-  note_vbox = gtk_vbox_new(FALSE,2);
+  note_vbox = gtkut_vbox_new(FALSE,2);
 
   // Environment for AD Calc.
   frame = gtk_frame_new ("Parameters for Calculation of Atmospheric Dispersion");
@@ -9860,7 +9860,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   label = gtk_label_new ("AD");
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
-  note_vbox = gtk_vbox_new(FALSE,2);
+  note_vbox = gtkut_vbox_new(FALSE,2);
 
   // Parameter Show
   frame = gtk_frame_new ("Parameters in Object List");
@@ -9984,7 +9984,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
 #ifdef USE_XMLRPC
-  note_vbox = gtk_vbox_new(FALSE,2);
+  note_vbox = gtkut_vbox_new(FALSE,2);
 
   // Telescope Status
   frame = gtk_frame_new ("Parameters for Telescope Status");
@@ -10050,7 +10050,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
 #endif
 
-  note_vbox = gtk_vbox_new(FALSE,2);
+  note_vbox = gtkut_vbox_new(FALSE,2);
 
 #ifndef USE_WIN32
 #ifndef USE_OSX
@@ -10724,7 +10724,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
 
-  note_vbox = gtk_vbox_new(FALSE,2);
+  note_vbox = gtkut_vbox_new(FALSE,2);
 
   // Color
   frame = gtk_frame_new ("Targets\' Colors");
@@ -10774,7 +10774,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_table_set_row_spacings (GTK_TABLE (table1), 5);
   gtk_table_set_col_spacings (GTK_TABLE (table1), 5);
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table1), hbox, 0, 1, 0, 1);
 
   label = gtk_label_new ("Color/Alpha");
@@ -10795,7 +10795,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		    (gpointer *)cdata_col);
   
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table1), hbox, 1, 2, 0, 1);
 
   label = gtk_label_new ("Pixel Size");
@@ -10821,7 +10821,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   
-  hbox = gtk_hbox_new(FALSE,5);
+  hbox = gtkut_hbox_new(FALSE,5);
   gtk_container_add (GTK_CONTAINER (frame), hbox);
 
   label = gtk_label_new ("Base");
@@ -10858,7 +10858,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
 
-  note_vbox = gtk_vbox_new(FALSE,2);
+  note_vbox = gtkut_vbox_new(FALSE,2);
 
   // Window Size.
   frame = gtk_frame_new ("Size in pixel");
@@ -16198,7 +16198,7 @@ void popup_message(GtkWidget *parent, gchar* stock_id, gint delay, ...){
 
   my_signal_connect(dialog,"delete-event",destroy_popup, &timer);
 
-  hbox=gtk_hbox_new(FALSE,5);
+  hbox=gtkut_hbox_new(FALSE,5);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox, FALSE,FALSE,0);
 
@@ -16208,7 +16208,7 @@ void popup_message(GtkWidget *parent, gchar* stock_id, gint delay, ...){
 
   gtk_box_pack_start(GTK_BOX(hbox), pixmap,FALSE, FALSE, 0);
 
-  vbox=gtk_vbox_new(FALSE,0);
+  vbox=gtkut_vbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(hbox),vbox, FALSE,FALSE,0);
 
   while(1){
@@ -16309,6 +16309,28 @@ gchar* make_head(gchar* filename){
 }
 
 
+GtkWidget* gtkut_hbox_new(gboolean homogeneous, gint spacing){
+  GtkWidget *w;
+#ifdef USE_GTK3
+  w = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, spacing);
+  gtk_box_set_homogeneous(GTK_BOX(w), homogeneous);
+#else
+  w = gtkut_hbox_new(homogeneous, spacing);
+#endif
+  return(w);
+}
+
+GtkWidget* gtkut_vbox_new(gboolean homogeneous, gint spacing){
+  GtkWidget *w;
+#ifdef USE_GTK3
+  w = gtk_box_new(GTK_ORIENTATION_VERTICAL, spacing);
+  gtk_box_set_homogeneous(GTK_BOX(w), homogeneous);
+#else
+  w = gtkut_vbox_new(homogeneous, spacing);
+#endif
+  return(w);
+}
+
 GtkWidget* gtkut_button_new_from_stock(gchar *txt,
 				       const gchar *stock){
   GtkWidget *button;
@@ -16317,9 +16339,9 @@ GtkWidget* gtkut_button_new_from_stock(gchar *txt,
   GtkWidget *label;
   GtkWidget *box2;
   
-  box2=gtk_hbox_new(TRUE,0);
+  box2=gtkut_hbox_new(TRUE,0);
 
-  box=gtk_hbox_new(FALSE,0);
+  box=gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(box2),box, FALSE,FALSE,0);
 
   gtk_container_set_border_width(GTK_CONTAINER(box),0);
@@ -16355,9 +16377,9 @@ GtkWidget* gtkut_toggle_button_new_from_stock(gchar *txt,
   GtkWidget *label;
   GtkWidget *box2;
   
-  box2=gtk_hbox_new(TRUE,0);
+  box2=gtkut_hbox_new(TRUE,0);
 
-  box=gtk_hbox_new(FALSE,0);
+  box=gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(box2),box, FALSE,FALSE,0);
 
   gtk_container_set_border_width(GTK_CONTAINER(box),0);
@@ -16395,9 +16417,9 @@ GtkWidget* gtkut_button_new_from_pixbuf(gchar *txt,
   GdkPixbuf *pixbuf2;
   gint w,h;
   
-  box2=gtk_hbox_new(TRUE,0);
+  box2=gtkut_hbox_new(TRUE,0);
 
-  box=gtk_hbox_new(FALSE,0);
+  box=gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(box2),box, FALSE,FALSE,0);
 
   gtk_container_set_border_width(GTK_CONTAINER(box),0);
@@ -16442,9 +16464,9 @@ GtkWidget* gtkut_toggle_button_new_from_pixbuf(gchar *txt,
   GdkPixbuf *pixbuf2;
   gint w,h;
   
-  box2=gtk_hbox_new(TRUE,0);
+  box2=gtkut_hbox_new(TRUE,0);
 
-  box=gtk_hbox_new(FALSE,0);
+  box=gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(box2),box, FALSE,FALSE,0);
 
   gtk_container_set_border_width(GTK_CONTAINER(box),0);

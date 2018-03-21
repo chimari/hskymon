@@ -5888,11 +5888,11 @@ do_editable_cells (typHOE *hg)
     gtk_notebook_set_scrollable (GTK_NOTEBOOK (hg->obj_note), TRUE);
     gtk_container_add (GTK_CONTAINER (window), hg->obj_note);
     
-    vbox = gtk_vbox_new (FALSE, 5);
+    vbox = gtkut_vbox_new (FALSE, 5);
     label = gtk_label_new ("Main Target");
     gtk_notebook_append_page (GTK_NOTEBOOK (hg->obj_note), vbox, label);
     
-    hbox = gtk_hbox_new (FALSE, 0);
+    hbox = gtkut_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
@@ -5951,7 +5951,7 @@ do_editable_cells (typHOE *hg)
     gtk_container_add (GTK_CONTAINER (sw), hg->tree);
     
     /* some buttons */
-    hbox = gtk_hbox_new (FALSE, 4);
+    hbox = gtkut_hbox_new (FALSE, 4);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
     
     button=gtkut_button_new_from_stock("Plot",GTK_STOCK_PRINT_PREVIEW);
@@ -6044,7 +6044,7 @@ do_editable_cells (typHOE *hg)
 		       G_CALLBACK (focus_item), (gpointer)hg);
       
     
-    hbox = gtk_hbox_new (FALSE, 4);
+    hbox = gtkut_hbox_new (FALSE, 4);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
     
     label = gtk_label_new ("Browse");
@@ -6268,11 +6268,11 @@ do_editable_cells (typHOE *hg)
   
   // STDDB
   {
-    vbox = gtk_vbox_new (FALSE, 5);
+    vbox = gtkut_vbox_new (FALSE, 5);
     label = gtk_label_new ("Standard");
     gtk_notebook_append_page (GTK_NOTEBOOK (hg->obj_note), vbox, label);
 
-    hbox = gtk_hbox_new (FALSE, 0);
+    hbox = gtkut_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
@@ -6339,7 +6339,7 @@ do_editable_cells (typHOE *hg)
 		      G_CALLBACK (std_focus_item), (gpointer)hg);
     
     /* some buttons */
-    hbox = gtk_hbox_new (FALSE, 4);
+    hbox = gtkut_hbox_new (FALSE, 4);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
 #ifdef USE_OSX
@@ -6393,11 +6393,11 @@ do_editable_cells (typHOE *hg)
 
   // FCDB
   {
-    vbox = gtk_vbox_new (FALSE, 5);
+    vbox = gtkut_vbox_new (FALSE, 5);
     label = gtk_label_new ("Finding Chart / DB");
     gtk_notebook_append_page (GTK_NOTEBOOK (hg->obj_note), vbox, label);
     
-    hbox = gtk_hbox_new (FALSE, 0);
+    hbox = gtkut_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
@@ -6439,7 +6439,7 @@ do_editable_cells (typHOE *hg)
     fcdb_append_tree(hg);
 
     /* some buttons */
-    hbox = gtk_hbox_new (FALSE, 4);
+    hbox = gtkut_hbox_new (FALSE, 4);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
     
 #ifdef USE_OSX
@@ -6494,11 +6494,11 @@ do_editable_cells (typHOE *hg)
 
   // TRDB
   {
-    vbox = gtk_vbox_new (FALSE, 5);
+    vbox = gtkut_vbox_new (FALSE, 5);
     label = gtk_label_new ("List Query");
     gtk_notebook_append_page (GTK_NOTEBOOK (hg->obj_note), vbox, label);
     
-    hbox = gtk_hbox_new (FALSE, 0);
+    hbox = gtkut_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_SAVE);
@@ -6567,7 +6567,7 @@ do_editable_cells (typHOE *hg)
 		      G_CALLBACK (trdb_focus_item), (gpointer)hg);
 
     // Browse buttons
-    hbox = gtk_hbox_new (FALSE, 4);
+    hbox = gtkut_hbox_new (FALSE, 4);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
     button=gtkut_button_new_from_stock("Show Detail",GTK_STOCK_GO_BACK);
@@ -7337,7 +7337,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   my_signal_connect(dialog,"delete-event", gtk_main_quit, NULL);
 
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
@@ -7365,7 +7365,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     bar,FALSE, FALSE, 0);
 
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
@@ -7379,7 +7379,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     bar,FALSE, FALSE, 0);
  
-  hbox = gtk_hbox_new(FALSE,2);
+  hbox = gtkut_hbox_new(FALSE,2);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
