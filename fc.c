@@ -2027,8 +2027,8 @@ gboolean expose_fc_cairo(GtkWidget *widget,
 		      style->fg_gc[gtk_widget_get_state(widget)],
 		      pixmap_fcbk,
 		      0,0,hg->fc_shift_x,hg->fc_shift_y,
-		      allocation->width,
-		      allocation->height);
+		      allocation->width*hg->fc_mag,
+		      allocation->height*hg->fc_mag);
     g_free(allocation);
   }
   return (TRUE);
