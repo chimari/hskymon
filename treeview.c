@@ -1558,13 +1558,15 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
       }
 
       if(hg->obj[i].hash==-1){
-#ifdef GTK_MSG
-	popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+	popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		      "dialog-error", 
+#else
+		      GTK_STOCK_DIALOG_ERROR, 
+#endif
+		      POPUP_TIMEOUT,
 		      "Error: The target does not have a HASH ID.",
 		      NULL);
-#else
-	fprintf(stderr," Error: The target does not have a HASH ID.\n");
-#endif
 	return;
       }
     }
@@ -5895,7 +5897,11 @@ do_editable_cells (typHOE *hg)
     hbox = gtkut_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"edit-find");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
     		       G_CALLBACK (search_item), (gpointer)hg);
@@ -5919,7 +5925,11 @@ do_editable_cells (typHOE *hg)
     hg->tree_label= gtk_label_new (hg->tree_label_text);
     gtk_box_pack_start(GTK_BOX(hbox), hg->tree_label, TRUE, TRUE, 0);
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"window-close");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
+#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (close_tree2), (gpointer)hg);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -5954,17 +5964,29 @@ do_editable_cells (typHOE *hg)
     hbox = gtkut_hbox_new (FALSE, 4);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name("Plot","document-print-preview");
+#else
     button=gtkut_button_new_from_stock("Plot",GTK_STOCK_PRINT_PREVIEW);
+#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (plot2_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name("AD","document-print-preview");
+#else
     button=gtkut_button_new_from_stock("AD",GTK_STOCK_PRINT_PREVIEW);
+#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (adc_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name("Finding Chart","starred");
+#else
     button=gtkut_button_new_from_stock("Finding Chart",GTK_STOCK_ABOUT);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (fc_item), (gpointer)hg);
@@ -5972,22 +5994,38 @@ do_editable_cells (typHOE *hg)
     label = gtk_label_new ("   ");
     gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"list-add");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_ADD);
+#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (addobj_dialog), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"list-remove");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REMOVE);
+#endif
     my_signal_connect (button, "clicked",
 		      G_CALLBACK (remove_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"go-up");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_GO_UP);
+#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (up_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"go-down");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_GO_DOWN);
+#endif
     my_signal_connect (button, "clicked",
 		      G_CALLBACK (down_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
@@ -6034,7 +6072,11 @@ do_editable_cells (typHOE *hg)
 			   &hg->azel_mode);
     }
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"view-refresh");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
+#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (refresh_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
@@ -6260,7 +6302,11 @@ do_editable_cells (typHOE *hg)
 			 &hg->stddb_mode);
     }
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name("Search","edit-find");
+#else
     button=gtkut_button_new_from_stock("Search",GTK_STOCK_FIND);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (stddb_item), (gpointer)hg);
@@ -6275,7 +6321,11 @@ do_editable_cells (typHOE *hg)
     hbox = gtkut_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"edit-find");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (stddb_item), (gpointer)hg);
@@ -6285,7 +6335,11 @@ do_editable_cells (typHOE *hg)
     
 
 
+#ifdef USE_GTK3
+    hg->stddb_button=gtkut_button_new_from_icon_name(NULL,"video-display");
+#else
     hg->stddb_button=gtkut_toggle_button_new_from_stock(NULL,GTK_STOCK_APPLY);
+#endif
     gtk_container_set_border_width (GTK_CONTAINER (hg->stddb_button), 0);
     gtk_box_pack_start(GTK_BOX(hbox),hg->stddb_button,FALSE,FALSE,0);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->stddb_button),
@@ -6303,7 +6357,11 @@ do_editable_cells (typHOE *hg)
     
     stddb_set_label(hg);
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"window-close");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
+#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (close_tree2), (gpointer)hg);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -6360,7 +6418,11 @@ do_editable_cells (typHOE *hg)
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (std_simbad), (gpointer)hg);
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"list-add");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_ADD);
+#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (add_item_std), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
@@ -6371,7 +6433,11 @@ do_editable_cells (typHOE *hg)
     label= gtk_label_new ("    ");
     gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
     
+#ifdef USE_GTK3      
+    button=gtkut_button_new_from_icon_name("OPE Def.","accessories-text-editor");
+#else
     button=gtkut_button_new_from_stock("OPE Def.",GTK_STOCK_EDIT);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       make_std_tgt, (gpointer)hg);
@@ -6381,7 +6447,11 @@ do_editable_cells (typHOE *hg)
     gtk_editable_set_editable(GTK_EDITABLE(hg->std_tgt),FALSE);
     my_entry_set_width_chars(GTK_ENTRY(hg->std_tgt),50);
 
+#ifdef USE_GTK3      
+    button=gtkut_button_new_from_icon_name(NULL,"edit-copy");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_COPY);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (clip_copy), (gpointer)hg->std_tgt);
@@ -6400,7 +6470,11 @@ do_editable_cells (typHOE *hg)
     hbox = gtkut_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
+#ifdef USE_GTK3      
+    button=gtkut_button_new_from_icon_name(NULL,"edit-find");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (fcdb_item), (gpointer)hg);
@@ -6408,7 +6482,11 @@ do_editable_cells (typHOE *hg)
     gtk_widget_set_tooltip_text(button,"Database query");
 #endif
     
+#ifdef USE_GTK3      
+    button=gtkut_button_new_from_icon_name(NULL,"document-save");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_SAVE);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (do_save_FCDB_List), (gpointer)hg);
@@ -6419,7 +6497,11 @@ do_editable_cells (typHOE *hg)
     hg->fcdb_label= gtk_label_new (hg->fcdb_label_text);
     gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_label, TRUE, TRUE, 0);
       
+#ifdef USE_GTK3      
+    button=gtkut_button_new_from_icon_name(NULL,"window-close");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
+#endif
     my_signal_connect (button, "clicked",
 		      G_CALLBACK (close_tree2), (gpointer)hg);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -6460,7 +6542,11 @@ do_editable_cells (typHOE *hg)
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (fcdb_simbad), (gpointer)hg);
 
+#ifdef USE_GTK3      
+    button=gtkut_button_new_from_icon_name(NULL,"list-add");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_ADD);
+#endif
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (add_item_fcdb), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
@@ -6471,7 +6557,11 @@ do_editable_cells (typHOE *hg)
     label= gtk_label_new ("    ");
     gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
+#ifdef USE_GTK3      
+    button=gtkut_button_new_from_icon_name("OPE Def.","accessories-text-editor");
+#else
     button=gtkut_button_new_from_stock("OPE Def.",GTK_STOCK_EDIT);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       make_fcdb_tgt, (gpointer)hg);
@@ -6481,7 +6571,11 @@ do_editable_cells (typHOE *hg)
     gtk_editable_set_editable(GTK_EDITABLE(hg->fcdb_tgt),FALSE);
     my_entry_set_width_chars(GTK_ENTRY(hg->fcdb_tgt),50);
 
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"edit-copy");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_COPY);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (clip_copy), (gpointer)hg->fcdb_tgt);
@@ -6501,14 +6595,22 @@ do_editable_cells (typHOE *hg)
     hbox = gtkut_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox),hbox, FALSE, FALSE, 0);
     
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"document-save");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_SAVE);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
     		       G_CALLBACK (do_save_TRDB_CSV), (gpointer)hg);
 #ifdef __GTK_TOOLTIP_H__
     gtk_widget_set_tooltip_text(button,"Save queried List to CSV file");
 #endif
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"edit-find");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
     		       G_CALLBACK (trdb_search_item), (gpointer)hg);
@@ -6532,7 +6634,11 @@ do_editable_cells (typHOE *hg)
     hg->trdb_label= gtk_label_new (hg->trdb_label_text);
     gtk_box_pack_start(GTK_BOX(hbox), hg->trdb_label, TRUE, TRUE, 0);
       
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name(NULL,"window-close");
+#else
     button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
+#endif
     my_signal_connect (button, "clicked",
 		      G_CALLBACK (close_tree2), (gpointer)hg);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -6570,7 +6676,11 @@ do_editable_cells (typHOE *hg)
     hbox = gtkut_hbox_new (FALSE, 4);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
+#ifdef USE_GTK3
+    button=gtkut_button_new_from_icon_name("Show Detail","go-previous");
+#else
     button=gtkut_button_new_from_stock("Show Detail",GTK_STOCK_GO_BACK);
+#endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (trdb_dbtab), (gpointer)hg);
@@ -7118,13 +7228,15 @@ void stddb_dl(typHOE *hg)
       gtk_tree_path_free (path);
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT,
 		    "Error: Please select a target in the Object List.",
 		    NULL);
-#else
-      fprintf(stderr," Error: Please select a target in the Object List.\n");
-#endif
       flag_getSTD=FALSE;
       return;
     }
@@ -7167,7 +7279,11 @@ void stddb_dl(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     hg->plabel,FALSE,FALSE,0);
   
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed", cancel_stddb, (gpointer)hg);
@@ -7353,11 +7469,19 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(entry),30);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("SIMBAD","edit-find");
+#else
   button=gtkut_button_new_from_stock("SIMBAD", GTK_STOCK_FIND);
+#endif
   gtk_box_pack_start(GTK_BOX(hbox), button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed", addobj_simbad_query, (gpointer)hg);
   
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("NED","edit-find");
+#else
   button=gtkut_button_new_from_stock("NED", GTK_STOCK_FIND);
+#endif
   gtk_box_pack_start(GTK_BOX(hbox), button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed", addobj_ned_query, (gpointer)hg);
 
@@ -7409,12 +7533,20 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 		     cc_get_entry_double, &hg->addobj_dec);
   
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed", gtk_main_quit, NULL);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Add Object","list-add");
+#else
   button=gtkut_button_new_from_stock("Add Object",GTK_STOCK_ADD);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",

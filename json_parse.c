@@ -17,16 +17,17 @@ void fcdb_gemini_json_parse(typHOE *hg) {
   printf_log(hg,"[FCDB] pursing XML.");
 
   if((jobj_from_file = json_object_from_file(hg->fcdb_file))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main,GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main,
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error : JSON table cannot be parsed.",
 		  " ",
 		  hg->fcdb_file,
 		  NULL);
-#else
-    g_print ("Cannot parse JSON file : \"%s\"\n",
-	     hg->fcdb_file);
-#endif
     return;
   }
 
@@ -135,16 +136,17 @@ void trdb_gemini_json_parse(typHOE *hg) {
   printf_log(hg,"[FCDB] pursing XML.");
 
   if((jobj_from_file = json_object_from_file(hg->fcdb_file))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main,GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main,
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error : JSON table cannot be parsed.",
 		  " ",
 		  hg->fcdb_file,
 		  NULL);
-#else
-    g_print ("Cannot parse JSON file : \"%s\"\n",
-	     hg->fcdb_file);
-#endif
     return;
   }
 

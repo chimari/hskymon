@@ -266,7 +266,11 @@ void create_plot_dialog(typHOE *hg)
   hbox1 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox1);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name(NULL,"view-refresh");
+#else
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
+#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (refresh_plot), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
@@ -275,7 +279,11 @@ void create_plot_dialog(typHOE *hg)
 			      "Refresh");
 #endif
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name(NULL,"window-close");
+#else
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
+#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (close_plot), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
@@ -295,7 +303,11 @@ void create_plot_dialog(typHOE *hg)
 			      "Save as PDF");
 #endif
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name(NULL,"document-print");
+#else
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_PRINT);
+#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (do_print), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);

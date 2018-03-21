@@ -372,16 +372,17 @@ void Extract_Att_VO_Table(xmlTextReaderPtr reader,
     } else {
       ret = xmlTextReaderRead(reader);
       if(ret==-1){
-#ifdef GTK_MSG
-	popup_message(parent, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+	popup_message(parent, 
+#ifdef USE_GTK3
+		      "dialog-error", 
+#else
+		      GTK_STOCK_DIALOG_ERROR, 
+#endif
+		      POPUP_TIMEOUT*2,
 		      "Error : XML table cannot be parsed.",
 		      " ",
 		      fname,
 		      NULL);
-#else
-	g_print ("Cannot parse XML file : \"%s\"\n",
-		 fname);
-#endif
       }
       if (name!=NULL)
 	xmlFree(name);
@@ -2533,30 +2534,34 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
   printf_log(hg,"[FCDB] pursing TXT.");
 
   if((fp=fopen(hg->fcdb_file,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->fcdb_file,
 		  NULL);
-#else
-    fprintf(stderr," File Open Error  \"%s\".\n",hg->fcdb_file);
-#endif
     printf_log(hg,"[FCDB] File Open Error  \"%s\".", hg->fcdb_file);
     return;
   }
   
   while(!feof(fp)){
     if((buf=fgets_new(fp))==NULL){
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be read.",
 		    " ",
 		    hg->fcdb_file,
 		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->fcdb_file);
-#endif
       printf_log(hg,"[FCDB] File Read Error  \"%s\".", hg->fcdb_file);
       fclose(fp);
       return;
@@ -2573,15 +2578,17 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
   }
 
   if((buf=fgets_new(fp))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be read.",
 		  " ",
 		  hg->fcdb_file,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->fcdb_file);
-#endif
     printf_log(hg,"[FCDB] File Read Error  \"%s\".", hg->fcdb_file);
     fclose(fp);
     return;
@@ -2679,15 +2686,17 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
 
   while(!feof(fp)){
     if((buf=fgets_new(fp))==NULL){
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be read.",
 		    " ",
 		    hg->fcdb_file,
 		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->fcdb_file);
-#endif
       printf_log(hg,"[FCDB] File Read Error  \"%s\".", hg->fcdb_file);
       fclose(fp);
       return;
@@ -2839,15 +2848,17 @@ void trdb_smoka_txt_parse(typHOE *hg) {
   printf_log(hg,"[FCDB] pursing TXT.");
 
   if((fp=fopen(hg->fcdb_file,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->fcdb_file,
 		  NULL);
-#else
-    fprintf(stderr," File Open Error  \"%s\".\n",hg->fcdb_file);
-#endif
     printf_log(hg,"[FCDB] File Open Error  \"%s\".", hg->fcdb_file);
     return;
   }
@@ -2856,15 +2867,17 @@ void trdb_smoka_txt_parse(typHOE *hg) {
 
   while(!feof(fp)){
     if((buf=fgets_new(fp))==NULL){
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be read.",
 		    " ",
 		    hg->fcdb_file,
 		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->fcdb_file);
-#endif
       printf_log(hg,"[FCDB] File Read Error  \"%s\".", hg->fcdb_file);
       fclose(fp);
       return;
@@ -2881,15 +2894,17 @@ void trdb_smoka_txt_parse(typHOE *hg) {
   }
 
   if((buf=fgets_new(fp))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be read.",
 		  " ",
 		  hg->fcdb_file,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->fcdb_file);
-#endif
     printf_log(hg,"[FCDB] File Read Error  \"%s\".", hg->fcdb_file);
     fclose(fp);
     return;
@@ -2990,15 +3005,17 @@ void trdb_smoka_txt_parse(typHOE *hg) {
 
   while(!feof(fp)){
     if((buf=fgets_new(fp))==NULL){
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be read.",
 		    " ",
 		    hg->fcdb_file,
 		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->fcdb_file);
-#endif
       printf_log(hg,"[FCDB] File Read Error  \"%s\".", hg->fcdb_file);
       fclose(fp);
       return;

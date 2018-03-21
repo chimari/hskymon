@@ -2117,8 +2117,14 @@ void cc_get_entry_double();
 void my_entry_set_width_chars();
 GtkWidget* gtkut_hbox_new();
 GtkWidget* gtkut_vbox_new();
-GtkWidget* gtkut_button_new_from_stock();
-GtkWidget* gtkut_toggle_button_new_from_stock();
+#ifdef USE_GTK3
+GtkWidget * gtkut_button_new_from_icon_name();
+GtkWidget * gtkut_toggle_button_new_from_icon_name();
+GtkWidget * gtkut_image_menu_item_new_with_label();;
+#else
+GtkWidget * gtkut_button_new_from_stock();
+GtkWidget * gtkut_toggle_button_new_from_stock();
+#endif
 GtkWidget* gtkut_button_new_from_pixbuf();
 GtkWidget* gtkut_toggle_button_new_from_pixbuf();
 void get_current_obs_time();

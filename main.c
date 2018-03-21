@@ -283,13 +283,14 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_icon_size_lookup(GTK_ICON_SIZE_MENU,&w,&h);
 
   //// File
-#ifdef GTK_STOCK_FILE
-  image=gtk_image_new_from_stock (GTK_STOCK_FILE, GTK_ICON_SIZE_MENU);
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("system-file-manager", GTK_ICON_SIZE_MENU);
+  menu_item =gtkut_image_menu_item_new_with_label (image, "File");
 #else
-  image=gtk_image_new_from_stock (GTK_STOCK_NEW, GTK_ICON_SIZE_MENU);
-#endif
+  image=gtk_image_new_from_stock (GTK_STOCK_FILE, GTK_ICON_SIZE_MENU);
   menu_item =gtk_image_menu_item_new_with_label ("File");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
+#endif
   gtk_widget_show (menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
   
@@ -300,9 +301,14 @@ GtkWidget *make_menu(typHOE *hg){
 
   //File/Import List from OPE
 #ifdef USE_XMLRPC
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("network-receive", GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "Sync OPE w/IntegGUI");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_JUMP_TO, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Sync OPE w/IntegGUI");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",do_sync_ope,(gpointer)hg);
@@ -321,24 +327,39 @@ GtkWidget *make_menu(typHOE *hg){
     new_menu = gtk_menu_new();
     gtk_widget_show (new_menu);
     
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("document-open", GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Open");
+#else
     image=gtk_image_new_from_stock (GTK_STOCK_OPEN, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Open");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_open_ope,(gpointer)hg);
     
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("insert-object", GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Merge");
+#else
     image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Merge");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_merge_ope,(gpointer)hg);
     
     
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("view-refresh", GTK_ICON_SIZE_MENU);
+    menu_item =gtkut_image_menu_item_new_with_label (image, "Reload");
+#else
     image=gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Reload");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_reload_ope,(gpointer)hg);
@@ -357,9 +378,14 @@ GtkWidget *make_menu(typHOE *hg){
     new_menu = gtk_menu_new();
     gtk_widget_show (new_menu);
     
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("insert-object", GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Merge");
+#else
     image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Merge");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_merge_prm,(gpointer)hg);
@@ -378,19 +404,29 @@ GtkWidget *make_menu(typHOE *hg){
     new_menu = gtk_menu_new();
     gtk_widget_show (new_menu);
     
-  //File/Open List
+    //File/Open List
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("document-open", GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Open");
+#else
     image=gtk_image_new_from_stock (GTK_STOCK_OPEN, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Open");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_open,(gpointer)hg);
     
     
     //File/Merge List
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("insert-object", GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Merge");
+#else
     image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Merge");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_merge,(gpointer)hg);
@@ -409,18 +445,35 @@ GtkWidget *make_menu(typHOE *hg){
     new_menu = gtk_menu_new();
     gtk_widget_show (new_menu);
     
-  //Non-Sidereal/Merge TSC
-    image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
+    //Non-Sidereal/Merge TSC
+    pixbuf = gdk_pixbuf_new_from_resource ("/icons/comet_icon.png", NULL);
+    pixbuf2=gdk_pixbuf_scale_simple(pixbuf,w,h,GDK_INTERP_BILINEAR);
+    image=gtk_image_new_from_pixbuf (pixbuf2);
+    g_object_unref(G_OBJECT(pixbuf));
+    g_object_unref(G_OBJECT(pixbuf2));
+#ifdef USE_GTK3
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Merge TSC file");
+#else
     popup_button =gtk_image_menu_item_new_with_label ("Merge TSC file");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_open_NST,(gpointer)hg);
 
     //Non-Sidereal/Merge JPL
-    image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
+    pixbuf = gdk_pixbuf_new_from_resource ("/icons/comet_icon.png", NULL);
+    pixbuf2=gdk_pixbuf_scale_simple(pixbuf,w,h,GDK_INTERP_BILINEAR);
+    image=gtk_image_new_from_pixbuf (pixbuf2);
+    g_object_unref(G_OBJECT(pixbuf));
+    g_object_unref(G_OBJECT(pixbuf2));
+#ifdef USE_GTK3
+    popup_button =gtkut_image_menu_item_new_with_label (image,
+      "Merge JPL HORIZONS file");
+#else
     popup_button =gtk_image_menu_item_new_with_label ("Merge JPL HORIZONS file");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_open_JPL,(gpointer)hg);
@@ -430,9 +483,15 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_container_add (GTK_CONTAINER (new_menu), bar);
 
     //Non-Sidereal/Conv JPL to TSC
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("emblem-symbolic-link", GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image,
+							"Convert HORIZONS to TSC");
+#else
     image=gtk_image_new_from_stock (GTK_STOCK_CONVERT, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Convert HORIZONS to TSC");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_conv_JPL,(gpointer)hg);
@@ -456,19 +515,29 @@ GtkWidget *make_menu(typHOE *hg){
     new_menu = gtk_menu_new();
     gtk_widget_show (new_menu);
     
-  //File/Export/OPE Def.
+    //File/Export/OPE Def.
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("document-save", GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image, "OPE Def.");
+#else
     image=gtk_image_new_from_stock (GTK_STOCK_SAVE, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("OPE Def.");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_save_OpeDef,(gpointer)hg);
     
     
     //File/Export/Text List.
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("document-save", GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Text List");
+#else
     image=gtk_image_new_from_stock (GTK_STOCK_SAVE, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Text List");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_save_TextList,(gpointer)hg);
@@ -493,18 +562,28 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_widget_show (new_menu);
     
     //File/List Query/Load
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("document-open", GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Load");
+#else
     image=gtk_image_new_from_stock (GTK_STOCK_OPEN, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Load");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_open_TRDB,(gpointer)hg);
     
     
     //File/List Query/Save
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("document-save", GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Save");
+#else
     image=gtk_image_new_from_stock (GTK_STOCK_SAVE, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Save");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_save_TRDB,(gpointer)hg);
@@ -522,18 +601,28 @@ GtkWidget *make_menu(typHOE *hg){
 
 
   //File/Quit
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("application-exit", GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "Quit");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_QUIT, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Quit");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",do_quit,(gpointer)hg);
 
 
-  //// List
+  //// Object
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("format-justify-fill",GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "Object");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_JUSTIFY_FILL, GTK_ICON_SIZE_MENU);
   menu_item =gtk_image_menu_item_new_with_label ("Object");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
+#endif
   gtk_widget_show (menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
   
@@ -541,25 +630,40 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_widget_show (menu);
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
   
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("format-justify-fill",GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "Object List");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_JUSTIFY_FILL, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Object List");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",make_tree,(gpointer)hg);
 
  
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("list-add",GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "Add");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Add");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",AddObj,(gpointer)hg);
 
   //// Update
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("view-refresh",GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "Update");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_MENU);
   menu_item =gtk_image_menu_item_new_with_label ("Update");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
+#endif
   gtk_widget_show (menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
   
@@ -568,9 +672,14 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
   
   //Update/AzEl
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("view-refresh",GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "AzEl");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("AzEl");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",do_update_azel,(gpointer)hg);
@@ -581,8 +690,12 @@ GtkWidget *make_menu(typHOE *hg){
   image=gtk_image_new_from_pixbuf (pixbuf2);
   g_object_unref(G_OBJECT(pixbuf));
   g_object_unref(G_OBJECT(pixbuf2));
+#ifdef USE_GTK3
+  menu_item =gtkut_image_menu_item_new_with_label (image, "AllSky-Cam");
+#else
   menu_item =gtk_image_menu_item_new_with_label ("AllSky-Cam");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
+#endif
   gtk_widget_show (menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
   
@@ -599,9 +712,14 @@ GtkWidget *make_menu(typHOE *hg){
     my_signal_connect (check, "toggled", ToggleDiffAllSky,
 		       (gpointer)hg);
 
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("emblem-system",GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Diff. Parameters");
+#else
     image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Diff. Parameters");
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (menu), popup_button);
     my_signal_connect (popup_button, "activate",create_diff_para_dialog, (gpointer)hg);
@@ -611,21 +729,27 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_container_add (GTK_CONTAINER (menu), bar);
   }
   
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("emblem-system",GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "Display Parameters");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Display Parameters");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",create_disp_para_dialog, (gpointer)hg);
 
   ////Database
-#ifdef GTK_STOCK_ABOUT
-  image=gtk_image_new_from_stock (GTK_STOCK_ABOUT, GTK_ICON_SIZE_MENU);
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("emblem-web", GTK_ICON_SIZE_MENU);
+  menu_item =gtkut_image_menu_item_new_with_label (image, "Database");
 #else
-  image=gtk_image_new_from_stock (GTK_STOCK_HELP, GTK_ICON_SIZE_MENU);
-#endif
+  image=gtk_image_new_from_stock (GTK_STOCK_ABOUT, GTK_ICON_SIZE_MENU);
   menu_item =gtk_image_menu_item_new_with_label ("Database");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
+#endif
   gtk_widget_show (menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
   
@@ -634,36 +758,56 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
   
   // SMOKA
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("edit-find", GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "SMOKA : List Query");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_FIND, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("SMOKA : List Query");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",
   		     trdb_smoka, (gpointer)hg);
 
   // HST
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("edit-find", GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "HST archive : List Query");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_FIND, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("HST archive : List Query");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",
   		     trdb_hst, (gpointer)hg);
 
   // ESO
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("edit-find", GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "ESO archive : List Query");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_FIND, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("ESO archive : List Query");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",
   		     trdb_eso, (gpointer)hg);
 
   // Gemini
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("edit-find", GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "Gemini archive : List Query");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_FIND, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Gemini archive : List Query");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",
@@ -674,17 +818,27 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_container_add (GTK_CONTAINER (menu), bar);
 
   // Standard
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("emblem-system", GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "Param for Standard");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Param for Standard");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",
 		     create_std_para_dialog, (gpointer)hg);
 
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("emblem-system", GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "Param for DB query");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Param for DB query");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",
@@ -692,13 +846,14 @@ GtkWidget *make_menu(typHOE *hg){
 
 
   //// Info
-#ifdef GTK_STOCK_INFO
-  image=gtk_image_new_from_stock (GTK_STOCK_INFO, GTK_ICON_SIZE_MENU);
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("user-info", GTK_ICON_SIZE_MENU);
+  menu_item =gtkut_image_menu_item_new_with_label (image, "Info");
 #else
-  image=gtk_image_new_from_stock (GTK_STOCK_HELP, GTK_ICON_SIZE_MENU);
-#endif
+  image=gtk_image_new_from_stock (GTK_STOCK_INFO, GTK_ICON_SIZE_MENU);
   menu_item =gtk_image_menu_item_new_with_label ("Info");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),image);
+#endif
   gtk_widget_show (menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
   
@@ -707,37 +862,54 @@ GtkWidget *make_menu(typHOE *hg){
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
   
   //Info/CheckVer
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("view-refresh", GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image,
+						      "Check the latest ver.");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Check the latest ver.");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",CheckVer, (gpointer)hg);
 
   //Info/About
-#ifdef GTK_STOCK_ABOUT
-  image=gtk_image_new_from_stock (GTK_STOCK_ABOUT, GTK_ICON_SIZE_MENU);
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("help-about", GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "About");
 #else
-  image=gtk_image_new_from_stock (GTK_STOCK_HELP, GTK_ICON_SIZE_MENU);
-#endif
+  image=gtk_image_new_from_stock (GTK_STOCK_ABOUT, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("About");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",show_version, (gpointer)hg);
 
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("help-browser", GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "Help");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_HELP, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Help");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",show_help, hg->skymon_main);
 
 
   //Info/Properties
+#ifdef USE_GTK3
+  image=gtk_image_new_from_icon_name ("preferences-system", GTK_ICON_SIZE_MENU);
+  popup_button =gtkut_image_menu_item_new_with_label (image, "Properties");
+#else
   image=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
   popup_button =gtk_image_menu_item_new_with_label ("Properties");
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
   gtk_widget_show (popup_button);
   gtk_container_add (GTK_CONTAINER (menu), popup_button);
   my_signal_connect (popup_button, "activate",show_properties, (gpointer)hg);
@@ -2207,15 +2379,17 @@ void ver_txt_parse(typHOE *hg) {
   
 
   if((fp=fopen(hg->fcdb_file,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-warning", 
+#else
+		  GTK_STOCK_DIALOG_WARNING,
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->fcdb_file,
 		  NULL);
-#else
-    fprintf(stderr," File Open Error  \"%s\".\n",hg->fcdb_file);
-#endif
     return;
   }
 
@@ -2266,8 +2440,13 @@ void ver_txt_parse(typHOE *hg) {
     dialog = gtk_dialog_new_with_buttons("Sky Monitor : Download the latest version?",
 					 GTK_WINDOW(hg->skymon_main),
 					 GTK_DIALOG_MODAL,
+#ifdef USE_GTK3
+					 "_Cancel",GTK_RESPONSE_CANCEL,
+					 "_OK",GTK_RESPONSE_OK,
+#else
 					 GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					 GTK_STOCK_OK,GTK_RESPONSE_OK,
+#endif
 					 NULL);
 
     gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK); 
@@ -2280,8 +2459,13 @@ void ver_txt_parse(typHOE *hg) {
     gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		       hbox,FALSE, FALSE, 0);
     
+#ifdef USE_GTK3
+    pixmap=gtk_image_new_from_icon_name ("dialog-question",
+					 GTK_ICON_SIZE_DIALOG);
+#else
     pixmap=gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION,
 				     GTK_ICON_SIZE_DIALOG);
+#endif
     
     gtk_box_pack_start(GTK_BOX(hbox), pixmap,FALSE, FALSE, 0);
     
@@ -2327,14 +2511,18 @@ void ver_txt_parse(typHOE *hg) {
     flagChildDialog=FALSE;
   }
   else{
-#ifdef GTK_MSG
     tmp=g_strdup_printf("hskymon ver. %d.%d.%d is the latest version.",
 			major,minor,micro);
-    popup_message(hg->skymon_main, GTK_STOCK_OK, POPUP_TIMEOUT*1,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "emblem-default", 
+#else
+		  GTK_STOCK_OK,
+#endif
+		  POPUP_TIMEOUT*1,
 		  tmp,
 		  NULL);
     if(tmp) g_free(tmp);
-#endif
   }
 }
 
@@ -2408,8 +2596,13 @@ void do_open (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Input List File",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Open", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -2465,16 +2658,17 @@ void do_open (GtkWidget *widget, gpointer gdata)
       }
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -2505,8 +2699,13 @@ void do_open_NST (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File [TSC]",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Open", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -2555,16 +2754,17 @@ void do_open_NST (GtkWidget *widget, gpointer gdata)
       }
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -2594,8 +2794,13 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File  [JPL HRIZONS]",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Open", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -2645,16 +2850,17 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
       }
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -2688,8 +2894,13 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File  [JPL HRIZONS]",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Open", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -2723,16 +2934,17 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
       hg->filename_jpl=g_strdup(dest_file);
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
       return;
     }
      
@@ -2742,8 +2954,13 @@ void do_conv_JPL (GtkWidget *widget, gpointer gdata)
     fdialog_w = gtk_file_chooser_dialog_new("Sky Monitor : Input TSC Tracking File to be saved",
 					    GTK_WINDOW(hg->skymon_main),
 					    GTK_FILE_CHOOSER_ACTION_SAVE,
+#ifdef USE_GTK3
+					    "_Cancel",GTK_RESPONSE_CANCEL,
+					    "_Save", GTK_RESPONSE_ACCEPT,
+#else
 					    GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					    GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+#endif
 					    NULL);
     
     gtk_dialog_set_default_response(GTK_DIALOG(fdialog_w), GTK_RESPONSE_ACCEPT); 
@@ -2818,16 +3035,17 @@ void do_reload_ope (GtkWidget *widget, gpointer gdata)
       }
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    hg->filename_ope,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       hg->filename_ope);
-#endif
     }
   }
 
@@ -2850,8 +3068,13 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select OPE File",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Open", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -2913,16 +3136,17 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
       }
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -2953,8 +3177,13 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select OPE File",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Open", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -3002,16 +3231,17 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
       }
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -3042,8 +3272,13 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select PRM File",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Open", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -3089,16 +3324,17 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
       }
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -3130,8 +3366,13 @@ void do_merge (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Input List File",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Open", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -3185,16 +3426,17 @@ void do_merge (GtkWidget *widget, gpointer gdata)
       }
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -3484,7 +3726,11 @@ void show_version (GtkWidget *widget, gpointer gdata)
   gtk_text_buffer_place_cursor(buffer, &iter);
 
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("OK","emblem-default");
+#else
   button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -3539,8 +3785,13 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 0, 1,
 		    GTK_FILL,GTK_SHRINK,0,0);
   
+#ifdef USE_GTK3
+  pixmap=gtk_image_new_from_icon_name ("list-remove",
+				       GTK_ICON_SIZE_LARGE_TOOLBAR);
+#else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_REMOVE, 
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
+#endif
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3551,8 +3802,13 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 1, 2,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
+#ifdef USE_GTK3
+  pixmap=gtk_image_new_from_icon_name ("format-text-strikethrough",
+				       GTK_ICON_SIZE_LARGE_TOOLBAR);
+#else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_STRIKETHROUGH, 
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
+#endif
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 2, 3,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3578,8 +3834,13 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 3, 4,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
+#ifdef USE_GTK3
+  pixmap=gtk_image_new_from_icon_name ("go-jump",
+				       GTK_ICON_SIZE_LARGE_TOOLBAR);
+#else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_APPLY, 
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
+#endif
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 4, 5,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3596,8 +3857,13 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
 		    GTK_FILL,GTK_SHRINK,0,0);
 
 
+#ifdef USE_GTK3
+  pixmap=gtk_image_new_from_icon_name ("media-skip-backward",
+				       GTK_ICON_SIZE_LARGE_TOOLBAR);
+#else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_PREVIOUS,
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
+#endif
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 6, 7,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3607,8 +3873,13 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 6, 7,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
+#ifdef USE_GTK3
+  pixmap=gtk_image_new_from_icon_name ("media-seek-backward",
+				       GTK_ICON_SIZE_LARGE_TOOLBAR);
+#else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_REWIND,
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
+#endif
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 7, 8,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3618,8 +3889,13 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 7, 8,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
+#ifdef USE_GTK3
+  pixmap=gtk_image_new_from_icon_name ("media-seek-forward",
+				       GTK_ICON_SIZE_LARGE_TOOLBAR);
+#else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_FORWARD,
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
+#endif
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 8, 9,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3629,8 +3905,13 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 8, 9,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
+#ifdef USE_GTK3
+  pixmap=gtk_image_new_from_icon_name ("media-skip-forward",
+				       GTK_ICON_SIZE_LARGE_TOOLBAR);
+#else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_MEDIA_NEXT,
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
+#endif
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 9, 10,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -3651,7 +3932,11 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
 		    GTK_FILL,GTK_SHRINK,0,0);
 
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("OK","emblem-default");
+#else
   button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -3883,21 +4168,33 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 		     &tmp_thresh);
 
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Load Default","view-refresh");
+#else
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cencel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Remake Images","image-x-generic");
+#else
   button=gtkut_button_new_from_stock("Remake Images",GTK_STOCK_OK);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -4076,21 +4373,33 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
 #endif
 
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Load Default","view-refresh");
+#else
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Set Params","document-save");
+#else
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -4599,21 +4908,33 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 
 
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Load Default","view-refresh");
+#else
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Set Params","document-save");
+#else
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -4684,13 +5005,15 @@ static void ok_trdb_smoka(GtkWidget *w, gpointer gdata)
   if((!hg->trdb_smoka_imag)
      &&(!hg->trdb_smoka_spec)
      &&(!hg->trdb_smoka_ipol)){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
-		    "Error: Please select at least one observation mode.",
-		    NULL);
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
 #else
-      g_print ("Error: Please select at least one observation mode.\n");
+		  GTK_STOCK_DIALOG_ERROR, 
 #endif
+		  POPUP_TIMEOUT,
+		  "Error: Please select at least one observation mode.",
+		  NULL);
   }
   else{
     gtk_main_quit();
@@ -4719,13 +5042,15 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
 
   if(hg->i_max<=0){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT,
 		  "Error: Please load your object list.",
 		  NULL);
-#else
-    g_print ("Error: Please load your object list.\n");
-#endif
     return;
   }
 
@@ -4871,13 +5196,21 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
 		     cc_get_entry,
 		     &hg->trdb_smoka_date);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Query","edit-find");
+#else
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -4927,13 +5260,15 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
 
   if(hg->i_max<=0){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT,
 		  "Error: Please load your object list.",
 		  NULL);
-#else
-    g_print ("Error: Please load your object list.\n");
-#endif
     return;
   }
 
@@ -5107,13 +5442,21 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
 		     cc_get_entry,
 		     &hg->trdb_hst_date);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Query","edit-find");
+#else
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -5177,13 +5520,15 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
 
   if(hg->i_max<=0){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT,
 		  "Error: Please load your object list.",
 		  NULL);
-#else
-    g_print ("Error: Please load your object list.\n");
-#endif
     return;
   }
 
@@ -5514,13 +5859,21 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
 		     cc_get_entry,
 		     &hg->trdb_eso_eddate);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Query","edit-find");
+#else
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -5584,13 +5937,15 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
 
   if(hg->i_max<=0){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT,
 		  "Error: Please load your object list.",
 		  NULL);
-#else
-    g_print ("Error: Please load your object list.\n");
-#endif
     return;
   }
 
@@ -5713,13 +6068,21 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
 		     cc_get_entry,
 		     &hg->trdb_gemini_date);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Query","edit-find");
+#else
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -7018,7 +7381,11 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 2, 3, 5, 6,
 		   GTK_FILL,GTK_SHRINK,0,0);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Load Default","view-refresh");
+#else
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -7463,14 +7830,22 @@ void create_fcdb_para_dialog (typHOE *hg)
   
 
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Set Params","document-save");
+#else
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -7705,8 +8080,13 @@ void do_save_pdf (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("HOE : Input PDF File to be Saved",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Save", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -7753,16 +8133,17 @@ void do_save_pdf (GtkWidget *widget, gpointer gdata)
       pdf_plot(hg);
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -7786,8 +8167,13 @@ void do_save_OpeDef (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("HOE : Ope Def File to be Saved",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Save", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -7824,16 +8210,17 @@ void do_save_OpeDef (GtkWidget *widget, gpointer gdata)
       Export_OpeDef(hg);
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -7854,8 +8241,13 @@ void do_save_TextList (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("HOE : Ope Def File to be Saved",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Save", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -7892,16 +8284,17 @@ void do_save_TextList (GtkWidget *widget, gpointer gdata)
       Export_TextList(hg);
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -8004,8 +8397,13 @@ void do_save_FCDB_List (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : CSV File to be Saved (FCDB)",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Save", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -8042,16 +8440,17 @@ void do_save_FCDB_List (GtkWidget *widget, gpointer gdata)
       Export_FCDB_List(hg);
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -8242,8 +8641,13 @@ void do_save_TRDB_CSV (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : CSV file to be Saved (List Query)",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Save", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -8280,16 +8684,17 @@ void do_save_TRDB_CSV (GtkWidget *widget, gpointer gdata)
       Export_TRDB_CSV(hg);
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -8319,8 +8724,13 @@ void do_open_TRDB (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select HSK File",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Open", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -8376,16 +8786,17 @@ void do_open_TRDB (GtkWidget *widget, gpointer gdata)
       hg->fcdb_type=fcdb_type_tmp;
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -8412,8 +8823,13 @@ void do_save_TRDB (GtkWidget *widget, gpointer gdata)
 					" file to be Saved (List Query)",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Save", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -8450,16 +8866,17 @@ void do_save_TRDB (GtkWidget *widget, gpointer gdata)
       WriteTRDB(hg);
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -8480,8 +8897,13 @@ void do_save_fc_pdf (GtkWidget *widget, gpointer gdata)
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Input PDF File to be Saved",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
+#ifdef USE_GTK3
+					"_Cancel",GTK_RESPONSE_CANCEL,
+					"_Save", GTK_RESPONSE_ACCEPT,
+#else
 					GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+#endif
 					NULL);
   
   gtk_dialog_set_default_response(GTK_DIALOG(fdialog), GTK_RESPONSE_ACCEPT); 
@@ -8529,16 +8951,17 @@ void do_save_fc_pdf (GtkWidget *widget, gpointer gdata)
       pdf_fc(hg);
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
-#else
-      g_print ("Cannot Open %s\n",
-	       fname);
-#endif
     }
     
     g_free(dest_file);
@@ -9698,7 +10121,11 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   hbox = gtkut_hbox_new(FALSE,2);
   gtk_table_attach_defaults(GTK_TABLE(table1), hbox, 2, 3, 0, 1);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Buffer Clear","edit-clear");
+#else
   button=gtkut_button_new_from_stock("Buffer Clear",GTK_STOCK_CLEAR);
+#endif
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Buffer Clear");
@@ -10962,21 +11389,33 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   
 
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Load Default","view-refresh");
+#else
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    default_prop, 
 		    (gpointer)cdata);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
 		    close_prop, 
 		    GTK_WIDGET(dialog));
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Save","document-save");
+#else
   button=gtkut_button_new_from_stock("Save",GTK_STOCK_SAVE);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -11164,7 +11603,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->temp=TEMP_SUBARU;
     hg->pres=PRES_SUBARU;
 
-    hg->fcdb_simbad         =FCDB_SIMBAD_HARVARD;
+    hg->fcdb_simbad         =FCDB_SIMBAD_STRASBG;
     hg->fc_mode_def         =FC_SKYVIEW_DSS2R;
     hg->fc_mode_RGB[0]      =FC_SKYVIEW_DSS2IR;
     hg->fc_mode_RGB[1]      =FC_SKYVIEW_DSS2R;
@@ -12050,7 +12489,13 @@ void MergeNST(typHOE *hg, gint ope_max){
   struct ln_zonedate zonedate, zonedate1;
   
   if(hg->i_max>=MAX_OBJECT){
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-warning", 
+#else
+		  GTK_STOCK_DIALOG_WARNING, 
+#endif
+		  POPUP_TIMEOUT,
 		  "Warning: Object Number exceeds the limit.",
 		  NULL);
     return;
@@ -12058,15 +12503,17 @@ void MergeNST(typHOE *hg, gint ope_max){
   
 
   if((fp=fopen(hg->filename_nst,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_nst,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
-#endif
     printf_log(hg,"[MergeNST] File Read Error  \"%s\".", hg->filename_nst);
     return;
   }
@@ -12080,15 +12527,17 @@ void MergeNST(typHOE *hg, gint ope_max){
 
   for(i=0;i<6;i++){
     if((buf=fgets_new(fp))==NULL){
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: TSC File format might be incorrect.",
 		    " ",
 		    hg->filename_nst,
 		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
-#endif
       fclose(fp);
       return;
     }
@@ -12111,15 +12560,17 @@ void MergeNST(typHOE *hg, gint ope_max){
   hg->nst[hg->nst_max].i_max=(gint)g_strtod(buf,NULL);
   if(buf) g_free(buf);
   if(hg->nst[hg->nst_max].i_max<=0){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: TSC File format might be incorrect.",
 		  " ",
 		  hg->filename_nst,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_nst);
-#endif
     fclose(fp);
     return;
   }
@@ -12222,7 +12673,13 @@ void MergeJPL(typHOE *hg, gint ope_max){
 
   
   if(hg->i_max>=MAX_OBJECT){
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-warning", 
+#else
+		  GTK_STOCK_DIALOG_WARNING, 
+#endif
+		  POPUP_TIMEOUT,
 		  "Warning: Object Number exceeds the limit.",
 		  NULL);
     return;
@@ -12230,15 +12687,17 @@ void MergeJPL(typHOE *hg, gint ope_max){
   
 
   if((fp=fopen(hg->filename_jpl,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
     printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_jpl);
     return;
   }
@@ -12283,16 +12742,18 @@ void MergeJPL(typHOE *hg, gint ope_max){
 			       strlen("GEOCENTRIC"))!=0){	
 	  if(tmp_center) g_free(tmp_center);
 	  fclose(fp);
-#ifdef GTK_MSG
-	  popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+	  popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+			"dialog-error", 
+#else
+			GTK_STOCK_DIALOG_ERROR, 
+#endif
+			POPUP_TIMEOUT*2,
 			"Error: Invalid HORIZONS File.",
 			"Center-site must be \"GEOCENTRIC\".",
 			" ",
 			hg->filename_jpl,
 			NULL);
-#else
-	  fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
 	  printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_jpl);
 	  return;
 	}
@@ -12305,30 +12766,34 @@ void MergeJPL(typHOE *hg, gint ope_max){
   fclose(fp);
 
   if((fp=fopen(hg->filename_jpl,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
     printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_jpl);
     return;
   }
 
 
   if(i_soe>=i_eoe){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: Invalid HORIZONS File.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
     return;
   }
 
@@ -12340,15 +12805,17 @@ void MergeJPL(typHOE *hg, gint ope_max){
 
   for(i=0;i<i_soe;i++){
     if((buf=fgets_new(fp))==NULL){
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
 		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
       fclose(fp);
       return;
     }
@@ -12395,30 +12862,34 @@ void MergeJPL(typHOE *hg, gint ope_max){
     g_free(ref);
   }
   else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
 		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
       fclose(fp);
       return;
   }
 
   for(i=i_soe+1;i<i_eoe;i++){
     if((buf=fgets_new(fp))==NULL){
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
 		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
       fclose(fp);
       return;
     }
@@ -12587,7 +13058,13 @@ void ConvJPL(typHOE *hg){
   gint i_delt;
   
   if(hg->i_max>=MAX_OBJECT){
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-warning", 
+#else
+		  GTK_STOCK_DIALOG_WARNING, 
+#endif
+		  POPUP_TIMEOUT,
 		  "Warning: Object Number exceeds the limit.",
 		  NULL);
     return;
@@ -12595,29 +13072,33 @@ void ConvJPL(typHOE *hg){
   
 
   if((fp=fopen(hg->filename_jpl,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
     printf_log(hg,"[ConvJPL] File Read Error  \"%s\".", hg->filename_jpl);
     return;
   }
 
   if((fp_w=fopen(hg->filename_tscconv,"wb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
     printf_log(hg,"[ConvJPL] File Read Error  \"%s\".", hg->filename_jpl);
     return;
   }
@@ -12658,16 +13139,18 @@ void ConvJPL(typHOE *hg){
 			       strlen("GEOCENTRIC"))!=0){	
 	  if(tmp_center) g_free(tmp_center);
 	  fclose(fp);
-#ifdef GTK_MSG
-	  popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+	  popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+			"dialog-error", 
+#else
+			GTK_STOCK_DIALOG_ERROR, 
+#endif
+			POPUP_TIMEOUT*2,
 			"Error: Invalid HORIZONS File.",
 			"Center-site must be \"GEOCENTRIC\".",
 			" ",
 			hg->filename_jpl,
 			NULL);
-#else
-	  fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
 	  printf_log(hg,"[MergeJPL] File Read Error  \"%s\".", hg->filename_jpl);
 	  return;
 	}
@@ -12680,30 +13163,34 @@ void ConvJPL(typHOE *hg){
   fclose(fp);
 
   if((fp=fopen(hg->filename_jpl,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
     printf_log(hg,"[ConvJPL] File Read Error  \"%s\".", hg->filename_jpl);
     return;
   }
 
 
   if(i_soe>=i_eoe){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: Invalid HORIZONS File.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
     return;
   }
 
@@ -12711,15 +13198,17 @@ void ConvJPL(typHOE *hg){
 
   for(i=0;i<i_soe;i++){
     if((buf=fgets_new(fp))==NULL){
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
 		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
       fclose(fp);
       return;
     }
@@ -12766,15 +13255,17 @@ void ConvJPL(typHOE *hg){
     g_free(ref);
   }
   else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
 		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
       fclose(fp);
       return;
   }
@@ -12797,15 +13288,17 @@ void ConvJPL(typHOE *hg){
 
   for(i=i_soe+1;i<i_eoe;i++){
     if((buf=fgets_new(fp))==NULL){
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
 		    NULL);
-#else
-      fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_jpl);
-#endif
       fclose(fp);
       return;
     }
@@ -12926,15 +13419,17 @@ void ReadList(typHOE *hg, gint ope_max){
   gchar *win_title;
   
   if((fp=fopen(hg->filename_list,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_list,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\".\n",hg->filename_list);
-#endif
     printf_log(hg,"[ReadList] File Read Error  \"%s\".", hg->filename_list);
     return;
   }
@@ -13024,15 +13519,17 @@ void ReadListOPE(typHOE *hg, gint ope_max){
   gboolean new_fmt_flag=FALSE;
 
   if((fp=fopen(hg->filename_ope,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_ope,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\" \n", hg->filename_ope);
-#endif
     printf_log(hg,"[ReadOPE] File Read Error \"%s\".",hg->filename_ope);
     return;
   }
@@ -13229,7 +13726,13 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	      i_list++;
 	      hg->i_max=i_list;
 	      if(i_list==MAX_OBJECT-1){
-		popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+		popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+			      "dialog-warning", 
+#else
+			      GTK_STOCK_DIALOG_WARNING, 
+#endif
+			      POPUP_TIMEOUT,
 			      "Warning: Object Number exceeds the limit.",
 			      NULL);
 		escape=TRUE;
@@ -13405,15 +13908,17 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	    MergeListPRM2(hg);
 	  }
 	  else{
-#ifdef GTK_MSG
-	    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
-			  "Error: PRM File cannot be opened.",
+	    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+			  "dialog-warning", 
+#else
+			  GTK_STOCK_DIALOG_WARNING, 
+#endif
+			  POPUP_TIMEOUT*2,
+			  "Warning: PRM File cannot be opened.",
 			  " ",
 			  prmname,
 			  NULL);
-#else
-	    fprintf(stderr," PRM File Read Error  \"%s\" \n", prmname);
-#endif
 	    printf_log(hg,"[ReadOPE] PRM File Read Error \"%s\" ... skipped.",prmname);
 	  }
 	}
@@ -13474,15 +13979,17 @@ void MergeListOPE(typHOE *hg, gint ope_max){
   gint ope_zero=0;
 
   if((fp=fopen(hg->filename_ope,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_ope,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\" \n", hg->filename_ope);
-#endif
     printf_log(hg,"[MergeOPE] File Read Error \"%s\".",hg->filename_ope);
     return;
   }
@@ -13663,7 +14170,13 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	      i_list++;
 	      
 	      if(hg->i_max==MAX_OBJECT-1){
-		popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+		popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+			      "dialog-warning", 
+#else
+			      GTK_STOCK_DIALOG_WARNING, 
+#endif
+			      POPUP_TIMEOUT,
 			      "Warning: Object Number exceeds the limit.",
 			      NULL);
 		escape=TRUE;
@@ -13843,15 +14356,17 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	    MergeListPRM2(hg);
 	  }
 	  else{
-#ifdef GTK_MSG
-	    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
-			  "Error: PRM File cannot be opened.",
+	    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+			  "dialog-warning", 
+#else
+			  GTK_STOCK_DIALOG_WARNING, 
+#endif
+			  POPUP_TIMEOUT*2,
+			  "Warning: PRM File cannot be opened.",
 			  " ",
 			  prmname,
 			  NULL);
-#else
-	    fprintf(stderr," PRM File Read Error  \"%s\" \n", prmname);
-#endif
 	    printf_log(hg,"[ReadOPE] PRM File Read Error \"%s\" ... skipped.",prmname);
 	  }
 	}
@@ -13907,15 +14422,17 @@ void MergeListPRM(typHOE *hg){
   gint i0;
   
   if((fp=fopen(hg->filename_prm,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_prm,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\" \n", hg->filename_prm);
-#endif
     printf_log(hg,"[MergePRM] File Read Error \"%s\".",hg->filename_prm);
     return;
   }
@@ -14070,7 +14587,13 @@ void MergeListPRM(typHOE *hg){
 
 	    hg->i_max++;
 	    if(hg->i_max==MAX_OBJECT-1){
-	      popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+	      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+			    "dialog-warning", 
+#else
+			    GTK_STOCK_DIALOG_WARNING, 
+#endif
+			    POPUP_TIMEOUT,
 			    "Warning: Object Number exceeds the limit.",
 			    NULL);
 	      escape=TRUE;
@@ -14113,15 +14636,17 @@ void MergeListPRM2(typHOE *hg){
   gint i0;
   
   if((fp=fopen(hg->filename_prm,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-warning", 
+#else
+		  GTK_STOCK_DIALOG_WARNING, 
+#endif
+		  POPUP_TIMEOUT*2,
+		  "Warning: PRM File cannot be opened.",
 		  " ",
 		  hg->filename_prm,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\" \n", hg->filename_prm);
-#endif
     printf_log(hg,"[MergePRM] File Read Error \"%s\".",hg->filename_prm);
     return;
   }
@@ -14283,7 +14808,13 @@ void MergeListPRM2(typHOE *hg){
 
 		hg->i_max++;
 		if(hg->i_max==MAX_OBJECT-1){
-		  popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+		  popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+				"dialog-warning", 
+#else
+				GTK_STOCK_DIALOG_WARNING, 
+#endif
+				POPUP_TIMEOUT,
 				"Warning: Object Number exceeds the limit.",
 				NULL);
 		  escape=TRUE;
@@ -14339,15 +14870,17 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
   gchar *arg=NULL;
   
   if((fp=fopen(hg->filename_ope,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_ope,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\" \n", hg->filename_ope);
-#endif
     printf_log(hg,"[ReadOPE_Def] File Read Error \"%s\".",hg->filename_ope);
     return;
   }
@@ -14518,15 +15051,17 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
   gint used_flag=CHECK_TARGET_DEF_NOUSE;
   
   if((fp=fopen(hg->filename_ope,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_ope,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\" \n", hg->filename_ope);
-#endif
     printf_log(hg,"[ReadOPE_Def] File Read Error \"%s\".",hg->filename_ope);
     return(used_flag);
   }
@@ -14676,15 +15211,17 @@ void MergeList(typHOE *hg, gint ope_max){
   gchar *win_title=NULL;
   
   if((fp=fopen(hg->filename_list,"rb"))==NULL){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: File cannot be opened.",
 		  " ",
 		  hg->filename_list,
 		  NULL);
-#else
-    fprintf(stderr," File Read Error  \"%s\" \n", hg->filename_list);
-#endif
     printf_log(hg,"[MergeList] File Read Error \"%s\".",hg->filename_list);
     return;
   }
@@ -15191,7 +15728,7 @@ void ReadConf(typHOE *hg)
     if(xmms_cfg_read_int  (cfgfile, "DSS", "SIMBAD",  &i_buf))
       hg->fcdb_simbad=i_buf;
     else
-      hg->fcdb_simbad=FCDB_SIMBAD_HARVARD;
+      hg->fcdb_simbad=FCDB_SIMBAD_STRASBG;
 
     // Observatory
     if(xmms_cfg_read_boolean(cfgfile, "Obs", "PresetFlag", &b_buf))
@@ -15491,7 +16028,7 @@ void ReadConf(typHOE *hg)
 
     hg->dss_arcmin=DSS_ARCMIN;
     hg->dss_pix=DSS_PIX;
-    hg->fcdb_simbad         =FCDB_SIMBAD_HARVARD;
+    hg->fcdb_simbad         =FCDB_SIMBAD_STRASBG;
     hg->fc_mode_def         =FC_SKYVIEW_DSS2R;
     hg->fc_mode             =hg->fc_mode_def;
     hg->fc_mode_RGB[0]      =FC_SKYVIEW_DSS2IR;
@@ -15970,15 +16507,17 @@ gboolean is_number(GtkWidget *parent, gchar *s, gint line, const gchar* sect){
 
   if(!s){
     msg=g_strdup_printf(" Line=%d  /  Sect=\"%s\"", line, sect);
-#ifdef GTK_MSG
-    popup_message(parent, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+    popup_message(parent, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
 		  "Error: Input File is invalid.",
 		  " ",
 		  msg,
 		  NULL);
-#else
-    fprintf(stderr, "Error: Input File is invalid.\n%s",msg);
-#endif
   
     g_free(msg);
     return FALSE;
@@ -15988,15 +16527,17 @@ gboolean is_number(GtkWidget *parent, gchar *s, gint line, const gchar* sect){
     if(!is_num_char(*s)){
       msg=g_strdup_printf(" Line=%d  /  Sect=\"%s\"\n Irregal character code : \"%02x\"", 
 			  line, sect,*s);
-#ifdef GTK_MSG
-      popup_message(parent, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
+      popup_message(parent, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT*2,
 		    "Error: Input File is invalid.",
 		    " ",
 		    msg,
 		    NULL);
-#else
-      fprintf(stderr, "Error: Input File is invalid.\n%s",msg);
-#endif
       
       g_free(msg);
       return FALSE;
@@ -16039,24 +16580,28 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   if((ret=get_rope(hg, ROPE_ALL))==-2){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
-		  "Error: Unconnected to the Telescope Status server.",
-		  NULL);
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "network-error", 
 #else
-      fprintf(stderr, "Error: No OPE files are opened in IntegGUI.\n");
+		  GTK_STOCK_DIALOG_ERROR, 
 #endif
+		  POPUP_TIMEOUT*2,
+		  "Error: Failed to connect to the Telescope Status server.",
+		  NULL);
   }
   else if (ret<=0){
- #ifdef GTK_MSG
-    popup_message(hg->skymon_main, GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT*2,
-		  "Error: No OPE files are opend in IntegGUI.",
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-warning", 
+#else
+		  GTK_STOCK_DIALOG_WARNING, 
+#endif
+		  POPUP_TIMEOUT*2,
+		  "Warning: No OPE files are opend in IntegGUI.",
 		  " ",
 		  "         Please open at least one OPE file in IntegGUI!!",
 		  NULL);
-#else
-      fprintf(stderr, "Error: No OPE files are opened in IntegGUI.\n");
-#endif
   }
   else{
 
@@ -16065,8 +16610,13 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
     dialog = gtk_dialog_new_with_buttons("Sky Monitor : Sync OPE files with IntegGUI",
 					 GTK_WINDOW(hg->skymon_main),
 					 GTK_DIALOG_MODAL,
+#ifdef USE_GTK3
+					 "_Cancel",GTK_RESPONSE_CANCEL,
+					 "_OK",GTK_RESPONSE_OK,
+#else
 					 GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
 					 GTK_STOCK_OK,GTK_RESPONSE_OK,
+#endif
 					 NULL);
     gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 
@@ -16202,9 +16752,13 @@ void popup_message(GtkWidget *parent, gchar* stock_id, gint delay, ...){
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox, FALSE,FALSE,0);
 
-  //// File
+#ifdef USE_GTK3
+  pixmap=gtk_image_new_from_icon_name (stock_id,
+				       GTK_ICON_SIZE_DIALOG);
+#else
   pixmap=gtk_image_new_from_stock (stock_id,
 				   GTK_ICON_SIZE_DIALOG);
+#endif
 
   gtk_box_pack_start(GTK_BOX(hbox), pixmap,FALSE, FALSE, 0);
 
@@ -16216,7 +16770,12 @@ void popup_message(GtkWidget *parent, gchar* stock_id, gint delay, ...){
     if(!msg1) break;
    
     label=gtk_label_new(msg1);
+#ifdef USE_GTK3
+    gtk_widget_set_halign (label, GTK_ALIGN_START);
+    gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
     gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
     gtk_box_pack_start(GTK_BOX(vbox), label,TRUE,TRUE,0);
   }
 
@@ -16331,8 +16890,30 @@ GtkWidget* gtkut_vbox_new(gboolean homogeneous, gint spacing){
   return(w);
 }
 
+#ifdef USE_GTK3
+GtkWidget* gtkut_image_menu_item_new_with_label(GtkWidget *icon,
+						const gchar *txt){
+  GtkWidget *box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+  GtkWidget *label = gtk_label_new (txt);
+  GtkWidget *menu_item = gtk_menu_item_new ();
+
+  gtk_container_add (GTK_CONTAINER (box), icon);
+  gtk_container_add (GTK_CONTAINER (box), label);
+
+  gtk_container_add (GTK_CONTAINER (menu_item), box);
+  
+  gtk_widget_show_all (menu_item);
+  return(menu_item);
+}
+#endif
+
+#ifdef USE_GTK3
+GtkWidget* gtkut_button_new_from_icon_name(gchar *txt,
+					   const gchar *stock){
+#else
 GtkWidget* gtkut_button_new_from_stock(gchar *txt,
 				       const gchar *stock){
+#endif
   GtkWidget *button;
   GtkWidget *box;
   GtkWidget *image;
@@ -16347,11 +16928,19 @@ GtkWidget* gtkut_button_new_from_stock(gchar *txt,
   gtk_container_set_border_width(GTK_CONTAINER(box),0);
   
   if(txt){
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name (stock, GTK_ICON_SIZE_BUTTON);
+#else
     image=gtk_image_new_from_stock (stock, GTK_ICON_SIZE_BUTTON);
+#endif
     gtk_box_pack_start(GTK_BOX(box),image, FALSE,FALSE,2);
   }
   else{
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name (stock, GTK_ICON_SIZE_MENU);
+#else
     image=gtk_image_new_from_stock (stock, GTK_ICON_SIZE_MENU);
+#endif
     gtk_box_pack_start(GTK_BOX(box),image, FALSE,FALSE,0);
   }
   gtk_widget_show(image);
@@ -16369,8 +16958,13 @@ GtkWidget* gtkut_button_new_from_stock(gchar *txt,
   return(button);
 }
 
+#ifdef USE_GTK3
+GtkWidget* gtkut_toggle_button_new_from_icon_name(gchar *txt,
+						   const gchar *stock){
+#else
 GtkWidget* gtkut_toggle_button_new_from_stock(gchar *txt,
 					      const gchar *stock){
+#endif
   GtkWidget *button;
   GtkWidget *box;
   GtkWidget *image;

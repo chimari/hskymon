@@ -236,25 +236,29 @@ void fc_dl (typHOE *hg)
       gtk_tree_path_free (path);
     }
     else{
-#ifdef GTK_MSG
-      popup_message(hg->skymon_main,GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+      popup_message(hg->skymon_main,
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT,
 		    "Error: Please select a target in the Object List.",
 		    NULL);
-#else
-      fprintf(stderr," Error: Please select a target in the Object List.\n");
-#endif
       flag_getDSS=FALSE;
       return;
     }
   }
   else if(hg->dss_i>=hg->i_max){
-#ifdef GTK_MSG
-    popup_message(hg->skymon_main,GTK_STOCK_DIALOG_WARNING, POPUP_TIMEOUT,
+    popup_message(hg->skymon_main,
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT,
 		  "Error: Please select a target in the Object List.",
 		  NULL);
-#else
-    fprintf(stderr," Error: Please select a target in the Object List.\n");
-#endif
     flag_getDSS=FALSE;
     return;
   }
@@ -466,7 +470,11 @@ void fc_dl (typHOE *hg)
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     hg->plabel,FALSE,FALSE,0);
   
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -650,7 +658,11 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 5);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name(NULL,"go-previous");
+#else
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_GO_BACK);
+#endif
   gtk_box_pack_start(GTK_BOX(hbox),
 		     button,FALSE,FALSE,0);
   my_signal_connect (button,"clicked",hsc_dith_back, (gpointer)hg);
@@ -660,7 +672,11 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   gtk_box_pack_start(GTK_BOX(hbox), hg->hsc_label_dith, FALSE, FALSE, 5);
   set_hsc_dith_label(hg);
   
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name(NULL,"go-next");
+#else
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_GO_FORWARD);
+#endif
   gtk_box_pack_start(GTK_BOX(hbox),
 		     button,FALSE,FALSE,0);
   my_signal_connect (button,"clicked",hsc_dith_forward, (gpointer)hg);
@@ -839,13 +855,21 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 		     &hg->hsc_offdec);
 
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Redraw","view-refresh");
+#else
   button=gtkut_button_new_from_stock("Redraw",GTK_STOCK_REFRESH);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (refresh_fc), (gpointer)hg);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Close",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -1276,7 +1300,11 @@ void create_fc_dialog(typHOE *hg)
   gtk_table_set_col_spacings (GTK_TABLE (table), 3);
 
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name(NULL,"view-refresh");
+#else
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
+#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (refresh_fc), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
@@ -1473,7 +1501,11 @@ void create_fc_dialog(typHOE *hg)
   gtk_table_attach (GTK_TABLE(table), label, 0, 1, 0, 1,
   		    GTK_SHRINK,GTK_FILL,0,0);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name(NULL,"edit-find");
+#else
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_FIND);
+#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (fcdb_item), (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
@@ -1508,7 +1540,11 @@ void create_fc_dialog(typHOE *hg)
   gtk_table_attach (GTK_TABLE(table), label, 2, 3, 0, 1,
   		    GTK_SHRINK,GTK_FILL,0,0);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name(NULL,"emblem-system");
+#else
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_PROPERTIES);
+#endif
   my_signal_connect (button, "clicked",
 		     fcdb_para_item, (gpointer)hg);
   gtk_table_attach (GTK_TABLE(table), button, 2, 3, 1, 2,
@@ -1565,7 +1601,11 @@ void create_fc_dialog(typHOE *hg)
 			      "Save as PDF");
 #endif
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name(NULL,"document-print");
+#else
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_PRINT);
+#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (do_print_fc), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
@@ -1574,7 +1614,11 @@ void create_fc_dialog(typHOE *hg)
 			      "Print out");
 #endif
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name(NULL,"help-browser");
+#else
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_INFO);
+#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (show_fc_help), hg->skymon_main);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
@@ -1584,7 +1628,11 @@ void create_fc_dialog(typHOE *hg)
 #endif
   gtk_widget_grab_focus (button);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name(NULL,"window-close");
+#else
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
+#endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (close_fc), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
@@ -4827,8 +4875,13 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
 		    GTK_FILL,GTK_SHRINK,0,0);
   
 
+#ifdef USE_GTK3
+  pixmap=gtk_image_new_from_icon_name ("view-refresh", 
+				       GTK_ICON_SIZE_LARGE_TOOLBAR);
+#else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_REFRESH, 
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
+#endif
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -4839,8 +4892,13 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 1, 2,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
+#ifdef USE_GTK3
+  pixmap=gtk_image_new_from_icon_name ("edit-find", 
+				       GTK_ICON_SIZE_LARGE_TOOLBAR);
+#else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_FIND,
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
+#endif
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 2, 3,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -4851,8 +4909,13 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 2, 3,
 		    GTK_FILL,GTK_SHRINK,0,0);
 
+#ifdef USE_GTK3
+  pixmap=gtk_image_new_from_icon_name ("emblem-system", 
+				       GTK_ICON_SIZE_LARGE_TOOLBAR);
+#else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES,
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
+#endif
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 3, 4,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
@@ -4965,9 +5028,11 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     label,FALSE, FALSE, 0);
 
-
-
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("OK","emblem-default");
+#else
   button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -5115,7 +5180,11 @@ void ver_dl(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     hg->plabel,FALSE,FALSE,0);
   
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed", cancel_fcdb, (gpointer)hg);
@@ -5367,7 +5436,11 @@ void fcdb_dl(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     hg->plabel,FALSE,FALSE,0);
   
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -5496,7 +5569,11 @@ void addobj_dl(typHOE *hg)
 		     hg->plabel,FALSE,FALSE,0);
   
 #ifndef USE_WIN32
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed",
@@ -5731,7 +5808,11 @@ void trdb_run (typHOE *hg)
 		     hbox,TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),hg->plabel,FALSE,TRUE,0);
 
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+#else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,TRUE,0);
   my_signal_connect(button,"pressed",cancel_trdb,(gpointer)hg);
 
