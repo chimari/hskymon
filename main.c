@@ -16315,7 +16315,7 @@ GtkWidget* gtkut_hbox_new(gboolean homogeneous, gint spacing){
   w = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, spacing);
   gtk_box_set_homogeneous(GTK_BOX(w), homogeneous);
 #else
-  w = gtkut_hbox_new(homogeneous, spacing);
+  w = gtk_hbox_new(homogeneous, spacing);
 #endif
   return(w);
 }
@@ -16326,7 +16326,7 @@ GtkWidget* gtkut_vbox_new(gboolean homogeneous, gint spacing){
   w = gtk_box_new(GTK_ORIENTATION_VERTICAL, spacing);
   gtk_box_set_homogeneous(GTK_BOX(w), homogeneous);
 #else
-  w = gtkut_vbox_new(homogeneous, spacing);
+  w = gtk_vbox_new(homogeneous, spacing);
 #endif
   return(w);
 }

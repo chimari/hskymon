@@ -3248,7 +3248,7 @@ gboolean resize_plot_cairo(GtkWidget *widget,
 	  gfloat delta_hst=hg->plot_ihst1-hg->plot_ihst0;
 	  
 	  if(direction & GDK_SCROLL_DOWN){
-	    if(delta_hst<(PLOT_HST1 - PLOT_HST0)){
+	    if(delta_hst<10.0){
 	      hg->plot_ihst1=(gfloat)hour+(gfloat)min/60.
 		+(delta_hst+1.0)*0.75;
 	      hg->plot_ihst0=(gfloat)hour+(gfloat)min/60.
