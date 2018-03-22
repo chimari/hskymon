@@ -7523,7 +7523,11 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   gtk_box_pack_start(GTK_BOX(hbox), button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed", addobj_ned_query, (gpointer)hg);
 
+#ifdef USE_GTK3
+  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+#else
   bar = gtk_hseparator_new();
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     bar,FALSE, FALSE, 0);
 
@@ -7542,7 +7546,11 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   gtk_box_pack_start(GTK_BOX(hbox),hg->addobj_label,FALSE, FALSE, 0);
 
 
+#ifdef USE_GTK3
+  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+#else
   bar = gtk_hseparator_new();
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     bar,FALSE, FALSE, 0);
  

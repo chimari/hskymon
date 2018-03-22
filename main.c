@@ -4217,7 +4217,13 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 
   adj = (GtkAdjustment *)gtk_adjustment_new 
     ((gfloat)hg->allsky_diff_mag, 1, 128, 1.0, 1.0, 0.0);
+#ifdef USE_GTK3
+  scale =  gtk_scale_new (GTK_ADJUSTMENT(adj));
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (scale), 
+				  GTK_ORIENTATION_HORIZONTAL);
+#else
   scale =  gtk_hscale_new (GTK_ADJUSTMENT(adj));
+#endif
   gtk_scale_set_digits (GTK_SCALE (scale), 0);
   gtk_scale_set_draw_value (GTK_SCALE (scale), TRUE);
 #ifdef USE_GTK3
@@ -4266,7 +4272,13 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 
   adj = (GtkAdjustment *)gtk_adjustment_new 
     ((gfloat)hg->allsky_diff_base, 0, 255, 1.0, 1.0, 0.0);
+#ifdef USE_GTK3
+  scale =  gtk_scale_new (GTK_ADJUSTMENT(adj));
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (scale), 
+				  GTK_ORIENTATION_HORIZONTAL);
+#else
   scale =  gtk_hscale_new (GTK_ADJUSTMENT(adj));
+#endif
   gtk_scale_set_digits (GTK_SCALE (scale), 0);
   gtk_scale_set_draw_value (GTK_SCALE (scale), TRUE);
 #ifdef USE_GTK3
@@ -4427,7 +4439,13 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 
   adj = (GtkAdjustment *)gtk_adjustment_new 
     ((gfloat)hg->allsky_cloud_thresh, 0.1, 10.0, 0.1, 0.1, 0.0);
+#ifdef USE_GTK3
+  scale =  gtk_scale_new (GTK_ADJUSTMENT(adj));
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (scale), 
+				  GTK_ORIENTATION_HORIZONTAL);
+#else
   scale =  gtk_hscale_new (GTK_ADJUSTMENT(adj));
+#endif
   gtk_scale_set_digits (GTK_SCALE (scale), 1);
   gtk_scale_set_draw_value (GTK_SCALE (scale), TRUE);
 #ifdef USE_GTK3
@@ -4625,7 +4643,13 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
 
   adj = (GtkAdjustment *)gtk_adjustment_new 
     ((gfloat)hg->allsky_alpha, -100, 100, 10.0, 10.0, 0.0);
+#ifdef USE_GTK3
+  scale =  gtk_scale_new (GTK_ADJUSTMENT(adj));
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (scale), 
+				  GTK_ORIENTATION_HORIZONTAL);
+#else
   scale =  gtk_hscale_new (GTK_ADJUSTMENT(adj));
+#endif
   gtk_scale_set_digits (GTK_SCALE (scale), 0);
   gtk_scale_set_draw_value (GTK_SCALE (scale), TRUE);
 #ifdef USE_GTK3
@@ -4678,7 +4702,13 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
 
   adj = (GtkAdjustment *)gtk_adjustment_new 
     ((gfloat)hg->allsky_sat, 0.0, 150, 0.1, 0.1, 0.0);
+#ifdef USE_GTK3
+  scale =  gtk_scale_new (GTK_ADJUSTMENT(adj));
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (scale), 
+				  GTK_ORIENTATION_HORIZONTAL);
+#else
   scale =  gtk_hscale_new (GTK_ADJUSTMENT(adj));
+#endif
   gtk_scale_set_digits (GTK_SCALE (scale), 1);
   gtk_scale_set_draw_value (GTK_SCALE (scale), TRUE);
 #ifdef USE_GTK3

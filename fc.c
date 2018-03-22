@@ -1029,7 +1029,7 @@ void create_fc_dialog(typHOE *hg)
   GtkWidget *menubar;
   GdkPixbuf *icon;
 
-  hg->fc_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  hg->fc_main = gtk_window_new(GTK_WINDOW_DIALOG);
   gtk_window_set_transient_for(GTK_WINDOW(hg->fc_main),
 			       GTK_WINDOW(hg->skymon_main));
   //hg->fc_main = gtk_dialog_new();
@@ -6208,7 +6208,11 @@ void trdb_run (typHOE *hg)
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     time_label,TRUE,TRUE,5);
 
-  sep=gtk_hseparator_new();
+#ifdef USE_GTK3
+  sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+#else
+  sep = gtk_hseparator_new();
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     sep,FALSE,TRUE,5);
 
