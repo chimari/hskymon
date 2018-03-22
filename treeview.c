@@ -7599,7 +7599,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Add Object",GTK_STOCK_ADD);
 #endif
-  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_Ok);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
   my_signal_connect(button,"pressed",
 		    ok_addobj, (gpointer)hg);
 
