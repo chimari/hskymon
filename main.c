@@ -3811,8 +3811,7 @@ gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
 #else
   button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
 		    close_child_dialog, 
 		    GTK_WIDGET(dialog));
@@ -4110,8 +4109,7 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
 #else
   button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
 		    close_child_dialog, 
 		    GTK_WIDGET(dialog));
@@ -4448,8 +4446,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_APPLY);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
@@ -4459,8 +4456,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
@@ -4470,8 +4466,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Remake Images",GTK_STOCK_OK);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
   my_signal_connect(button,"pressed",
 		    change_disp_para, 
 		    (gpointer)cdata);
@@ -4705,8 +4700,7 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_APPLY);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
@@ -4716,8 +4710,7 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
@@ -4727,8 +4720,7 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
   my_signal_connect(button,"pressed",
 		    change_disp_para, 
 		    (gpointer)cdata);
@@ -5364,8 +5356,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_APPLY);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
@@ -5375,8 +5366,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
@@ -5386,8 +5376,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
   my_signal_connect(button,"pressed",
 		    change_disp_para, 
 		    (gpointer)cdata);
@@ -5707,8 +5696,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
@@ -5717,8 +5705,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
 #else
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
   my_signal_connect(button,"pressed",
 		    ok_trdb_smoka, (gpointer)hg);
 
@@ -6008,8 +5995,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
@@ -6018,8 +6004,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
 #else
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
   my_signal_connect(button,"pressed",
 		    ok_trdb_hst, (gpointer)hg);
 
@@ -6516,8 +6501,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
@@ -6526,8 +6510,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
 #else
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
   my_signal_connect(button,"pressed",
 		    ok_trdb_eso, (gpointer)hg);
 
@@ -6770,8 +6753,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
 		    gtk_main_quit, NULL);
 
@@ -6780,8 +6762,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
 #else
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
   my_signal_connect(button,"pressed",
 		    ok_trdb_gemini, (gpointer)hg);
 
@@ -8639,8 +8620,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 #else
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_APPLY);
   my_signal_connect(button,"pressed",
 		    default_disp_para, 
 		    (gpointer)cdata);
@@ -9206,8 +9186,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
 		    close_disp_para, 
 		    GTK_WIDGET(dialog));
@@ -9217,8 +9196,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 #else
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
   my_signal_connect(button,"pressed",
 		    change_fcdb_para, 
 		    (gpointer)cdata);
@@ -13436,8 +13414,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_APPLY);
   my_signal_connect(button,"pressed",
 		    default_prop, 
 		    (gpointer)cdata);
@@ -13447,8 +13424,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
 		    close_prop, 
 		    GTK_WIDGET(dialog));
@@ -13458,8 +13434,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 #else
   button=gtkut_button_new_from_stock("Save",GTK_STOCK_SAVE);
 #endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-		     button,FALSE,FALSE,0);
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
   my_signal_connect(button,"pressed",
 		    save_prop, 
 		    (gpointer)cdata);
