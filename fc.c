@@ -6450,14 +6450,14 @@ void trdb_run (typHOE *hg)
 
       if(hg->obj[i_list].trdb_band_max>0){
 #ifdef USE_GTK3
-	css_change_col(gtk_bin_get_child(stat_label,"red");
+	css_change_col(stat_label,"red");
 #else
 	gtk_widget_modify_fg(stat_label,GTK_STATE_NORMAL,&col_red);
 #endif
       }
       else{
 #ifdef USE_GTK3
-	css_change_col(gtk_bin_get_child(stat_label,"black");
+	css_change_col(stat_label,"black");
 #else
 	gtk_widget_modify_fg(stat_label,GTK_STATE_NORMAL,&col_black);
 #endif
@@ -7528,7 +7528,7 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
     break;
     }
 #ifdef USE_GTK3
-    css_change_col(gtk_bin_get_child(hg->fcdb_label,"red");
+    css_change_col(hg->fcdb_label,"red");
 #else
     gtk_widget_modify_fg(hg->fcdb_label,GTK_STATE_NORMAL,&col_red);
 #endif
@@ -7555,7 +7555,7 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
       break;
     }
 #ifdef USE_GTK3
-    css_change_col(gtk_bin_get_child(hg->fcdb_label,"black");
+    css_change_col(hg->fcdb_label,"black");
 #else
     gtk_widget_modify_fg(hg->fcdb_label,GTK_STATE_NORMAL,&col_black);
 #endif
