@@ -556,7 +556,7 @@ void create_skymon_dialog(typHOE *hg)
 
 
 #ifdef USE_GTK3
-  hg->skymon_button_even=gtkut_button_new_from_icon_name(NULL,"media-seek-backward");
+  hg->skymon_button_rev=gtkut_button_new_from_icon_name(NULL,"media-seek-backward");
 #else
   hg->skymon_button_rev=gtkut_toggle_button_new_from_stock(NULL, GTK_STOCK_MEDIA_REWIND);
 #endif
@@ -572,7 +572,7 @@ void create_skymon_dialog(typHOE *hg)
 
 
 #ifdef USE_GTK3
-  hg->skymon_button_even=gtkut_button_new_from_icon_name(NULL,"media-seek-forward");
+  hg->skymon_button_fwd=gtkut_button_new_from_icon_name(NULL,"media-seek-forward");
 #else
   hg->skymon_button_fwd=gtkut_toggle_button_new_from_stock(NULL, GTK_STOCK_MEDIA_FORWARD);
 #endif
@@ -588,7 +588,7 @@ void create_skymon_dialog(typHOE *hg)
 
 
 #ifdef USE_GTK3
-  hg->skymon_button_even=gtkut_button_new_from_icon_name(NULL,"media-skip-forward");
+  hg->skymon_button_morn=gtkut_button_new_from_icon_name(NULL,"media-skip-forward");
 #else
   hg->skymon_button_morn=gtkut_button_new_from_stock(NULL, GTK_STOCK_MEDIA_NEXT);
 #endif
