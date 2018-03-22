@@ -11544,9 +11544,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_grid_attach(GTK_GRID(table2), label, 0, 3, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-#endif
   gtk_table_attach(GTK_TABLE(table2), label, 0, 1, 3, 4,
 		   GTK_FILL,GTK_SHRINK,0,0);
+#endif
 
   hg->allsky_entry_last_file = gtk_entry_new ();
 #ifdef USE_GTK3
