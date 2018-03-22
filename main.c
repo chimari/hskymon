@@ -11231,7 +11231,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table1), spinner, 2, 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(table1), label, 2, 0, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
   gtk_table_attach(GTK_TABLE(table1), label, 2, 3, 0, 1,
@@ -12363,7 +12363,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table1), entry, 0, 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(table1), label, 0, 0, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
   gtk_table_attach(GTK_TABLE(table1), label, 0, 1, 0, 1,
