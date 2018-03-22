@@ -354,7 +354,7 @@ GtkWidget *make_menu(typHOE *hg){
     
 #ifdef USE_GTK3
     image=gtk_image_new_from_icon_name ("view-refresh", GTK_ICON_SIZE_MENU);
-    menu_item =gtkut_image_menu_item_new_with_label (image, "Reload");
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Reload");
 #else
     image=gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_MENU);
     popup_button =gtk_image_menu_item_new_with_label ("Reload");
