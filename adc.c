@@ -129,11 +129,17 @@ void create_adc_dialog(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
+#ifdef USE_GTK3      
+  table = gtk_grid_new();
+  gtk_grid_set_row_spacing (GTK_GRID (table), 6);
+  gtk_grid_set_column_spacing (GTK_GRID (table), 3);
+#else
   table = gtk_table_new(2,2,FALSE);
-  gtk_container_add (GTK_CONTAINER (frame), table);
-  gtk_container_set_border_width (GTK_CONTAINER (table), 2);
   gtk_table_set_row_spacings (GTK_TABLE (table), 6);
   gtk_table_set_col_spacings (GTK_TABLE (table), 3);
+#endif
+  gtk_container_add (GTK_CONTAINER (frame), table);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 2);
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name(NULL,"window-close");
@@ -142,8 +148,12 @@ void create_adc_dialog(typHOE *hg)
 #endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (close_adc), (gpointer)hg);
+#ifdef USE_GTK3      
+  gtk_grid_attach(GTK_GRID(table), button, 0, 1, 1, 1);
+#else
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
+#endif
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Close");
@@ -156,8 +166,12 @@ void create_adc_dialog(typHOE *hg)
 #endif
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (refresh_adc), (gpointer)hg);
+#ifdef USE_GTK3      
+  gtk_grid_attach(GTK_GRID(table), button, 1, 1, 1, 1);
+#else
   gtk_table_attach (GTK_TABLE(table), button, 1, 2, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
+#endif
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Redraw");
@@ -168,11 +182,17 @@ void create_adc_dialog(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
+#ifdef USE_GTK3      
+  table = gtk_grid_new();
+  gtk_grid_set_row_spacing (GTK_GRID (table), 0);
+  gtk_grid_set_column_spacing (GTK_GRID (table), 3);
+#else
   table = gtk_table_new(3,2,FALSE);
-  gtk_container_add (GTK_CONTAINER (frame), table);
-  gtk_container_set_border_width (GTK_CONTAINER (table), 0);
   gtk_table_set_row_spacings (GTK_TABLE (table), 0);
   gtk_table_set_col_spacings (GTK_TABLE (table), 3);
+#endif
+  gtk_container_add (GTK_CONTAINER (frame), table);
+  gtk_container_set_border_width (GTK_CONTAINER (table), 0);
 
   {
     GtkWidget *combo;
@@ -198,8 +218,12 @@ void create_adc_dialog(typHOE *hg)
     if(hg->adc_inst==ADC_INST_HDSZENITH) iter_set=iter;
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+#ifdef USE_GTK3      
+    gtk_grid_attach(GTK_GRID(table), combo, 0, 1, 1, 1);
+#else
     gtk_table_attach (GTK_TABLE(table), combo, 0, 1, 1, 2,
 		      GTK_SHRINK,GTK_SHRINK,0,0);
+#endif
     g_object_unref(store);
 	
     renderer = gtk_cell_renderer_text_new();
@@ -212,8 +236,12 @@ void create_adc_dialog(typHOE *hg)
   }
 
   frame = gtk_frame_new ("PA [deg]");
+#ifdef USE_GTK3      
+  gtk_grid_attach(GTK_GRID(table), frame, 1, 0, 1, 2);
+#else
   gtk_table_attach (GTK_TABLE(table), frame, 1, 2, 0, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
+#endif
 
   hbox2 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox2);
@@ -242,8 +270,12 @@ void create_adc_dialog(typHOE *hg)
 
 
   frame = gtk_frame_new ("Slit [\"]");
+#ifdef USE_GTK3      
+  gtk_grid_attach(GTK_GRID(table), frame, 2, 0, 1, 2);
+#else
   gtk_table_attach (GTK_TABLE(table), frame, 2, 3, 0, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
+#endif
 
   hbox2 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox2);

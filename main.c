@@ -4006,7 +4006,7 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), pixmap, 1, 6, 1, 1);
+  gtk_grid_attach(GTK_GRID(table), label, 1, 6, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 1, 2, 6, 7,
@@ -13170,7 +13170,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   hbox = gtkut_hbox_new(FALSE,2);
 #ifdef USE_GTK3
   gtk_grid_attach(GTK_GRID(table1), hbox, 0, 0, 1, 1);
-  gtk_widget_set_vexpand(hbox,TRUE);
   gtk_widget_set_hexpand(hbox,TRUE);
 #else
   gtk_table_attach_defaults(GTK_TABLE(table1), hbox, 0, 1, 0, 1);
@@ -13202,7 +13201,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   hbox = gtkut_hbox_new(FALSE,2);
 #ifdef USE_GTK3
   gtk_grid_attach(GTK_GRID(table1), hbox, 1, 0, 1, 1);
-  gtk_widget_set_vexpand(hbox,TRUE);
   gtk_widget_set_hexpand(hbox,TRUE);
 #else
   gtk_table_attach_defaults(GTK_TABLE(table1), hbox, 1, 2, 0, 1);
