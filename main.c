@@ -3908,7 +3908,7 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
 #ifdef USE_GTK3
   pixmap=gtk_image_new_from_icon_name ("format-text-strikethrough",
 				       GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_grid_attach(GTK_GRID(table), pximap, 0, 2, 1, 1);
+  gtk_grid_attach(GTK_GRID(table), pixmap, 0, 2, 1, 1);
 #else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_STRIKETHROUGH, 
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
@@ -4237,7 +4237,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label 0, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(table), label, 0, 1, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2,
@@ -4248,7 +4248,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label 1, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(table), label, 1, 1, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
   gtk_table_attach(GTK_TABLE(table), label, 1, 2, 1, 2,
@@ -4259,7 +4259,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label 3, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(table), label, 3, 1, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(table), label, 3, 4, 1, 2,
@@ -6207,8 +6207,8 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
     gtk_grid_attach(GTK_GRID(table), combo, 1, 0, 1, 1);
 #else
     gtk_table_attach(GTK_TABLE(table), combo, 1, 2, 0, 1,
-#endif
 		     GTK_FILL,GTK_SHRINK,0,0);
+#endif
     g_object_unref(store);
     
     renderer = gtk_cell_renderer_text_new();
@@ -8690,8 +8690,8 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_grid_attach(GTK_GRID(table), vbox1, 0, 2, 2, 3);
 #else
   gtk_table_attach(GTK_TABLE(table), vbox1, 0, 1, 2, 5,
-#endif
 		   GTK_FILL,GTK_SHRINK,0,0);
+#endif
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
 
   frame = gtk_frame_new ("Subaru");
@@ -10542,7 +10542,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
   button = gtk_radio_button_new_with_label (obs_group, "Preset Observatory");
 #ifdef USE_GTK3
-  gtk_grid_attach(GTK_GRID(table1), combo, 0, 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(table1), button, 0, 0, 1, 1);
 #else
   gtk_table_attach(GTK_TABLE(table1), button, 0, 1, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
@@ -12131,8 +12131,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_grid_attach(GTK_GRID(table1), check, 0, 1, 1, 1);
 #else
   gtk_table_attach(GTK_TABLE(table1), check, 0, 1, 1, 2,
-#endif
 		   GTK_FILL,GTK_SHRINK,0,0);
+#endif
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_ad);
   my_signal_connect (check, "toggled",
 		     cc_get_toggle,
