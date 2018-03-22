@@ -4148,7 +4148,12 @@ static gint button_signal(GtkWidget *widget,
   hg=(typHOE *)userdata;
 
   if ( event->button==1 ) {
+#ifdef USE_GTK3
+    gdk_window_get_device_position(gtk_widget_get_window(widget),
+				   event->device, &x,&y,NULL);
+#else
     gdk_window_get_pointer(gtk_widget_get_window(widget),&x,&y,NULL);
+#endif
 
     if((x-hg->win_cx)*(x-hg->win_cx)+(y-hg->win_cy)*(y-hg->win_cy)<
        (hg->win_r*hg->win_r)){

@@ -5951,7 +5951,9 @@ do_editable_cells (typHOE *hg)
     
     /* create tree view */
     hg->tree = gtk_tree_view_new_with_model (items_model);
+#ifndef USE_GTK3
     gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (hg->tree), TRUE);
+#endif
     gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (hg->tree)),
 				 GTK_SELECTION_SINGLE);
     add_columns (hg, GTK_TREE_VIEW (hg->tree), items_model);
@@ -6384,7 +6386,9 @@ do_editable_cells (typHOE *hg)
     
     /* create tree view */
     hg->stddb_tree = gtk_tree_view_new_with_model (items_model);
+#ifndef USE_GTK3
     gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (hg->stddb_tree), TRUE);
+#nedif
     gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (hg->stddb_tree)),
 				 GTK_SELECTION_SINGLE);
     std_add_columns (hg, GTK_TREE_VIEW (hg->stddb_tree), items_model);
@@ -6660,7 +6664,9 @@ do_editable_cells (typHOE *hg)
 
     /* create tree view */
     hg->trdb_tree = gtk_tree_view_new_with_model (items_model);
+#ifndef USE_GTK3
     gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (hg->trdb_tree), TRUE);
+#endif
     gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (hg->trdb_tree)),
 				 GTK_SELECTION_SINGLE);
     trdb_add_columns (hg, GTK_TREE_VIEW (hg->trdb_tree), items_model);
@@ -7077,7 +7083,9 @@ void fcdb_append_tree(typHOE *hg){
   
   /* create tree view */
   hg->fcdb_tree = gtk_tree_view_new_with_model (items_model);
+#ifndef USE_GTK3
   gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (hg->fcdb_tree), TRUE);
+#endif
   gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (hg->fcdb_tree)),
 			       GTK_SELECTION_SINGLE);
   fcdb_add_columns (hg, GTK_TREE_VIEW (hg->fcdb_tree), items_model);
@@ -7255,7 +7263,12 @@ void stddb_dl(typHOE *hg)
 
   label=gtk_label_new("Searching standards in SIMBAD ...");
 
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
   gtk_widget_show(label);
   
@@ -7275,7 +7288,12 @@ void stddb_dl(typHOE *hg)
   unlink(hg->std_file);
   
   hg->plabel=gtk_label_new("Searching standards in SIMBAD ...");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (hg->plabel, GTK_ALIGN_START);
+  gtk_widget_set_valign (hg->plabel, GTK_ALIGN_CENTER);
+#else
   gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
+#endif
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
 		     hg->plabel,FALSE,FALSE,0);
   
@@ -7459,7 +7477,12 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
   
   label = gtk_label_new ("Object Name");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
   gtk_box_pack_start(GTK_BOX(hbox),label,FALSE, FALSE, 0);
 
   entry = gtk_entry_new ();
@@ -7495,7 +7518,12 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
   hg->addobj_label = gtk_label_new ("Input Object Name to be added & resolve its coordinate in the database.");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (hg->addobj_label, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (hg->addobj_label, GTK_ALIGN_CENTER);
+#else
   gtk_misc_set_alignment (GTK_MISC (hg->addobj_label), 0.5, 0.5);
+#endif
   gtk_box_pack_start(GTK_BOX(hbox),hg->addobj_label,FALSE, FALSE, 0);
 
 
@@ -7509,7 +7537,12 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
   label = gtk_label_new ("             RA(2000)");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
   gtk_box_pack_start(GTK_BOX(hbox),label,FALSE, FALSE, 0);
 
   hg->addobj_entry_ra = gtk_entry_new ();
@@ -7521,7 +7554,12 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 		     cc_get_entry_double, &hg->addobj_ra);
   
   label = gtk_label_new ("    Dec(2000)");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
   gtk_box_pack_start(GTK_BOX(hbox),label,FALSE, FALSE, 0);
 
   hg->addobj_entry_dec = gtk_entry_new ();
