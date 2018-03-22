@@ -11441,9 +11441,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_widget_set_sensitive(hg->allsky_frame_server,!hg->allsky_preset_flag);
   
 #ifdef USE_GTK3      
-  table1 = gtk_grid_new();
-  gtk_grid_set_row_spacing (GTK_GRID (table1), 5);
-  gtk_grid_set_column_spacing (GTK_GRID (table1), 5);
+  table2 = gtk_grid_new();
+  gtk_grid_set_row_spacing (GTK_GRID (table2), 5);
+  gtk_grid_set_column_spacing (GTK_GRID (table2), 5);
 #else
   table2 = gtk_table_new(3,4,FALSE);
   gtk_table_set_row_spacings (GTK_TABLE (table2), 5);
