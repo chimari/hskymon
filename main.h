@@ -2105,6 +2105,9 @@ pid_t stddb_pid;
 
 //// Functions' proto-type
 // main.c
+#ifdef USE_GTK3
+void css_change_col();
+#endif
 gchar* fgets_new();
 void printf_log(typHOE *hg, const gchar *format, ...);
 void my_signal_connect();

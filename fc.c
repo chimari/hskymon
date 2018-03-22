@@ -6449,10 +6449,18 @@ void trdb_run (typHOE *hg)
       gtk_progress_bar_set_text(GTK_PROGRESS_BAR(hg->pbar2),tmp);
 
       if(hg->obj[i_list].trdb_band_max>0){
+#ifdef USE_GTK3
+	css_change_col(gtk_bin_get_child(stat_label,"red");
+#else
 	gtk_widget_modify_fg(stat_label,GTK_STATE_NORMAL,&col_red);
+#endif
       }
       else{
+#ifdef USE_GTK3
+	css_change_col(gtk_bin_get_child(stat_label,"black");
+#else
 	gtk_widget_modify_fg(stat_label,GTK_STATE_NORMAL,&col_black);
+#endif
       }
       sprintf(tmp,"%s : hit %d-bands", hg->obj[i_list].name, 
 	      hg->obj[i_list].trdb_band_max);
@@ -7519,7 +7527,11 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
 			 hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
     break;
     }
+#ifdef USE_GTK3
+    css_change_col(gtk_bin_get_child(hg->fcdb_label,"red");
+#else
     gtk_widget_modify_fg(hg->fcdb_label,GTK_STATE_NORMAL,&col_red);
+#endif
   }
   else{
     switch(hg->fcdb_type){
@@ -7542,7 +7554,11 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
 			 hg->obj[hg->fcdb_i].name,hg->fcdb_i_max);
       break;
     }
+#ifdef USE_GTK3
+    css_change_col(gtk_bin_get_child(hg->fcdb_label,"black");
+#else
     gtk_widget_modify_fg(hg->fcdb_label,GTK_STATE_NORMAL,&col_black);
+#endif
   }
   gtk_label_set_text(GTK_LABEL(hg->fcdb_label), hg->fcdb_label_text);
   g_free(db_name);
