@@ -1029,10 +1029,9 @@ void create_fc_dialog(typHOE *hg)
   GtkWidget *menubar;
   GdkPixbuf *icon;
 
-  hg->fc_main = gtk_window_new(GTK_WINDOW_DIALOG);
-  gtk_window_set_transient_for(GTK_WINDOW(hg->fc_main),
-			       GTK_WINDOW(hg->skymon_main));
-  //hg->fc_main = gtk_dialog_new();
+  hg->fc_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  //gtk_window_set_transient_for(GTK_WINDOW(hg->fc_main),
+  //			       GTK_WINDOW(hg->skymon_main));
   gtk_window_set_title(GTK_WINDOW(hg->fc_main), "Sky Monitor : Finding Chart");
   
   my_signal_connect(hg->fc_main,
