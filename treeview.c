@@ -6336,7 +6336,7 @@ do_editable_cells (typHOE *hg)
 
 
 #ifdef USE_GTK3
-    hg->stddb_button=gtkut_button_new_from_icon_name(NULL,"video-display");
+    hg->stddb_button=gtkut_toggle_button_new_from_icon_name(NULL,"video-display");
 #else
     hg->stddb_button=gtkut_toggle_button_new_from_stock(NULL,GTK_STOCK_APPLY);
 #endif
