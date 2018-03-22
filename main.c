@@ -617,7 +617,7 @@ GtkWidget *make_menu(typHOE *hg){
   //// Object
 #ifdef USE_GTK3
   image=gtk_image_new_from_icon_name ("format-justify-fill",GTK_ICON_SIZE_MENU);
-  popup_button =gtkut_image_menu_item_new_with_label (image, "Object");
+  menu_item =gtkut_image_menu_item_new_with_label (image, "Object");
 #else
   image=gtk_image_new_from_stock (GTK_STOCK_JUSTIFY_FILL, GTK_ICON_SIZE_MENU);
   menu_item =gtk_image_menu_item_new_with_label ("Object");
@@ -658,7 +658,7 @@ GtkWidget *make_menu(typHOE *hg){
   //// Update
 #ifdef USE_GTK3
   image=gtk_image_new_from_icon_name ("view-refresh",GTK_ICON_SIZE_MENU);
-  popup_button =gtkut_image_menu_item_new_with_label (image, "Update");
+  menu_item =gtkut_image_menu_item_new_with_label (image, "Update");
 #else
   image=gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_MENU);
   menu_item =gtk_image_menu_item_new_with_label ("Update");
@@ -16979,11 +16979,19 @@ GtkWidget* gtkut_toggle_button_new_from_stock(gchar *txt,
   gtk_container_set_border_width(GTK_CONTAINER(box),0);
   
   if(txt){
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name (stock, GTK_ICON_SIZE_BUTTON);
+#else
     image=gtk_image_new_from_stock (stock, GTK_ICON_SIZE_BUTTON);
+#endif
     gtk_box_pack_start(GTK_BOX(box),image, FALSE,FALSE,2);
   }
   else{
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name (stock, GTK_ICON_SIZE_MENU);
+#else
     image=gtk_image_new_from_stock (stock, GTK_ICON_SIZE_MENU);
+#endif
     gtk_box_pack_start(GTK_BOX(box),image, FALSE,FALSE,0);
   }
   gtk_widget_show(image);
