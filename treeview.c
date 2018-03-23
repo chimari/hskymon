@@ -1263,32 +1263,23 @@ static void add_item (typHOE *hg)
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
   gint i,i_list;
-  OBJpara tmp_obj;
 
   if(hg->i_max>=MAX_OBJECT) return;
 
   i=hg->i_max;
   
-  tmp_obj.def=make_tgt(hg->addobj_name);
+  if(hg->obj[i].def) g_free(hg->obj[i].def);
+  hg->obj[i].def=make_tgt(hg->addobj_name);
+  if(hg->obj[i].name) g_free(hg->obj[i].name);
+  hg->obj[i].name=g_strdup(hg->addobj_name);
   
-  tmp_obj.name=g_strdup(hg->addobj_name);
+  hg->obj[i].ra=hg->addobj_ra;
+  hg->obj[i].dec=hg->addobj_dec;
+  hg->obj[i].equinox=2000.0;
+
+  if(hg->obj[i].note) g_free(hg->obj[i].note);
+  hg->obj[i].note=g_strdup("added via dialog");
   
-  tmp_obj.ra=hg->addobj_ra;
-  tmp_obj.dec=hg->addobj_dec;
-  tmp_obj.equinox=2000.0;
-  tmp_obj.note=g_strconcat("added via dialog",NULL);
-  
-  for(i_list=hg->i_max;i_list>i;i_list--){
-    hg->obj[i_list]=hg->obj[i_list-1];
-  }
-  
-  hg->i_max++;
-  
-  for(i_list=0;i_list<hg->i_max;i_list++){
-    hg->obj[i_list].check_sm=FALSE;
-  }
-  
-  hg->obj[i]=tmp_obj;
   hg->obj[i].check_disp=TRUE;
   hg->obj[i].check_sm=TRUE;
   hg->obj[i].check_lock=FALSE;
@@ -1300,11 +1291,12 @@ static void add_item (typHOE *hg)
   hg->obj[i].i_nst=-1;
   hg->add_max++;
 
+  hg->i_max++;
   
   gtk_list_store_append (GTK_LIST_STORE (model), &iter);
   tree_update_azel_item(hg, model, iter, i);
   
-  remake_tree(hg);
+  //remake_tree(hg);
   trdb_make_tree(hg);
 }
 
