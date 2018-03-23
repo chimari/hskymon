@@ -45,8 +45,13 @@ void trdb_cc_search_text();
 gchar *strip_spc();
 
 #ifdef USE_XMLRPC
+#ifdef USE_GTK3
+GdkRGBA col_lock={1.0, 0.75, 0.75, 1.0};
+GdkRGBA col_sub= {0.8125, 1.0, 1.0, 1.0};
+#else
 GdkColor col_lock={0,0xFFFF,0xC000,0xC000};
 GdkColor col_sub={0,0xDDDD,0xFFFF,0xFFFF};
+#endif
 #endif
 
 static void cell_toggled_check();
@@ -242,15 +247,27 @@ void name_cell_data_func(GtkTreeViewColumn *col ,
 #ifdef USE_XMLRPC
   if(hg->obj[i].check_lock)
     g_object_set(renderer,
+#ifdef USE_GTK3
+		 "background-rgba", &col_lock,
+#else
 		 "background-gdk", &col_lock,
+#endif
 		 NULL);
   else if((hg->obj[i].c_rt<2) && (hg->obj[i].c_rt>0))
     g_object_set(renderer,
+#ifdef USE_GTK3
+		 "background-rgba", &col_sub,
+#else
 		 "background-gdk", &col_sub,
+#endif
 		 NULL);
   else
     g_object_set(renderer,
+#ifdef USE_GTK3
+		 "background-rgba", NULL,
+#else
 		 "background-gdk", NULL,
+#endif
 		 NULL);
 #endif
 }

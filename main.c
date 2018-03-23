@@ -152,6 +152,21 @@ void get_font_family_size();
 void Export_OpeDef();
 void Export_TextList();
 
+#ifdef USE_GTK3
+GdkRGBA init_col [MAX_ROPE]
+= {
+  {0.250, 0.375, 0.1250, 1.00}, 
+  {0.1875,0.250, 0.50,   1.00}, 
+  {0.4375, 0.1875, 0.5625, 1.00}, 
+  {0.4375, 0.4375, 0.1250, 1.00}, 
+  {0.5625, 0.1875, 0.1875, 1.00}, 
+  {0.3750, 0.5625, 0.1250, 1.00}, 
+  {0.8125, 0.3750, 0.5625, 1.00}, 
+  {0.3750, 0.3750, 0.3750, 1.00}
+};
+
+GdkRGBA init_col_edge={1.0, 1.0, 1.0, 1.0};
+#else
 GdkColor init_col [MAX_ROPE]
 = {
   {0, 0x4000, 0x6000, 0x2000}, 
@@ -165,6 +180,7 @@ GdkColor init_col [MAX_ROPE]
 };
 
 GdkColor init_col_edge={0,0xFFFF,0xFFFF,0xFFFF};
+#endif
 gint init_alpha_edge=0xBB00;
 
 // CSS for Gtk+3
@@ -3532,7 +3548,9 @@ void show_version (GtkWidget *widget, gpointer gdata)
 #endif
   typHOE *hg=(typHOE *)gdata;
   gchar buf[1024];
+#ifndef USE_GTK3
   GdkColor col_blue={0,0,0,0xFFFF};
+#endif
   GtkWidget *scrolledwin;
   GtkWidget *text;
   GtkTextBuffer *buffer;
@@ -10423,7 +10441,11 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 #endif
   confProp *cdata;
   GtkWidget *all_note, *note_vbox;
+#ifdef USE_GTK3
+  GdkRGBA *tmp_col [MAX_ROPE], *tmp_col_edge;
+#else
   GdkColor *tmp_col [MAX_ROPE], *tmp_col_edge;
+#endif
   gint tmp_alpha_edge;
   gint tmp_size_edge;
   confCol *cdata_col;
@@ -13157,16 +13179,20 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       g_free(tmp_char);
       tmp_char=NULL;
 
+#ifdef USE_GTK3
+      tmp_col[i]=gdk_rgba_copy(hg->col[i]);
+      button = gtk_color_button_new_with_rgba(tmp_col[i]);
+      gtk_grid_attach(GTK_GRID(table1), button, (i%4)*2+1, i/4, 1, 1);
+      my_signal_connect(button,"color-set",gtk_color_chooser_get_rgba, 
+			(gpointer *)tmp_col[i]);
+#else
       tmp_col[i]=gdk_color_copy(hg->col[i]);
       button = gtk_color_button_new_with_color(tmp_col[i]);
-#ifdef USE_GTK3
-      gtk_grid_attach(GTK_GRID(table1), button, (i%4)*2+1, i/4, 1, 1);
-#else
       gtk_table_attach(GTK_TABLE(table1), button, (i%4)*2+1, (i%4)*2+2, i/4, i/4+1,
 		       GTK_SHRINK,GTK_SHRINK,0,0);
-#endif
       my_signal_connect(button,"color-set",gtk_color_button_get_color, 
 			(gpointer *)tmp_col[i]);
+#endif
     }
 
   }
@@ -13204,14 +13230,22 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
 #endif
   gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
-  
+
+#ifdef USE_GTK3  
+  tmp_col_edge=gdk_rgba_copy(hg->col_edge);
+#else
   tmp_col_edge=gdk_color_copy(hg->col_edge);
+#endif
   tmp_alpha_edge=hg->alpha_edge;
   
   cdata_col->col=tmp_col_edge;
   cdata_col->alpha=tmp_alpha_edge;
   
+#ifdef USE_GTK3  
+  button = gtk_color_button_new_with_rgba(tmp_col_edge);
+#else
   button = gtk_color_button_new_with_color(tmp_col_edge);
+#endif
   gtk_color_button_set_use_alpha(GTK_COLOR_BUTTON(button),TRUE);
   gtk_color_button_set_alpha(GTK_COLOR_BUTTON(button),tmp_alpha_edge);
   gtk_box_pack_start(GTK_BOX(hbox), button,FALSE, FALSE, 0);
@@ -13599,11 +13633,19 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       gint i;
 
       for(i=0;i<MAX_ROPE;i++){
+#ifdef USE_GTK3
+	hg->col[i]=gdk_rgba_copy(tmp_col[i]);
+#else
 	hg->col[i]=gdk_color_copy(tmp_col[i]);
+#endif
       }
     }
 
+#ifdef USE_GTK3
+    hg->col_edge=gdk_rgba_copy(tmp_col_edge);
+#else
     hg->col_edge=gdk_color_copy(tmp_col_edge);
+#endif
     hg->alpha_edge=cdata_col->alpha;
     hg->size_edge=tmp_size_edge;
     
@@ -13804,9 +13846,13 @@ void ChangeColorAlpha(GtkWidget *w, gpointer gdata)
   confCol *cdata;
 
   cdata=(confCol *)gdata;
-
+#ifdef USE_GTK3
+  gtk_color_chooser_get_rgba(GTK_COLOR_BUTTON(w),cdata->col);
+  cdata->alpha=col.alpha;
+#else
   gtk_color_button_get_color(GTK_COLOR_BUTTON(w),cdata->col);
   cdata->alpha=gtk_color_button_get_alpha(GTK_COLOR_BUTTON(w));
+#endif
 }
 
 void ChangeFontButton(GtkWidget *w, gchar **gdata)
@@ -13978,12 +14024,22 @@ void InitDefCol(typHOE *hg){
   // Default Color for GUI
 
   for(i=0;i<MAX_ROPE;i++){
+#ifdef USE_GTK3
+    hg->col[i]=g_malloc0(sizeof(GdkRGBA));
+    hg->col[i]=gdk_rgba_copy(&init_col[i]);
+#else
     hg->col[i]=g_malloc0(sizeof(GdkColor));
     hg->col[i]=gdk_color_copy(&init_col[i]);
+#endif
   }
   
+#ifdef USE_GTK3
+  hg->col_edge=g_malloc0(sizeof(GdkRGBA));
+  hg->col_edge=gdk_rgba_copy(&init_col_edge);
+#else
   hg->col_edge=g_malloc0(sizeof(GdkColor));
   hg->col_edge=gdk_color_copy(&init_col_edge);
+#endif
   hg->alpha_edge=init_alpha_edge;
   hg->size_edge=DEF_SIZE_EDGE;
 }
@@ -17618,11 +17674,19 @@ void WriteConf(typHOE *hg){
     g_free(tmp);
   }
 
+#ifdef USE_GTK3
+  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_r",(gint)hg->col_edge->red,"%.4lf");
+  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_g",(gint)hg->col_edge->green,"%.4lf");
+  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_b",(gint)hg->col_edge->blue,"%.4lf");
+  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_a",(gint)hg->alpha_edge,"%.4lf");
+  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_s",(gint)hg->size_edge,"%.4lf");
+#else
   xmms_cfg_write_int(cfgfile, "Color", "edge_r",(gint)hg->col_edge->red);
   xmms_cfg_write_int(cfgfile, "Color", "edge_g",(gint)hg->col_edge->green);
   xmms_cfg_write_int(cfgfile, "Color", "edge_b",(gint)hg->col_edge->blue);
   xmms_cfg_write_int(cfgfile, "Color", "edge_a",(gint)hg->alpha_edge);
   xmms_cfg_write_int(cfgfile, "Color", "edge_s",(gint)hg->size_edge);
+#endif
 
   xmms_cfg_write_string(cfgfile, "Font", "Name", hg->fontname);
   xmms_cfg_write_string(cfgfile, "Font", "All", hg->fontname_all);
@@ -18032,6 +18096,32 @@ void ReadConf(typHOE *hg)
       g_free(tmp);
     }
 
+#ifdef USE_GTK3
+    if(xmms_cfg_read_double(cfgfile, "RGBA", "edge_r", &f_buf)) 
+      hg->col_edge->red =f_buf;
+    else
+      hg->col_edge->red =init_col_edge.red;
+
+    if(xmms_cfg_read_double(cfgfile, "RGBA", "edge_g", &f_buf)) 
+      hg->col_edge->green =f_buf;
+    else
+      hg->col_edge->green =init_col_edge.green;
+
+    if(xmms_cfg_read_double(cfgfile, "RGBA", "edge_b", &f_buf)) 
+      hg->col_edge->blue =f_buf;
+    else
+      hg->col_edge->blue =init_col_edge.blue;
+
+    if(xmms_cfg_read_double(cfgfile, "RGBA", "edge_a", &f_buf)) 
+      hg->alpha_edge =f_buf;
+    else
+      hg->alpha_edge =init_alpha_edge;
+
+    if(xmms_cfg_read_double(cfgfile, "RGBA", "edge_s", &f_buf)) 
+      hg->size_edge =f_buf;
+    else
+      hg->size_edge =DEF_SIZE_EDGE;
+#else
     if(xmms_cfg_read_int(cfgfile, "Color", "edge_r", &i_buf)) 
       hg->col_edge->red =(guint)i_buf;
     else
@@ -18056,6 +18146,7 @@ void ReadConf(typHOE *hg)
       hg->size_edge =(guint)i_buf;
     else
       hg->size_edge =DEF_SIZE_EDGE;
+#endif
 
     if(xmms_cfg_read_string(cfgfile, "Font", "Name", &c_buf)) 
       hg->fontname =c_buf;

@@ -6106,8 +6106,10 @@ void trdb_run (typHOE *hg)
   gint fcdb_tree_check_timer;
   gint timer=-1;
   gchar tmp[BUFFSIZE];
+#ifndef USE_GTK3
   GdkColor col_red={0,0xFFFF,0,0};
   GdkColor col_black={0,0,0,0};
+#endif
   time_t start_time;
   double elapsed_sec, remaining_sec;
   
@@ -7437,8 +7439,10 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
   GtkTreeModel *model;
   GtkTreeIter iter;
   gchar *db_name;
+#ifndef USE_GTK3
   GdkColor col_red={0,0xFFFF,0,0};
   GdkColor col_black={0,0,0,0};
+#endif
 
 
   hg=(typHOE *)gdata;
@@ -7666,9 +7670,6 @@ void trdb_make_tree(typHOE *hg){
   gint i;
   GtkTreeModel *model;
   GtkTreeIter iter;
-  GdkColor col_red={0,0xFFFF,0,0};
-  GdkColor col_black={0,0,0,0};
-
 
   model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
 

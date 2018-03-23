@@ -2024,8 +2024,13 @@ struct _typHOE{
   gint ope_max;
   gint add_max;
   gint nst_max;
+#ifdef USE_GTK3
+  GdkRGBA *col[MAX_ROPE];
+  GdkRGBA *col_edge;
+#else
   GdkColor *col[MAX_ROPE];
   GdkColor *col_edge;
+#endif
   gint alpha_edge;
   gint size_edge;
 
@@ -2050,7 +2055,11 @@ struct _typHOE{
 
 // Struct for Callback
 typedef struct{
+#ifdef USE_GTK3  
+  GdkRGBA *col;
+#else
   GdkColor *col;
+#endif
   gint alpha;
 }confCol;
 

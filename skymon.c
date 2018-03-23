@@ -2412,11 +2412,19 @@ void my_cairo_object(cairo_t *cr, typHOE *hg, gint i,
   cairo_new_path(cr);
 
   if(allsky_flag){
+#ifdef USE_GTK3
+    cairo_set_source_rgba(cr, 
+			  hg->col_edge->red, 
+			  hg->col_edge->green,
+			  hg->col_edge->blue, 
+			  hg->col_edge->alpha);
+#else
     cairo_set_source_rgba(cr, 
 			  (gdouble)hg->col_edge->red/0x10000, 
 			  (gdouble)hg->col_edge->green/0x10000,
 			  (gdouble)hg->col_edge->blue/0x10000, 
 			  (gdouble)hg->alpha_edge/0x10000);
+#endif
     if(hg->obj[i].check_std){
       cairo_arc(cr, x, y, 4, 0, 2*M_PI);
     }
@@ -2427,9 +2435,17 @@ void my_cairo_object(cairo_t *cr, typHOE *hg, gint i,
     cairo_new_path(cr);
   }
 
-  cairo_set_source_rgba(cr, (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
+#ifdef USE_GTK3
+  cairo_set_source_rgba(cr, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue, 1.0);
+#else
+  cairo_set_source_rgba(cr, 
+			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 1.0);
+#endif
   if(hg->obj[i].check_std){
     cairo_arc(cr, x, y, 2, 0, 2*M_PI);
   }
@@ -2451,21 +2467,36 @@ void my_cairo_object(cairo_t *cr, typHOE *hg, gint i,
 		    x-(extents.width/2 + extents.x_bearing),
 		    y-5);
       cairo_text_path(cr, hg->obj[i].name);
+#ifdef USE_GTK3
+      cairo_set_source_rgba(cr, 
+			    hg->col_edge->red, 
+			    hg->col_edge->green,
+			    hg->col_edge->blue, 
+			    hg->col_edge->alpha);
+#else
       cairo_set_source_rgba(cr, 
 			    (gdouble)hg->col_edge->red/0x10000, 
 			    (gdouble)hg->col_edge->green/0x10000,
 			    (gdouble)hg->col_edge->blue/0x10000, 
 			    (gdouble)hg->alpha_edge/0x10000);
+#endif
       cairo_set_line_width(cr, (double)hg->size_edge);
       cairo_stroke(cr);
       
       cairo_new_path(cr);
     }
-    
+
+#ifdef USE_GTK3
+    cairo_set_source_rgba(cr, 
+			  hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red, 
+			  hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green, 
+			  hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue, 1.0);
+#else    
     cairo_set_source_rgba(cr, 
 			  (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
 			  (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
 			  (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 1.0);
+#endif
     cairo_move_to(cr,
 		  x-(extents.width/2 + extents.x_bearing),
 		  y-5);
@@ -2503,11 +2534,19 @@ void my_cairo_object_nst(cairo_t *cr, typHOE *hg, gint i,
   cairo_new_path(cr);
 
   if(allsky_flag){
+#ifdef USE_GTK3
+    cairo_set_source_rgba(cr, 
+			  hg->col_edge->red, 
+			  hg->col_edge->green,
+			  hg->col_edge->blue, 
+			  hg->col_edge->alpha);
+#else
     cairo_set_source_rgba(cr, 
 			  (gdouble)hg->col_edge->red/0x10000, 
 			  (gdouble)hg->col_edge->green/0x10000,
 			  (gdouble)hg->col_edge->blue/0x10000, 
 			  (gdouble)hg->alpha_edge/0x10000);
+#endif
     cairo_set_line_width(cr, (double)hg->size_edge+2);
 
     cairo_move_to(cr, x-3, y-3);
@@ -2519,10 +2558,17 @@ void my_cairo_object_nst(cairo_t *cr, typHOE *hg, gint i,
     cairo_stroke(cr);
   }
 
+#ifdef USE_GTK3
+  cairo_set_source_rgba(cr, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue, 0.7);
+#else
   cairo_set_source_rgba(cr, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 0.7);
+#endif
   cairo_set_line_width(cr, 2);
   
   cairo_move_to(cr, x-3, y-3);
@@ -2546,21 +2592,36 @@ void my_cairo_object_nst(cairo_t *cr, typHOE *hg, gint i,
 		    x-(extents.width/2 + extents.x_bearing),
 		    y-5);
       cairo_text_path(cr, hg->obj[i].name);
+#ifdef USE_GTK3
+      cairo_set_source_rgba(cr, 
+			    hg->col_edge->red, 
+			    hg->col_edge->green,
+			    hg->col_edge->blue, 
+			    hg->col_edge->alpha);
+#else
       cairo_set_source_rgba(cr, 
 			    (gdouble)hg->col_edge->red/0x10000, 
 			    (gdouble)hg->col_edge->green/0x10000,
 			    (gdouble)hg->col_edge->blue/0x10000, 
 			    (gdouble)hg->alpha_edge/0x10000);
+#endif
       cairo_set_line_width(cr, (double)hg->size_edge);
       cairo_stroke(cr);
       
       cairo_new_path(cr);
     }
-    
+
+#ifdef USE_GTK3
+    cairo_set_source_rgba(cr, 
+			  hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red, 
+			  hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green, 
+			  hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue, 0.7);
+#else    
     cairo_set_source_rgba(cr, 
 			  (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
 			  (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
 			  (gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 0.7);
+#endif
     cairo_move_to(cr,
 		  x-(extents.width/2 + extents.x_bearing),
 		  y-5);
@@ -2609,10 +2670,17 @@ void my_cairo_object2(cairo_t *cr, typHOE *hg, gint i,
   cairo_fill(cr);
   cairo_new_path(cr);
 
+#ifdef USE_GTK3
+  cairo_set_source_rgba(cr, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue, 1.0);
+#else
   cairo_set_source_rgba(cr, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 1.0);
+#endif
   cairo_arc(cr, x, y, 3, 0, 2*M_PI);
   cairo_fill(cr);
 }
@@ -2672,10 +2740,17 @@ void my_cairo_object2_nst(cairo_t *cr, typHOE *hg, gint i,
   cairo_fill(cr);
   cairo_new_path(cr);
 
+#ifdef USE_GTK3
+  cairo_set_source_rgba(cr, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue, 1.0);
+#else
   cairo_set_source_rgba(cr, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 1.0);
+#endif
 
   cairo_set_line_width(cr, 2);
   cairo_move_to(cr, x-3, y-3);
@@ -2794,10 +2869,17 @@ void my_cairo_object4(cairo_t *cr, typHOE *hg, gint i,
   cairo_fill(cr);
   cairo_new_path(cr);
 
+#ifdef USE_GTK3
+  cairo_set_source_rgba(cr, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green, 
+			hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue, 1.0);
+#else
   cairo_set_source_rgba(cr, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->red/0x10000, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->green/0x10000, 
 			(gdouble)hg->col[(hg->obj[i].ope<0)?(MAX_ROPE-1):(hg->obj[i].ope)]->blue/0x10000, 1.0);
+#endif
   cairo_arc(cr, x, y, 3, 0, 2*M_PI);
   cairo_fill(cr);
 
