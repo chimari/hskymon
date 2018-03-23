@@ -1143,8 +1143,13 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 		  width/2-ext_w.width/2.,
 		  height/2-(width < height ? width : height)*90./100./4.);
     cairo_text_path(cr, "Waiting for the next image to create a differential sky...");
+#ifdef USE_GTK3
+    cairo_set_source_rgba(cr, 0.0,0.0,0.0,
+			  hg->col_edge->alpha);
+#else
     cairo_set_source_rgba(cr, 0.0,0.0,0.0,
 			  (gdouble)hg->alpha_edge/0x10000);
+#endif
     cairo_set_line_width(cr, (double)hg->size_edge);
     cairo_stroke(cr);
     

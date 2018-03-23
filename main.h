@@ -2030,8 +2030,8 @@ struct _typHOE{
 #else
   GdkColor *col[MAX_ROPE];
   GdkColor *col_edge;
-#endif
   gint alpha_edge;
+#endif
   gint size_edge;
 
   gdouble win_cx;

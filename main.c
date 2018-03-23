@@ -165,8 +165,7 @@ GdkRGBA init_col [MAX_ROPE]
   {0.3750, 0.3750, 0.3750, 1.00}
 };
 
-GdkRGBA init_col_edge={1.0, 1.0, 1.0, 1.0};
-gdouble init_alpha_edge=0.73;
+GdkRGBA init_col_edge={1.0, 1.0, 1.0, 0.73};
 #else
 GdkColor init_col [MAX_ROPE]
 = {
@@ -10446,8 +10445,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   GdkRGBA *tmp_col [MAX_ROPE], *tmp_col_edge;
 #else
   GdkColor *tmp_col [MAX_ROPE], *tmp_col_edge;
-#endif
   gint tmp_alpha_edge;
+#endif
   gint tmp_size_edge;
   confCol *cdata_col;
   gchar *tmp_fontname;
@@ -13234,21 +13233,23 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
 #ifdef USE_GTK3  
   tmp_col_edge=gdk_rgba_copy(hg->col_edge);
+  cdata_col->col=tmp_col_edge;
 #else
   tmp_col_edge=gdk_color_copy(hg->col_edge);
-#endif
   tmp_alpha_edge=hg->alpha_edge;
-  
   cdata_col->col=tmp_col_edge;
   cdata_col->alpha=tmp_alpha_edge;
+#endif
+  
   
 #ifdef USE_GTK3  
   button = gtk_color_button_new_with_rgba(tmp_col_edge);
+  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(button),TRUE);
 #else
   button = gtk_color_button_new_with_color(tmp_col_edge);
-#endif
   gtk_color_button_set_use_alpha(GTK_COLOR_BUTTON(button),TRUE);
   gtk_color_button_set_alpha(GTK_COLOR_BUTTON(button),tmp_alpha_edge);
+#endif
   gtk_box_pack_start(GTK_BOX(hbox), button,FALSE, FALSE, 0);
   my_signal_connect(button,"color-set",ChangeColorAlpha, 
 		    (gpointer *)cdata_col);
@@ -13646,8 +13647,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->col_edge=gdk_rgba_copy(tmp_col_edge);
 #else
     hg->col_edge=gdk_color_copy(tmp_col_edge);
-#endif
     hg->alpha_edge=cdata_col->alpha;
+#endif
     hg->size_edge=tmp_size_edge;
     
 
@@ -13848,7 +13849,7 @@ void ChangeColorAlpha(GtkWidget *w, gpointer gdata)
 
   cdata=(confCol *)gdata;
 #ifdef USE_GTK3
-  gtk_color_chooser_get_rgba(GTK_COLOR_BUTTON(w),cdata->col);
+  gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(w),cdata->col);
   cdata->alpha=cdata->col->alpha;
 #else
   gtk_color_button_get_color(GTK_COLOR_BUTTON(w),cdata->col);
@@ -14040,8 +14041,8 @@ void InitDefCol(typHOE *hg){
 #else
   hg->col_edge=g_malloc0(sizeof(GdkColor));
   hg->col_edge=gdk_color_copy(&init_col_edge);
-#endif
   hg->alpha_edge=init_alpha_edge;
+#endif
   hg->size_edge=DEF_SIZE_EDGE;
 }
 
@@ -17693,7 +17694,7 @@ void WriteConf(typHOE *hg){
   xmms_cfg_write_double2(cfgfile, "RGBA", "edge_r",(gint)hg->col_edge->red,"%.4lf");
   xmms_cfg_write_double2(cfgfile, "RGBA", "edge_g",(gint)hg->col_edge->green,"%.4lf");
   xmms_cfg_write_double2(cfgfile, "RGBA", "edge_b",(gint)hg->col_edge->blue,"%.4lf");
-  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_a",(gint)hg->alpha_edge,"%.4lf");
+  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_a",(gint)hg->col_edge->alpha,"%.4lf");
   xmms_cfg_write_double2(cfgfile, "RGBA", "edge_s",(gint)hg->size_edge,"%.4lf");
 #else
   xmms_cfg_write_int(cfgfile, "Color", "edge_r",(gint)hg->col_edge->red);
@@ -18153,11 +18154,9 @@ void ReadConf(typHOE *hg)
       hg->col_edge->blue =init_col_edge.blue;
 
     if(xmms_cfg_read_double(cfgfile, "RGBA", "edge_a", &f_buf)) 
-      hg->alpha_edge =f_buf;
+      hg->col_edge->alpha =f_buf;
     else
-      hg->alpha_edge =init_alpha_edge;
-
-    hg->col_edge->alpha=hg->alpha_edge;
+      hg->col_edge->alpha =init_col_edge.alpha;
 
     if(xmms_cfg_read_double(cfgfile, "RGBA", "edge_s", &f_buf)) 
       hg->size_edge =f_buf;
