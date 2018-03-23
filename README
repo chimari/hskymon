@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 3.5.0    2018/03/09
+#                                  ver 3.5.1    2018/03/22
 #                               Copyright (C) 2003-18 Akito Tajitsu
 #                                               tajitsu_at_naoj.org
 #      Subaru Telescope, National Astronomical Observatory of Japan
@@ -24,9 +24,9 @@ files for SOSs or CSV text lists.
 
 The latest version (source code and Win/Mac binary packages) can be 
 found  in the official page of NAOJ,
-  http://www.naoj.org/Observing/tools/hskymon
+  http://www.naoj.org/Observing/tools/hskymon/
 or in in GitHub,
-  https://github.com/chimari/hskymon
+  https://github.com/chimari/hskymon/
 .
 If you want to make a clone of the latest source code via GitHub, use
   git clone https://github.com/chimari/hskymon.git

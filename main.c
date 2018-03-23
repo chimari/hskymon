@@ -5569,7 +5569,6 @@ static void ok_trdb_smoka(GtkWidget *w, gpointer gdata)
 
     trdb_run(hg);
 
-    hg->fcdb_type=hg->fcdb_type_tmp;
     hg->trdb_used=TRDB_TYPE_SMOKA;
     hg->trdb_smoka_inst_used=hg->trdb_smoka_inst;
     hg->trdb_smoka_shot_used=hg->trdb_smoka_shot;
@@ -5589,6 +5588,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
     *spinner, *hbox, *check;
   GtkAdjustment *adj;
   typHOE *hg = (typHOE *)data;
+  gint fcdb_type_tmp;
 
   if(hg->i_max<=0){
     popup_message(hg->skymon_main, 
@@ -5610,7 +5610,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
     flagChildDialog=TRUE;
   }
 
-  hg->fcdb_type_tmp=hg->fcdb_type;
+  fcdb_type_tmp=hg->fcdb_type;
   hg->fcdb_type=TRDB_TYPE_SMOKA;
 
   dialog = gtk_dialog_new();
@@ -5829,6 +5829,8 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   }
   raise_tree();
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
+
+  hg->fcdb_type=fcdb_type_tmp;
 }
 
 
@@ -5841,7 +5843,6 @@ static void ok_trdb_hst(GtkWidget *w, gpointer gdata)
 
   trdb_run(hg);
 
-  hg->fcdb_type=hg->fcdb_type_tmp;
   hg->trdb_used=TRDB_TYPE_HST;
   hg->trdb_hst_mode_used  =hg->trdb_hst_mode;
   hg->trdb_hst_image_used =hg->trdb_hst_image;
@@ -5860,6 +5861,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   GSList *group;
   GtkAdjustment *adj;
   typHOE *hg = (typHOE *)data;
+  gint fcdb_type_tmp;
 
   if(hg->i_max<=0){
     popup_message(hg->skymon_main, 
@@ -5881,7 +5883,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
     flagChildDialog=TRUE;
   }
 
-  hg->fcdb_type_tmp=hg->fcdb_type;
+  fcdb_type_tmp=hg->fcdb_type;
   hg->fcdb_type=TRDB_TYPE_HST;
 
   dialog = gtk_dialog_new();
@@ -6136,6 +6138,8 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   }
   raise_tree();
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
+
+  hg->fcdb_type=fcdb_type_tmp;
 }
 
 
@@ -6148,7 +6152,6 @@ static void ok_trdb_eso(GtkWidget *w, gpointer gdata)
 
   trdb_run(hg);
 
-  hg->fcdb_type=hg->fcdb_type_tmp;
   hg->trdb_used=TRDB_TYPE_ESO;
   hg->trdb_eso_mode_used  =hg->trdb_eso_mode;
   hg->trdb_eso_image_used =hg->trdb_eso_image;
@@ -6173,6 +6176,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   GSList *group;
   GtkAdjustment *adj;
   typHOE *hg = (typHOE *)data;
+  gint fcdb_type_tmp;
 
   if(hg->i_max<=0){
     popup_message(hg->skymon_main, 
@@ -6194,7 +6198,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
     flagChildDialog=TRUE;
   }
 
-  hg->fcdb_type_tmp=hg->fcdb_type;
+  fcdb_type_tmp=hg->fcdb_type;
   hg->fcdb_type=TRDB_TYPE_ESO;
 
   dialog = gtk_dialog_new();
@@ -6650,6 +6654,8 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   }
   raise_tree();
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
+
+  hg->fcdb_type=fcdb_type_tmp;
 }
 
 static void ok_trdb_gemini(GtkWidget *w, gpointer gdata)
@@ -6661,7 +6667,6 @@ static void ok_trdb_gemini(GtkWidget *w, gpointer gdata)
 
   trdb_run(hg);
 
-  hg->fcdb_type=hg->fcdb_type_tmp;
   hg->trdb_used=TRDB_TYPE_GEMINI;
   hg->trdb_gemini_inst_used  =hg->trdb_gemini_inst;
   hg->trdb_gemini_mode_used  =hg->trdb_gemini_mode;
@@ -6679,6 +6684,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   GtkAdjustment *adj;
   GSList *group;
   typHOE *hg = (typHOE *)data;
+  gint fcdb_type_tmp;
 
   if(hg->i_max<=0){
     popup_message(hg->skymon_main, 
@@ -6700,7 +6706,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
     flagChildDialog=TRUE;
   }
 
-  hg->fcdb_type_tmp=hg->fcdb_type;
+  fcdb_type_tmp=hg->fcdb_type;
   hg->fcdb_type=TRDB_TYPE_GEMINI;
 
   dialog = gtk_dialog_new();
@@ -6894,6 +6900,8 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   }
   raise_tree();
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
+
+  hg->fcdb_type=fcdb_type_tmp;
 }
 
 
@@ -10816,6 +10824,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   }
 #ifdef USE_GTK3
   gtk_grid_attach(GTK_GRID(table1), button, 1, 1, 1, 1);
+  gtk_widget_set_halign (button, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (button, GTK_ALIGN_CENTER);
 #else
   gtk_table_attach(GTK_TABLE(table1), button, 1, 2, 1, 2,
 		   GTK_SHRINK,GTK_SHRINK,0,0);

@@ -78,7 +78,7 @@
 
 #define WWW_BROWSER "firefox"
 
-#define DEFAULT_URL "http://www.naoj.org/Observing/tools/hskymon"
+#define DEFAULT_URL "http://www.naoj.org/Observing/tools/hskymon/"
 #define VER_HOST "www.naoj.org"
 #define VER_PATH "/Observing/tools/hskymon/ver"
 
@@ -1762,7 +1762,6 @@ struct _typHOE{
   gboolean stddb_flag;
 
   gint fcdb_type;
-  gint fcdb_type_tmp;
   gboolean fcdb_post;
   gchar *fcdb_file;
   gint fcdb_simbad;

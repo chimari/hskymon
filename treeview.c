@@ -1229,10 +1229,8 @@ static void add_item (typHOE *hg)
 
   i=hg->i_max;
   
-  //tmp_obj.def=g_strdup("(NULL)");
   tmp_obj.def=make_tgt(hg->addobj_name);
   
-  //tmp_obj.name=g_strdup("(New Object)");
   tmp_obj.name=g_strdup(hg->addobj_name);
   
   tmp_obj.ra=hg->addobj_ra;
@@ -7447,17 +7445,6 @@ void clip_copy(GtkWidget *widget, gpointer gdata){
   gtk_clipboard_set_text (clipboard, c, strlen(c));
 }
 
-
-static void ok_addobj(GtkWidget *w, gpointer gdata)
-{
-  typHOE *hg;
-  hg=(typHOE *)gdata;
-
-  gtk_main_quit();
-
-  add_item(hg);
-}
-
 static void addobj_simbad_query (GtkWidget *widget, gpointer gdata)
 {
   typHOE *hg;
@@ -7500,8 +7487,6 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Add Object");
-  my_signal_connect(dialog,"delete-event", gtk_main_quit, NULL);
-
 
   hbox = gtkut_hbox_new(FALSE,2);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
@@ -7617,7 +7602,6 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed", gtk_main_quit, NULL);
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Add Object","list-add");
@@ -7625,11 +7609,12 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Add Object",GTK_STOCK_ADD);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
-  my_signal_connect(button,"pressed",
-		    ok_addobj, (gpointer)hg);
 
   gtk_widget_show_all(dialog);
-  gtk_main();
+
+  if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+    add_item(hg);
+  }
 
   if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
