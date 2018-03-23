@@ -1293,12 +1293,12 @@ static void add_item (typHOE *hg)
 
   hg->i_max++;
   
-  for(i=0;i<hg->i_max-1;i++){
-    hg->obj[i].check_sm=FALSE;
+  for(i_list=0;i_list<hg->i_max;i_list++){
+    hg->obj[i_list].check_sm=FALSE;
   }
 
   gtk_list_store_append (GTK_LIST_STORE (model), &iter);
-  tree_update_azel_item(hg, model, iter, hg->i_max-1);
+  tree_update_azel_item(hg, model, iter, i);
   
   //remake_tree(hg);
   trdb_make_tree(hg);
