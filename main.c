@@ -166,6 +166,7 @@ GdkRGBA init_col [MAX_ROPE]
 };
 
 GdkRGBA init_col_edge={1.0, 1.0, 1.0, 1.0};
+gdouble init_alpha_edge=0.73;
 #else
 GdkColor init_col [MAX_ROPE]
 = {
@@ -180,8 +181,8 @@ GdkColor init_col [MAX_ROPE]
 };
 
 GdkColor init_col_edge={0,0xFFFF,0xFFFF,0xFFFF};
-#endif
 gint init_alpha_edge=0xBB00;
+#endif
 
 // CSS for Gtk+3
 #ifdef USE_GTK3
@@ -13848,7 +13849,7 @@ void ChangeColorAlpha(GtkWidget *w, gpointer gdata)
   cdata=(confCol *)gdata;
 #ifdef USE_GTK3
   gtk_color_chooser_get_rgba(GTK_COLOR_BUTTON(w),cdata->col);
-  cdata->alpha=col.alpha;
+  cdata->alpha=cdata->col->alpha;
 #else
   gtk_color_button_get_color(GTK_COLOR_BUTTON(w),cdata->col);
   cdata->alpha=gtk_color_button_get_alpha(GTK_COLOR_BUTTON(w));
@@ -17661,6 +17662,19 @@ void WriteConf(typHOE *hg){
 #endif
 
   for(i_col=0;i_col<MAX_ROPE;i_col++){
+#ifdef USE_GTK3
+    tmp=g_strdup_printf("ope%d_r",i_col);
+    xmms_cfg_write_double2(cfgfile, "RGBA", tmp,hg->col[i_col]->red, "%.4lf");
+    g_free(tmp);
+
+    tmp=g_strdup_printf("ope%d_g",i_col);
+    xmms_cfg_write_double2(cfgfile, "RGBA", tmp,hg->col[i_col]->green, "%.4lf");
+    g_free(tmp);
+
+    tmp=g_strdup_printf("ope%d_b",i_col);
+    xmms_cfg_write_double2(cfgfile, "RGBA", tmp,hg->col[i_col]->blue, "%.4lf");
+    g_free(tmp);
+#else
     tmp=g_strdup_printf("ope%d_r",i_col);
     xmms_cfg_write_int(cfgfile, "Color", tmp,(gint)hg->col[i_col]->red);
     g_free(tmp);
@@ -17672,6 +17686,7 @@ void WriteConf(typHOE *hg){
     tmp=g_strdup_printf("ope%d_b",i_col);
     xmms_cfg_write_int(cfgfile, "Color", tmp,(gint)hg->col[i_col]->blue);
     g_free(tmp);
+#endif
   }
 
 #ifdef USE_GTK3
@@ -18074,6 +18089,30 @@ void ReadConf(typHOE *hg)
 #endif
     
     for(i_col=0;i_col<MAX_ROPE;i_col++){
+#ifdef USE_GTK3
+      tmp=g_strdup_printf("ope%d_r",i_col);
+      if(xmms_cfg_read_double(cfgfile, "RGBA", tmp, &f_buf)) 
+     	hg->col[i_col]->red =f_buf;
+      else
+	hg->col[i_col]->red =init_col[i_col].red;
+      g_free(tmp);
+
+      tmp=g_strdup_printf("ope%d_g",i_col);
+      if(xmms_cfg_read_double(cfgfile, "RGBA", tmp, &f_buf)) 
+     	hg->col[i_col]->green =f_buf;
+      else
+	hg->col[i_col]->green =init_col[i_col].green;
+      g_free(tmp);
+
+      tmp=g_strdup_printf("ope%d_b",i_col);
+      if(xmms_cfg_read_double(cfgfile, "RGBA", tmp, &f_buf)) 
+     	hg->col[i_col]->blue =f_buf;
+      else
+     	hg->col[i_col]->blue =init_col[i_col].blue;
+      g_free(tmp);
+
+      hg->col[i_col]->alpha=1.0;
+#else
       tmp=g_strdup_printf("ope%d_r",i_col);
       if(xmms_cfg_read_int(cfgfile, "Color", tmp, &i_buf)) 
      	hg->col[i_col]->red =(guint)i_buf;
@@ -18094,6 +18133,7 @@ void ReadConf(typHOE *hg)
       else
      	hg->col[i_col]->blue =init_col[i_col].blue;
       g_free(tmp);
+#endif
     }
 
 #ifdef USE_GTK3
@@ -18116,6 +18156,8 @@ void ReadConf(typHOE *hg)
       hg->alpha_edge =f_buf;
     else
       hg->alpha_edge =init_alpha_edge;
+
+    hg->col_edge->alpha=hg->alpha_edge;
 
     if(xmms_cfg_read_double(cfgfile, "RGBA", "edge_s", &f_buf)) 
       hg->size_edge =f_buf;
@@ -18844,15 +18886,18 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
 #endif
     
 
-    button = gtk_color_button_new_with_color(hg->col[i]);
 #ifdef USE_GTK3
+    button = gtk_color_button_new_with_rgba(hg->col[i]);
     gtk_grid_attach(GTK_GRID(table), button, 2, i+1, 1, 1);
+    my_signal_connect(button,"color-set",gtk_color_chooser_get_rgba, 
+		      (gpointer *)hg->col[i]);
 #else
+    button = gtk_color_button_new_with_color(hg->col[i]);
     gtk_table_attach(GTK_TABLE(table), button, 2, 3, i+1, i+2,
 		     GTK_SHRINK,GTK_SHRINK,0,0);
-#endif
     my_signal_connect(button,"color-set",gtk_color_button_get_color, 
 		      (gpointer *)hg->col[i]);
+#endif
 
       if(access(hg->filename_rope[i],R_OK)==0){
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check1),TRUE);
