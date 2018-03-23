@@ -17691,11 +17691,11 @@ void WriteConf(typHOE *hg){
   }
 
 #ifdef USE_GTK3
-  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_r",(gint)hg->col_edge->red,"%.4lf");
-  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_g",(gint)hg->col_edge->green,"%.4lf");
-  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_b",(gint)hg->col_edge->blue,"%.4lf");
-  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_a",(gint)hg->col_edge->alpha,"%.4lf");
-  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_s",(gint)hg->size_edge,"%.4lf");
+  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_r",hg->col_edge->red,"%.4lf");
+  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_g",hg->col_edge->green,"%.4lf");
+  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_b",hg->col_edge->blue,"%.4lf");
+  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_a",hg->col_edge->alpha,"%.4lf");
+  xmms_cfg_write_double2(cfgfile, "RGBA", "edge_s",hg->size_edge,"%.4lf");
 #else
   xmms_cfg_write_int(cfgfile, "Color", "edge_r",(gint)hg->col_edge->red);
   xmms_cfg_write_int(cfgfile, "Color", "edge_g",(gint)hg->col_edge->green);
