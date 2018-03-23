@@ -2075,19 +2075,6 @@ typedef struct{
   gint i_obj;
 }confPA;
 
-// Struct for Callback
-typedef struct{
-  GtkWidget *dialog;
-  gint mode;
-}confProp;
-
-// Struct for Callback
-typedef struct{
-  GtkWidget *dialog;
-  gint mode;
-  GSList *fcdb_group;
-  gint fcdb_type;
-}confPropFCDB;
 
 
 #define is_num_char(c) ((c>='0' && c<='9')||(c==' ')||(c=='\t')||(c=='.')||(c=='+')||(c=='-')||(c=='\n'))

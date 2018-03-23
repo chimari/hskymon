@@ -28,8 +28,6 @@ void ChildTerm();
 #endif // USE_WIN32
 
 static void AddObj();
-static void delete_child_dialog();
-static void close_child_dialog();
 void cc_get_neg ();
 static void cc_std_sptype();
 static void ToggleDiffAllSky();
@@ -76,17 +74,11 @@ void show_properties();
 void ChangeColorAlpha();
 void ChangeFontButton();
 
-void save_prop();
-void default_prop();
-void delete_prop();
-void close_prop();
 void default_disp_para();
 void change_disp_para();
 void change_fcdb_para();
 void radio_fcdb();
 void cc_radio();
-void delete_disp_para();
-void close_disp_para();
 void create_diff_para_dialog();
 void create_disp_para_dialog();
 void create_std_para_dialog();
@@ -1007,19 +999,6 @@ static void AddObj(GtkWidget *widget, gpointer gdata){
 
   make_tree(widget, gdata);
   addobj_dialog(widget, gdata);
-}
-
-static void delete_child_dialog(GtkWidget *w, GdkEvent *event, 
-				GtkWidget *dialog)
-{
-  close_child_dialog(w,dialog);
-}
-
-static void close_child_dialog(GtkWidget *w, GtkWidget *dialog)
-{
-  gtk_main_quit();
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
-  flagChildDialog=FALSE;
 }
 
 void cc_get_toggle (GtkWidget * widget, gboolean * gdata)
@@ -3613,11 +3592,6 @@ void show_version (GtkWidget *widget, gpointer gdata)
 
   gtk_window_set_default_size (GTK_WINDOW (dialog), 200, 400);
 
-  my_signal_connect(dialog,"delete-event",
-		    delete_child_dialog, 
-		    GTK_WIDGET(dialog));
-
-
   hbox = gtkut_hbox_new(FALSE,2);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
@@ -3901,15 +3875,13 @@ gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
   button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed",
-		    close_child_dialog, 
-		    GTK_WIDGET(dialog));
   gtk_widget_grab_focus (button);
 
   gtk_widget_show_all(dialog);
 
-  gtk_main();
+  gtk_dialog_run(GTK_DIALOG(dialog));
 
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
 }
 
@@ -3927,10 +3899,6 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Help");
 
-  my_signal_connect(dialog,"delete-event",
-		    delete_child_dialog, 
-		    GTK_WIDGET(dialog));
-  
 #ifdef USE_GTK3      
   table = gtk_grid_new();
   gtk_grid_set_row_spacing (GTK_GRID (table), 10);
@@ -4199,14 +4167,12 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
   button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed",
-		    close_child_dialog, 
-		    GTK_WIDGET(dialog));
 
   gtk_widget_show_all(dialog);
 
-  gtk_main();
+  gtk_dialog_run(GTK_DIALOG(dialog));
 
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
 }
 
@@ -4219,10 +4185,10 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
   gdouble tmp_thresh;
   guint tmp_dpix;
   GtkAdjustment *adj;
-  confProp *cdata;
   typHOE *hg;
   gint i;
   GSList *group=NULL;
+  gint ret=GTK_RESPONSE_CANCEL;
  
 
   if(flagChildDialog){
@@ -4234,9 +4200,6 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
   
-  cdata=g_malloc0(sizeof(confProp));
-  cdata->mode=0;
-
   tmp_mag =hg->allsky_diff_mag;
   tmp_base=hg->allsky_diff_base;
   tmp_dpix=hg->allsky_diff_dpix;
@@ -4247,11 +4210,8 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
-  cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Differential Images of All-Sky Camera");
-
-  my_signal_connect(dialog,"delete-event",delete_disp_para,GTK_WIDGET(dialog));
 
   frame = gtk_frame_new ("Params for Making Differential Images");
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
@@ -4548,9 +4508,6 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_APPLY);
-  my_signal_connect(button,"pressed",
-		    default_disp_para, 
-		    (gpointer)cdata);
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Cencel","window-close");
@@ -4558,9 +4515,6 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed",
-		    close_disp_para, 
-		    GTK_WIDGET(dialog));
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Remake Images","image-x-generic");
@@ -4568,15 +4522,14 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Remake Images",GTK_STOCK_OK);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
-  my_signal_connect(button,"pressed",
-		    change_disp_para, 
-		    (gpointer)cdata);
 
   gtk_widget_show_all(dialog);
-  gtk_main();
 
-  if(cdata->mode!=0){
-    if(cdata->mode==1){
+  ret=gtk_dialog_run(GTK_DIALOG(dialog));
+
+  if(ret!=GTK_RESPONSE_CANCEL){
+    switch(ret) {
+    case GTK_RESPONSE_OK: // Remake
       hg->allsky_diff_mag=tmp_mag;
       hg->allsky_diff_base=tmp_base;
       hg->allsky_diff_dpix=tmp_dpix;
@@ -4584,8 +4537,9 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
       hg->allsky_cloud_thresh=tmp_thresh;
       hg->allsky_cloud_show=tmp_show;
       hg->allsky_cloud_emp=tmp_emp;
-    }
-    else{
+      break;
+      
+    case GTK_RESPONSE_APPLY: // Default
       hg->allsky_diff_mag=ALLSKY_DIFF_MAG;
       hg->allsky_diff_base=ALLSKY_DIFF_BASE;
 #ifdef USE_WIN32
@@ -4597,6 +4551,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
       hg->allsky_cloud_thresh=ALLSKY_CLOUD_THRESH;
       hg->allsky_cloud_show=TRUE;
       hg->allsky_cloud_emp=FALSE;
+      break;
     }
     
     if(hg->allsky_last_pixbuf[0]){
@@ -4618,21 +4573,21 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
     }
     for(i=1;i<hg->allsky_last_i;i++){
       if((hg->allsky_last_pixbuf[i])&&(hg->allsky_last_pixbuf[i-1])){
-      if(hg->allsky_diff_pixbuf[i])
-	g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[i]));
-      hg->allsky_diff_pixbuf[i]
-	= diff_pixbuf(hg->allsky_last_pixbuf[i-1],
-		      hg->allsky_last_pixbuf[i],
-		      hg->allsky_diff_mag,hg->allsky_diff_base,
-		      hg->allsky_diff_dpix,
-		      hg->allsky_centerx,hg->allsky_centery,
-		      hg->allsky_diameter, hg->allsky_cloud_thresh,
-		      &hg->allsky_cloud_abs[i],
-		      &hg->allsky_cloud_se[i],
-		      &hg->allsky_cloud_area[i],
-		      hg->allsky_cloud_emp,
-		      hg->allsky_diff_zero,
-		      i);
+	if(hg->allsky_diff_pixbuf[i])
+	  g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[i]));
+	hg->allsky_diff_pixbuf[i]
+	  = diff_pixbuf(hg->allsky_last_pixbuf[i-1],
+			hg->allsky_last_pixbuf[i],
+			hg->allsky_diff_mag,hg->allsky_diff_base,
+			hg->allsky_diff_dpix,
+			hg->allsky_centerx,hg->allsky_centery,
+			hg->allsky_diameter, hg->allsky_cloud_thresh,
+			&hg->allsky_cloud_abs[i],
+			&hg->allsky_cloud_se[i],
+			&hg->allsky_cloud_area[i],
+			hg->allsky_cloud_emp,
+			hg->allsky_diff_zero,
+			i);
       }
     }
     
@@ -4640,8 +4595,8 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
       draw_skymon_cairo(hg->skymon_dw,hg, TRUE);
   }
 
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
-  g_free(cdata);
 }
 
 
@@ -4651,9 +4606,9 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
   gint tmp_alpha;
   gdouble tmp_sat;
   GtkAdjustment *adj;
-  confProp *cdata;
   typHOE *hg;
   gint i;
+  gint ret=GTK_RESPONSE_CANCEL;
 
   if(flagChildDialog){
     return;
@@ -4664,18 +4619,13 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
   
-  cdata=g_malloc0(sizeof(confProp));
-  cdata->mode=0;
-
   tmp_sat =hg->allsky_sat;
   tmp_alpha=hg->allsky_alpha;
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
-  cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Displaying All-Sky Camera Images");
-  my_signal_connect(dialog,"delete-event", delete_disp_para, (gpointer)cdata);
 
 #ifdef USE_GTK3      
   table = gtk_grid_new();
@@ -4810,9 +4760,6 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_APPLY);
-  my_signal_connect(button,"pressed",
-		    default_disp_para, 
-		    (gpointer)cdata);
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Cancel","window-close");
@@ -4820,9 +4767,6 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed",
-		    close_disp_para, 
-		    GTK_WIDGET(dialog));
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Set Params","document-save");
@@ -4830,29 +4774,30 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
-  my_signal_connect(button,"pressed",
-		    change_disp_para, 
-		    (gpointer)cdata);
 
   gtk_widget_show_all(dialog);
-  gtk_main();
 
-  if(cdata->mode!=0){
-    if(cdata->mode==1){
+  ret=gtk_dialog_run(GTK_DIALOG(dialog));
+
+  if(ret!=GTK_RESPONSE_CANCEL){
+    switch(ret){
+    case GTK_RESPONSE_OK:
       hg->allsky_alpha=tmp_alpha;
       hg->allsky_sat=tmp_sat;
-    }
-    else{
+      break;
+
+    case GTK_RESPONSE_APPLY:
       hg->allsky_alpha=(ALLSKY_ALPHA);
       hg->allsky_sat=1.0;
+      break;
     }
     
     if(hg->skymon_mode==SKYMON_CUR) // Automatic update for current time
       draw_skymon_cairo(hg->skymon_dw,hg, TRUE);
   }
 
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
-  g_free(cdata);
 }
 
 
@@ -4864,10 +4809,10 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
   gint tmp_mag1, tmp_mag2;
   gchar *tmp_sptype, *tmp_cat, *tmp_band, *tmp_sptype2;
   GtkAdjustment *adj;
-  confProp *cdata;
   typHOE *hg;
   gint i;
   GSList *group=NULL;
+  gint ret=GTK_RESPONSE_CANCEL;
  
 
   if(flagChildDialog){
@@ -4879,9 +4824,6 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
   
-  cdata=g_malloc0(sizeof(confProp));
-  cdata->mode=0;
-
   tmp_dra   =hg->std_dra;
   tmp_ddec  =hg->std_ddec;
   tmp_vsini =hg->std_vsini;
@@ -4897,10 +4839,8 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
-  cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Searching Stndards");
-  my_signal_connect(dialog,"delete-event",delete_disp_para,GTK_WIDGET(dialog));
 
   frame = gtk_frame_new ("Sky Area");
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
@@ -5458,17 +5398,12 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 		     &tmp_iras25);
 
 
-
-
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Load Default","view-refresh");
 #else
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_APPLY);
-  my_signal_connect(button,"pressed",
-		    default_disp_para, 
-		    (gpointer)cdata);
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Cancel","window-close");
@@ -5476,9 +5411,6 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed",
-		    close_disp_para, 
-		    GTK_WIDGET(dialog));
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Set Params","document-save");
@@ -5486,99 +5418,63 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
-  my_signal_connect(button,"pressed",
-		    change_disp_para, 
-		    (gpointer)cdata);
 
   gtk_widget_show_all(dialog);
-  gtk_main();
 
-  if(cdata->mode!=0){
-    if(cdata->mode==1){
-      hg->std_dra   =tmp_dra;
-      hg->std_ddec  =tmp_ddec;
-      hg->std_vsini =tmp_vsini;
-      hg->std_vmag  =tmp_vmag;
-      if(hg->std_sptype) g_free(hg->std_sptype);
-      hg->std_sptype=g_strdup(tmp_sptype);
-      hg->std_iras12=tmp_iras12;
-      hg->std_iras25=tmp_iras25;
-      if(hg->std_cat) g_free(hg->std_cat);
-      hg->std_cat   =g_strdup(tmp_cat);
-      if(tmp_mag1>tmp_mag2){
-	hg->std_mag1  =tmp_mag2;
-	hg->std_mag2  =tmp_mag1;
-      }
-      else{
-	hg->std_mag1  =tmp_mag1;
-	hg->std_mag2  =tmp_mag2;
-      }
-      if(hg->std_band) g_free(hg->std_band);
-      hg->std_band  =g_strdup(tmp_band);
-      if(hg->std_sptype2) g_free(hg->std_sptype2);
-      hg->std_sptype2  =g_strdup(tmp_sptype2);
+  ret=gtk_dialog_run(GTK_DIALOG(dialog));
+
+  switch(ret){
+  case GTK_RESPONSE_OK:
+    hg->std_dra   =tmp_dra;
+    hg->std_ddec  =tmp_ddec;
+    hg->std_vsini =tmp_vsini;
+    hg->std_vmag  =tmp_vmag;
+    if(hg->std_sptype) g_free(hg->std_sptype);
+    hg->std_sptype=g_strdup(tmp_sptype);
+    hg->std_iras12=tmp_iras12;
+    hg->std_iras25=tmp_iras25;
+    if(hg->std_cat) g_free(hg->std_cat);
+    hg->std_cat   =g_strdup(tmp_cat);
+    if(tmp_mag1>tmp_mag2){
+      hg->std_mag1  =tmp_mag2;
+      hg->std_mag2  =tmp_mag1;
     }
     else{
-      hg->std_dra   =STD_DRA;
-      hg->std_ddec  =STD_DDEC;
-      hg->std_vsini =STD_VSINI;
-      hg->std_vmag  =STD_VMAG;
-      if(hg->std_sptype) g_free(hg->std_sptype);
-      hg->std_sptype=g_strdup(STD_SPTYPE);
-      hg->std_iras12=STD_IRAS12;
-      hg->std_iras25=STD_IRAS25;
-      if(hg->std_cat) g_free(hg->std_cat);
-      hg->std_cat   =g_strdup(STD_CAT);
-      hg->std_mag1  =STD_MAG1;
-      hg->std_mag2  =STD_MAG2;
-      if(hg->std_band) g_free(hg->std_band);
-      hg->std_band  =g_strdup(STD_BAND);
-      if(hg->std_sptype2) g_free(hg->std_sptype2);
-      hg->std_sptype2  =g_strdup(STD_SPTYPE_ALL);
+      hg->std_mag1  =tmp_mag1;
+      hg->std_mag2  =tmp_mag2;
     }
+    if(hg->std_band) g_free(hg->std_band);
+    hg->std_band  =g_strdup(tmp_band);
+    if(hg->std_sptype2) g_free(hg->std_sptype2);
+    hg->std_sptype2  =g_strdup(tmp_sptype2);
+    break;
+
+  case GTK_RESPONSE_APPLY:
+    hg->std_dra   =STD_DRA;
+    hg->std_ddec  =STD_DDEC;
+    hg->std_vsini =STD_VSINI;
+    hg->std_vmag  =STD_VMAG;
+    if(hg->std_sptype) g_free(hg->std_sptype);
+    hg->std_sptype=g_strdup(STD_SPTYPE);
+    hg->std_iras12=STD_IRAS12;
+    hg->std_iras25=STD_IRAS25;
+    if(hg->std_cat) g_free(hg->std_cat);
+    hg->std_cat   =g_strdup(STD_CAT);
+    hg->std_mag1  =STD_MAG1;
+    hg->std_mag2  =STD_MAG2;
+    if(hg->std_band) g_free(hg->std_band);
+    hg->std_band  =g_strdup(STD_BAND);
+    if(hg->std_sptype2) g_free(hg->std_sptype2);
+    hg->std_sptype2  =g_strdup(STD_SPTYPE_ALL);
+    break;
   }
 
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
   g_free(tmp_sptype);
   g_free(tmp_cat);
   g_free(tmp_band);
   g_free(tmp_sptype2);
-  g_free(cdata);
-}
-
-static void ok_trdb_smoka(GtkWidget *w, gpointer gdata)
-{
-  typHOE *hg;
-  hg=(typHOE *)gdata;
-
-  if((!hg->trdb_smoka_imag)
-     &&(!hg->trdb_smoka_spec)
-     &&(!hg->trdb_smoka_ipol)){
-    popup_message(hg->skymon_main, 
-#ifdef USE_GTK3
-		  "dialog-error", 
-#else
-		  GTK_STOCK_DIALOG_ERROR, 
-#endif
-		  POPUP_TIMEOUT,
-		  "Error: Please select at least one observation mode.",
-		  NULL);
-  }
-  else{
-    gtk_main_quit();
-
-    trdb_run(hg);
-
-    hg->trdb_used=TRDB_TYPE_SMOKA;
-    hg->trdb_smoka_inst_used=hg->trdb_smoka_inst;
-    hg->trdb_smoka_shot_used=hg->trdb_smoka_shot;
-    hg->trdb_smoka_imag_used=hg->trdb_smoka_imag;
-    hg->trdb_smoka_spec_used=hg->trdb_smoka_spec;
-    hg->trdb_smoka_ipol_used=hg->trdb_smoka_ipol;
-    hg->trdb_arcmin_used=hg->trdb_arcmin;
-    if(hg->trdb_smoka_date_used) g_free(hg->trdb_smoka_date_used);
-    hg->trdb_smoka_date_used=g_strdup(hg->trdb_smoka_date);
-  }
 }
 
 
@@ -5617,7 +5513,6 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : SMOKA List Query");
-  my_signal_connect(dialog,"delete-event",gtk_main_quit, NULL);
 
 #ifdef USE_GTK3      
   table = gtk_grid_new();
@@ -5806,8 +5701,6 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed",
-		    gtk_main_quit, NULL);
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Query","edit-find");
@@ -5815,13 +5708,43 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
-  my_signal_connect(button,"pressed",
-		    ok_trdb_smoka, (gpointer)hg);
 
   gtk_widget_show_all(dialog);
-  gtk_main();
 
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK){
+    if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+
+    if((!hg->trdb_smoka_imag)
+       &&(!hg->trdb_smoka_spec)
+       &&(!hg->trdb_smoka_ipol)){
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-error", 
+#else
+		    GTK_STOCK_DIALOG_ERROR, 
+#endif
+		    POPUP_TIMEOUT,
+		    "Error: Please select at least one observation mode.",
+		    NULL);
+    }
+    else{
+      trdb_run(hg);
+
+      hg->trdb_used=TRDB_TYPE_SMOKA;
+      hg->trdb_smoka_inst_used=hg->trdb_smoka_inst;
+      hg->trdb_smoka_shot_used=hg->trdb_smoka_shot;
+      hg->trdb_smoka_imag_used=hg->trdb_smoka_imag;
+      hg->trdb_smoka_spec_used=hg->trdb_smoka_spec;
+      hg->trdb_smoka_ipol_used=hg->trdb_smoka_ipol;
+      hg->trdb_arcmin_used=hg->trdb_arcmin;
+      if(hg->trdb_smoka_date_used) g_free(hg->trdb_smoka_date_used);
+      hg->trdb_smoka_date_used=g_strdup(hg->trdb_smoka_date);
+    }
+  }
+  else{
+    if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+  }
+
   flagChildDialog=FALSE;
 
   if(!flagTree){
@@ -5831,26 +5754,6 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
 
   hg->fcdb_type=fcdb_type_tmp;
-}
-
-
-static void ok_trdb_hst(GtkWidget *w, gpointer gdata)
-{
-  typHOE *hg;
-  hg=(typHOE *)gdata;
-
-  gtk_main_quit();
-
-  trdb_run(hg);
-
-  hg->trdb_used=TRDB_TYPE_HST;
-  hg->trdb_hst_mode_used  =hg->trdb_hst_mode;
-  hg->trdb_hst_image_used =hg->trdb_hst_image;
-  hg->trdb_hst_spec_used  =hg->trdb_hst_spec;
-  hg->trdb_hst_other_used =hg->trdb_hst_other;
-  hg->trdb_arcmin_used=hg->trdb_arcmin;
-  if(hg->trdb_hst_date_used) g_free(hg->trdb_hst_date_used);
-  hg->trdb_hst_date_used=g_strdup(hg->trdb_hst_date);
 }
 
 
@@ -5890,7 +5793,6 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : HST archive List Query");
-  my_signal_connect(dialog,"delete-event",gtk_main_quit, NULL);
 
 #ifdef USE_GTK3      
   table = gtk_grid_new();
@@ -6107,8 +6009,6 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed",
-		    gtk_main_quit, NULL);
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Query","edit-find");
@@ -6116,8 +6016,6 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
-  my_signal_connect(button,"pressed",
-		    ok_trdb_hst, (gpointer)hg);
 
   gtk_widget_show_all(dialog);
 
@@ -6128,9 +6026,24 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   if(hg->trdb_hst_mode==TRDB_HST_MODE_OTHER)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb[2]),TRUE);
 
-  gtk_main();
+  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK){
+    if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+    trdb_run(hg);
+
+    hg->trdb_used=TRDB_TYPE_HST;
+    hg->trdb_hst_mode_used  =hg->trdb_hst_mode;
+    hg->trdb_hst_image_used =hg->trdb_hst_image;
+    hg->trdb_hst_spec_used  =hg->trdb_hst_spec;
+    hg->trdb_hst_other_used =hg->trdb_hst_other;
+    hg->trdb_arcmin_used=hg->trdb_arcmin;
+    if(hg->trdb_hst_date_used) g_free(hg->trdb_hst_date_used);
+    hg->trdb_hst_date_used=g_strdup(hg->trdb_hst_date);
+  }
+  else{
+    if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+  }
+
   flagChildDialog=FALSE;
 
   if(!flagTree){
@@ -6140,32 +6053,6 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
 
   hg->fcdb_type=fcdb_type_tmp;
-}
-
-
-static void ok_trdb_eso(GtkWidget *w, gpointer gdata)
-{
-  typHOE *hg;
-  hg=(typHOE *)gdata;
-
-  gtk_main_quit();
-
-  trdb_run(hg);
-
-  hg->trdb_used=TRDB_TYPE_ESO;
-  hg->trdb_eso_mode_used  =hg->trdb_eso_mode;
-  hg->trdb_eso_image_used =hg->trdb_eso_image;
-  hg->trdb_eso_spec_used  =hg->trdb_eso_spec;
-  hg->trdb_eso_vlti_used =hg->trdb_eso_vlti;
-  hg->trdb_eso_pola_used =hg->trdb_eso_pola;
-  hg->trdb_eso_coro_used =hg->trdb_eso_coro;
-  hg->trdb_eso_other_used =hg->trdb_eso_other;
-  hg->trdb_eso_sam_used =hg->trdb_eso_sam;
-  hg->trdb_arcmin_used=hg->trdb_arcmin;
-  if(hg->trdb_eso_stdate_used) g_free(hg->trdb_eso_stdate_used);
-  hg->trdb_eso_stdate_used=g_strdup(hg->trdb_eso_stdate);
-  if(hg->trdb_eso_eddate_used) g_free(hg->trdb_eso_eddate_used);
-  hg->trdb_eso_eddate_used=g_strdup(hg->trdb_eso_eddate);
 }
 
 
@@ -6205,7 +6092,6 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : ESO archive List Query");
-  my_signal_connect(dialog,"delete-event",gtk_main_quit, NULL);
 
 #ifdef USE_GTK3      
   table = gtk_grid_new();
@@ -6615,8 +6501,6 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed",
-		    gtk_main_quit, NULL);
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Query","edit-find");
@@ -6624,8 +6508,6 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
-  my_signal_connect(button,"pressed",
-		    ok_trdb_eso, (gpointer)hg);
 
   gtk_widget_show_all(dialog);
 
@@ -6644,9 +6526,30 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
   if(hg->trdb_eso_mode==TRDB_ESO_MODE_SAM)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb[6]),TRUE);
 
-  gtk_main();
+  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK){
+    if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+    trdb_run(hg);
+    
+    hg->trdb_used=TRDB_TYPE_ESO;
+    hg->trdb_eso_mode_used  =hg->trdb_eso_mode;
+    hg->trdb_eso_image_used =hg->trdb_eso_image;
+    hg->trdb_eso_spec_used  =hg->trdb_eso_spec;
+    hg->trdb_eso_vlti_used =hg->trdb_eso_vlti;
+    hg->trdb_eso_pola_used =hg->trdb_eso_pola;
+    hg->trdb_eso_coro_used =hg->trdb_eso_coro;
+    hg->trdb_eso_other_used =hg->trdb_eso_other;
+    hg->trdb_eso_sam_used =hg->trdb_eso_sam;
+    hg->trdb_arcmin_used=hg->trdb_arcmin;
+    if(hg->trdb_eso_stdate_used) g_free(hg->trdb_eso_stdate_used);
+    hg->trdb_eso_stdate_used=g_strdup(hg->trdb_eso_stdate);
+    if(hg->trdb_eso_eddate_used) g_free(hg->trdb_eso_eddate_used);
+    hg->trdb_eso_eddate_used=g_strdup(hg->trdb_eso_eddate);
+  }
+  else{
+    if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+  }
+    
   flagChildDialog=FALSE;
 
   if(!flagTree){
@@ -6657,24 +6560,6 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
 
   hg->fcdb_type=fcdb_type_tmp;
 }
-
-static void ok_trdb_gemini(GtkWidget *w, gpointer gdata)
-{
-  typHOE *hg;
-  hg=(typHOE *)gdata;
-
-  gtk_main_quit();
-
-  trdb_run(hg);
-
-  hg->trdb_used=TRDB_TYPE_GEMINI;
-  hg->trdb_gemini_inst_used  =hg->trdb_gemini_inst;
-  hg->trdb_gemini_mode_used  =hg->trdb_gemini_mode;
-  hg->trdb_arcmin_used=hg->trdb_arcmin;
-  if(hg->trdb_gemini_date_used) g_free(hg->trdb_gemini_date_used);
-  hg->trdb_gemini_date_used=g_strdup(hg->trdb_gemini_date);
-}
-
 
 
 static void trdb_gemini (GtkWidget *widget, gpointer data)
@@ -6713,7 +6598,6 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Gemini archive List Query");
-  my_signal_connect(dialog,"delete-event",gtk_main_quit, NULL);
 
 #ifdef USE_GTK3      
   table = gtk_grid_new();
@@ -6869,8 +6753,6 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed",
-		    gtk_main_quit, NULL);
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Query","edit-find");
@@ -6878,8 +6760,6 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   button=gtkut_button_new_from_stock("Query",GTK_STOCK_FIND);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
-  my_signal_connect(button,"pressed",
-		    ok_trdb_gemini, (gpointer)hg);
 
   gtk_widget_show_all(dialog);
 
@@ -6890,9 +6770,22 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
   if(hg->trdb_gemini_mode==TRDB_GEMINI_MODE_SPEC)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb[2]),TRUE);
 
-  gtk_main();
- 
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK){
+    if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+
+    trdb_run(hg);
+    
+    hg->trdb_used=TRDB_TYPE_GEMINI;
+    hg->trdb_gemini_inst_used  =hg->trdb_gemini_inst;
+    hg->trdb_gemini_mode_used  =hg->trdb_gemini_mode;
+    hg->trdb_arcmin_used=hg->trdb_arcmin;
+    if(hg->trdb_gemini_date_used) g_free(hg->trdb_gemini_date_used);
+    hg->trdb_gemini_date_used=g_strdup(hg->trdb_gemini_date);
+  }
+  else{
+    if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+  }
+
   flagChildDialog=FALSE;
 
   if(!flagTree){
@@ -6945,10 +6838,12 @@ void create_fcdb_para_dialog (typHOE *hg)
     tmp_eso_other[NUM_ESO_OTHER],
     tmp_eso_sam[NUM_ESO_SAM],
     tmp_gemini_inst;
-  confPropFCDB *cdata;
   gboolean rebuild_flag=FALSE;
   gint i;
   gchar tmp[BUFFSIZE];
+  gint ret=GTK_RESPONSE_CANCEL;
+  GSList *fcdb_group;
+  gint fcdb_type_tmp;
 
   if(flagChildDialog){
     return;
@@ -6956,9 +6851,6 @@ void create_fcdb_para_dialog (typHOE *hg)
   else{
     flagChildDialog=TRUE;
   }
-
-  cdata=g_malloc0(sizeof(confPropFCDB));
-  cdata->mode=0;
 
   tmp_band=hg->fcdb_band;
   tmp_mag=hg->fcdb_mag;
@@ -7042,11 +6934,8 @@ void create_fcdb_para_dialog (typHOE *hg)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
-  cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for database query");
-
-  my_signal_connect(dialog,"delete-event",delete_disp_para,GTK_WIDGET(dialog));
 
   hbox1 = gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
@@ -7169,8 +7058,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_widget_show (rb[15]);
   my_signal_connect (rb[15], "toggled", radio_fcdb, (gpointer)hg);
 
-  cdata->fcdb_group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(rb[0]));
-  cdata->fcdb_type=hg->fcdb_type;
+  fcdb_group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(rb[0]));
 
   frame = gtk_frame_new ("Query parameters");
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
@@ -7208,7 +7096,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_table_attach(GTK_TABLE(table), label, 0, 2, 0, 1,
 		   GTK_FILL,GTK_SHRINK,0,0);
 #endif
-
+  
   label = gtk_label_new ("Magnitude");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
@@ -8738,9 +8626,6 @@ void create_fcdb_para_dialog (typHOE *hg)
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_APPLY);
-  my_signal_connect(button,"pressed",
-		    default_disp_para, 
-		    (gpointer)cdata);
 
   vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("SMOKA");
@@ -9304,9 +9189,6 @@ void create_fcdb_para_dialog (typHOE *hg)
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed",
-		    close_disp_para, 
-		    GTK_WIDGET(dialog));
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Set Params","document-save");
@@ -9314,26 +9196,37 @@ void create_fcdb_para_dialog (typHOE *hg)
   button=gtkut_button_new_from_stock("Set Params",GTK_STOCK_OK);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
-  my_signal_connect(button,"pressed",
-		    change_fcdb_para, 
-		    (gpointer)cdata);
 
   gtk_widget_show_all(dialog);
 
   if(hg->fcdb_type<=FCDB_TYPE_GEMINI)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb[hg->fcdb_type]),TRUE);
 
-  gtk_main();
+  ret=gtk_dialog_run(GTK_DIALOG(dialog));
 
-  if(cdata->mode!=0){
-    if(cdata->mode==1){
+  if(ret!=GTK_RESPONSE_CANCEL){
+    switch(ret){
+    case GTK_RESPONSE_OK:
+      {
+	GtkWidget *w;
+	gint i;
+	
+	for(i = 0; i < g_slist_length(fcdb_group); i++){
+	  w = g_slist_nth_data(fcdb_group, i);
+	  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w))){
+	    fcdb_type_tmp  = g_slist_length(fcdb_group) -1 - i;
+	    break;
+	  }
+	}
+      }
+
       hg->fcdb_band  = tmp_band;
       hg->fcdb_mag   = tmp_mag;
       hg->fcdb_otype = tmp_otype;
       hg->fcdb_ned_diam = tmp_ned_diam;
       hg->fcdb_ned_otype = tmp_ned_otype;
-      if(hg->fcdb_type!=cdata->fcdb_type) rebuild_flag=TRUE;
-      hg->fcdb_type  = cdata->fcdb_type;
+      if(hg->fcdb_type!=fcdb_type_tmp) rebuild_flag=TRUE;
+      hg->fcdb_type  = fcdb_type_tmp;
       hg->fcdb_ned_ref  = tmp_ned_ref;
       hg->fcdb_gsc_fil  = tmp_gsc_fil;
       hg->fcdb_gsc_mag  = tmp_gsc_mag;
@@ -9408,8 +9301,9 @@ void create_fcdb_para_dialog (typHOE *hg)
 	hg->fcdb_eso_sam[i]  = tmp_eso_sam[i];
       }
       hg->fcdb_gemini_inst = tmp_gemini_inst;
-    }
-    else{
+      break;
+
+    case GTK_RESPONSE_APPLY:
       hg->fcdb_band  = FCDB_BAND_NOP;
       hg->fcdb_mag   = 15;
       hg->fcdb_otype = FCDB_OTYPE_ALL;
@@ -9491,6 +9385,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 	hg->fcdb_eso_sam[i]  = TRUE;
       }
       hg->fcdb_gemini_inst=GEMINI_INST_ANY;
+      break;
     }
 
     if(flagFC){
@@ -9531,8 +9426,8 @@ void create_fcdb_para_dialog (typHOE *hg)
     if((rebuild_flag)&&(flagTree)) rebuild_fcdb_tree(hg);
   }
 
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
   flagChildDialog=FALSE;
-  g_free(cdata);
 }
 
 
@@ -10495,7 +10390,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gint tmp_ro_ns_port;
   gboolean tmp_ro_use_default_auth;
 #endif
-  confProp *cdata;
   GtkWidget *all_note, *note_vbox;
 #ifdef USE_GTK3
   GdkRGBA *tmp_col [MAX_ROPE], *tmp_col_edge;
@@ -10509,17 +10403,15 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gchar *tmp_fontname_all;
   confPos *cdata_pos;
   gint i;
+  gint ret=GTK_RESPONSE_CANCEL;
 
   if(flagProp)
     return;
   else 
     flagProp=TRUE;
 
-  cdata=g_malloc0(sizeof(confProp));
   cdata_col=g_malloc0(sizeof(confCol));
   cdata_pos=g_malloc0(sizeof(confPos));
-
-  cdata->mode=0;
 
   hg=(typHOE *)gdata;
 
@@ -10604,12 +10496,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
-  cdata->dialog=dialog;
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Properties");
-
-  my_signal_connect(dialog, "delete-event",
-		    delete_prop,GTK_WIDGET(dialog));
 
   all_note = gtk_notebook_new ();
   gtk_notebook_set_tab_pos (GTK_NOTEBOOK (all_note), GTK_POS_TOP);
@@ -13552,9 +13440,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Load Default",GTK_STOCK_REFRESH);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_APPLY);
-  my_signal_connect(button,"pressed",
-		    default_prop, 
-		    (gpointer)cdata);
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Cancel","window-close");
@@ -13562,9 +13447,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed",
-		    close_prop, 
-		    GTK_WIDGET(dialog));
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Save","document-save");
@@ -13572,16 +13454,14 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   button=gtkut_button_new_from_stock("Save",GTK_STOCK_SAVE);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
-  my_signal_connect(button,"pressed",
-		    save_prop, 
-		    (gpointer)cdata);
-
 
 
   gtk_widget_show_all(dialog);
-  gtk_main();
 
-  if(cdata->mode==1){
+  ret=gtk_dialog_run(GTK_DIALOG(dialog));
+
+  switch(ret){
+  case GTK_RESPONSE_OK:
     if(hg->www_com) g_free(hg->www_com);
     hg->www_com             =g_strdup(tmp_www_com); 
     hg->obs_preset_flag	  = hg->obs_preset_flag_tmp;
@@ -13617,7 +13497,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->dss_scale_RGB[0]    =tmp_dss_scale_RGB[0];
     hg->dss_scale_RGB[1]    =tmp_dss_scale_RGB[1];
     hg->dss_scale_RGB[2]    =tmp_dss_scale_RGB[2];
-    //hg->fc_mode             =hg->fc_mode_def;
     hg->dss_arcmin          =tmp_dss_arcmin;
     hg->dss_pix             =tmp_dss_pix;
     set_fc_mode(hg);
@@ -13747,8 +13626,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       rebuild_fcdb_tree(hg);
       tree_update_azel((gpointer)hg);
     }
-  }
-  else if(cdata->mode==-1){
+    break;
+
+  case GTK_RESPONSE_APPLY:
     if(hg->www_com) g_free(hg->www_com);
     hg->www_com=g_strdup(WWW_BROWSER);
 
@@ -13831,7 +13711,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     if(hg->fontname_all) g_free(hg->fontname_all);
     hg->fontname_all=g_strdup(SKYMON_FONT);
     get_font_family_size(hg);
-    //gtk_adjustment_set_value(hg->skymon_adj_objsz, (gdouble)hg->skymon_objsz);
 
     WriteConf(hg);
 
@@ -13863,7 +13742,13 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       rebuild_fcdb_tree(hg);
       tree_update_azel((gpointer)hg);
     }
+    break;
+
+  default:
+    break;
   }
+
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 
   g_free(tmp_www_com);
   g_free(tmp_obs_tzname);
@@ -13878,7 +13763,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   g_free(tmp_fontname_all);
 
   flagChildDialog=FALSE;
-  g_free(cdata);
   g_free(cdata_col);
   g_free(cdata_pos);
 }
@@ -13923,109 +13807,9 @@ void ChangeFontButton(GtkWidget *w, gchar **gdata)
     =g_strdup(gtk_font_button_get_font_name(GTK_FONT_BUTTON(w)));
 }
 
-
-
-// Save Properties
-void save_prop(GtkWidget *w, gpointer gdata)
-{ 
-  confProp *cdata;
-
-  cdata=(confProp *)gdata;
-
-  cdata->mode=1;
- 
-  gtk_main_quit();
-  gtk_widget_destroy(GTK_WIDGET(cdata->dialog));
-  flagChildDialog=FALSE;
-  flagProp=FALSE;
-}
-
-// Load Default Properties
-void default_prop(GtkWidget *w, gpointer gdata)
-{ 
-  confProp *cdata;
-
-  cdata=(confProp *)gdata;
-
-  cdata->mode=-1;
- 
-  gtk_main_quit();
-  gtk_widget_destroy(GTK_WIDGET(cdata->dialog));
-  flagChildDialog=FALSE;
-  flagProp=FALSE;
-}
-
-void delete_prop(GtkWidget *w, GdkEvent *event, GtkWidget *dialog)
-{
-  close_prop(w,dialog);
-}
-
-void close_prop(GtkWidget *w, GtkWidget *dialog)
-{
-  //gdk_pointer_ungrab(GDK_CURRENT_TIME);
-
-  gtk_main_quit();
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
-  flagChildDialog=FALSE;
-  flagProp=FALSE;
-}
-
-void default_disp_para(GtkWidget *w, gpointer gdata)
-{ 
-  confProp *cdata;
-
-  cdata=(confProp *)gdata;
-
-  cdata->mode=-1;
- 
-  gtk_main_quit();
-  gtk_widget_destroy(GTK_WIDGET(cdata->dialog));
-  flagChildDialog=FALSE;
-}
-
-void change_disp_para(GtkWidget *w, gpointer gdata)
-{ 
-  confProp *cdata;
-
-  cdata=(confProp *)gdata;
-
-  cdata->mode=1;
-
-  gtk_main_quit();
-  gtk_widget_destroy(GTK_WIDGET(cdata->dialog));
-  flagChildDialog=FALSE;
-}
-
-void change_fcdb_para(GtkWidget *w, gpointer gdata)
-{ 
-  confPropFCDB *cdata;
-
-  cdata=(confPropFCDB *)gdata;
-
-  cdata->mode=1;
-
-  {
-    GtkWidget *w;
-    gint i;
-    
-    for(i = 0; i < g_slist_length(cdata->fcdb_group); i++){
-      w = g_slist_nth_data(cdata->fcdb_group, i);
-      if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w))){
-	cdata->fcdb_type  = g_slist_length(cdata->fcdb_group) -1 - i;
-	break;
-      }
-    }
-  }
- 
-  gtk_main_quit();
-  gtk_widget_destroy(GTK_WIDGET(cdata->dialog));
-  flagChildDialog=FALSE;
-}
-
 void radio_fcdb(GtkWidget *button, gpointer gdata)
 { 
   typHOE *hg;
-  confPropFCDB *cdata;
   GSList *group=NULL;
 
   hg=(typHOE *)gdata;
@@ -14064,18 +13848,6 @@ void cc_radio(GtkWidget *button, gint *gdata)
       }
     }
   }
-}
-
-void delete_disp_para(GtkWidget *w, GdkEvent *event, GtkWidget *dialog)
-{
-  close_disp_para(w,dialog);
-}
-
-void close_disp_para(GtkWidget *w, GtkWidget *dialog)
-{
-  gtk_main_quit();
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
-  flagChildDialog=FALSE;
 }
 
 
@@ -19074,7 +18846,9 @@ void popup_message(GtkWidget *parent, gchar* stock_id, gint delay, ...){
 
   gtk_widget_show_all(dialog);
   gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
-  gtk_main();
+  gtk_dialog_run(GTK_DIALOG(dialog));
+
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 }
 
 gboolean close_popup(gpointer data)
@@ -19083,8 +18857,7 @@ gboolean close_popup(gpointer data)
 
   dialog=(GtkWidget *)data;
 
-  gtk_main_quit();
-  gtk_widget_destroy(GTK_WIDGET(dialog));
+  gtk_dialog_response(GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
 
   return(FALSE);
 }
@@ -19092,7 +18865,6 @@ gboolean close_popup(gpointer data)
 static void destroy_popup(GtkWidget *w, GdkEvent *event, gint *data)
 {
   g_source_remove(*data);
-  gtk_main_quit();
 }
 
 

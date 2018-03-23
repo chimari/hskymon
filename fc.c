@@ -523,7 +523,6 @@ void fc_dl (typHOE *hg)
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   
   get_dss(hg);
-
   gtk_main();
 
   gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
@@ -6084,7 +6083,7 @@ void addobj_dl(typHOE *hg)
 gboolean check_trdb (gpointer gdata){
   if(flag_trdb_finish){
     flag_trdb_finish=FALSE;
-      gtk_main_quit();
+    gtk_main_quit();
   }
   return(TRUE);
 }
