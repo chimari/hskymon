@@ -235,12 +235,20 @@ void name_cell_data_func(GtkTreeViewColumn *col ,
 
   if((hg->obj[i].ope<0)||(hg->obj[i].ope>=MAX_ROPE)){
     g_object_set(renderer,
+#ifdef USE_GTK3
+		 "foreground-rgba", hg->col[MAX_ROPE-1],
+#else
 		 "foreground-gdk", hg->col[MAX_ROPE-1],
+#endif
 		 NULL);
   }
   else{
     g_object_set(renderer,
+#ifdef USE_GTK3
+		 "foreground-rgba", hg->col[hg->obj[i].ope],
+#else
 		 "foreground-gdk", hg->col[hg->obj[i].ope],
+#endif
 		 NULL);
   }
 
@@ -288,27 +296,47 @@ void trdb_name_cell_data_func(GtkTreeViewColumn *col ,
 
   if((hg->obj[i].ope<0)||(hg->obj[i].ope>=MAX_ROPE)){
     g_object_set(renderer,
+#ifdef USE_GTK3
+		 "foreground-rgba", hg->col[MAX_ROPE-1],
+#else
 		 "foreground-gdk", hg->col[MAX_ROPE-1],
+#endif
 		 NULL);
   }
   else{
     g_object_set(renderer,
+#ifdef USE_GTK3
+		 "foreground-rgba", hg->col[hg->obj[i].ope],
+#else
 		 "foreground-gdk", hg->col[hg->obj[i].ope],
+#endif
 		 NULL);
   }
 
 #ifdef USE_XMLRPC
   if(hg->obj[i].check_lock)
     g_object_set(renderer,
+#ifdef USE_GTK3
+		 "background-rgba", &col_lock,
+#else
 		 "background-gdk", &col_lock,
+#endif
 		 NULL);
   else if((hg->obj[i].c_rt<2) && (hg->obj[i].c_rt>0))
     g_object_set(renderer,
+#ifdef USE_GTK3	
+		 "background-rgba", &col_sub,
+#else
 		 "background-gdk", &col_sub,
+#endif
 		 NULL);
   else
     g_object_set(renderer,
+#ifdef USE_GTK3	
+		 "background-rgba", NULL,
+#else
 		 "background-gdk", NULL,
+#endif
 		 NULL);
 #endif
 }
@@ -331,15 +359,27 @@ void lock_cell_data_func(GtkTreeViewColumn *col ,
 
   if(hg->obj[i].check_lock)
     g_object_set(renderer,
+#ifdef USE_GTK3	
+		 "background-rgba", &col_lock,
+#else
 		 "background-gdk", &col_lock,
+#endif
 		 NULL);
   else if((hg->obj[i].c_rt<2) && (hg->obj[i].c_rt>0))
     g_object_set(renderer,
+#ifdef USE_GTK3	
+		 "background-rgba", &col_sub,
+#else
 		 "background-gdk", &col_sub,
+#endif
 		 NULL);
   else
     g_object_set(renderer,
+#ifdef USE_GTK3	
+		 "background-rgba", NULL,
+#else
 		 "background-gdk", NULL,
+#endif
 		 NULL);
 
 }

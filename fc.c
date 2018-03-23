@@ -5053,10 +5053,6 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Help for Finding Chart");
 
-  my_signal_connect(dialog,"destroy",
-		    close_fc_help, 
-		    GTK_WIDGET(dialog));
-  
 #ifdef USE_GTK3      
   table = gtk_grid_new();
   gtk_grid_set_row_spacing (GTK_GRID (table), 10);
@@ -5386,16 +5382,12 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
-  my_signal_connect(button,"pressed",
-		    close_fc_help, 
-		    GTK_WIDGET(dialog));
 
   gtk_widget_show_all(dialog);
-}
 
-static void close_fc_help(GtkWidget *w, GtkWidget *dialog)
-{
-  gtk_widget_destroy(dialog);
+  gtk_dialog_run(GTK_DIALOG(dialog));
+  
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 }
 
 static void delete_fcdb(GtkWidget *w, GdkEvent *event, gpointer gdata)
