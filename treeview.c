@@ -1297,8 +1297,10 @@ static void add_item (typHOE *hg)
     hg->obj[i_list].check_sm=FALSE;
   }
 
-  gtk_list_store_append (GTK_LIST_STORE (model), &iter);
+  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i);
   tree_update_azel_item(hg, model, iter, i);
+
+  if(!gtk_tree_model_get_iter_first(model, &iter)) return;
   
   //remake_tree(hg);
   trdb_make_tree(hg);
