@@ -44,6 +44,8 @@ void cc_search_text();
 void trdb_cc_search_text();
 gchar *strip_spc();
 
+void copy_obj();
+
 #ifdef USE_XMLRPC
 #ifdef USE_GTK3
 GdkRGBA col_lock={1.0, 0.75, 0.75, 1.0};
@@ -721,6 +723,10 @@ void tree_update_azel_item(typHOE *hg,
       gtk_list_store_set(GTK_LIST_STORE(model), &iter,
 			 COLUMN_OBJ_DEF, hg->obj[i_list].def, -1);
     }
+    else{
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+			 COLUMN_OBJ_DEF, "---", -1);
+    }
   }
 
   // RA
@@ -743,8 +749,14 @@ void tree_update_azel_item(typHOE *hg,
   
   // NOTE
   if(hg->show_note){
-    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
-		       COLUMN_OBJ_NOTE, hg->obj[i_list].note, -1);
+    if(hg->obj[i_list].note){
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+			 COLUMN_OBJ_NOTE, hg->obj[i_list].note, -1);
+    }
+    else{
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+			 COLUMN_OBJ_NOTE, "---", -1);
+    }
   }
   
   if(hg->skymon_mode==SKYMON_CUR){
@@ -3158,7 +3170,7 @@ up_item (GtkWidget *widget, gpointer data)
 
 
   if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
-    gint i, i_list;
+    gint i, i_list, i_band;
     GtkTreePath *path;
     
     path = gtk_tree_model_get_path (model, &iter);
@@ -7744,3 +7756,75 @@ gchar *strip_spc(gchar * obj_name){
   return(ret_name);
 }
 
+void copy_obj(OBJpara src, OBJpara dst){
+  gint i_band;
+  
+  if(dst.name) g_free(dst.name);
+  dst.name=g_strdup(src.name);
+  if(src.name) g_free(src.name);
+  src.name=NULL;
+
+  if(dst.def) g_free(dst.def);
+  dst.def=g_strdup(src.def);
+  if(src.def) g_free(src.def);
+  src.def=NULL;
+
+  dst.check_disp=src.check_disp;
+  src.check_disp=TRUE;
+
+  dst.check_sm=src.check_sm;
+  src.check_sm=FALSE;
+
+  dst.check_lock=src.check_lock;
+  src.check_lock=FALSE;
+
+  dst.check_used=src.check_used;
+  src.check_used=TRUE;
+
+  dst.check_std=src.check_std;
+  src.check_std=FALSE;
+
+  dst.type=src.type;
+  src.type=OBJTYPE_OBJ;
+
+  dst.i_nst=src.i_nst;
+  src.i_nst=-1;
+  
+  dst.x=src.x;
+  src.x=-1;
+
+  dst.y=src.y;
+  src.y=-1;
+
+  dst.ope=src.ope;
+  src.ope=0;
+
+  dst.ope_i=src.ope_i;
+  src.ope_i=0;
+  
+  if(dst.trdb_str) g_free(dst.trdb_str);
+  dst.trdb_str=g_strdup(src.trdb_str);
+  if(src.trdb_str) g_free(src.trdb_str);
+  src.trdb_str=NULL;
+
+  dst.trdb_band_max=src.trdb_band_max;
+  src.trdb_band_max=0;
+
+  for(i_band=0;i_band<MAX_TRDB_BAND;i_band++){
+    if(dst.trdb_mode[i_band]) g_free(dst.trdb_mode[i_band]);
+    dst.trdb_mode[i_band]=g_strdup(src.trdb_mode[i_band]);
+    if(src.trdb_mode[i_band]) g_free(src.trdb_mode[i_band]);
+    src.trdb_mode[i_band]=NULL;
+
+    if(dst.trdb_band[i_band]) g_free(dst.trdb_band[i_band]);
+    dst.trdb_band[i_band]=g_strdup(src.trdb_band[i_band]);
+    if(src.trdb_band[i_band]) g_free(src.trdb_band[i_band]);
+    src.trdb_band[i_band]=NULL;
+
+    dst.trdb_exp[i_band]=src.trdb_exp[i_band];
+    src.trdb_exp[i_band]=0;
+
+    dst.trdb_shot[i_band]=src.trdb_shot[i_band];
+    src.trdb_shot[i_band]=0;
+  }
+}
