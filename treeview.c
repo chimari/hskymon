@@ -44,8 +44,6 @@ void cc_search_text();
 void trdb_cc_search_text();
 gchar *strip_spc();
 
-void copy_obj();
-
 #ifdef USE_XMLRPC
 #ifdef USE_GTK3
 GdkRGBA col_lock={1.0, 0.75, 0.75, 1.0};
@@ -1264,7 +1262,7 @@ static void add_item (typHOE *hg)
 {
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
-  gint i,i_list;
+  gint i,i_list, i_band;
 
   if(hg->i_max>=MAX_OBJECT) return;
 
@@ -1321,7 +1319,7 @@ static void add_item (typHOE *hg)
 void add_item_fcdb(GtkWidget *w, gpointer gdata){
   typHOE *hg;
   gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
-  gint i, i_list;
+  gint i, i_list, i_band;
   GtkTreeIter iter;
   GtkTreeModel *model;
 
@@ -1421,7 +1419,7 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
 void add_item_std(GtkWidget *w, gpointer gdata){
   typHOE *hg;
   gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
-  gint i, i_list;
+  gint i, i_list, i_band;
   GtkTreeIter iter;
   GtkTreeModel *model;
 
@@ -1518,7 +1516,7 @@ remove_item (GtkWidget *widget, gpointer data)
     //gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
 	
     for(i_list=i;i_list<hg->i_max;i_list++){
-      copy_obj(hg->obj[i_list+1]. hg->obj[i_list]);
+      hg->obj[i_list]=hg->obj[i_list+1];
     }
 
     hg->i_max--;
@@ -3169,17 +3167,9 @@ up_item (GtkWidget *widget, gpointer data)
     i--;
 
     if(i>0){
-      tmp_obj.name=NULL;
-      tmp_obj.def=NULL;
-      tmp_obj.trdb_str=NULL;
-      for(i_band=0;i_band<MAX_TRDB_BAND;i_band++){
-	tmp_obj.trdb_mode[i_band]=NULL;
-	tmp_obj.trdb_band[i_band]=NULL;
-      }
-
-      copy_obj(hg->obj[i-1], tmp_obj);
-      copy_obj(hg->obj[i],   hg->obj[i-1]);
-      copy_obj(tmp_obj,      hg->obj[i]);
+      tmp_obj=hg->obj[i-1];
+      hg->obj[i-1]=hg->obj[i];
+      hg->obj[i]=tmp_obj;
 
       tree_update_azel((gpointer)hg);
       gtk_tree_path_prev (path);
@@ -3210,17 +3200,9 @@ down_item (GtkWidget *widget, gpointer data)
     i--;
 
     if(i<hg->i_max-1){
-      tmp_obj.name=NULL;
-      tmp_obj.def=NULL;
-      tmp_obj.trdb_str=NULL;
-      for(i_band=0;i_band<MAX_TRDB_BAND;i_band++){
-	tmp_obj.trdb_mode[i_band]=NULL;
-	tmp_obj.trdb_band[i_band]=NULL;
-      }
-
-      copy_obj(hg->obj[i],   tmp_obj);
-      copy_obj(hg->obj[i+1], hg->obj[i]);
-      copy_obj(tmp_obj,      hg->obj[i+1]);
+      tmp_obj=hg->obj[i];
+      hg->obj[i]=hg->obj[i+1];
+      hg->obj[i+1]=tmp_obj;
 
       tree_update_azel((gpointer)hg);
       gtk_tree_path_next (path);
@@ -7761,63 +7743,3 @@ gchar *strip_spc(gchar * obj_name){
   return(ret_name);
 }
 
-void copy_obj(typOBJ *src, typOBJ *dest){
-  gint i_band;
-  
-  if(dest.name) g_free(dest.name);
-  dest.name=g_strdup(src.name);
- if(src.name) g_free(src.name);
-  src.name=NULL;
-
-  if(dest.def) g_free(dest.def);
-  dest.def=g_strdup(src.def);
-  if(src.def) g_free(src.def);
-  src.def =NULL;
-
-  dest.check_disp=src.check_disp;
-  src.check_disp=TRUE;
-  dest.check_sm=src.check_sm;
-  src.check_sm=FALSE;
-  dest.check_lock=src.check_lock;
-  src.check_lock=FALSE;
-  dest.check_used=src.check_used;
-  src.check_used=TRUE;
-  dest.check_std=src.check_std;
-  src.check_std=FALSE;
-  dest.type=src.type;
-  src.type=OBJTYPE_OBJ;
-  dest.i_nst=src.i_nst;
-  src.i_nst=-1;
-  
-  dest.x=src.x;
-  src.x=-1;
-  dest.y=src.y;
-  src.y=-1;
-  dest.ope=src.ope;
-  src.ope=0;
-  dest.ope_i=src.ope_i;
-  src.ope_i=0;
-  
-  if(dest.trdb_str) g_free(dest.trdb_str);
-  dest.trdb_str=g_strdup(src.trdb_str);
-  if(src.trdb_str) g_free(src.trdb_str);
-  src.trdb_str =NULL;
-
-  hg->obj[i].trdb_band_max=0;
-  for(i_band=0;i_band<MAX_TRDB_BAND;i_band++){
-    if(dest.trdb_mode[i_band]) g_free(dest.trdb_mode[i_band]);
-    dest.trdb_mode[i_band]=g_strdup(src.trdb_mode[i_band]);
-    if(src.trdb_mode[i_band]) g_free(src.trdb_mode[i_band]);
-    src.trdb_mode[i_band] =NULL;
-
-    if(dest.trdb_band[i_band]) g_free(dest.trdb_band[i_band]);
-    dest.trdb_band[i_band]=g_strdup(src.trdb_band[i_band]);
-    if(src.trdb_band[i_band]) g_free(src.trdb_band[i_band]);
-    src.trdb_band[i_band] =NULL;
-
-    dest.trdb_exp[i_band]=src.trdb_exp[i_band];
-    src.trdb_exp[i_band]=0;
-    dest.trdb_shot[i_band]=src.trdb_shot[i_band];
-    src.trdb_shot[i_band]=0;
-  }
-}
