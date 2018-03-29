@@ -239,6 +239,21 @@ void css_change_col(GtkWidget *widget, gchar *color){
   gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(provider), tmp, -1, NULL);
   g_object_unref (provider);
 }
+
+void css_change_pbar_height(GtkWidget *widget, gint height){
+  GtkStyleContext *style_context;
+  GtkCssProvider *provider = gtk_css_provider_new ();
+  gchar tmp[64];
+  style_context = gtk_widget_get_style_context(widget);
+  gtk_style_context_add_provider(style_context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+  if(gtk_minor_version>=20)  {
+    g_snprintf(tmp, sizeof tmp, "progress, trough { min-height: %dpx; }", height);
+  } else {
+    g_snprintf(tmp, sizeof tmp, "GtkProgressBar, trough { min-height: %dpx; }", height);
+  }
+  gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(provider), tmp, -1, NULL);
+  g_object_unref (provider);
+}
 #endif
 
 

@@ -1,5 +1,6 @@
-2018.03.22 ver3.5.1 - Revised GdkPixmap drawing in Gtk+2 .
-	            - All deprecated functions are replace in Gtk+3.
+2018.03.28 ver3.5.1 - Revised GdkPixmap drawing in Gtk+2 .
+	            - All deprecated functions are replaced in Gtk+3.
+	            - Bug fix for remake_tree in Gtk+3.
 
 2018.03.09 ver3.5.0 - The 1st release supporting Gtk+3.
 	              Now, hskymon can be compiled with either Gtk+2

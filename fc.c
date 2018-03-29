@@ -461,6 +461,7 @@ void fc_dl (typHOE *hg)
 #ifdef USE_GTK3
   gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
 				  GTK_ORIENTATION_HORIZONTAL);
+  css_change_pbar_height(hg->pbar,15);
 #else
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
 				    GTK_PROGRESS_RIGHT_TO_LEFT);
@@ -5514,6 +5515,7 @@ void ver_dl(typHOE *hg)
 #ifdef USE_GTK3
   gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
 				  GTK_ORIENTATION_HORIZONTAL);
+  css_change_pbar_height(hg->pbar,15);
 #else
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
 				    GTK_PROGRESS_RIGHT_TO_LEFT);
@@ -5721,6 +5723,7 @@ void fcdb_dl(typHOE *hg)
 #ifdef USE_GTK3
   gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
 				  GTK_ORIENTATION_HORIZONTAL);
+  css_change_pbar_height(hg->pbar,15);
 #else
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
 				    GTK_PROGRESS_RIGHT_TO_LEFT);
@@ -5944,6 +5947,7 @@ void addobj_dl(typHOE *hg)
 #ifdef USE_GTK3
   gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
 				  GTK_ORIENTATION_HORIZONTAL);
+  css_change_pbar_height(hg->pbar,15);
 #else
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
 				    GTK_PROGRESS_RIGHT_TO_LEFT);
@@ -6175,6 +6179,7 @@ void trdb_run (typHOE *hg)
 #ifdef USE_GTK3
   gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
 				  GTK_ORIENTATION_HORIZONTAL);
+  css_change_pbar_height(hg->pbar,15);
 #else
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
 				    GTK_PROGRESS_RIGHT_TO_LEFT);
@@ -6187,6 +6192,7 @@ void trdb_run (typHOE *hg)
 #ifdef USE_GTK3
   gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar2), 
 				  GTK_ORIENTATION_HORIZONTAL);
+  css_change_pbar_height(hg->pbar2,15);
 #else
   gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar2), 
 				    GTK_PROGRESS_LEFT_TO_RIGHT);
