@@ -1297,12 +1297,10 @@ static void add_item (typHOE *hg)
     hg->obj[i_list].check_sm=FALSE;
   }
 
-  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i);
-  tree_update_azel_item(hg, model, iter, i);
+  //gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i);
+  //tree_update_azel_item(hg, model, iter, i);
 
-  if(!gtk_tree_model_get_iter_first(model, &iter)) return;
-  
-  //remake_tree(hg);
+  remake_tree(hg);
   trdb_make_tree(hg);
 }
 
@@ -1392,8 +1390,8 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   hg->obj[i].i_nst=-1;
   hg->add_max++;
   
-  gtk_list_store_append (GTK_LIST_STORE (model), &iter);
-  tree_update_azel_item(hg, model, iter, i);
+  //gtk_list_store_append (GTK_LIST_STORE (model), &iter);
+  //tree_update_azel_item(hg, model, iter, i);
   
   remake_tree(hg);
   trdb_make_tree(hg);
@@ -1460,8 +1458,8 @@ void add_item_std(GtkWidget *w, gpointer gdata){
   hg->obj[i].i_nst=-1;
   hg->add_max++;
   
-  gtk_list_store_append (GTK_LIST_STORE (model), &iter);
-  tree_update_azel_item(hg, model, iter, i);
+  //gtk_list_store_append (GTK_LIST_STORE (model), &iter);
+  //tree_update_azel_item(hg, model, iter, i);
   
   remake_tree(hg);
   trdb_make_tree(hg);
@@ -1484,7 +1482,7 @@ remove_item (GtkWidget *widget, gpointer data)
     gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
     i--;
 
-    gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
+    //gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
 	
     for(i_list=i;i_list<hg->i_max;i_list++){
       hg->obj[i_list]=hg->obj[i_list+1];
