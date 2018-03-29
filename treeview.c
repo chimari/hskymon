@@ -3169,9 +3169,17 @@ up_item (GtkWidget *widget, gpointer data)
     i--;
 
     if(i>0){
-      tmp_obj=hg->obj[i-1];
-      hg->obj[i-1]=hg->obj[i];
-      hg->obj[i]=tmp_obj;
+      tmp_obj.name=NULL;
+      tmp_obj.def=NULL;
+      tmp_obj.trdb_str=NULL;
+      for(i_band=0;i_band<MAX_TRDB_BAND;i_band++){
+	tmp_obj.trdb_mode[i_band]=NULL;
+	tmp_obj.trdb_band[i_band]=NULL;
+      }
+
+      copy_obj(hg->obj[i-1], tmp_obj);
+      copy_obj(hg->obj[i],   hg->obj[i-1]);
+      copy_obj(tmp_obj,      hg->obj[i]);
 
       tree_update_azel((gpointer)hg);
       gtk_tree_path_prev (path);
@@ -3202,9 +3210,17 @@ down_item (GtkWidget *widget, gpointer data)
     i--;
 
     if(i<hg->i_max-1){
-      tmp_obj=hg->obj[i];
-      hg->obj[i]=hg->obj[i+1];
-      hg->obj[i+1]=tmp_obj;
+      tmp_obj.name=NULL;
+      tmp_obj.def=NULL;
+      tmp_obj.trdb_str=NULL;
+      for(i_band=0;i_band<MAX_TRDB_BAND;i_band++){
+	tmp_obj.trdb_mode[i_band]=NULL;
+	tmp_obj.trdb_band[i_band]=NULL;
+      }
+
+      copy_obj(hg->obj[i],   tmp_obj);
+      copy_obj(hg->obj[i+1], hg->obj[i]);
+      copy_obj(tmp_obj,      hg->obj[i+1]);
 
       tree_update_azel((gpointer)hg);
       gtk_tree_path_next (path);
