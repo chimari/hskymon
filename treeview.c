@@ -44,7 +44,7 @@ void cc_search_text();
 void trdb_cc_search_text();
 gchar *strip_spc();
 
-void copy_obj();
+void swap_obj();
 
 #ifdef USE_XMLRPC
 #ifdef USE_GTK3
@@ -1321,11 +1321,11 @@ static void add_item (typHOE *hg)
     hg->obj[i_list].check_sm=FALSE;
   }
 
-  //gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i);
-  //tree_update_azel_item(hg, model, iter, i);
+  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i);
+  tree_update_azel_item(hg, model, iter, i);
 
-  remake_tree(hg);
-  trdb_make_tree(hg);
+  //remake_tree(hg);
+  //trdb_make_tree(hg);
 }
 
 void add_item_fcdb(GtkWidget *w, gpointer gdata){
@@ -1421,11 +1421,11 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
 
   hg->i_max++;
   
-  //gtk_list_store_append (GTK_LIST_STORE (model), &iter);
-  //tree_update_azel_item(hg, model, iter, i);
+  gtk_list_store_append (GTK_LIST_STORE (model), &iter);
+  tree_update_azel_item(hg, model, iter, i);
   
-  remake_tree(hg);
-  trdb_make_tree(hg);
+  //remake_tree(hg);
+  //trdb_make_tree(hg);
 }
 
 void add_item_std(GtkWidget *w, gpointer gdata){
@@ -1501,15 +1501,15 @@ void add_item_std(GtkWidget *w, gpointer gdata){
 
   hg->i_max++;
 
-  //gtk_list_store_append (GTK_LIST_STORE (model), &iter);
-  //tree_update_azel_item(hg, model, iter, i);
+  gtk_list_store_append (GTK_LIST_STORE (model), &iter);
+  tree_update_azel_item(hg, model, iter, i);
   
-  remake_tree(hg);
-  trdb_make_tree(hg);
+  //remake_tree(hg);
+  //trdb_make_tree(hg);
 }
 
 
-static void
+static gboolean
 remove_item (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
@@ -1518,25 +1518,49 @@ remove_item (GtkWidget *widget, gpointer data)
   GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->tree));
 
   if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
-    gint i, i_list,j;
+    gint i, i_list, i_band;
     GtkTreePath *path;
     
     path = gtk_tree_model_get_path (model, &iter);
     gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
     i--;
+    gtk_tree_path_free (path);
 
-    //gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
-	
-    for(i_list=i;i_list<hg->i_max;i_list++){
-      hg->obj[i_list]=hg->obj[i_list+1];
+    g_return_val_if_fail(GTK_LIST_STORE(model), FALSE);
+
+    for(i_list=i;i_list<hg->i_max-1;i_list++){
+      swap_obj(&hg->obj[i_list], &hg->obj[i_list+1]);
     }
 
     hg->i_max--;
-    
-    remake_tree(hg);
-    trdb_make_tree(hg);
 
-    gtk_tree_path_free (path);
+    if (gtk_tree_model_iter_nth_child(model, &iter, NULL, hg->i_max)){
+      gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
+
+      if(hg->obj[hg->i_max].name) g_free(hg->obj[hg->i_max].name);
+      hg->obj[hg->i_max].name=NULL;
+      if(hg->obj[hg->i_max].def) g_free(hg->obj[hg->i_max].def);
+      hg->obj[hg->i_max].def=NULL;
+      if(hg->obj[hg->i_max].trdb_str) g_free(hg->obj[hg->i_max].trdb_str);
+      hg->obj[hg->i_max].trdb_str=NULL;
+      for(i_band=0;i_band<MAX_TRDB_BAND;i_band++){
+	if(hg->obj[hg->i_max].trdb_mode[i_band]) 
+	  g_free(hg->obj[hg->i_max].trdb_mode[i_band]);
+	hg->obj[hg->i_max].trdb_mode[i_band]=NULL;
+	if(hg->obj[hg->i_max].trdb_band[i_band])
+	  g_free(hg->obj[hg->i_max].trdb_band[i_band]);
+	hg->obj[hg->i_max].trdb_band[i_band]=NULL;
+      }
+
+      tree_update_azel((gpointer)hg);
+
+      return TRUE;
+    }
+
+    return FALSE;
+    
+    //remake_tree(hg);
+    //trdb_make_tree(hg);
   }
 }
 
@@ -3166,7 +3190,6 @@ up_item (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
   GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->tree));
-  OBJpara tmp_obj;
 
 
   if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
@@ -3179,9 +3202,10 @@ up_item (GtkWidget *widget, gpointer data)
     i--;
 
     if(i>0){
-      tmp_obj=hg->obj[i-1];
-      hg->obj[i-1]=hg->obj[i];
-      hg->obj[i]=tmp_obj;
+      swap_obj(&hg->obj[i-1], &hg->obj[i]);
+      //tmp_obj=hg->obj[i-1];
+      //hg->obj[i-1]=hg->obj[i];
+      //hg->obj[i]=tmp_obj;
 
       tree_update_azel((gpointer)hg);
       gtk_tree_path_prev (path);
@@ -3200,7 +3224,6 @@ down_item (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
   GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->tree));
-  OBJpara tmp_obj;
 
 
   if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
@@ -3212,9 +3235,10 @@ down_item (GtkWidget *widget, gpointer data)
     i--;
 
     if(i<hg->i_max-1){
-      tmp_obj=hg->obj[i];
-      hg->obj[i]=hg->obj[i+1];
-      hg->obj[i+1]=tmp_obj;
+      swap_obj(&hg->obj[i], &hg->obj[i+1]);
+      //tmp_obj=hg->obj[i];
+      //hg->obj[i]=hg->obj[i+1];
+      //hg->obj[i+1]=tmp_obj;
 
       tree_update_azel((gpointer)hg);
       gtk_tree_path_next (path);
@@ -7756,75 +7780,11 @@ gchar *strip_spc(gchar * obj_name){
   return(ret_name);
 }
 
-void copy_obj(OBJpara src, OBJpara dst){
-  gint i_band;
+void swap_obj(OBJpara *o1, OBJpara *o2){
+  OBJpara temp;
   
-  if(dst.name) g_free(dst.name);
-  dst.name=g_strdup(src.name);
-  if(src.name) g_free(src.name);
-  src.name=NULL;
-
-  if(dst.def) g_free(dst.def);
-  dst.def=g_strdup(src.def);
-  if(src.def) g_free(src.def);
-  src.def=NULL;
-
-  dst.check_disp=src.check_disp;
-  src.check_disp=TRUE;
-
-  dst.check_sm=src.check_sm;
-  src.check_sm=FALSE;
-
-  dst.check_lock=src.check_lock;
-  src.check_lock=FALSE;
-
-  dst.check_used=src.check_used;
-  src.check_used=TRUE;
-
-  dst.check_std=src.check_std;
-  src.check_std=FALSE;
-
-  dst.type=src.type;
-  src.type=OBJTYPE_OBJ;
-
-  dst.i_nst=src.i_nst;
-  src.i_nst=-1;
-  
-  dst.x=src.x;
-  src.x=-1;
-
-  dst.y=src.y;
-  src.y=-1;
-
-  dst.ope=src.ope;
-  src.ope=0;
-
-  dst.ope_i=src.ope_i;
-  src.ope_i=0;
-  
-  if(dst.trdb_str) g_free(dst.trdb_str);
-  dst.trdb_str=g_strdup(src.trdb_str);
-  if(src.trdb_str) g_free(src.trdb_str);
-  src.trdb_str=NULL;
-
-  dst.trdb_band_max=src.trdb_band_max;
-  src.trdb_band_max=0;
-
-  for(i_band=0;i_band<MAX_TRDB_BAND;i_band++){
-    if(dst.trdb_mode[i_band]) g_free(dst.trdb_mode[i_band]);
-    dst.trdb_mode[i_band]=g_strdup(src.trdb_mode[i_band]);
-    if(src.trdb_mode[i_band]) g_free(src.trdb_mode[i_band]);
-    src.trdb_mode[i_band]=NULL;
-
-    if(dst.trdb_band[i_band]) g_free(dst.trdb_band[i_band]);
-    dst.trdb_band[i_band]=g_strdup(src.trdb_band[i_band]);
-    if(src.trdb_band[i_band]) g_free(src.trdb_band[i_band]);
-    src.trdb_band[i_band]=NULL;
-
-    dst.trdb_exp[i_band]=src.trdb_exp[i_band];
-    src.trdb_exp[i_band]=0;
-
-    dst.trdb_shot[i_band]=src.trdb_shot[i_band];
-    src.trdb_shot[i_band]=0;
-  }
+  temp=*o2;
+  *o2=*o1;
+  *o1=temp;
 }
+

@@ -14286,11 +14286,11 @@ void do_update_azel(GtkWidget *widget, gpointer gdata){
   else{
     calcpa2_main(hg);
   }
-    update_c_label(hg);
+  update_c_label(hg);
 
-    if(flagTree){
-      tree_update_azel((gpointer)hg);
-    }
+  if(flagTree){
+    tree_update_azel((gpointer)hg);
+  }
 }
 
 
