@@ -1643,6 +1643,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
   struct ln_equ_posn object_prec;
   gint fcdb_type_old;
   gchar *c=NULL, *cp, *cpp;
+  gchar *simbad_host;
 
 
   if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
@@ -1693,9 +1694,17 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
 		      JD2000, &object_prec);
     ln_equ_to_hequ (&object_prec, &hobject_prec);
 
+    if(hg->fcdb_simbad==FCDB_SIMBAD_HARVARD){
+      simbad_host=g_strdup(FCDB_HOST_SIMBAD_HARVARD);
+    }
+    else{
+      simbad_host=g_strdup(FCDB_HOST_SIMBAD_STRASBG);
+    }
+
     switch(hg->wwwdb_mode){
     case WWWDB_SIMBAD:
       tmp=g_strdup_printf(SIMBAD_URL,
+			  simbad_host,
 			  hobject_prec.ra.hours,hobject_prec.ra.minutes,
 			  hobject_prec.ra.seconds,
 			  (hobject_prec.dec.neg) ? "-" : "+", 
@@ -1780,6 +1789,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
     case WWWDB_SSLOC:
       if((ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra)<0){
 	tmp=g_strdup_printf(SSLOC_URL,
+			    simbad_host,
 			    hg->std_cat,
 			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra+360,
 			    "%7c",
@@ -1791,6 +1801,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
       }
       else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
 	tmp=g_strdup_printf(SSLOC_URL,
+			    simbad_host,
 			    hg->std_cat,
 			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
 			    "%7c",
@@ -1803,6 +1814,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
       else{
 	tmp=g_strdup_printf(SSLOC_URL,
 			    hg->std_cat,
+			    simbad_host,
 			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
 			    "%26",
 			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
@@ -1815,6 +1827,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
     case WWWDB_RAPID:
       if((ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra)<0){
 	tmp=g_strdup_printf(RAPID_URL,
+			    simbad_host,
 			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra+360,
 			    "%7c",
 			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
@@ -1824,6 +1837,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
       }
       else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
 	tmp=g_strdup_printf(RAPID_URL,
+			    simbad_host,
 			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
 			    "%7c",
 			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
@@ -1833,6 +1847,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
       }
       else{
 	tmp=g_strdup_printf(RAPID_URL,
+			    simbad_host,
 			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
 			    "%26",
 			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
@@ -1844,6 +1859,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
     case WWWDB_MIRSTD:
      if((ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra)<0){
 	tmp=g_strdup_printf(MIRSTD_URL,
+			    simbad_host,
 			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra+360,
 			    "%7c",
 			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
@@ -1853,6 +1869,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
       }
       else if((ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra)>360){
 	tmp=g_strdup_printf(MIRSTD_URL,
+			    simbad_host,
 			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
 			    "%7c",
 			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra-360,
@@ -1862,6 +1879,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
       }
       else{
 	tmp=g_strdup_printf(MIRSTD_URL,
+			    simbad_host,
 			    ln_hms_to_deg(&hobject_prec.ra)-(gdouble)hg->std_dra,
 			    "%26",
 			    ln_hms_to_deg(&hobject_prec.ra)+(gdouble)hg->std_dra,
@@ -2054,12 +2072,19 @@ std_simbad (GtkWidget *widget, gpointer data)
 #endif
   typHOE *hg = (typHOE *)data;
   gchar *tgt;
+  gchar *simbad_host;
 
   if((hg->stddb_tree_focus>=0)&&(hg->stddb_tree_focus<hg->std_i_max)){
     tgt=make_simbad_id(hg->std[hg->stddb_tree_focus].name);
 
-    tmp=g_strdup_printf(STD_SIMBAD_URL,tgt);
-    
+    if(hg->fcdb_simbad==FCDB_SIMBAD_HARVARD){
+      simbad_host=g_strdup(FCDB_HOST_SIMBAD_HARVARD);
+    }
+    else{
+      simbad_host=g_strdup(FCDB_HOST_SIMBAD_STRASBG);
+    }
+    tmp=g_strdup_printf(STD_SIMBAD_URL,simbad_host,tgt);
+    g_free(simbad_host);
 #ifdef USE_WIN32
     ShellExecute(NULL, 
 		 "open", 
@@ -2094,6 +2119,7 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
   gchar *cp, *cpp;
   gchar *shot_name;
   gchar *inst_name;
+  gchar *simbad_host;
 
   if((hg->fcdb_tree_focus>=0)&&(hg->fcdb_tree_focus<hg->fcdb_i_max)){
     switch(hg->fcdb_type){
@@ -2192,7 +2218,14 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
       tgt=make_simbad_id(hg->fcdb[hg->fcdb_tree_focus].name);
       switch(hg->fcdb_type){
       case FCDB_TYPE_SIMBAD:
-	tmp=g_strdup_printf(STD_SIMBAD_URL,tgt);
+	if(hg->fcdb_simbad==FCDB_SIMBAD_HARVARD){
+	  simbad_host=g_strdup(FCDB_HOST_SIMBAD_HARVARD);
+	}
+	else{
+	  simbad_host=g_strdup(FCDB_HOST_SIMBAD_STRASBG);
+	}
+	tmp=g_strdup_printf(STD_SIMBAD_URL,simbad_host,tgt);
+	g_free(simbad_host);
 	break;
 	
       case FCDB_TYPE_NED:
