@@ -1468,10 +1468,6 @@ void add_item_std(GtkWidget *w, gpointer gdata){
     hg->obj[i].equinox=hg->std[hg->stddb_tree_focus].equinox;
   }
 
-  for(i_list=hg->i_max;i_list>i;i_list--){
-    hg->obj[i_list]=hg->obj[i_list-1];
-  }
-  
   for(i_list=0;i_list<hg->i_max;i_list++){
     hg->obj[i_list].check_sm=FALSE;
   }
