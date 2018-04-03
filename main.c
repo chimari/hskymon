@@ -17267,6 +17267,9 @@ void MergeList(typHOE *hg, gint ope_max){
 
 	hg->i_max++;
       }
+
+      if(tmp_name) g_free(tmp_name);
+      tmp_name=NULL;
     }
     if(buf) g_free(buf);
   }
