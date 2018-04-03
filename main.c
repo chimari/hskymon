@@ -17166,12 +17166,12 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 
 void MergeList(typHOE *hg, gint ope_max){
   FILE *fp;
-  int i, i_list=0,i_base;
+  int i, i_list=0,i_base, i_band;
   gchar *tmp_char;
   gchar *buf;
-  OBJpara tmp_obj;
   gboolean name_flag;
-  gchar *win_title=NULL;
+  gchar *win_title=NULL, *tmp_name=NULL;
+  
   
   if((fp=fopen(hg->filename_list,"rb"))==NULL){
     popup_message(hg->skymon_main, 
@@ -17205,49 +17205,66 @@ void MergeList(typHOE *hg, gint ope_max){
       if(strlen(buf)<10) break;
       
       tmp_char=(char *)strtok(buf,",");
-      tmp_obj.name=cut_spc(tmp_char);
-      tmp_obj.def=NULL;
+      tmp_name=cut_spc(tmp_char);
       
       name_flag=FALSE;
       for(i_list=0;i_list<hg->i_max;i_list++){
-	if(strcmp(tmp_obj.name,hg->obj[i_list].name)==0){
+	if(strcmp(tmp_name,hg->obj[i_list].name)==0){
 	  name_flag=TRUE;
 	  break;
 	}
       }
 
       if(!name_flag){
+	i=hg->i_max;
+
 	tmp_char=(char *)strtok(NULL,",");
 	if(!is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"RA")) break;
-	tmp_obj.ra=(gdouble)g_strtod(tmp_char,NULL);
+	hg->obj[i].ra=(gdouble)g_strtod(tmp_char,NULL);
 	
 	tmp_char=(char *)strtok(NULL,",");
 	if(!is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"Dec")) break;
-	tmp_obj.dec=(gdouble)g_strtod(tmp_char,NULL);
+	hg->obj[i].dec=(gdouble)g_strtod(tmp_char,NULL);
       
 	tmp_char=(char *)strtok(NULL,",");
 	if(!is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"Equinox")) break;
-	tmp_obj.equinox=(gdouble)g_strtod(tmp_char,NULL);
+	hg->obj[i].equinox=(gdouble)g_strtod(tmp_char,NULL);
 	
+	if(hg->obj[i].name) g_free(hg->obj[i].name);
+	hg->obj[i].name=g_strdup(tmp_name);
+	if(hg->obj[i].def) g_free(hg->obj[i].def);
+	hg->obj[i].def=NULL;
+
+	if(hg->obj[i].note) g_free(hg->obj[i].note);
 	if((tmp_char=(char *)strtok(NULL,"\r\n"))!=NULL){
-	  tmp_obj.note=cut_spc(tmp_char);
+	  hg->obj[i].note=cut_spc(tmp_char);
 	}
 	else{
-	  tmp_obj.note=NULL;
+	  hg->obj[i].note=NULL;
 	}
 
-	tmp_obj.check_disp=TRUE;
-	tmp_obj.check_sm=FALSE;
-	tmp_obj.check_lock=FALSE;
-	tmp_obj.check_used=TRUE;
-	tmp_obj.check_std=FALSE;
-	tmp_obj.ope=hg->ope_max;
-	tmp_obj.ope_i=i_list-i_base;
-	tmp_obj.type=OBJTYPE_OBJ;
-	tmp_obj.i_nst=-1;
+	hg->obj[i].check_disp=TRUE;
+	hg->obj[i].check_sm=FALSE;
+	hg->obj[i].check_lock=FALSE;
+	hg->obj[i].check_used=TRUE;
+	hg->obj[i].check_std=FALSE;
+	hg->obj[i].ope=hg->ope_max;
+	hg->obj[i].ope_i=i_list-i_base;
+	hg->obj[i].type=OBJTYPE_OBJ;
+	hg->obj[i].i_nst=-1;
 
-  
-	hg->obj[hg->i_max]=tmp_obj;
+	if(hg->obj[i].trdb_str) g_free(hg->obj[i].trdb_str);
+	hg->obj[i].trdb_str=NULL;
+	hg->obj[i].trdb_band_max=0;
+	for(i_band=0;i_band<MAX_TRDB_BAND;i_band++){
+	  if(hg->obj[i].trdb_mode[i_band]) g_free(hg->obj[i].trdb_mode[i_band]);
+	  hg->obj[i].trdb_mode[i_band]=NULL;
+	  if(hg->obj[i].trdb_band[i_band]) g_free(hg->obj[i].trdb_band[i_band]);
+	  hg->obj[i].trdb_band[i_band]=NULL;
+	  hg->obj[i].trdb_exp[i_band]=0;
+	  hg->obj[i].trdb_shot[i_band]=0;
+	}
+
 	hg->i_max++;
       }
     }
