@@ -7675,7 +7675,7 @@ void trdb_make_tree(typHOE *hg){
   for (i = 0; i < hg->i_max; i++){
     gtk_list_store_append (GTK_LIST_STORE(model), &iter);
     trdb_tree_update_azel_item(hg, GTK_TREE_MODEL(model), iter, i);
- } 
+  } 
 
   make_trdb_label(hg);
   gtk_label_set_text(GTK_LABEL(hg->trdb_label), hg->trdb_label_text);

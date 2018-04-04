@@ -1117,6 +1117,31 @@ gint tree_update_azel (gpointer gdata)
 }
 
 
+gint trdb_tree_update_azel (gpointer gdata)
+{
+  int i_list;
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+  typHOE *hg;
+  gint i;
+
+  hg=(typHOE *)gdata;
+
+  if(!Flag_tree_editing){
+    model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+    if(!gtk_tree_model_get_iter_first(model, &iter)) return(0);
+
+    for(i_list=0;i_list<hg->i_max;i_list++){
+      gtk_tree_model_get (model, &iter, COLUMN_TRDB_NUMBER, &i, -1);
+      i--;
+      trdb_tree_update_azel_item(hg, model, iter, i);
+      if(!gtk_tree_model_iter_next(model, &iter)) break;
+    }
+  }
+  return 0;
+}
+
+
 static GtkTreeModel *
 create_items_model (typHOE *hg)
 {
@@ -1273,12 +1298,14 @@ trdb_create_items_model (typHOE *hg)
 static void add_item (typHOE *hg)
 {
   GtkTreeIter iter;
-  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+  GtkTreeModel *model;
   gint i,i_list, i_band;
 
   if(hg->i_max>=MAX_OBJECT) return;
 
   i=hg->i_max;
+
+  init_obj(&hg->obj[i]);
   
   if(hg->obj[i].def) g_free(hg->obj[i].def);
   hg->obj[i].def=make_tgt(hg->addobj_name);
@@ -1291,29 +1318,10 @@ static void add_item (typHOE *hg)
 
   if(hg->obj[i].note) g_free(hg->obj[i].note);
   hg->obj[i].note=g_strdup("added via dialog");
-  
-  hg->obj[i].check_disp=TRUE;
-  hg->obj[i].check_sm=TRUE;
-  hg->obj[i].check_lock=FALSE;
-  hg->obj[i].check_used=TRUE;
-  hg->obj[i].check_std=FALSE;
+
   hg->obj[i].ope=ADDTYPE_OBJ;
   hg->obj[i].ope_i=hg->add_max;
-  hg->obj[i].type=OBJTYPE_OBJ;
-  hg->obj[i].i_nst=-1;
   hg->add_max++;
-
-  if(hg->obj[i].trdb_str) g_free(hg->obj[i].trdb_str);
-  hg->obj[i].trdb_str=NULL;
-  hg->obj[i].trdb_band_max=0;
-  for(i_band=0;i_band<MAX_TRDB_BAND;i_band++){
-    if(hg->obj[i].trdb_mode[i_band]) g_free(hg->obj[i].trdb_mode[i_band]);
-    hg->obj[i].trdb_mode[i_band]=NULL;
-    if(hg->obj[i].trdb_band[i_band]) g_free(hg->obj[i].trdb_band[i_band]);
-    hg->obj[i].trdb_band[i_band]=NULL;
-    hg->obj[i].trdb_exp[i_band]=0;
-    hg->obj[i].trdb_shot[i_band]=0;
-  }
 
   hg->i_max++;
   
@@ -1321,8 +1329,13 @@ static void add_item (typHOE *hg)
     hg->obj[i_list].check_sm=FALSE;
   }
 
+  model= gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
   gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i);
   tree_update_azel_item(hg, model, iter, i);
+
+  model= gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+  gtk_list_store_append (GTK_LIST_STORE(model), &iter);
+  trdb_tree_update_azel_item(hg, model, iter, i);
 
   //remake_tree(hg);
   //trdb_make_tree(hg);
@@ -1550,11 +1563,16 @@ remove_item (GtkWidget *widget, gpointer data)
 
       tree_update_azel((gpointer)hg);
 
+      model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));    
+      if (gtk_tree_model_iter_nth_child(model, &iter, NULL, hg->i_max)){
+	gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
+	trdb_tree_update_azel((gpointer)hg);
+      }
       return TRUE;
     }
 
+
     return FALSE;
-    
     //remake_tree(hg);
     //trdb_make_tree(hg);
   }
@@ -3232,13 +3250,12 @@ up_item (GtkWidget *widget, gpointer data)
 
     if(i>0){
       swap_obj(&hg->obj[i-1], &hg->obj[i]);
-      //tmp_obj=hg->obj[i-1];
-      //hg->obj[i-1]=hg->obj[i];
-      //hg->obj[i]=tmp_obj;
 
       tree_update_azel((gpointer)hg);
       gtk_tree_path_prev (path);
       gtk_tree_selection_select_path(selection, path);
+      
+      trdb_tree_update_azel((gpointer)hg);
     }
     
     gtk_tree_path_free (path);
@@ -3272,6 +3289,8 @@ down_item (GtkWidget *widget, gpointer data)
       tree_update_azel((gpointer)hg);
       gtk_tree_path_next (path);
       gtk_tree_selection_select_path(selection, path);
+
+      trdb_tree_update_azel((gpointer)hg);
     }
     
     gtk_tree_path_free (path);

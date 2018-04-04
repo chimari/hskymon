@@ -2144,7 +2144,7 @@ gint update_allsky();
 gint update_telstat();
 #endif
 void clear_trdb();
-
+void init_obj();
 
 //adc.c
 void do_adc();
@@ -2230,6 +2230,7 @@ void make_tree();
 void remake_tree();
 void rebuild_fcdb_tree();
 gint tree_update_azel();
+gint trdb_tree_update_azel();
 gchar* make_tgt();
 gchar *make_simbad_id();
 void addobj_dialog();

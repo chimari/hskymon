@@ -3305,6 +3305,9 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
   if (gtk_dialog_run(GTK_DIALOG(fdialog)) == GTK_RESPONSE_ACCEPT) {
     char *fname;
     gchar *dest_file;
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    gint i_list, i_base;
     
     fname = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog)));
     gtk_widget_destroy(fdialog);
@@ -3316,6 +3319,7 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
       hg->filename_ope=g_strdup(dest_file);
       if(hg->filehead) g_free(hg->filehead);
       hg->filehead=make_head(dest_file);
+      i_base=hg->i_max;
       MergeListOPE(hg, hg->ope_max);
 
       //// Current Condition
@@ -3328,8 +3332,19 @@ void do_merge_ope (GtkWidget *widget, gpointer gdata)
       update_c_label(hg);
       
       if(flagTree){
-	remake_tree(hg);
-	trdb_make_tree(hg);
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+	for(i_list=i_base;i_list<hg->i_max;i_list++){
+	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i_list);
+	  tree_update_azel_item(hg, model, iter, i_list);
+	}
+
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+	for(i_list=i_base;i_list<hg->i_max;i_list++){
+	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i_list);
+	  trdb_tree_update_azel_item(hg, model, iter, i_list);
+	}
+	//remake_tree(hg);
+	//trdb_make_tree(hg);
       }
     }
     else{
@@ -3528,10 +3543,15 @@ void do_merge (GtkWidget *widget, gpointer gdata)
       
       if(flagTree){
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
-
 	for(i_list=i_base;i_list<hg->i_max;i_list++){
 	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i_list);
 	  tree_update_azel_item(hg, model, iter, i_list);
+	}
+
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+	for(i_list=i_base;i_list<hg->i_max;i_list++){
+	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i_list);
+	  trdb_tree_update_azel_item(hg, model, iter, i_list);
 	}
 	//remake_tree(hg);
 	//trdb_make_tree(hg);
@@ -16117,20 +16137,19 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	    }while(cp);
 	  }
 	  
-	  if(hg->hide_flag)
-	    hg->obj[i_list].check_disp=FALSE;
-	  else
-	    hg->obj[i_list].check_disp=TRUE;
-	  hg->obj[i_list].check_sm=FALSE;
-	  hg->obj[i_list].check_lock=FALSE;
-	  hg->obj[i_list].check_used=FALSE;
-	  hg->obj[i_list].check_std=FALSE;
-	  hg->obj[i_list].ope=hg->ope_max;
-	  hg->obj[i_list].ope_i=i_list-i0;
-	  hg->obj[i_list].i_nst=-1;
-	  
 	  if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	    if(!ObjOverlap(hg,i_list)){
+	      init_obj(&hg->obj[i_list]);
+	      
+	      if(hg->hide_flag)
+		hg->obj[i_list].check_disp=FALSE;
+	      else
+		hg->obj[i_list].check_disp=TRUE;
+	      hg->obj[i_list].check_sm=FALSE;
+	      hg->obj[i_list].check_used=FALSE;
+	      hg->obj[i_list].ope=hg->ope_max;
+	      hg->obj[i_list].ope_i=i_list-i0;
+
 	      if(hg->obj[i_list].note) g_free(hg->obj[i_list].note);
 	      hg->obj[i_list].note=g_path_get_basename(hg->filename_ope);
 	      
@@ -16813,6 +16832,35 @@ void MergeListPRM2(typHOE *hg){
   printf_log(hg,"[MergePRM] %d targets are loaded from this PRM.",hg->i_max-i0);
 }
 
+void init_obj(OBJpara *obj){
+  // Initialize obj
+  // except
+  // name, def, ra, dec, equinox, note
+  gint i_band;
+
+  obj->check_disp=TRUE;
+  obj->check_sm=TRUE;
+  obj->check_lock=FALSE;
+  obj->check_used=TRUE;
+  obj->check_std=FALSE;
+  obj->ope=0;
+  obj->ope_i=0;
+  obj->type=OBJTYPE_OBJ;
+  obj->i_nst=-1;
+
+  if(obj->trdb_str) g_free(obj->trdb_str);
+  obj->trdb_str=NULL;
+  obj->trdb_band_max=0;
+  for(i_band=0;i_band<MAX_TRDB_BAND;i_band++){
+    if(obj->trdb_mode[i_band]) g_free(obj->trdb_mode[i_band]);
+    obj->trdb_mode[i_band]=NULL;
+    if(obj->trdb_band[i_band]) g_free(obj->trdb_band[i_band]);
+    obj->trdb_band[i_band]=NULL;
+    obj->trdb_exp[i_band]=0;
+    obj->trdb_shot[i_band]=0;
+  }
+}
+
 
 gboolean check_ttgs(gchar *def){
   gchar *ep;
@@ -17240,6 +17288,8 @@ void MergeList(typHOE *hg, gint ope_max){
 	if(!is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"Equinox")) break;
 	hg->obj[i].equinox=(gdouble)g_strtod(tmp_char,NULL);
 	
+	init_obj(&hg->obj[i]);
+
 	if(hg->obj[i].name) g_free(hg->obj[i].name);
 	hg->obj[i].name=g_strdup(tmp_name);
 	if(hg->obj[i].def) g_free(hg->obj[i].def);
@@ -17253,27 +17303,9 @@ void MergeList(typHOE *hg, gint ope_max){
 	  hg->obj[i].note=NULL;
 	}
 
-	hg->obj[i].check_disp=TRUE;
 	hg->obj[i].check_sm=FALSE;
-	hg->obj[i].check_lock=FALSE;
-	hg->obj[i].check_used=TRUE;
-	hg->obj[i].check_std=FALSE;
 	hg->obj[i].ope=hg->ope_max;
 	hg->obj[i].ope_i=i_list-i_base;
-	hg->obj[i].type=OBJTYPE_OBJ;
-	hg->obj[i].i_nst=-1;
-
-	if(hg->obj[i].trdb_str) g_free(hg->obj[i].trdb_str);
-	hg->obj[i].trdb_str=NULL;
-	hg->obj[i].trdb_band_max=0;
-	for(i_band=0;i_band<MAX_TRDB_BAND;i_band++){
-	  if(hg->obj[i].trdb_mode[i_band]) g_free(hg->obj[i].trdb_mode[i_band]);
-	  hg->obj[i].trdb_mode[i_band]=NULL;
-	  if(hg->obj[i].trdb_band[i_band]) g_free(hg->obj[i].trdb_band[i_band]);
-	  hg->obj[i].trdb_band[i_band]=NULL;
-	  hg->obj[i].trdb_exp[i_band]=0;
-	  hg->obj[i].trdb_shot[i_band]=0;
-	}
 
 	hg->i_max++;
       }
@@ -18789,6 +18821,9 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
 
     if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
       gboolean fl_first=TRUE;
+      GtkTreeModel *model;
+      GtkTreeIter iter;
+      gint i_list, i_base;
 
       gtk_widget_destroy(dialog);
            
@@ -18796,7 +18831,8 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
 	if(fl_load[i]){
 	  if(hg->filename_ope) g_free(hg->filename_ope);
 	  hg->filename_ope=g_strdup(hg->filename_rope[i]);
-
+	  
+	  i_base=hg->i_max;
 	  if(fl_first){
 	    ReadListOPE(hg, i);
 	    fl_first=FALSE;
@@ -18816,8 +18852,19 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
       update_c_label(hg);
       
       if(flagTree){
-	remake_tree(hg);
-	trdb_make_tree(hg);
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+	for(i_list=i_base;i_list<hg->i_max;i_list++){
+	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i_list);
+	  tree_update_azel_item(hg, model, iter, i_list);
+	}
+
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+	for(i_list=i_base;i_list<hg->i_max;i_list++){
+	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i_list);
+	  trdb_tree_update_azel_item(hg, model, iter, i_list);
+	}
+	//remake_tree(hg);
+	//trdb_make_tree(hg);
       }
     }
     else{
