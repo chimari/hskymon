@@ -3229,7 +3229,7 @@ up_item (GtkWidget *widget, gpointer data)
       tree_update_azel((gpointer)hg);
       gtk_tree_path_prev (path);
       gtk_tree_selection_select_path(selection, path);
-      
+
       trdb_tree_update_azel((gpointer)hg);
     }
     
