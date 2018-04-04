@@ -105,7 +105,7 @@ getStatus_double(const char *alias, xmlrpc_value *itemP, int rawflag)
     {
         fprintf(stderr, "%s=#\n", alias);
         fprintf(stderr, "#\n");
-        return;
+        return(-100);
     }
 
     /* Unpack the return value.  This is complicated by the fact that C

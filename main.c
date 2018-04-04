@@ -43,7 +43,7 @@ void SetAllSkyObs();
 void set_obs_param_from_preset();
 void RadioPresetObs();
 void CheckGmap();
-void ext_play();
+//void ext_play();
 static void show_dss();
 static void show_simbad();
 void ver_txt_parse();

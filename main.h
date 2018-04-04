@@ -30,6 +30,7 @@
 #include<pwd.h>
 #endif
 #include<sys/types.h>
+#include<sys/wait.h>
 #include<errno.h>
 #include<math.h>
 #include<string.h>
@@ -2167,6 +2168,7 @@ double get_julian_day_of_equinox();
 gboolean draw_plot_cairo();
 gfloat get_meridian_hour();
 gdouble deg_sep();
+void ext_play();
 
 //fc.c
 void pdf_fc ();
@@ -2217,6 +2219,8 @@ gboolean draw_skymon_cairo();
 gboolean draw_skymon_with_telstat_cairo();
 #endif
 
+//remoteObjects.c
+int ro_init();
 
 //telstat.c
 #ifdef USE_XMLRPC
@@ -2226,6 +2230,7 @@ int get_rope();
 #endif
 
 //treeview.c
+void tree_update_azel_item();
 void make_tree();
 void remake_tree();
 void rebuild_fcdb_tree();

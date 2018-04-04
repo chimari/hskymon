@@ -45,6 +45,7 @@
 #define _VOTABLE_H_
 #include <stdio.h>  /* using printf         */
 #include <stdlib.h> /* using malloc and free */
+#include <error.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/xmlreader.h>
 #include "config.h"

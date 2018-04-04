@@ -12,7 +12,7 @@
 #include "esostd.h"
 
 static GtkWidget *window = NULL;
-void tree_update_azel_item();
+//void tree_update_azel_item();
 void stddb_tree_update_azel_item();
 void std_make_tree();
 void tree_store_update();
