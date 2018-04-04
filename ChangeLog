@@ -1,4 +1,4 @@
-2018.03.28 ver3.5.1 - Revised GdkPixmap drawing in Gtk+2 .
+2018.04.03 ver3.5.1 - Revised GdkPixmap drawing in Gtk+2 .
 	            - All deprecated functions are replaced in Gtk+3.
 	            - Bug fix for remake_tree in Gtk+3.
 	            - Bug fix fot popup config dialog.
