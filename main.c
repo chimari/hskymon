@@ -16002,7 +16002,6 @@ void MergeListOPE(typHOE *hg, gint ope_max){
   gchar *win_title;
   gchar *prmname=NULL,*prmname_full=NULL;
   gint prm_place;
-  gchar *tmp_name=NULL;
   gboolean new_fmt_flag=FALSE;
   gint ope_zero=0;
 
