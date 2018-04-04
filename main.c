@@ -3498,6 +3498,9 @@ void do_merge (GtkWidget *widget, gpointer gdata)
   if (gtk_dialog_run(GTK_DIALOG(fdialog)) == GTK_RESPONSE_ACCEPT) {
     char *fname;
     gchar *dest_file;
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    gint i_list, i_base;
     
     fname = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog)));
     gtk_widget_destroy(fdialog);
@@ -3511,6 +3514,7 @@ void do_merge (GtkWidget *widget, gpointer gdata)
       hg->filename_ope=NULL;
       if(hg->filehead) g_free(hg->filehead);
       hg->filehead=make_head(dest_file);
+      i_base=hg->i_max;
       MergeList(hg, hg->ope_max);
       
       //// Current Condition
@@ -3523,8 +3527,14 @@ void do_merge (GtkWidget *widget, gpointer gdata)
       update_c_label(hg);
       
       if(flagTree){
-	remake_tree(hg);
-	trdb_make_tree(hg);
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+
+	for(i_list=i_base;i_list<hg->i_max;i_list++){
+	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i_list);
+	  tree_update_azel_item(hg, model, iter, i_list);
+	}
+	//remake_tree(hg);
+	//trdb_make_tree(hg);
       }
     }
     else{
