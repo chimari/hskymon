@@ -1323,11 +1323,13 @@ static void add_item (typHOE *hg)
   hg->obj[i].ope_i=hg->add_max;
   hg->add_max++;
 
-  hg->i_max++;
-  
   for(i_list=0;i_list<hg->i_max;i_list++){
     hg->obj[i_list].check_sm=FALSE;
   }
+  hg->obj[i].check_sm=TRUE;
+
+  hg->i_max++;
+  
 
   model= gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
   gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i);
@@ -1412,6 +1414,7 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   for(i_list=0;i_list<hg->i_max;i_list++){
     hg->obj[i_list].check_sm=FALSE;
   }
+  hg->obj[i].check_sm=TRUE;
   
   hg->obj[i].check_used=FALSE;
   
@@ -1472,6 +1475,7 @@ void add_item_std(GtkWidget *w, gpointer gdata){
   for(i_list=0;i_list<hg->i_max;i_list++){
     hg->obj[i_list].check_sm=FALSE;
   }
+  hg->obj[i].check_sm=TRUE;
   
   hg->obj[i].check_used=FALSE;
  

@@ -14026,6 +14026,7 @@ void param_init(typHOE *hg){
   for(i=0;i<MAX_OBJECT;i++){
     hg->obj[i].name=NULL;
     hg->obj[i].def=NULL;
+    hg->obj[i].note=NULL;
     hg->obj[i].check_disp=TRUE;
     hg->obj[i].check_sm=FALSE;
     hg->obj[i].check_lock=FALSE;
@@ -14680,8 +14681,6 @@ void MergeNST(typHOE *hg, gint ope_max){
 					 zonedate1.minutes,
 					 hg->obs_tzname);
 
-    hg->obj[i_list].check_sm=FALSE;
-    hg->obj[i_list].check_lock=FALSE;
     hg->obj[i_list].ope=hg->ope_max;
     hg->obj[i_list].ope_i=0;
     hg->obj[i_list].i_nst=hg->nst_max;
@@ -15064,7 +15063,6 @@ void MergeJPL(typHOE *hg, gint ope_max){
 				       zonedate1.minutes,
 				       hg->obs_tzname);
 
-  hg->obj[i_list].check_sm=FALSE;
   hg->obj[i_list].ope=hg->ope_max;
   hg->obj[i_list].ope_i=0;
   hg->obj[i_list].i_nst=hg->nst_max;
@@ -16182,7 +16180,6 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 		hg->obj[i_list].check_disp=FALSE;
 	      else
 		hg->obj[i_list].check_disp=TRUE;
-	      hg->obj[i_list].check_sm=FALSE;
 	      hg->obj[i_list].check_used=FALSE;
 	      hg->obj[i_list].ope=hg->ope_max;
 	      hg->obj[i_list].ope_i=i_list-i0;
@@ -16607,7 +16604,6 @@ void MergeListPRM(typHOE *hg){
 	    hg->obj[hg->i_max].note=NULL;
 
 	    hg->obj[hg->i_max].check_disp=FALSE;
-	    hg->obj[hg->i_max].check_sm=FALSE;
 	    hg->obj[hg->i_max].check_used=FALSE;
 	    hg->obj[hg->i_max].check_std=TRUE;
 	    hg->obj[hg->i_max].ope=MAX_ROPE-1;
@@ -16821,8 +16817,6 @@ void MergeListPRM2(typHOE *hg){
 		if(hg->obj[hg->i_max].note) g_free(hg->obj[hg->i_max].note);
 		hg->obj[hg->i_max].note=NULL;
 		
-		hg->obj[hg->i_max].check_sm=FALSE;
-		hg->obj[hg->i_max].check_lock=FALSE;
 		if(ret_check_def==CHECK_TARGET_DEF_STANDARD){
 		  hg->obj[hg->i_max].check_std=TRUE;
 		}
@@ -16874,14 +16868,17 @@ void init_obj(OBJpara *obj){
   gint i_band;
 
   obj->check_disp=TRUE;
-  obj->check_sm=TRUE;
+  obj->check_sm=FALSE;
   obj->check_lock=FALSE;
   obj->check_used=TRUE;
   obj->check_std=FALSE;
-  obj->ope=0;
-  obj->ope_i=0;
   obj->type=OBJTYPE_OBJ;
   obj->i_nst=-1;
+
+  obj->x=-1;
+  obj->y=-1;
+  obj->ope=0;
+  obj->ope_i=0;
 
   if(obj->trdb_str) g_free(obj->trdb_str);
   obj->trdb_str=NULL;
@@ -17337,8 +17334,6 @@ void MergeList(typHOE *hg, gint ope_max){
 	else{
 	  hg->obj[i].note=NULL;
 	}
-
-	hg->obj[i].check_sm=FALSE;
 	hg->obj[i].ope=hg->ope_max;
 	hg->obj[i].ope_i=i_list-i_base;
 
