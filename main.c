@@ -2830,6 +2830,9 @@ void do_open_NST (GtkWidget *widget, gpointer gdata)
   if (gtk_dialog_run(GTK_DIALOG(fdialog)) == GTK_RESPONSE_ACCEPT) {
     char *fname;
     gchar *dest_file;
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    gint i_list, i_base;
     
     fname = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog)));
     gtk_widget_destroy(fdialog);
@@ -2839,6 +2842,7 @@ void do_open_NST (GtkWidget *widget, gpointer gdata)
     if(access(dest_file,F_OK)==0){
       if(hg->filename_nst) g_free(hg->filename_nst);
       hg->filename_nst=g_strdup(dest_file);
+      i_base=hg->i_max;
       MergeNST(hg, hg->ope_max);
 
       //// Current Condition
@@ -2851,8 +2855,17 @@ void do_open_NST (GtkWidget *widget, gpointer gdata)
       update_c_label(hg);
 
       if(flagTree){
-	remake_tree(hg);
-	trdb_make_tree(hg);
+	if(i_base!=hg->i_max){
+	  model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, hg->i_max-1);
+	  tree_update_azel_item(hg, model, iter, hg->i_max-1);
+	  
+	  model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, hg->i_max-1);
+	  trdb_tree_update_azel_item(hg, model, iter, hg->i_max-1);
+	}
+	//remake_tree(hg);
+	//trdb_make_tree(hg);
       }
     }
     else{
@@ -2926,6 +2939,9 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
   if (gtk_dialog_run(GTK_DIALOG(fdialog)) == GTK_RESPONSE_ACCEPT) {
     char *fname;
     gchar *dest_file;
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    gint i_base;
     
     fname = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog)));
     gtk_widget_destroy(fdialog);
@@ -2935,6 +2951,7 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
     if(access(dest_file,F_OK)==0){
       if(hg->filename_jpl) g_free(hg->filename_jpl);
       hg->filename_jpl=g_strdup(dest_file);
+      i_base=hg->i_max;
       MergeJPL(hg, hg->ope_max);
 
       //// Current Condition
@@ -2947,8 +2964,18 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
       update_c_label(hg);
 
       if(flagTree){
-	remake_tree(hg);
-	trdb_make_tree(hg);
+	if(i_base!=hg->i_max){
+	  model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, hg->i_max-1);
+	  tree_update_azel_item(hg, model, iter, hg->i_max-1);
+	  
+	  model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, hg->i_max-1);
+	  trdb_tree_update_azel_item(hg, model, iter, hg->i_max-1);
+	}
+
+	//remake_tree(hg);
+	//trdb_make_tree(hg);
       }
     }
     else{
@@ -3415,6 +3442,9 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
   if (gtk_dialog_run(GTK_DIALOG(fdialog)) == GTK_RESPONSE_ACCEPT) {
     char *fname;
     gchar *dest_file;
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    gint i_list, i_base;
     
     fname = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog)));
     gtk_widget_destroy(fdialog);
@@ -3424,6 +3454,7 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
     if(access(dest_file,F_OK)==0){
       if(hg->filename_prm) g_free(hg->filename_prm);
       hg->filename_prm=g_strdup(dest_file);
+      i_base=hg->i_max;
       MergeListPRM(hg);
 
       //// Current Condition
@@ -3436,8 +3467,20 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
       update_c_label(hg);
       
       if(flagTree){
-	remake_tree(hg);
-	trdb_make_tree(hg);
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+	for(i_list=i_base;i_list<hg->i_max;i_list++){
+	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i_list);
+	  tree_update_azel_item(hg, model, iter, i_list);
+	}
+
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+	for(i_list=i_base;i_list<hg->i_max;i_list++){
+	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i_list);
+	  trdb_tree_update_azel_item(hg, model, iter, i_list);
+	}
+
+	//remake_tree(hg);
+	//trdb_make_tree(hg);
       }
     }
     else{
@@ -3463,7 +3506,6 @@ void do_merge_prm (GtkWidget *widget, gpointer gdata)
   flagChildDialog=FALSE;
   
 }
-
 
 
 void do_merge (GtkWidget *widget, gpointer gdata)
@@ -3515,7 +3557,7 @@ void do_merge (GtkWidget *widget, gpointer gdata)
     gchar *dest_file;
     GtkTreeModel *model;
     GtkTreeIter iter;
-    gint i_list, i_base;
+    gint i_list,i_base;
     
     fname = g_strdup(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fdialog)));
     gtk_widget_destroy(fdialog);
@@ -14605,6 +14647,8 @@ void MergeNST(typHOE *hg, gint ope_max){
   fclose(fp);
 
   if(i>0){
+    init_obj(&hg->obj[i_list]);
+
     ln_get_local_date(hg->nst[hg->nst_max].eph[0].jd, &zonedate, 
 		      hg->obs_timezone/60);
     ln_get_local_date(hg->nst[hg->nst_max].eph[hg->nst[hg->nst_max].i_max-1].jd, 
@@ -14636,14 +14680,10 @@ void MergeNST(typHOE *hg, gint ope_max){
 					 zonedate1.minutes,
 					 hg->obs_tzname);
 
-    hg->obj[i_list].check_disp=TRUE;
     hg->obj[i_list].check_sm=FALSE;
     hg->obj[i_list].check_lock=FALSE;
-    hg->obj[i_list].check_used=TRUE;
-    hg->obj[i_list].check_std=FALSE;
     hg->obj[i_list].ope=hg->ope_max;
     hg->obj[i_list].ope_i=0;
-    hg->obj[i_list].type=OBJTYPE_OBJ;
     hg->obj[i_list].i_nst=hg->nst_max;
 
     hg->i_max++;
@@ -14990,6 +15030,8 @@ void MergeJPL(typHOE *hg, gint ope_max){
   
   fclose(fp);
 
+  init_obj(&hg->obj[i_list]);
+
   ln_get_local_date(hg->nst[hg->nst_max].eph[0].jd, &zonedate, 
 		    hg->obs_timezone/60);
   ln_get_local_date(hg->nst[hg->nst_max].eph[hg->nst[hg->nst_max].i_max-1].jd, 
@@ -15022,14 +15064,9 @@ void MergeJPL(typHOE *hg, gint ope_max){
 				       zonedate1.minutes,
 				       hg->obs_tzname);
 
-  hg->obj[i_list].check_disp=TRUE;
   hg->obj[i_list].check_sm=FALSE;
-  hg->obj[i_list].check_lock=FALSE;
-  hg->obj[i_list].check_used=TRUE;
-  hg->obj[i_list].check_std=FALSE;
   hg->obj[i_list].ope=hg->ope_max;
   hg->obj[i_list].ope_i=0;
-  hg->obj[i_list].type=OBJTYPE_OBJ;
   hg->obj[i_list].i_nst=hg->nst_max;
 
   hg->i_max++;
@@ -16554,6 +16591,8 @@ void MergeListPRM(typHOE *hg){
 	  }
 	  
 	  if(newdef && (hg->i_max<MAX_OBJECT)){
+	    init_obj(&hg->obj[hg->i_max]);
+
 	    if(hg->obj[hg->i_max].name) g_free(hg->obj[hg->i_max].name);
 	    hg->obj[hg->i_max].name=g_strdup(tmp_name);
 
@@ -16569,13 +16608,10 @@ void MergeListPRM(typHOE *hg){
 
 	    hg->obj[hg->i_max].check_disp=FALSE;
 	    hg->obj[hg->i_max].check_sm=FALSE;
-	    hg->obj[hg->i_max].check_lock=FALSE;
 	    hg->obj[hg->i_max].check_used=FALSE;
 	    hg->obj[hg->i_max].check_std=TRUE;
 	    hg->obj[hg->i_max].ope=MAX_ROPE-1;
 	    hg->obj[hg->i_max].ope_i=hg->i_max-i0;
-	    hg->obj[hg->i_max].type=OBJTYPE_OBJ;
-	    hg->obj[hg->i_max].i_nst=-1;
 
 	    hg->i_max++;
 	    if(hg->i_max==MAX_OBJECT-1){
@@ -16770,6 +16806,8 @@ void MergeListPRM2(typHOE *hg){
 	    ret_check_def=CheckTargetDefOPE2(hg,tmp_def);
 	    if(ret_check_def!=CHECK_TARGET_DEF_NOUSE){
 	      if(hg->i_max<MAX_OBJECT){
+		init_obj(&hg->obj[hg->i_max]);
+
 		if(hg->obj[hg->i_max].name) g_free(hg->obj[hg->i_max].name);
 		hg->obj[hg->i_max].name=g_strdup(tmp_name);
 		
@@ -16783,10 +16821,8 @@ void MergeListPRM2(typHOE *hg){
 		if(hg->obj[hg->i_max].note) g_free(hg->obj[hg->i_max].note);
 		hg->obj[hg->i_max].note=NULL;
 		
-		hg->obj[hg->i_max].check_disp=TRUE;
 		hg->obj[hg->i_max].check_sm=FALSE;
 		hg->obj[hg->i_max].check_lock=FALSE;
-		hg->obj[hg->i_max].check_used=TRUE;
 		if(ret_check_def==CHECK_TARGET_DEF_STANDARD){
 		  hg->obj[hg->i_max].check_std=TRUE;
 		}
@@ -16795,7 +16831,6 @@ void MergeListPRM2(typHOE *hg){
 		}
 		hg->obj[hg->i_max].ope=MAX_ROPE-1;
 		hg->obj[hg->i_max].ope_i=hg->i_max-i0;
-		hg->obj[hg->i_max].type=OBJTYPE_OBJ;
 		hg->obj[hg->i_max].i_nst=-1;
 
 		hg->i_max++;
