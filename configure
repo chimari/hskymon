@@ -12980,6 +12980,19 @@ $as_echo "#define HAVE_SYS_WAIT_H 1" >>confdefs.h
 
 fi
 
+for ac_header in error.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "error.h" "ac_cv_header_error_h" "$ac_includes_default"
+if test "x$ac_cv_header_error_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_ERROR_H 1
+_ACEOF
+ $as_echo "#define HAVE_ERROR_H 1" >>confdefs.h
+
+fi
+
+done
+
 for ac_header in pwd.h sys/utsname.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`

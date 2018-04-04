@@ -41,14 +41,16 @@
 //                  Extract_VO_Header
 //-------------------------------------------------------------
 
+#include "config.h"
 #ifndef _VOTABLE_H_
 #define _VOTABLE_H_
 #include <stdio.h>  /* using printf         */
 #include <stdlib.h> /* using malloc and free */
+#ifdef HAVE_ERROR_H
 #include <error.h>
+#endif
 #include <libxml/xmlmemory.h>
 #include <libxml/xmlreader.h>
-#include "config.h"
 
 /* --------------------------------- Macros ---------------------------- */
 
