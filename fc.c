@@ -1069,6 +1069,8 @@ void create_fc_dialog(typHOE *hg)
 		     G_CALLBACK (fc_item), (gpointer)hg);
 #ifdef USE_GTK3      
   gtk_grid_attach(GTK_GRID(table), button, 0, 1, 1, 1);
+  gtk_widget_set_halign(button,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(button,GTK_ALIGN_CENTER);
 #else
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
@@ -1317,6 +1319,7 @@ void create_fc_dialog(typHOE *hg)
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 #ifdef USE_GTK3      
     gtk_grid_attach(GTK_GRID(table), combo, 1, 1, 1, 1);
+    gtk_widget_set_valign(combo,GTK_ALIGN_CENTER);
     gtk_widget_set_hexpand(combo,TRUE);
 #else
     gtk_table_attach (GTK_TABLE(table), combo, 1, 2, 1, 2,
@@ -1463,6 +1466,8 @@ void create_fc_dialog(typHOE *hg)
 		     G_CALLBACK (refresh_fc), (gpointer)hg);
 #ifdef USE_GTK3      
   gtk_grid_attach(GTK_GRID(table), button, 0, 1, 1, 1);
+  gtk_widget_set_halign(button,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(button,GTK_ALIGN_CENTER);
 #else
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
@@ -1544,6 +1549,7 @@ void create_fc_dialog(typHOE *hg)
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 #ifdef USE_GTK3      
     gtk_grid_attach(GTK_GRID(table), combo, 1, 1, 1, 1);
+    gtk_widget_set_valign(combo,GTK_ALIGN_CENTER);
     gtk_widget_set_hexpand(combo,TRUE);
 #else
     gtk_table_attach (GTK_TABLE(table), combo, 1, 2, 1, 2,
@@ -1564,6 +1570,8 @@ void create_fc_dialog(typHOE *hg)
   gtk_container_set_border_width (GTK_CONTAINER (button), 0);
 #ifdef USE_GTK3      
   gtk_grid_attach(GTK_GRID(table), button, 2, 1, 1, 1);
+  gtk_widget_set_halign(button,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(button,GTK_ALIGN_CENTER);
 #else
   gtk_table_attach (GTK_TABLE(table), button, 2, 3, 1, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
@@ -1578,6 +1586,8 @@ void create_fc_dialog(typHOE *hg)
   frame = gtk_frame_new ("PA [deg]");
 #ifdef USE_GTK3      
   gtk_grid_attach(GTK_GRID(table), frame, 3, 0, 1, 2);
+  gtk_widget_set_halign(frame,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(frame,GTK_ALIGN_CENTER);
 #else
   gtk_table_attach (GTK_TABLE(table), frame, 3, 4, 0, 2,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
@@ -1691,6 +1701,8 @@ void create_fc_dialog(typHOE *hg)
 		     G_CALLBACK (fcdb_item), (gpointer)hg);
 #ifdef USE_GTK3      
   gtk_grid_attach(GTK_GRID(table), button, 0, 1, 1, 1);
+  gtk_widget_set_halign(button,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(button,GTK_ALIGN_CENTER);
 #else
   gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
   		    GTK_SHRINK,GTK_SHRINK,0,0);
@@ -1703,6 +1715,8 @@ void create_fc_dialog(typHOE *hg)
   vbox1 = gtkut_vbox_new(FALSE,0);
 #ifdef USE_GTK3      
   gtk_grid_attach(GTK_GRID(table), vbox1, 1, 0, 1, 2);
+  gtk_widget_set_halign(vbox1,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(vbox1,GTK_ALIGN_CENTER);
 #else
   gtk_table_attach (GTK_TABLE(table), vbox1, 1, 2, 0, 2,
   		    GTK_SHRINK,GTK_SHRINK,0,0);
@@ -1742,6 +1756,8 @@ void create_fc_dialog(typHOE *hg)
 		     fcdb_para_item, (gpointer)hg);
 #ifdef USE_GTK3      
   gtk_grid_attach(GTK_GRID(table), button, 2, 1, 1, 1);
+  gtk_widget_set_halign(button,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(button,GTK_ALIGN_CENTER);
 #else
   gtk_table_attach (GTK_TABLE(table), button, 2, 3, 1, 2,
   		    GTK_SHRINK,GTK_SHRINK,0,0);
@@ -5075,6 +5091,8 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   g_object_unref(pixbuf);
 #ifdef USE_GTK3      
   gtk_grid_attach(GTK_GRID(table), pixmap, 0, 0, 1, 1);
+  gtk_widget_set_halign(pixmap,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(pixmap,GTK_ALIGN_CENTER);
 #else
   gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 0, 1,
 		    GTK_SHRINK,GTK_SHRINK,0,0);
@@ -5098,6 +5116,8 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   pixmap=gtk_image_new_from_icon_name ("view-refresh", 
 				       GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_grid_attach(GTK_GRID(table), pixmap, 0, 1, 1, 1);
+  gtk_widget_set_halign(pixmap,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(pixmap,GTK_ALIGN_CENTER);
 #else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_REFRESH, 
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
@@ -5122,6 +5142,8 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   pixmap=gtk_image_new_from_icon_name ("edit-find", 
 				       GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_grid_attach(GTK_GRID(table), pixmap, 0, 2, 1, 1);
+  gtk_widget_set_halign(pixmap,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(pixmap,GTK_ALIGN_CENTER);
 #else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_FIND,
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
@@ -5146,6 +5168,8 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   pixmap=gtk_image_new_from_icon_name ("emblem-system", 
 				       GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_grid_attach(GTK_GRID(table), pixmap, 0, 3, 1, 1);
+  gtk_widget_set_halign(pixmap,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(piamap,GTK_ALIGN_CENTER);
 #else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES,
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
@@ -5172,6 +5196,8 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
   gtk_grid_attach(GTK_GRID(table), label, 0, 4, 1, 1);
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 0, 1, 4, 5,
@@ -5198,6 +5224,8 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
   gtk_grid_attach(GTK_GRID(table), label, 0, 5, 1, 1);
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 0, 1, 5, 6,
@@ -5220,6 +5248,8 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
   gtk_grid_attach(GTK_GRID(table), label, 0, 6, 1, 1);
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 0, 1, 6, 7,
@@ -5242,6 +5272,8 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
   gtk_grid_attach(GTK_GRID(table), label, 0, 7, 1, 1);
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 0, 1, 7, 8,
@@ -5264,6 +5296,8 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
   gtk_grid_attach(GTK_GRID(table), label, 0, 8, 1, 1);
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 0, 1, 8, 9,
@@ -5286,6 +5320,8 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
   gtk_grid_attach(GTK_GRID(table), label, 0, 9, 1, 1);
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 0, 1, 9, 10,
@@ -5308,6 +5344,8 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
   gtk_grid_attach(GTK_GRID(table), label, 0, 10, 1, 1);
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
   gtk_table_attach (GTK_TABLE(table), label, 0, 1, 10, 11,
