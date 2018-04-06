@@ -13850,6 +13850,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   g_free(tmp_fontname_all);
 
   flagChildDialog=FALSE;
+  flagProp=FALSE;
   g_free(cdata_col);
   g_free(cdata_pos);
 }

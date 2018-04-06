@@ -1,3 +1,5 @@
+2018.04.05 ver3.5.2 - Fixed a bug not to re-popup the prop edit dialog.
+
 2018.04.03 ver3.5.1 - Revised GdkPixmap drawing in Gtk+2 .
 	            - All deprecated functions are replaced in Gtk+3.
 	            - Bug fix for remake_tree in Gtk+3.
