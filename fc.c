@@ -1643,7 +1643,7 @@ void create_fc_dialog(typHOE *hg)
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "USNO-B");
   }
   else if(hg->fcdb_type==FCDB_TYPE_GAIA){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "GAIA DR1");
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "GAIA DR2");
   }
   else if(hg->fcdb_type==FCDB_TYPE_2MASS){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "2MASS");
@@ -5700,7 +5700,7 @@ void fcdb_dl(typHOE *hg)
     break;
 
   case FCDB_TYPE_GAIA:
-    label=gtk_label_new("Searching objects in GAIA DR1 ...");
+    label=gtk_label_new("Searching objects in GAIA DR2 ...");
     break;
 
   case FCDB_TYPE_2MASS:
@@ -7322,10 +7322,15 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       -1);
   }
   else if(hg->fcdb_type==FCDB_TYPE_GAIA){
-    // g
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
-		       COLUMN_FCDB_V, hg->fcdb[i_list].v,  // g
+		       COLUMN_FCDB_V, hg->fcdb[i_list].v,  // G
 		       COLUMN_FCDB_PLX, hg->fcdb[i_list].plx,  // Parallax
+		       COLUMN_FCDB_B, hg->fcdb[i_list].b,  // BP
+		       COLUMN_FCDB_R, hg->fcdb[i_list].r,  // RP
+		       COLUMN_FCDB_I, hg->fcdb[i_list].i,  // RV
+		       COLUMN_FCDB_U, hg->fcdb[i_list].u,  // Teff
+		       COLUMN_FCDB_J, hg->fcdb[i_list].j,  // AG
+		       COLUMN_FCDB_H, hg->fcdb[i_list].h,  // Distance
 		       -1);
   }
   else if(hg->fcdb_type==FCDB_TYPE_2MASS){

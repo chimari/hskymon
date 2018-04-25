@@ -1,3 +1,6 @@
+2018.04.25 ver3.5.3 - Fixed a bug failed to re-popup Sync OPE dialog.
+	            - Updated GAIA database to DR2 (CDS).
+
 2018.04.05 ver3.5.2 - Fixed a bug not to re-popup the prop edit dialog.
 
 2018.04.03 ver3.5.1 - Revised GdkPixmap drawing in Gtk+2 .

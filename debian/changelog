@@ -1,3 +1,9 @@
+hskymon (3.5.3) unstable; urgency=medium
+
+  *  Updated GAIA database to DR2 (CDS).
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Wed, 25 Apr 2018 13:08:44 -1000
+
 hskymon (3.5.2) unstable; urgency=medium
 
   *  Fixed a bug not to re-popup the prop edit dialog.

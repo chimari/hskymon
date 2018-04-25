@@ -692,7 +692,7 @@ void stddb_vo_parse(typHOE *hg) {
     else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"PMRA") == 0) 
       columns[13] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"PMDEC") == 0) 
-      columns[24] = vfield_move->position;
+      columns[14] = vfield_move->position;
     /* IRAS depricated in SIMBAD 2017-04
     else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"IRAS:f12") == 0) 
       columns[13] = vfield_move->position;
@@ -1842,14 +1842,24 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
       columns[1] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"DE_ICRS") == 0) 
       columns[2] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"<Gmag>") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Gmag") == 0) 
       columns[3] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Plx") == 0) 
       columns[4] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"pmRA") == 0) 
       columns[5] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"pmDEC") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"pmDE") == 0) 
       columns[6] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"BPmag") == 0) 
+      columns[7] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RPmag") == 0) 
+      columns[8] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RV") == 0) 
+      columns[9] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Teff") == 0) 
+      columns[10] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"AG") == 0) 
+      columns[11] = vfield_move->position;
   }
   
   Extract_VO_TableData(reader,&votable, nbFields, columns);
@@ -1870,7 +1880,7 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
       hg->fcdb[i_list].d_dec=atof((const char*)vtabledata_move->value);
       hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
     }
-    else if (vtabledata_move->colomn == columns[3]){  //g
+    else if (vtabledata_move->colomn == columns[3]){  //G
       if(vtabledata_move->value){
 	hg->fcdb[i_list].v=atof((const char*)vtabledata_move->value);
 	if(fabs(hg->fcdb[i_list].v)<1e-5) hg->fcdb[i_list].v=+100;
@@ -1881,10 +1891,15 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
     }
     else if (vtabledata_move->colomn == columns[4]){  //Parallax
       if(vtabledata_move->value){
+	gdouble au_pc=206264.806247;  // AU/pc
+
 	hg->fcdb[i_list].plx=atof((const char*)vtabledata_move->value);
+	hg->fcdb[i_list].h=1.0/au_pc
+	  /(hg->fcdb[i_list].plx/1000.0/60.0/60.0*M_PI/180.0)/1000.0;
       }
       else{
 	hg->fcdb[i_list].plx=-1;
+	hg->fcdb[i_list].h=-1;
       }
     }
     else if (vtabledata_move->colomn == columns[5]){
@@ -1901,6 +1916,50 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
       }
       else{
 	hg->fcdb[i_list].pmdec=0;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[7]){  //RP
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].r=atof((const char*)vtabledata_move->value);
+	if(fabs(hg->fcdb[i_list].r)<1e-5) hg->fcdb[i_list].r=+100;
+      }
+      else{
+	hg->fcdb[i_list].r=+100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[8]){  //BP
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].b=atof((const char*)vtabledata_move->value);
+	if(fabs(hg->fcdb[i_list].b)<1e-5) hg->fcdb[i_list].b=+100;
+      }
+      else{
+	hg->fcdb[i_list].b=+100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[9]){  // RV
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].i=atof((const char*)vtabledata_move->value);
+      }
+      else{
+	hg->fcdb[i_list].i=-99999;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[10]){ // Teff
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].u=atof((const char*)vtabledata_move->value);
+	if(hg->fcdb[i_list].u<0) hg->fcdb[i_list].u=-1;
+      }
+      else{
+	hg->fcdb[i_list].u=-1;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[11]){  //AG
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].j=atof((const char*)vtabledata_move->value);
+	if(fabs(hg->fcdb[i_list].j)<1e-5) hg->fcdb[i_list].j=+100;
+      }
+      else{
+	hg->fcdb[i_list].j=+100;
       }
     }
   }

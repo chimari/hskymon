@@ -2686,14 +2686,14 @@ void do_open (GtkWidget *widget, gpointer gdata)
   GtkWidget *fdialog;
   typHOE *hg;
 
+  hg=(typHOE *)gdata;
+
   if(flagChildDialog){
     return;
   }
   else{
     flagChildDialog=TRUE;
   }
-
-  hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Input List File",
 					GTK_WINDOW(hg->skymon_main),
@@ -2789,14 +2789,14 @@ void do_open_NST (GtkWidget *widget, gpointer gdata)
   GtkWidget *fdialog;
   typHOE *hg;
 
+  hg=(typHOE *)gdata;
+
   if(flagChildDialog){
     return;
   }
   else{
     flagChildDialog=TRUE;
   }
-
-  hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File [TSC]",
 					GTK_WINDOW(hg->skymon_main),
@@ -2897,14 +2897,14 @@ void do_open_JPL (GtkWidget *widget, gpointer gdata)
   GtkWidget *fdialog;
   typHOE *hg;
 
+  hg=(typHOE *)gdata;
+
   if(flagChildDialog){
     return;
   }
   else{
     flagChildDialog=TRUE;
   }
-
-  hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select Non-Sidereal Tracking File  [JPL HRIZONS]",
 					GTK_WINDOW(hg->skymon_main),
@@ -3185,14 +3185,14 @@ void do_open_ope (GtkWidget *widget, gpointer gdata)
   GtkWidget *fdialog;
   typHOE *hg;
 
+  hg=(typHOE *)gdata;
+
   if(flagChildDialog){
     return;
   }
   else{
     flagChildDialog=TRUE;
   }
-
-  hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select OPE File",
 					GTK_WINDOW(hg->skymon_main),
@@ -8050,7 +8050,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 
 
   vbox = gtkut_vbox_new (FALSE, 0);
-  label = gtk_label_new ("GAIA DR1");
+  label = gtk_label_new ("GAIA DR2");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
 #ifdef USE_GTK3      
@@ -9491,7 +9491,7 @@ void create_fcdb_para_dialog (typHOE *hg)
       else if(hg->fcdb_type==FCDB_TYPE_USNO)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"USNO-B");
       else if(hg->fcdb_type==FCDB_TYPE_GAIA)
-	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"GAIA DR1");
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"GAIA DR2");
       else if(hg->fcdb_type==FCDB_TYPE_2MASS)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"2MASS");
       else if(hg->fcdb_type==FCDB_TYPE_WISE)
@@ -10160,14 +10160,14 @@ void do_open_TRDB (GtkWidget *widget, gpointer gdata)
   typHOE *hg;
   GtkTreeModel *model;
 
+  hg=(typHOE *)gdata;
+
   if(flagChildDialog){
     return;
   }
   else{
     flagChildDialog=TRUE;
   }
-
-  hg=(typHOE *)gdata;
 
   fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Select HSK File",
 					GTK_WINDOW(hg->skymon_main),
@@ -18900,9 +18900,8 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
     else{
       gtk_widget_destroy(dialog);
     }
-
-    flagChildDialog=FALSE;
   }
+  flagChildDialog=FALSE;
 }
 #endif
 
