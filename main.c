@@ -10449,6 +10449,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gint  tmp_temp;
   gint  tmp_sz_skymon, tmp_sz_plot, tmp_sz_fc, tmp_sz_adc;
   gint  tmp_fcdb_simbad;
+  gint  tmp_fcdb_vizier;
   gint  tmp_fc_mode_def;
   gint  tmp_fc_mode_RGB[3];
   gint  tmp_dss_scale_RGB[3];
@@ -10521,6 +10522,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   tmp_sz_fc        =hg->sz_fc;
   tmp_sz_adc       =hg->sz_adc;
   tmp_fcdb_simbad  =hg->fcdb_simbad;
+  tmp_fcdb_vizier  =hg->fcdb_vizier;
   tmp_fc_mode_def  =hg->fc_mode_def;
   tmp_fc_mode_RGB[0]  =hg->fc_mode_RGB[0];
   tmp_fc_mode_RGB[1]  =hg->fc_mode_RGB[1];
@@ -13034,7 +13036,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_grid_set_row_spacing (GTK_GRID (table1), 5);
   gtk_grid_set_column_spacing (GTK_GRID (table1), 5);
 #else
-  table1 = gtk_table_new(2,2,FALSE);
+  table1 = gtk_table_new(4,1,FALSE);
   gtk_table_set_row_spacings (GTK_TABLE (table1), 5);
   gtk_table_set_col_spacings (GTK_TABLE (table1), 5);
 #endif
@@ -13088,6 +13090,61 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     gtk_widget_show(combo);
     my_signal_connect (combo,"changed",cc_get_combo_box,
 		       &tmp_fcdb_simbad);
+  }
+
+
+  label = gtk_label_new ("   VizieR");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+  gtk_grid_attach(GTK_GRID(table1), label, 2, 0, 1, 1);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table1), label, 2, 3, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+#endif
+  
+  {
+    GtkWidget *combo;
+    GtkListStore *store;
+    GtkTreeIter iter, iter_set;	  
+    GtkCellRenderer *renderer;
+    
+    store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "Strasbourg (FR)",
+		       1, FCDB_VIZIER_STRASBG, 2, TRUE, -1);
+    if(hg->fcdb_vizier==FCDB_VIZIER_STRASBG) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "NAOJ (JP)",
+		       1, FCDB_VIZIER_NAOJ, 2, TRUE, -1);
+    if(hg->fcdb_vizier==FCDB_VIZIER_NAOJ) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "Harvard (US)",
+		       1, FCDB_VIZIER_HARVARD, 2, TRUE, -1);
+    if(hg->fcdb_vizier==FCDB_VIZIER_HARVARD) iter_set=iter;
+	
+
+    combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+#ifdef USE_GTK3
+    gtk_grid_attach(GTK_GRID(table1), combo, 3, 0, 1, 1);
+#else
+    gtk_table_attach(GTK_TABLE(table1), combo, 3, 4, 0, 1,
+		     GTK_FILL,GTK_SHRINK,0,0);
+#endif
+    g_object_unref(store);
+	
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+	
+    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+    gtk_widget_show(combo);
+    my_signal_connect (combo,"changed",cc_get_combo_box,
+		       &tmp_fcdb_vizier);
   }
 
 
@@ -13577,6 +13634,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->sz_fc	            =tmp_sz_fc;        
     hg->sz_adc	            =tmp_sz_adc;        
     hg->fcdb_simbad         =tmp_fcdb_simbad;
+    hg->fcdb_vizier         =tmp_fcdb_vizier;
     hg->fc_mode_def         =tmp_fc_mode_def;
     hg->fc_mode_RGB[0]      =tmp_fc_mode_RGB[0];
     hg->fc_mode_RGB[1]      =tmp_fc_mode_RGB[1];
@@ -13733,6 +13791,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->pres=PRES_SUBARU;
 
     hg->fcdb_simbad         =FCDB_SIMBAD_STRASBG;
+    hg->fcdb_vizier         =FCDB_VIZIER_NAOJ;
     hg->fc_mode_def         =FC_SKYVIEW_DSS2R;
     hg->fc_mode_RGB[0]      =FC_SKYVIEW_DSS2IR;
     hg->fc_mode_RGB[1]      =FC_SKYVIEW_DSS2R;
@@ -17525,6 +17584,7 @@ void WriteConf(typHOE *hg){
   xmms_cfg_write_int(cfgfile, "DSS", "GreenS",(gint)hg->dss_scale_RGB[1]);
   xmms_cfg_write_int(cfgfile, "DSS", "BlueS",(gint)hg->dss_scale_RGB[2]);
   xmms_cfg_write_int(cfgfile, "DSS", "SIMBAD",(gint)hg->fcdb_simbad);
+  xmms_cfg_write_int(cfgfile, "DSS", "VizieR",(gint)hg->fcdb_vizier);
 
   // Observatory
   xmms_cfg_write_boolean(cfgfile, "Obs", "PresetFlag", hg->obs_preset_flag);
@@ -17806,6 +17866,11 @@ void ReadConf(typHOE *hg)
       hg->fcdb_simbad=i_buf;
     else
       hg->fcdb_simbad=FCDB_SIMBAD_STRASBG;
+
+    if(xmms_cfg_read_int  (cfgfile, "DSS", "VizieR",  &i_buf))
+      hg->fcdb_vizier=i_buf;
+    else
+      hg->fcdb_vizier=FCDB_VIZIER_NAOJ;
 
     // Observatory
     if(xmms_cfg_read_boolean(cfgfile, "Obs", "PresetFlag", &b_buf))
@@ -18158,6 +18223,7 @@ void ReadConf(typHOE *hg)
     hg->dss_arcmin=DSS_ARCMIN;
     hg->dss_pix=DSS_PIX;
     hg->fcdb_simbad         =FCDB_SIMBAD_STRASBG;
+    hg->fcdb_vizier         =FCDB_VIZIER_NAOJ;
     hg->fc_mode_def         =FC_SKYVIEW_DSS2R;
     hg->fc_mode             =hg->fc_mode_def;
     hg->fc_mode_RGB[0]      =FC_SKYVIEW_DSS2IR;

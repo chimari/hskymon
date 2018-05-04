@@ -6902,14 +6902,24 @@ void fcdb_item2 (typHOE *hg)
   case FCDB_TYPE_GAIA:
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     if(hg->fcdb_host) g_free(hg->fcdb_host);
-    hg->fcdb_host=g_strdup(FCDB_HOST_GAIA);
+    switch(hg->fcdb_vizier){
+    case FCDB_VIZIER_STRASBG:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_STRASBG);
+      break;
+    case FCDB_VIZIER_NAOJ:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_NAOJ);
+      break;
+    default:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_HARVARD);
+      break;
+    }
     if(hg->fcdb_path) g_free(hg->fcdb_path);
 
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
     if(hg->fcdb_gaia_fil){
-      url_param=g_strdup_printf("&%%3CGmag%%3E=%%3C%d&",hg->fcdb_gaia_mag);
+      url_param=g_strdup_printf("&Gmag=%%3C%d&",hg->fcdb_gaia_mag);
     }
     else{
       url_param=g_strdup("&");
@@ -6977,7 +6987,17 @@ void fcdb_item2 (typHOE *hg)
   case FCDB_TYPE_WISE:
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     if(hg->fcdb_host) g_free(hg->fcdb_host);
-    hg->fcdb_host=g_strdup(FCDB_HOST_WISE);
+    switch(hg->fcdb_vizier){
+    case FCDB_VIZIER_STRASBG:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_STRASBG);
+      break;
+    case FCDB_VIZIER_NAOJ:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_NAOJ);
+      break;
+    default:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_HARVARD);
+      break;
+    }
     if(hg->fcdb_path) g_free(hg->fcdb_path);
 
     hg->fcdb_d_ra0=object_prec.ra;
@@ -7016,7 +7036,17 @@ void fcdb_item2 (typHOE *hg)
   case FCDB_TYPE_IRC:
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     if(hg->fcdb_host) g_free(hg->fcdb_host);
-    hg->fcdb_host=g_strdup(FCDB_HOST_IRC);
+    switch(hg->fcdb_vizier){
+    case FCDB_VIZIER_STRASBG:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_STRASBG);
+      break;
+    case FCDB_VIZIER_NAOJ:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_NAOJ);
+      break;
+    default:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_HARVARD);
+      break;
+    }
     if(hg->fcdb_path) g_free(hg->fcdb_path);
 
     hg->fcdb_d_ra0=object_prec.ra;
@@ -7042,7 +7072,17 @@ void fcdb_item2 (typHOE *hg)
   case FCDB_TYPE_FIS:
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     if(hg->fcdb_host) g_free(hg->fcdb_host);
-    hg->fcdb_host=g_strdup(FCDB_HOST_FIS);
+    switch(hg->fcdb_vizier){
+    case FCDB_VIZIER_STRASBG:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_STRASBG);
+      break;
+    case FCDB_VIZIER_NAOJ:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_NAOJ);
+      break;
+    default:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_HARVARD);
+      break;
+    }
     if(hg->fcdb_path) g_free(hg->fcdb_path);
 
     hg->fcdb_d_ra0=object_prec.ra;
@@ -7211,6 +7251,7 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 {
   gint i;
   gdouble s_rt=-1;
+  gdouble eplx_pc;
 
   // Num/Name
   gtk_list_store_set (GTK_LIST_STORE(model), &iter,
@@ -7322,15 +7363,27 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       -1);
   }
   else if(hg->fcdb_type==FCDB_TYPE_GAIA){
+    if(hg->fcdb[i_list].eplx<0){
+      eplx_pc=-1;
+    }
+    if(hg->fcdb[i_list].plx<0){
+      eplx_pc=-1;
+    }
+    else{
+      eplx_pc=hg->fcdb[i_list].eplx/hg->fcdb[i_list].plx*100;
+    }
+
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 		       COLUMN_FCDB_V, hg->fcdb[i_list].v,  // G
 		       COLUMN_FCDB_PLX, hg->fcdb[i_list].plx,  // Parallax
+		       COLUMN_FCDB_EPLX, eplx_pc,  // e_Parallax
 		       COLUMN_FCDB_B, hg->fcdb[i_list].b,  // BP
 		       COLUMN_FCDB_R, hg->fcdb[i_list].r,  // RP
 		       COLUMN_FCDB_I, hg->fcdb[i_list].i,  // RV
 		       COLUMN_FCDB_U, hg->fcdb[i_list].u,  // Teff
 		       COLUMN_FCDB_J, hg->fcdb[i_list].j,  // AG
 		       COLUMN_FCDB_H, hg->fcdb[i_list].h,  // Distance
+		       COLUMN_FCDB_K, hg->fcdb[i_list].k,  // E(BP-RP)
 		       -1);
   }
   else if(hg->fcdb_type==FCDB_TYPE_2MASS){

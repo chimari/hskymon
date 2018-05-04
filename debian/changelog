@@ -1,3 +1,9 @@
+hskymon (3.5.4) unstable; urgency=medium
+
+  *  Revised GAIA DR2 Table. Selectable VizieR server.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Thu, 03 May 2018 15:21:36 -1000
+
 hskymon (3.5.3) unstable; urgency=medium
 
   *  Updated GAIA database to DR2 (CDS).

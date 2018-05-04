@@ -220,6 +220,10 @@
 #define FCDB_HOST_USNO "www.nofs.navy.mil"
 #define FCDB_USNO_PATH "/cgi-bin/vo_cone.cgi?CAT=USNO-B1&RA=%lf&DEC=%+lf&SR=%lf%sVERB=1"
 
+#define FCDB_HOST_VIZIER_STRASBG "vizier.u-strasbg.fr"
+#define FCDB_HOST_VIZIER_NAOJ "vizier.nao.ac.jp"
+#define FCDB_HOST_VIZIER_HARVARD "vizier.cfa.harvard.edu"
+
 #define FCDB_HOST_GAIA "vizier.u-strasbg.fr"
 #define FCDB_GAIA_PATH "/viz-bin/votable?-source=I/345/gaia2&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=5000%s-out.form=VOTable"
 
@@ -394,6 +398,8 @@ enum{ FC_INST_HDS, FC_INST_HDSAUTO, FC_INST_HDSZENITH, FC_INST_NONE, FC_INST_IRC
 enum{ FC_SCALE_LINEAR, FC_SCALE_LOG, FC_SCALE_SQRT, FC_SCALE_HISTEQ, FC_SCALE_LOGLOG} FCScale;
 
 enum{ FCDB_SIMBAD_STRASBG, FCDB_SIMBAD_HARVARD } FCDBSimbad;
+enum{ FCDB_VIZIER_STRASBG, FCDB_VIZIER_NAOJ, 
+      FCDB_VIZIER_HARVARD } FCDBVizieR;
 
 #define ADC_WINSIZE 400
 #define ADC_SLIT_WIDTH 0.4
@@ -554,6 +560,7 @@ enum
   COLUMN_FCDB_NEDZ,
   COLUMN_FCDB_REF,
   COLUMN_FCDB_PLX,
+  COLUMN_FCDB_EPLX,
   COLUMN_FCDB_FID,
   COLUMN_FCDB_DATE,
   COLUMN_FCDB_MODE,
@@ -1411,6 +1418,7 @@ struct _FCDBpara{
   gdouble nedvel;
   gdouble nedz;
   gdouble plx;
+  gdouble eplx;
   gdouble u;
   gdouble b;
   gdouble v;
@@ -1768,6 +1776,7 @@ struct _typHOE{
   gboolean fcdb_post;
   gchar *fcdb_file;
   gint fcdb_simbad;
+  gint fcdb_vizier;
   gchar *fcdb_host;
   gchar *fcdb_path;
   gint fcdb_i;

@@ -531,7 +531,13 @@ void fcdb_double_cell_data_func(GtkTreeViewColumn *col ,
 
   case COLUMN_FCDB_PLX:
     if(value<0) str=g_strdup_printf("---");
-    else str=g_strdup_printf("%.2lf",value);
+    else str=g_strdup_printf("%.3lf",value);
+    break;
+
+  case COLUMN_FCDB_EPLX:
+    if(value<0) str=g_strdup_printf("---");
+    else if(value>100) str=g_strdup_printf(">100");
+    else str=g_strdup_printf("%.1lf",value);
     break;
   }
 
@@ -578,7 +584,13 @@ void fcdb_lamost_afgk_cell_data_func(GtkTreeViewColumn *col ,
 
   case COLUMN_FCDB_H:
     if(value<0) str=g_strdup_printf("---");
-    else str=g_strdup_printf("%.4lf",value);
+    else if(value<0.1) str=g_strdup_printf("%.3lf",value);
+    else str=g_strdup_printf("%.2lf",value);
+    break;
+
+  case COLUMN_FCDB_K:
+    if(value<0) str=g_strdup_printf("---");
+    else str=g_strdup_printf("%.3lf",value);
     break;
   }
 
@@ -1261,6 +1273,7 @@ fcdb_create_items_model (typHOE *hg)
 			      G_TYPE_DOUBLE,  // NED z
 			      G_TYPE_INT,     // References or ndetections
 			      G_TYPE_DOUBLE,  // Parallax
+			      G_TYPE_DOUBLE,  // e_Parallax
 			      G_TYPE_STRING,  // Frame ID
 			      G_TYPE_STRING,  // Obs Date
 			      G_TYPE_STRING,  // Obs Mode
@@ -5119,6 +5132,22 @@ fcdb_add_columns (typHOE *hg,
       gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_J);
       gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
       
+      /* E(BP-RP) */
+      renderer = gtk_cell_renderer_text_new ();
+      g_object_set_data (G_OBJECT (renderer), "column", 
+			 GINT_TO_POINTER (COLUMN_FCDB_K));
+      column=gtk_tree_view_column_new_with_attributes ("E(B-R)",
+						       renderer,
+						       "text",
+						       COLUMN_FCDB_K,
+						       NULL);
+      gtk_tree_view_column_set_cell_data_func(column, renderer,
+					      fcdb_lamost_afgk_cell_data_func,
+					      GUINT_TO_POINTER(COLUMN_FCDB_K),
+					      NULL);
+      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_J);
+      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+      
       /* Parallax */
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
@@ -5133,6 +5162,22 @@ fcdb_add_columns (typHOE *hg,
 					      GUINT_TO_POINTER(COLUMN_FCDB_PLX),
 					      NULL);
       gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_PLX);
+      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+      /* e_Parallax */
+      renderer = gtk_cell_renderer_text_new ();
+      g_object_set_data (G_OBJECT (renderer), "column", 
+			 GINT_TO_POINTER (COLUMN_FCDB_V));
+      column=gtk_tree_view_column_new_with_attributes ("err(%)",
+						       renderer,
+						       "text",
+						       COLUMN_FCDB_EPLX,
+						       NULL);
+      gtk_tree_view_column_set_cell_data_func(column, renderer,
+					      fcdb_double_cell_data_func,
+					      GUINT_TO_POINTER(COLUMN_FCDB_EPLX),
+					      NULL);
+      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_EPLX);
       gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
 
       /* Distance */
