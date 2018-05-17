@@ -1,3 +1,7 @@
+2018.05.16 ver3.5.5 - Change URL for GSC search. Added "CAT=GSC23".
+	              Currently GSC-2.4.1 is default, but VOTable is still
+	              wrong.
+
 2018.05.03 ver3.5.4 - Revised GAIA DR2 table.
 	            - VizieR host is selectable in "Browsing" panel of
 	              the properties window, Strasbourg/NAOJ/Haravard

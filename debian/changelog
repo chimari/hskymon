@@ -1,12 +1,18 @@
+hskymon (3.5.5) unstable; urgency=medium
+
+  * Updated URL for GSC2.3
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Wed, 16 May 2018 17:02:16 -1000
+
 hskymon (3.5.4) unstable; urgency=medium
 
-  *  Revised GAIA DR2 Table. Selectable VizieR server.
+  * Revised GAIA DR2 Table. Selectable VizieR server.
 
  -- Akito Tajitsu <tajitsu@naoj.org>  Thu, 03 May 2018 15:21:36 -1000
 
 hskymon (3.5.3) unstable; urgency=medium
 
-  *  Updated GAIA database to DR2 (CDS).
+  * Updated GAIA database to DR2 (CDS).
 
  -- Akito Tajitsu <tajitsu@naoj.org>  Wed, 25 Apr 2018 13:08:44 -1000
 
