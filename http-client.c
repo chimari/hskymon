@@ -55,6 +55,9 @@ int http_c_fc_ssl();
 #endif
 #endif
 
+int post_body();
+int post_body_ssl();
+
 gboolean check_allsky();
 
 static void cancel_allsky();
@@ -4119,6 +4122,446 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket,
 }
  
 
+int post_body_ssl(typHOE *hg, gboolean wflag, SSL *ssl, 
+		  gchar *rand16){
+  char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
+  char ins_mesg[BUF_LEN];
+  gint ip, plen, i;
+  gchar *send_buf1=NULL, *send_buf2=NULL;
+  gboolean init_flag=FALSE;
+  gboolean send_flag=TRUE;
+
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_SMOKA:
+  case FCDB_TYPE_WWWDB_SMOKA:
+  case TRDB_TYPE_SMOKA:
+  case TRDB_TYPE_WWWDB_SMOKA:
+  case TRDB_TYPE_FCDB_SMOKA:
+    ip=0;
+    plen=0;
+
+    while(1){
+      if(smoka_post[ip].key==NULL) break;
+      send_flag=TRUE;
+
+      switch(smoka_post[ip].flg){
+      case POST_NULL:
+	sprintf(send_mesg,
+		"%s=&",
+		smoka_post[ip].key);
+	break;
+
+      case POST_CONST:
+	sprintf(send_mesg,
+		"%s=%s&",
+		smoka_post[ip].key,
+		smoka_post[ip].prm);
+	break;
+	
+      case POST_INPUT:
+	if(strcmp(smoka_post[ip].key,"longitudeC")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  smoka_post[ip].key,
+		    hg->fcdb_d_ra0);
+	}
+	else if(strcmp(smoka_post[ip].key,"latitudeC")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  smoka_post[ip].key,
+		  hg->fcdb_d_dec0);
+	}
+	else if(strcmp(smoka_post[ip].key,"radius")==0){
+	  switch(hg->fcdb_type){
+	  case FCDB_TYPE_SMOKA:
+	    sprintf(send_mesg,
+		    "%s=%.1lf&",
+		    smoka_post[ip].key,
+		    hg->dss_arcmin/2.0);
+	    break;
+
+	  case FCDB_TYPE_WWWDB_SMOKA:
+	    sprintf(send_mesg,
+		    "%s=2.0&",
+		    smoka_post[ip].key);
+	    break;
+
+	  case TRDB_TYPE_SMOKA:
+	    sprintf(send_mesg,
+		    "%s=%d&",
+		    smoka_post[ip].key,
+		    hg->trdb_arcmin);
+	    break;
+
+	  case TRDB_TYPE_WWWDB_SMOKA:
+	  case TRDB_TYPE_FCDB_SMOKA:
+	    sprintf(send_mesg,
+		    "%s=%d&",
+		    smoka_post[ip].key,
+		    hg->trdb_arcmin_used);
+	    break;
+
+	  }
+	}
+	else if(strcmp(smoka_post[ip].key,"asciitable")==0){
+	  switch(hg->fcdb_type){
+	  case FCDB_TYPE_WWWDB_SMOKA:
+	  case TRDB_TYPE_WWWDB_SMOKA:
+	    sprintf(send_mesg,
+		    "%s=Table&",
+		    smoka_post[ip].key);
+	    break;
+
+	  case FCDB_TYPE_SMOKA:
+	  case TRDB_TYPE_SMOKA:
+	  case TRDB_TYPE_FCDB_SMOKA:
+	    sprintf(send_mesg,
+		    "%s=Ascii&",
+		    smoka_post[ip].key);
+	    break;
+	  }
+	}
+	else if(strcmp(smoka_post[ip].key,"frameorshot")==0){
+	  switch(hg->fcdb_type){
+	  case TRDB_TYPE_SMOKA:
+	    if(((strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"SUP")==0)
+		|| (strcmp(smoka_subaru[hg->trdb_smoka_inst].prm,"HSC")==0))
+	       && (hg->trdb_smoka_shot)) {
+	      sprintf(send_mesg,
+		      "%s=Shot&",
+		      smoka_post[ip].key);
+	    }
+	    else{
+	      sprintf(send_mesg,
+		      "%s=Frame&",
+		      smoka_post[ip].key);
+	    }
+	    break;
+	  case TRDB_TYPE_WWWDB_SMOKA:
+	  case TRDB_TYPE_FCDB_SMOKA:
+	    if(((strcmp(smoka_subaru[hg->trdb_smoka_inst_used].prm,"SUP")==0)
+		|| (strcmp(smoka_subaru[hg->trdb_smoka_inst_used].prm,"HSC")==0))
+	       && (hg->trdb_smoka_shot_used)) {
+	      sprintf(send_mesg,
+		      "%s=Shot&",
+		      smoka_post[ip].key);
+	    }
+	    else{
+	      sprintf(send_mesg,
+		      "%s=Frame&",
+		      smoka_post[ip].key);
+	    }
+	    break;
+
+	  case FCDB_TYPE_SMOKA:
+	  case FCDB_TYPE_WWWDB_SMOKA:
+	    if(hg->fcdb_smoka_shot){
+	      sprintf(send_mesg,
+		      "%s=Shot&",
+		      smoka_post[ip].key);
+	    }
+	    else{
+	      sprintf(send_mesg,
+		      "%s=Frame&",
+		      smoka_post[ip].key);
+	    }
+	    break;
+	  }
+	}
+	else if(strcmp(smoka_post[ip].key,"date_obs")==0){
+	  switch(hg->fcdb_type){
+	  case TRDB_TYPE_SMOKA:
+	    sprintf(send_mesg,
+		    "%s=%s&",
+		    smoka_post[ip].key,
+		    hg->trdb_smoka_date);
+	    break;
+
+	  case TRDB_TYPE_WWWDB_SMOKA:
+	  case TRDB_TYPE_FCDB_SMOKA:
+	    sprintf(send_mesg,
+		    "%s=%s&",
+		    smoka_post[ip].key,
+		    hg->trdb_smoka_date_used);
+	    break;
+
+	  case FCDB_TYPE_SMOKA:
+	  case FCDB_TYPE_WWWDB_SMOKA:
+	    sprintf(send_mesg,
+		    "%s=&",
+		    smoka_post[ip].key);
+	    break;
+	  }
+	}
+	break;
+
+      case POST_INST1:
+	switch(hg->fcdb_type){
+	case TRDB_TYPE_SMOKA:
+	  sprintf(send_mesg, "%s=%s&", 
+		  smoka_post[ip].key, 
+		  smoka_subaru[hg->trdb_smoka_inst].prm);
+	  break;
+
+	case TRDB_TYPE_WWWDB_SMOKA:
+	case TRDB_TYPE_FCDB_SMOKA:
+	  sprintf(send_mesg, "%s=%s&", 
+		  smoka_post[ip].key, 
+		  smoka_subaru[hg->trdb_smoka_inst_used].prm);
+	  break;
+
+	case FCDB_TYPE_SMOKA:
+	case FCDB_TYPE_WWWDB_SMOKA:
+	  send_mesg[0]=0x00;
+	  for(i=0;i<NUM_SMOKA_SUBARU;i++){
+	    if(hg->fcdb_smoka_subaru[i]) {
+	      sprintf(ins_mesg, "%s=%s&", 
+		      smoka_post[ip].key, 
+		      smoka_subaru[i].prm);
+	      strcat(send_mesg,ins_mesg);
+	    }	
+	  }
+	  break;
+	}
+	break;
+
+      case POST_INST2:
+	switch(hg->fcdb_type){
+	case FCDB_TYPE_SMOKA:
+	case FCDB_TYPE_WWWDB_SMOKA:
+	  send_mesg[0]=0x00;
+	  for(i=0;i<NUM_SMOKA_KISO;i++){
+	    if(hg->fcdb_smoka_kiso[i]) {
+	      sprintf(ins_mesg, "%s=%s&", 
+		      smoka_post[ip].key, 
+		      smoka_kiso[i].prm);
+	      strcat(send_mesg,ins_mesg);
+	    }	
+	  }
+	  break;
+
+	case TRDB_TYPE_SMOKA:
+	case TRDB_TYPE_WWWDB_SMOKA:
+	case TRDB_TYPE_FCDB_SMOKA:
+	  send_flag=FALSE;
+	  break;
+	}
+	break;
+
+      case POST_INST3:
+	switch(hg->fcdb_type){
+	case FCDB_TYPE_SMOKA:
+	case FCDB_TYPE_WWWDB_SMOKA:
+	  send_mesg[0]=0x00;
+	  for(i=0;i<NUM_SMOKA_OAO;i++){
+	    if(hg->fcdb_smoka_oao[i]) {
+	      sprintf(ins_mesg, "%s=%s&", 
+		      smoka_post[ip].key, 
+		      smoka_oao[i].prm);
+	      strcat(send_mesg,ins_mesg);
+	    }	
+	  }
+	  break;
+
+	case TRDB_TYPE_SMOKA:
+	case TRDB_TYPE_WWWDB_SMOKA:
+	case TRDB_TYPE_FCDB_SMOKA:
+	  send_flag=FALSE;
+	  break;
+	}
+	break;
+
+      case POST_INST4:
+	switch(hg->fcdb_type){
+	case FCDB_TYPE_SMOKA:
+	case FCDB_TYPE_WWWDB_SMOKA:
+	  send_mesg[0]=0x00;
+	  for(i=0;i<NUM_SMOKA_MTM;i++){
+	    if(hg->fcdb_smoka_mtm[i]) {
+	      sprintf(ins_mesg, "%s=%s&", 
+		      smoka_post[ip].key, 
+		      smoka_mtm[i].prm);
+	      strcat(send_mesg,ins_mesg);
+	    }	
+	  }
+	  break;
+
+	case TRDB_TYPE_SMOKA:
+	case TRDB_TYPE_WWWDB_SMOKA:
+	case TRDB_TYPE_FCDB_SMOKA:
+	  send_flag=FALSE;
+	  break;
+	}
+	break;
+
+      case POST_INST5:
+	switch(hg->fcdb_type){
+	case FCDB_TYPE_SMOKA:
+	case FCDB_TYPE_WWWDB_SMOKA:
+	  send_mesg[0]=0x00;
+	  for(i=0;i<NUM_SMOKA_KANATA;i++){
+	    if(hg->fcdb_smoka_kanata[i]) {
+	      sprintf(ins_mesg, "%s=%s&", 
+		      smoka_post[ip].key, 
+		      smoka_kanata[i].prm);
+	      strcat(send_mesg,ins_mesg);
+	    }	
+	  }
+	  break;
+
+	case TRDB_TYPE_SMOKA:
+	case TRDB_TYPE_WWWDB_SMOKA:
+	case TRDB_TYPE_FCDB_SMOKA:
+	  send_flag=FALSE;
+	  break;
+	}
+	break;
+
+      case POST_IMAG:
+	switch(hg->fcdb_type){
+	case FCDB_TYPE_SMOKA:
+	case FCDB_TYPE_WWWDB_SMOKA:
+	  sprintf(send_mesg,
+		  "%s=%s&",
+		  smoka_post[ip].key,
+		  smoka_post[ip].prm);
+	  break;
+
+	case TRDB_TYPE_SMOKA:
+	  if(hg->trdb_smoka_imag){
+	    sprintf(send_mesg,
+		    "%s=%s&",
+		    smoka_post[ip].key,
+		    smoka_post[ip].prm);
+	  }
+	  else{
+	    send_flag=FALSE;
+	  }
+	  break;
+
+	case TRDB_TYPE_WWWDB_SMOKA:
+	case TRDB_TYPE_FCDB_SMOKA:
+	  if(hg->trdb_smoka_imag_used){
+	    sprintf(send_mesg,
+		    "%s=%s&",
+		    smoka_post[ip].key,
+		    smoka_post[ip].prm);
+	  }
+	  else{
+	    send_flag=FALSE;
+	  }
+	  break;
+	}
+	break;
+
+      case POST_SPEC:
+	switch(hg->fcdb_type){
+	case FCDB_TYPE_SMOKA:
+	case FCDB_TYPE_WWWDB_SMOKA:
+	  sprintf(send_mesg,
+		  "%s=%s&",
+		  smoka_post[ip].key,
+		  smoka_post[ip].prm);
+	  break;
+
+	case TRDB_TYPE_SMOKA:
+	  if(hg->trdb_smoka_spec){
+	    sprintf(send_mesg,
+		    "%s=%s&",
+		    smoka_post[ip].key,
+		    smoka_post[ip].prm);
+	  }
+	  else{
+	    send_flag=FALSE;
+	  }
+	  break;
+
+	case TRDB_TYPE_WWWDB_SMOKA:
+	case TRDB_TYPE_FCDB_SMOKA:
+	  if(hg->trdb_smoka_spec_used){
+	    sprintf(send_mesg,
+		    "%s=%s&",
+		    smoka_post[ip].key,
+		    smoka_post[ip].prm);
+	  }
+	  else{
+	    send_flag=FALSE;
+	  }
+	  break;
+	}
+	break;
+
+      case POST_IPOL:
+	switch(hg->fcdb_type){
+	case FCDB_TYPE_SMOKA:
+	case FCDB_TYPE_WWWDB_SMOKA:
+	  sprintf(send_mesg,
+		  "%s=%s&",
+		  smoka_post[ip].key,
+		  smoka_post[ip].prm);
+	  break;
+
+	case TRDB_TYPE_SMOKA:
+	  if(hg->trdb_smoka_ipol){
+	    sprintf(send_mesg,
+		    "%s=%s&",
+		    smoka_post[ip].key,
+		    smoka_post[ip].prm);
+	  }
+	  else{
+	    send_flag=FALSE;
+	  }
+	  break;
+
+	case TRDB_TYPE_WWWDB_SMOKA:
+	case TRDB_TYPE_FCDB_SMOKA:
+	  if(hg->trdb_smoka_ipol_used){
+	    sprintf(send_mesg,
+		    "%s=%s&",
+		    smoka_post[ip].key,
+		    smoka_post[ip].prm);
+	  }
+	  else{
+	    send_flag=FALSE;
+	  }
+	  break;
+	}
+	break;
+      }
+
+      if(send_flag){
+	plen+=strlen(send_mesg);
+	
+	if(send_buf1) g_free(send_buf1);
+	if(send_buf2) send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+	else send_buf1=g_strdup(send_mesg);
+	if(send_buf2) g_free(send_buf2);
+	send_buf2=g_strdup(send_buf1);
+      }
+
+      ip++;
+    }
+
+    sprintf(send_mesg,"\r\n\r\n");
+    if(send_buf1) g_free(send_buf1);
+    send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+
+    plen+=strlen(send_mesg);
+
+    if(wflag){
+      write_to_SSLserver(ssl, send_buf1);
+    }
+
+    if(send_buf1) g_free(send_buf1);
+    if(send_buf2) g_free(send_buf2);
+
+    break;
+  }
+
+  return(plen);
+}
+ 
+
 #ifdef USE_WIN32
 unsigned __stdcall http_c_fcdb(LPVOID lpvPipe)
 {
@@ -4253,7 +4696,6 @@ int http_c_fcdb(typHOE *hg){
 
   // POST body
   if(hg->fcdb_post){
-
     plen=post_body(hg, TRUE, command_socket, rand16);
     if(rand16) g_free(rand16);
   }
@@ -4338,12 +4780,10 @@ int http_c_fcdb_ssl(typHOE *hg){
   SSL_CTX *ctx;
 
   // Calculate Content-Length
-  /*
   if(hg->fcdb_post){
     rand16=make_rand16();
-    plen=post_body_ssl(hg, FALSE, 0, rand16, FALSE, NULL);
+    plen=post_body_ssl(hg, FALSE, NULL, rand16);
   }
-  */
    
   check_msg_from_parent();
 
@@ -4428,15 +4868,30 @@ int http_c_fcdb_ssl(typHOE *hg){
   sprintf(send_mesg, "Connection: close\r\n");
   write_to_SSLserver(ssl, send_mesg);
 
-  //if(hg->fcdb_post){
-  //}
+  if(hg->fcdb_post){
+    sprintf(send_mesg, "Content-Length: %d\r\n", plen);
+    write_to_SSLserver(ssl, send_mesg);
+
+    switch(hg->fcdb_type){
+    case FCDB_TYPE_SMOKA:
+    case FCDB_TYPE_WWWDB_SMOKA:
+    case TRDB_TYPE_SMOKA:
+    case TRDB_TYPE_WWWDB_SMOKA:
+    case TRDB_TYPE_FCDB_SMOKA:
+      sprintf(send_mesg, "Content-Type: application/x-www-form-urlencoded\r\n");
+      break;
+    }
+    write_to_SSLserver(ssl, send_mesg);
+  }
 
   sprintf(send_mesg, "\r\n");
   write_to_SSLserver(ssl, send_mesg);
 
   // POST body
-  //if(hg->fcdb_post){
-  //}
+  if(hg->fcdb_post){
+    plen=post_body_ssl(hg, TRUE, ssl, rand16);
+    if(rand16) g_free(rand16);
+  }
 
   if((fp_write=fopen(hg->fcdb_file,"w"))==NULL){
     fprintf(stderr," File Write Error  \"%s\" \n", hg->fcdb_file);
@@ -4600,6 +5055,9 @@ int get_fcdb(typHOE *hg){
 #ifdef USE_SSL
   switch(hg->fcdb_type){
   case (-1):    
+  case FCDB_TYPE_SMOKA:
+  case TRDB_TYPE_SMOKA:
+  case TRDB_TYPE_FCDB_SMOKA:
   case FCDB_TYPE_GEMINI:
   case TRDB_TYPE_GEMINI:
   case TRDB_TYPE_FCDB_GEMINI:
@@ -4645,6 +5103,9 @@ int get_fcdb(typHOE *hg){
 #ifdef USE_SSL
     switch(hg->fcdb_type){
     case (-1):    
+    case FCDB_TYPE_SMOKA:
+    case TRDB_TYPE_SMOKA:
+    case TRDB_TYPE_FCDB_SMOKA:
     case FCDB_TYPE_GEMINI:
     case TRDB_TYPE_GEMINI:
     case TRDB_TYPE_FCDB_GEMINI:

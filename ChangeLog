@@ -1,3 +1,5 @@
+2018.05.23 ver3.5.6 - Change SMOKA access HTTP --> HTTPS .
+
 2018.05.16 ver3.5.5 - Change URL for GSC search. Added "CAT=GSC23".
 	              Currently GSC-2.4.1 is default, but VOTable is still
 	              wrong.

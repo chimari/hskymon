@@ -3916,7 +3916,7 @@ gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
 			 "    http://www.lamost.org/\n\n"
 
 			 "[The Subaru-Mitaka-Okayama-Kiso-Archive (SMOKA)]\n"
-			 "    http://smoka.nao.ac.jp/\n\n"
+			 "    https://smoka.nao.ac.jp/\n\n"
 
 			 "[The ESO Science Archive Facility]\n"
 			 "    http://archive.eso.org/\n\n"

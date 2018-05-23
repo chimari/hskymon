@@ -573,6 +573,9 @@ gboolean progress_timeout( gpointer data ){
       }
       else{
 	switch(hg->fcdb_type){
+	case FCDB_TYPE_SMOKA:
+	case TRDB_TYPE_SMOKA:
+	case TRDB_TYPE_FCDB_SMOKA:
 	case FCDB_TYPE_GEMINI:
 	case TRDB_TYPE_GEMINI:
 	case TRDB_TYPE_FCDB_GEMINI:

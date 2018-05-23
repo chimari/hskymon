@@ -158,6 +158,7 @@ void get_plot_time_current(typHOE *hg, gfloat delta_hst){
 }
 
 void get_plot_time(typHOE *hg){
+  gfloat hmerid;
   switch(hg->plot_center){
   case PLOT_CENTER_MIDNIGHT:
     hg->plot_ihst0=PLOT_HST0;
@@ -169,8 +170,9 @@ void get_plot_time(typHOE *hg){
     break;
 
   case PLOT_CENTER_MERIDIAN:
-    hg->plot_ihst0=get_meridian_hour(hg)-6.;
-    hg->plot_ihst1=get_meridian_hour(hg)+6.;
+    hmerid=get_meridian_hour(hg);
+    hg->plot_ihst0=hmerid-6.;
+    hg->plot_ihst1=hmerid+6.;
     break;
   }
 }
@@ -2132,6 +2134,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     else{
       get_current_obs_time(hg,&iyear, &month, &iday, &hour, &min, &sec);
     }
+    /*
     if(hg->plot_ihst0<0){
       zonedate.years=iyear;
       zonedate.months=month;
@@ -2152,6 +2155,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     if((hg->plot_center!=PLOT_CENTER_CURRENT)&&(hour<10)){
       add_day(hg, &iyear, &month, &iday, -1);
     }
+    */
   
     cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_BOLD);
@@ -2165,6 +2169,19 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     {
       gint iyear1,month1,iday1;
       
+      switch(hg->plot_center){
+      case PLOT_CENTER_CURRENT:
+	if(hg->plot_ihst0<0){
+	  add_day(hg, &iyear, &month, &iday, -1);
+	}
+	break;
+      case PLOT_CENTER_MERIDIAN:
+	if(hg->plot_ihst0>24){
+	  add_day(hg, &iyear, &month, &iday, +1);
+	}
+	break;
+      }
+
       cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2*scale);
@@ -2179,7 +2196,8 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       month1=month;
       iday1=iday;
 
-      if(ihst1>24.){
+      if(((hg->plot_ihst1>24.)&&(hg->plot_ihst0<24.))
+	 ||((hg->plot_ihst1>0)&&(hg->plot_ihst0<0.))){
 	add_day(hg, &iyear1, &month1, &iday1, +1);
 	tmp=g_strdup_printf("(%4d/%2d/%2d)",iyear1,month1,iday1);
 	cairo_text_extents (cr, tmp, &extents);
@@ -2333,8 +2351,8 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   zonedate.years=iyear;
   zonedate.months=month;
   zonedate.days=iday;
-  zonedate.hours=(gint)ihst0;
-  zonedate.minutes=(gint)((ihst0-(gint)ihst0)*60.);
+  zonedate.hours=(gint)hg->plot_ihst0;
+  zonedate.minutes=(gint)((hg->plot_ihst0-(gint)hg->plot_ihst0)*60.);
   zonedate.seconds=0.0;
   zonedate.gmtoff=(long)hg->obs_timezone*60;
 
@@ -4923,7 +4941,6 @@ gfloat get_meridian_hour(typHOE *hg){
   int iday;
   int hour, min;
   gdouble sec;
-
   struct ln_zonedate zonedate;
   struct ln_date date;
   struct ln_equ_posn oequ;
@@ -4948,6 +4965,10 @@ gfloat get_meridian_hour(typHOE *hg){
   }
   else{
     get_current_obs_time(hg,&iyear, &month, &iday, &hour, &min, &sec);
+  }
+
+  if(hour<8){
+    add_day(hg, &iyear, &month, &iday, -1);
   }
 
   zonedate.years=iyear;
