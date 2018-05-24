@@ -1,3 +1,9 @@
+hskymon (3.5.6) unstable; urgency=medium
+
+  * Revised elevation plots.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Wed, 23 May 2018 19:17:33 -1000
+
 hskymon (3.5.5) unstable; urgency=medium
 
   * Updated URL for GSC2.3

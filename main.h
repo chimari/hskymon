@@ -10,7 +10,7 @@
 
 #undef ALLSKY_DEBUG
 #undef SKYMON_DEBUG
-#define HTTP_DEBUG
+#undef HTTP_DEBUG
 
 #include<glib.h>
 #include<gtk/gtk.h>
