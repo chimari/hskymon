@@ -1021,7 +1021,7 @@ ALLSKY_LICK,
 ALLSKY_KPNO,
 ALLSKY_MMT,
 ALLSKY_HET,
-ALLSKY_CTIO,
+ALLSKY_CPAC,
 ALLSKY_LASILLA,
 ALLSKY_GTC,
 ALLSKY_KANATA,
@@ -1136,16 +1136,16 @@ ALLSKY_AAT
 #define ALLSKY_HET_CENTERX 332
 #define ALLSKY_HET_CENTERY 247
 
-#define ALLSKY_CTIO_NAME "Chile: Cerro Tololo (Visual/Z)"
-#define ALLSKY_CTIO_SHORT "CTIO [Z]"
-#define ALLSKY_CTIO_HOST "www.ctio.noao.edu"
-#define ALLSKY_CTIO_PATH "/noao/sites/default/files/lastpic.png"
-#define ALLSKY_CTIO_FILE "allsky.png"
-#define ALLSKY_CTIO_LAST_FILE "allsky-%ld.png"
-#define ALLSKY_CTIO_ANGLE 10.0
-#define ALLSKY_CTIO_DIAMETER 500
-#define ALLSKY_CTIO_CENTERX 265
-#define ALLSKY_CTIO_CENTERY 265
+#define ALLSKY_CPAC_NAME "Chile: Cerro Pachon (Visual)"
+#define ALLSKY_CPAC_SHORT "Gemini-S [Visual]"
+#define ALLSKY_CPAC_HOST "www.gemini.edu"
+#define ALLSKY_CPAC_PATH "/sciops/telescopes-and-sites/weather/cerro-pachon/cameras/img.png"
+#define ALLSKY_CPAC_FILE "allsky.png"
+#define ALLSKY_CPAC_LAST_FILE "allsky-%ld.png"
+#define ALLSKY_CPAC_ANGLE 0.0
+#define ALLSKY_CPAC_DIAMETER 720
+#define ALLSKY_CPAC_CENTERX 414
+#define ALLSKY_CPAC_CENTERY 374
 
 #define ALLSKY_LASILLA_NAME "Chile: La Silla (Visual)"
 #define ALLSKY_LASILLA_SHORT "La Silla [Visual]"

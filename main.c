@@ -1349,19 +1349,19 @@ void SetAllSkyPreset(typHOE *hg){
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
 				 FALSE);
     break;
-  case ALLSKY_CTIO:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_CTIO_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_CTIO_PATH);
+  case ALLSKY_CPAC:
+    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_CPAC_HOST);
+    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_CPAC_PATH);
     tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_CTIO_FILE, NULL);
+		      ALLSKY_CPAC_FILE, NULL);
     gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_CTIO_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_CTIO_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_CTIO_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_CTIO_ANGLE);
+    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_CPAC_CENTERX);
+    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_CPAC_CENTERY);
+    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_CPAC_DIAMETER);
+    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_CPAC_ANGLE);
     g_free(tmp);
     tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_CTIO_LAST_FILE, NULL);
+		      ALLSKY_CPAC_LAST_FILE, NULL);
     gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
 				 FALSE);
@@ -1698,25 +1698,25 @@ void set_allsky_param_from_preset(typHOE *hg)
     hg->allsky_name=g_strdup(ALLSKY_MMT_SHORT);
 
     break;
-  case ALLSKY_CTIO:
+  case ALLSKY_CPAC:
     if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_CTIO_HOST);
+    hg->allsky_host=g_strdup(ALLSKY_CPAC_HOST);
     if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_CTIO_PATH);
+    hg->allsky_path=g_strdup(ALLSKY_CPAC_PATH);
     if(hg->allsky_file) g_free(hg->allsky_file);
     hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_CTIO_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_CTIO_CENTERX;
-    hg->allsky_centery=ALLSKY_CTIO_CENTERY;
-    hg->allsky_diameter=ALLSKY_CTIO_DIAMETER;
-    hg->allsky_angle=ALLSKY_CTIO_ANGLE;
+				  ALLSKY_CPAC_FILE, NULL);
+    hg->allsky_centerx=ALLSKY_CPAC_CENTERX;
+    hg->allsky_centery=ALLSKY_CPAC_CENTERY;
+    hg->allsky_diameter=ALLSKY_CPAC_DIAMETER;
+    hg->allsky_angle=ALLSKY_CPAC_ANGLE;
     if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
     hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_CTIO_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
+					 ALLSKY_CPAC_LAST_FILE, NULL);
+    hg->allsky_limit= TRUE;
     hg->allsky_flip= TRUE;
     if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_CTIO_SHORT);
+    hg->allsky_name=g_strdup(ALLSKY_CPAC_SHORT);
 
     break;
   case ALLSKY_LASILLA:
@@ -11436,9 +11436,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     if(hg->allsky_preset_tmp==ALLSKY_HET) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_CTIO_NAME,
-		       1, ALLSKY_CTIO, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_CTIO) iter_set=iter;
+    gtk_list_store_set(store, &iter, 0, ALLSKY_CPAC_NAME,
+		       1, ALLSKY_CPAC, -1);
+    if(hg->allsky_preset_tmp==ALLSKY_CPAC) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, ALLSKY_LASILLA_NAME,
