@@ -5058,6 +5058,7 @@ int get_fcdb(typHOE *hg){
   case FCDB_TYPE_SMOKA:
   case TRDB_TYPE_SMOKA:
   case TRDB_TYPE_FCDB_SMOKA:
+  case TRDB_TYPE_WWWDB_SMOKA:
   case FCDB_TYPE_GEMINI:
   case TRDB_TYPE_GEMINI:
   case TRDB_TYPE_FCDB_GEMINI:
@@ -5106,6 +5107,7 @@ int get_fcdb(typHOE *hg){
     case FCDB_TYPE_SMOKA:
     case TRDB_TYPE_SMOKA:
     case TRDB_TYPE_FCDB_SMOKA:
+    case TRDB_TYPE_WWWDB_SMOKA:
     case FCDB_TYPE_GEMINI:
     case TRDB_TYPE_GEMINI:
     case TRDB_TYPE_FCDB_GEMINI:
