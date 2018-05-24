@@ -1567,9 +1567,8 @@ remove_item (GtkWidget *widget, gpointer data)
 
 
     return FALSE;
-    //remake_tree(hg);
-    //trdb_make_tree(hg);
   }
+  return FALSE;
 }
 
 
