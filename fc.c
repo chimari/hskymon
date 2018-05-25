@@ -5172,7 +5172,7 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
 				       GTK_ICON_SIZE_LARGE_TOOLBAR);
   gtk_grid_attach(GTK_GRID(table), pixmap, 0, 3, 1, 1);
   gtk_widget_set_halign(pixmap,GTK_ALIGN_CENTER);
-  gtk_widget_set_valign(piamap,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(pixmap,GTK_ALIGN_CENTER);
 #else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES,
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
