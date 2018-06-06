@@ -14709,11 +14709,11 @@ void MergeNST(typHOE *hg, gint ope_max){
   if(i>0){
     init_obj(&hg->obj[i_list]);
 
-    ln_get_local_date(hg->nst[hg->nst_max].eph[0].jd, &zonedate, 
-		      hg->obs_timezone/60);
-    ln_get_local_date(hg->nst[hg->nst_max].eph[hg->nst[hg->nst_max].i_max-1].jd, 
+    my_get_local_date(hg->nst[hg->nst_max].eph[0].jd, &zonedate, 
+		      hg->obs_timezone);
+    my_get_local_date(hg->nst[hg->nst_max].eph[hg->nst[hg->nst_max].i_max-1].jd, 
 		      &zonedate1, 
-		      hg->obs_timezone/60);
+		      hg->obs_timezone);
     if(tmp_name){
       cut_name=cut_spc(tmp_name);
       g_free(tmp_name);
@@ -15090,11 +15090,11 @@ void MergeJPL(typHOE *hg, gint ope_max){
 
   init_obj(&hg->obj[i_list]);
 
-  ln_get_local_date(hg->nst[hg->nst_max].eph[0].jd, &zonedate, 
-		    hg->obs_timezone/60);
-  ln_get_local_date(hg->nst[hg->nst_max].eph[hg->nst[hg->nst_max].i_max-1].jd, 
+  my_get_local_date(hg->nst[hg->nst_max].eph[0].jd, &zonedate, 
+		    hg->obs_timezone);
+  my_get_local_date(hg->nst[hg->nst_max].eph[hg->nst[hg->nst_max].i_max-1].jd, 
 		    &zonedate1, 
-		    hg->obs_timezone/60);
+		    hg->obs_timezone);
   
   if(tmp_name){
     cut_name=cut_spc(tmp_name);

@@ -2216,6 +2216,7 @@ void fcdb_gemini_json_parse();
 void trdb_gemini_json_parse();
 
 //julian_day.c
+void my_get_local_date();
 int get_gmtoff_from_sys ();
 
 //skymon.c

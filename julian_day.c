@@ -321,6 +321,22 @@ void ln_get_local_date (double JD, struct ln_zonedate * zonedate, int obs_timezo
 	ln_date_to_zonedate (&date, zonedate, gmtoff);
 }
 
+void my_get_local_date (double JD, struct ln_zonedate * zonedate, int obs_timezone)
+{
+	struct ln_date date;
+//*#ifndef __WIN32__
+	time_t curtime;
+	struct tm *loctime;
+//*#endif
+	long gmtoff;
+
+	ln_get_date (JD, &date);
+
+	/* add day light savings time and hour angle */
+ 	gmtoff = (long)(obs_timezone*60);
+	ln_date_to_zonedate (&date, zonedate, gmtoff);
+}
+
 /*! \fn int ln_get_date_from_mpc (struct ln_date* date, char* mpc_date)
 * \param date Pointer to new calendar date.
 * \param mpc_date Pointer to string MPC date

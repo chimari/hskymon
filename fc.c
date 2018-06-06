@@ -3967,9 +3967,9 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	    cairo_set_line_width (cr, 1.5*scale);
 	    if(fabs(x-x0)>fabs(y-y0)){
 	      if(i_tag==i_tag_max){
-		ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
+		my_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
 				  &zonedate, 
-				  hg->obs_timezone/60);
+				  hg->obs_timezone);
 		tmp=g_strdup_printf("%d/%d %d:%02d",
 				    zonedate.months,
 				    zonedate.days,
@@ -3992,9 +3992,9 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	    }
 	    else{
 	      if(i_tag==i_tag_max){
-		ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
+		my_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
 				  &zonedate, 
-				  hg->obs_timezone/60);
+				  hg->obs_timezone);
 		tmp=g_strdup_printf("%d/%d %d:%02d",
 				    zonedate.months,
 				    zonedate.days,
@@ -4024,9 +4024,9 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	  cairo_set_line_width (cr, 1.5*scale);
 	  if(fabs(x-x0)>fabs(y-y0)){
 	    if(i_tag==i_tag_max){
-	      ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
+	      my_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
 				&zonedate, 
-				hg->obs_timezone/60);
+				hg->obs_timezone);
 	      tmp=g_strdup_printf("%d/%d %d:%02d",
 				  zonedate.months,
 				  zonedate.days,
@@ -4049,9 +4049,9 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	  }
 	  else{	
 	    if(i_tag==i_tag_max){
-	      ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
+	      my_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
 				&zonedate, 
-				hg->obs_timezone/60);
+				hg->obs_timezone);
 	      tmp=g_strdup_printf("%d/%d %d:%02d",
 				  zonedate.months,
 				  zonedate.days,
