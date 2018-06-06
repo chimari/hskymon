@@ -36,8 +36,8 @@ void cc_get_plot_mode();
 void cc_get_plot_all();
 void cc_get_plot_center();
 
-void get_plot_time_current(typHOE*, gfloat);
-void get_plot_time_midnight(typHOE*, gfloat);
+void get_plot_time_current();
+void get_plot_time_midnight();
 void get_plot_time();
 
 gdouble set_ul();
@@ -138,7 +138,7 @@ void cc_get_plot_center (GtkWidget *widget,  gint * gdata)
   }
 }
 
-void get_plot_time_current(typHOE *hg, gfloat delta_hst){
+void get_plot_time_current(typHOE *hg, gdouble delta_hst){
   int iyear;
   int month;
   int iday;
@@ -167,7 +167,7 @@ void get_plot_time_current(typHOE *hg, gfloat delta_hst){
   hg->plot_jd1 = JD + delta_hst*0.75/24;
 }
 
-void get_plot_time_midnight(typHOE *hg, gfloat delta_hst){
+void get_plot_time_midnight(typHOE *hg, gdouble delta_hst){
   int iyear;
   int month;
   int iday;
@@ -203,7 +203,7 @@ void get_plot_time_midnight(typHOE *hg, gfloat delta_hst){
 }
 
 
-void get_plot_time_meridian(typHOE *hg, gfloat delta_hst){
+void get_plot_time_meridian(typHOE *hg, gdouble delta_hst){
   int iyear;
   int month;
   int iday;
@@ -214,7 +214,7 @@ void get_plot_time_meridian(typHOE *hg, gfloat delta_hst){
 
   JD = get_meridian_JD(hg);
 
-  ln_get_local_date(JD, &zonedate,hg->obs_timezone*60);
+  ln_get_local_date(JD, &zonedate,hg->obs_timezone/60);
 
   hg->plot_jd0 = JD - delta_hst*0.5/24;
   hg->plot_jd1 = JD + delta_hst*0.5/24;
@@ -598,10 +598,10 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
   get_plot_time(hg);
 
-  ln_get_local_date(hg->plot_jd0, &zonedate0,hg->obs_timezone*60);
+  ln_get_local_date(hg->plot_jd0, &zonedate0,hg->obs_timezone/60);
   ihst0=set_ul(0., (float)zonedate0.hours+(float)zonedate0.minutes/60., 24.);
 
-  ln_get_local_date(hg->plot_jd1, &zonedate1,hg->obs_timezone*60);
+  ln_get_local_date(hg->plot_jd1, &zonedate1,hg->obs_timezone/60);
   ihst1=set_ul(0., (float)zonedate1.hours+(float)zonedate1.minutes/60., 24.);
 
   /*
