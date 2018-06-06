@@ -2175,7 +2175,7 @@ gdouble date_to_jd();
 void calc_moon();
 double get_julian_day_of_equinox();
 gboolean draw_plot_cairo();
-//void get_plot_time_meridian();
+void get_plot_time_meridian(typHOE*, gfloat);
 gdouble deg_sep();
 void ext_play();
 
