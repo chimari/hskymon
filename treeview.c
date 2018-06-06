@@ -3310,8 +3310,7 @@ focus_item (GtkWidget *widget, gpointer data)
     hg->plot_i=i;
     
     if(hg->plot_center==PLOT_CENTER_MERIDIAN){
-      hg->plot_ihst0=get_meridian_hour(hg)-6.;
-      hg->plot_ihst1=get_meridian_hour(hg)+6.;
+      get_plot_time_meridian(hg,12.0);      
     }
     
     hg->obj[hg->tree_focus].check_sm=FALSE;

@@ -1,3 +1,9 @@
+hskymon (3.5.7) trusty; urgency=medium
+
+  * Revised time calculation in plot function to the JD based one.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Tue, 05 Jun 2018 17:32:32 -1000
+
 hskymon (3.5.6ubuntu) trusty; urgency=medium
 
   * Revised elevation plots.

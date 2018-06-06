@@ -35,8 +35,10 @@ gboolean update_plot();
 void cc_get_plot_mode();
 void cc_get_plot_all();
 void cc_get_plot_center();
+
+void get_plot_time_current(typHOE*, gfloat);
+void get_plot_time_midnight(typHOE*, gfloat);
 void get_plot_time();
-void get_plot_time_current(typHOE *hg, gfloat delta_hst);
 
 gdouble set_ul();
 
@@ -48,13 +50,16 @@ static void draw_page();
 void calc_moon_topocen();
 gdouble get_moon_sep();
 
+gdouble get_meridian_JD();
+gdouble get_julian_from_local_date();
+
 #ifdef USE_GTK3
 GdkPixbuf *pixbuf_plot=NULL;
 #else
 GdkPixmap *pixmap_plot=NULL;
 #endif
 gdouble paz_moon[200],pel_moon[200], hst_moon[200];
-gdouble JD_moon;
+gdouble JD_moon_stock;
 struct ln_zonedate moon_transit;
 gdouble moon_tr_el;
 gint i_moon_max;
@@ -139,6 +144,8 @@ void get_plot_time_current(typHOE *hg, gfloat delta_hst){
   int iday;
   int hour, min;
   gdouble sec;
+  gdouble JD;
+  struct ln_zonedate zonedate;
 
   if(hg->skymon_mode==SKYMON_SET){
     iyear=hg->skymon_year;
@@ -152,27 +159,80 @@ void get_plot_time_current(typHOE *hg, gfloat delta_hst){
   else{
     get_current_obs_time(hg,&iyear, &month, &iday, &hour, &min, &sec);
   }
-  
-  hg->plot_ihst0=(gfloat)hour+(gfloat)min/60.+(gfloat)sec/3600.-delta_hst*0.25;
-  hg->plot_ihst1=(gfloat)hour+(gfloat)min/60.+(gfloat)sec/3600.+delta_hst*0.75;
+
+  JD = get_julian_from_local_date(iyear,month,iday,hour,min,sec,
+				  (long)hg->obs_timezone*60);
+
+  hg->plot_jd0 = JD - delta_hst*0.25/24;
+  hg->plot_jd1 = JD + delta_hst*0.75/24;
 }
 
+void get_plot_time_midnight(typHOE *hg, gfloat delta_hst){
+  int iyear;
+  int month;
+  int iday;
+  int hour, min;
+  gdouble sec;
+  gdouble JD;
+  struct ln_zonedate zonedate;
+
+  if(hg->skymon_mode==SKYMON_SET){
+    iyear=hg->skymon_year;
+    month=hg->skymon_month;
+    iday=hg->skymon_day;
+    
+    hour=hg->skymon_hour;
+    min=hg->skymon_min;
+    sec=0.0;
+  }
+  else{
+    get_current_obs_time(hg,&iyear, &month, &iday, &hour, &min, &sec);
+  }
+
+  if(hour<10){  // Show tonight
+    JD = get_julian_from_local_date(iyear,month,iday,0,0,0.0,
+    				    (long)hg->obs_timezone*60);
+  }
+  else{         // Show the next night
+    JD = get_julian_from_local_date(iyear,month,iday,0,0,0.0,
+    				    (long)hg->obs_timezone*60)+1.0;
+  }
+
+  hg->plot_jd0 = JD - delta_hst*0.5/24;
+  hg->plot_jd1 = JD + delta_hst*0.5/24;
+}
+
+
+void get_plot_time_meridian(typHOE *hg, gfloat delta_hst){
+  int iyear;
+  int month;
+  int iday;
+  int hour, min;
+  gdouble sec;
+  gdouble JD;
+  struct ln_zonedate zonedate;
+
+  JD = get_meridian_JD(hg);
+
+  ln_get_local_date(JD, &zonedate,hg->obs_timezone*60);
+
+  hg->plot_jd0 = JD - delta_hst*0.5/24;
+  hg->plot_jd1 = JD + delta_hst*0.5/24;
+}
+
+
 void get_plot_time(typHOE *hg){
-  gfloat hmerid;
   switch(hg->plot_center){
   case PLOT_CENTER_MIDNIGHT:
-    hg->plot_ihst0=PLOT_HST0;
-    hg->plot_ihst1=PLOT_HST1;
+    get_plot_time_midnight(hg, 12.0*(gdouble)(10-hg->plot_zoom)/10.);
     break;
 
   case PLOT_CENTER_CURRENT:
-    get_plot_time_current(hg, 10.0);
+    get_plot_time_current(hg, 10.0*(gdouble)(10-hg->plot_zoom)/10.);
     break;
 
   case PLOT_CENTER_MERIDIAN:
-    hmerid=get_meridian_hour(hg);
-    hg->plot_ihst0=hmerid-6.;
-    hg->plot_ihst1=hmerid+6.;
+    get_plot_time_meridian(hg, 12.0*(gdouble)(10-hg->plot_zoom)/10.);
     break;
   }
 }
@@ -430,14 +490,14 @@ void create_plot_dialog(typHOE *hg)
 		    (gpointer)hg);
 #else
   my_signal_connect(hg->plot_dw, 
-		    "expose-event", 
-		    expose_plot_cairo,
-		    (gpointer)hg);
+  		    "expose-event", 
+  		    expose_plot_cairo,
+  		    (gpointer)hg);
 #endif
   my_signal_connect(hg->plot_dw, 
-		    "configure-event", 
-		    configure_plot_cb,
-		    (gpointer)hg);
+  		    "configure-event", 
+  		    configure_plot_cb,
+  		    (gpointer)hg);
   
   my_signal_connect(hg->plot_dw, 
 		    "scroll-event", 
@@ -496,6 +556,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   int hour, min;
   gdouble sec;
   gfloat ihst0, ihst1;
+  gdouble jd0, jd1;
   gfloat ihst1_moon;
   //int ihst0=17, ihst1=31;
   double utstart,utend;
@@ -511,7 +572,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   int i,iend;
   int width, height;
   
-  struct ln_zonedate zonedate;
+  struct ln_zonedate zonedate, zonedate0, zonedate1;
   struct ln_date date;
   struct ln_equ_posn oequ, oequ_geoc;
   struct ln_equ_posn oequ_prec;
@@ -521,6 +582,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   struct ln_zonedate transit;
   struct ln_lnlat_posn observer;
   double JD, JD_hst,JD_mt;
+  gboolean Flag_moon=FALSE;
   double hst_mt;
   gdouble x_tr,y_tr;
   gdouble scale;
@@ -534,12 +596,26 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
   if(!flagPlot) return (FALSE);
 
-  if(hg->plot_center==PLOT_CENTER_CURRENT)
-    get_plot_time_current(hg, hg->plot_ihst1-hg->plot_ihst0);
+  get_plot_time(hg);
 
-  ihst0=set_ul(0., hg->plot_ihst0, 24.);
-  ihst1=set_ul(0., hg->plot_ihst1, 24.);
-  if(ihst1<ihst0) ihst1+=24;
+  ln_get_local_date(hg->plot_jd0, &zonedate0,hg->obs_timezone*60);
+  ihst0=set_ul(0., (float)zonedate0.hours+(float)zonedate0.minutes/60., 24.);
+
+  ln_get_local_date(hg->plot_jd1, &zonedate1,hg->obs_timezone*60);
+  ihst1=set_ul(0., (float)zonedate1.hours+(float)zonedate1.minutes/60., 24.);
+
+  /*
+  printf("zoom=%d Start=%d/%d/%d %d:%d -- End=%d/%d/%d %d:%d\n",
+	 hg->plot_zoom,
+	 zonedate0.years,zonedate0.months,zonedate0.days,
+	 zonedate0.hours,zonedate0.minutes,
+	 zonedate1.years,zonedate1.months,zonedate1.days,
+	 zonedate1.hours,zonedate1.minutes);
+  */
+
+  while(ihst1<ihst0){
+    ihst1+=24;
+  }
 
   observer.lat = hg->obs_latitude;
   observer.lng = hg->obs_longitude;
@@ -2135,28 +2211,6 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     else{
       get_current_obs_time(hg,&iyear, &month, &iday, &hour, &min, &sec);
     }
-    /*
-    if(hg->plot_ihst0<0){
-      zonedate.years=iyear;
-      zonedate.months=month;
-      zonedate.days=iday;
-      zonedate.hours=(gint)ihst0;
-      zonedate.minutes=(gint)((ihst0-(gint)ihst0)*60.);
-      zonedate.seconds=0.0;
-      zonedate.gmtoff=(long)hg->obs_timezone*60;
-      JD = ln_get_julian_local_date(&zonedate);
-      JD -= 1.0;
-      ln_get_local_date(JD, &zonedate,hg->obs_timezone*60);
-
-      iyear=zonedate.years;
-      month=zonedate.months;
-      iday=zonedate.days;
-    }
-
-    if((hg->plot_center!=PLOT_CENTER_CURRENT)&&(hour<10)){
-      add_day(hg, &iyear, &month, &iday, -1);
-    }
-    */
   
     cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_BOLD);
@@ -2167,49 +2221,32 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     cairo_move_to(cr, x, y);
     cairo_show_text(cr, hg->obs_tzname);
 
-    {
-      gint iyear1,month1,iday1;
-      
-      switch(hg->plot_center){
-      case PLOT_CENTER_CURRENT:
-	if(hg->plot_ihst0<0){
-	  add_day(hg, &iyear, &month, &iday, -1);
-	}
-	break;
-      case PLOT_CENTER_MERIDIAN:
-	if(hg->plot_ihst0>24){
-	  add_day(hg, &iyear, &month, &iday, +1);
-	}
-	break;
-      }
-      
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2*scale);
-      tmp=g_strdup_printf("(%4d/%2d/%2d)",iyear,month,iday);
+    // Date label
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2*scale);
+
+    tmp=g_strdup_printf("(%4d/%2d/%2d)",
+			zonedate0.years,
+			zonedate0.months,
+			zonedate0.days);
+    cairo_text_extents (cr, tmp, &extents);
+    x = dx;
+    cairo_move_to(cr, x, y);
+    cairo_show_text(cr, tmp);
+    if(tmp) g_free(tmp);
+
+    if(zonedate0.days!=zonedate1.days){
+      tmp=g_strdup_printf("(%4d/%2d/%2d)",
+			  zonedate1.years,
+			  zonedate1.months,
+			  zonedate1.days);
       cairo_text_extents (cr, tmp, &extents);
-      x = dx;
+      x = dx+lx-extents.width;
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, tmp);
       if(tmp) g_free(tmp);
-      
-      iyear1=iyear;
-      month1=month;
-      iday1=iday;
-
-      if(((hg->plot_ihst1>24.)&&(hg->plot_ihst0<24.))
-	 ||((hg->plot_ihst1>0)&&(hg->plot_ihst0<0.))){
-	add_day(hg, &iyear1, &month1, &iday1, +1);
-	tmp=g_strdup_printf("(%4d/%2d/%2d)",iyear1,month1,iday1);
-	cairo_text_extents (cr, tmp, &extents);
-	x = dx+lx-extents.width;
-	cairo_move_to(cr, x, y);
-	cairo_show_text(cr, tmp);
-	if(tmp) g_free(tmp);
-      }
     }
-      
-
 
     // Current Time
     if(((gfloat)hour+(gfloat)min/60.<(ihst1-24.)) 
@@ -2352,38 +2389,65 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   zonedate.years=iyear;
   zonedate.months=month;
   zonedate.days=iday;
-  //zonedate.hours=(gint)hg->plot_ihst0;
-  //zonedate.minutes=(gint)((hg->plot_ihst0-(gint)hg->plot_ihst0)*60.);
   zonedate.hours=(gint)ihst0;
   zonedate.minutes=(gint)((ihst0-(gint)ihst0)*60.);
   zonedate.seconds=0.0;
   zonedate.gmtoff=(long)hg->obs_timezone*60;
-
   ln_zonedate_to_date(&zonedate, &date);
 
   utstart=(double)date.hours;
   utend=utstart+(double)(ihst1-ihst0);
   
   ut_offset=(double)(zonedate.hours-date.hours+ (gdouble)zonedate.minutes/60.);
-  //ut_offset=14.0;
 
 
   /* Lunar RA, DEC */
   if(((hg->plot_moon)&&(hg->plot_mode==PLOT_EL))
      ||(hg->plot_mode==PLOT_MOONSEP)){
 
-    JD = ln_get_julian_local_date(&zonedate);
+    //JD = ln_get_julian_local_date(&zonedate);
+    JD = (hg->plot_jd0+hg->plot_jd1)/2;
 
-    ln_get_lunar_rst (JD, &observer, &orst);
-    ln_get_date (orst.transit, &odate);
-    ln_date_to_zonedate(&odate,&moon_transit,(long)hg->obs_timezone*60);
 
-    JD_mt = ln_get_julian_local_date(&moon_transit);
+    // Re-calculate Moon Position?
+    if(fabs(JD-JD_moon_stock)>1.0){  // Completely new date
 
-    if(fabs(JD_mt-JD_moon)>0.5){
-      //ln_get_lunar_rst (JD, &observer, &orst);
-      //ln_get_date (orst.transit, &odate);
-      //ln_date_to_zonedate(&odate,&moon_transit,(long)hg->obs_timezone*60);
+      ln_get_lunar_rst (JD, &observer, &orst);
+      ln_get_date (orst.transit, &odate);
+      ln_date_to_zonedate(&odate,&moon_transit,(long)hg->obs_timezone*60);
+      
+      JD_mt = ln_get_julian_local_date(&moon_transit);
+
+      if((JD-JD_mt)>0.5){  // use transit at the night before
+	JD=JD-1.0;
+	ln_get_lunar_rst (JD, &observer, &orst);
+	ln_get_date (orst.transit, &odate);
+	ln_date_to_zonedate(&odate,&moon_transit,(long)hg->obs_timezone*60);
+      
+	JD_mt = ln_get_julian_local_date(&moon_transit);
+	//printf("Use -1 day transit\n");
+      }
+      else if((JD-JD_mt)<-0.5){ // use transit the next night
+	JD=JD+1.0;
+	ln_get_lunar_rst (JD, &observer, &orst);
+	ln_get_date (orst.transit, &odate);
+	ln_date_to_zonedate(&odate,&moon_transit,(long)hg->obs_timezone*60);
+      
+	JD_mt = ln_get_julian_local_date(&moon_transit);
+	//printf("Use +1 day transit\n");
+      }
+
+      if(fabs(JD_mt-JD_moon_stock)>0.5){
+	//printf("New Moon Calc.\n");
+	Flag_moon=TRUE;
+      }
+    }
+    else{
+      JD_mt=JD_moon_stock;
+    }
+    
+    // at first get transit elevation
+    if(Flag_moon){  
       ln_get_lunar_equ_coords (orst.transit, &oequ_geoc);
       calc_moon_topocen(hg, orst.transit, &oequ_geoc, &oequ);
 
@@ -2395,14 +2459,12 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     
     i=1;
     hst_mt=(double)moon_transit.hours+(double)moon_transit.minutes/60.;
-    if(hg->plot_ihst0-hst_mt>8){
+    if(ihst0-hst_mt>8){
       hst_mt+=24.;
     }
-    else if(hst_mt-hg->plot_ihst1>8){
+    else if(hst_mt-ihst1>8){
       hst_mt-=24.;
     }
-    //printf("%f(%f)  %f(%f)  %f\n",hg->plot_ihst0,
-    //	   ihst0,hg->plot_ihst1,ihst1,hst_mt);
     ihst1_moon=hst_mt+8;
     d_ut=16.0/190.0;
     hst=hst_mt-8;
@@ -2410,7 +2472,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     JD_hst = JD_mt-8./24.;
    
     while(hst<=ihst1_moon+d_ut){
-      if(fabs(JD_mt-JD_moon)>0.5){
+      if(Flag_moon){  
 	ln_get_lunar_equ_coords (JD_hst, &oequ_geoc);
 	calc_moon_topocen(hg, JD_hst, &oequ_geoc, &oequ);
 	ln_get_hrz_from_equ (&oequ, &observer, JD_hst, &ohrz);
@@ -2430,9 +2492,9 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     
     iend=i-1;
 
-    if(fabs(JD_mt-JD_moon)>0.5){
+    if(Flag_moon){  
       i_moon_max=iend;
-      JD_moon = JD_mt;
+      JD_moon_stock = JD_mt;
     }
     
     cairo_rectangle(cr, dx,dy,lx,ly);
@@ -2487,7 +2549,6 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     cairo_reset_clip(cr);
   }
 
-
   // Objects
   for(i_list=0;i_list<hg->i_max;i_list++){
     switch(hg->plot_all){ 
@@ -2540,8 +2601,8 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	pel[i]=ohrz.alt;
 	
 	if(hg->plot_mode==PLOT_MOONSEP){
-	  //sep[i]=deg_sep(paz[i]-180,pel[i],paz_moon[i],pel_moon[i]);
-	  sep[i]=get_moon_sep(paz[i]-180,pel[i],hst);
+	  sep[i]=get_moon_sep(paz[i]-180,pel[i],
+			      (ihst0<0)?(hst-24):hst);
 	}
 
 	ha=flst-a0;             //hour angle [hour]
@@ -3247,91 +3308,31 @@ gboolean resize_plot_cairo(GtkWidget *widget,
 			   gpointer userdata){
   typHOE *hg;
   GdkScrollDirection direction;
-  int iyear;
-  int month;
-  int iday;
-  int hour, min;
-  gdouble sec;
+  gint old_zoom;
 
   direction = event->direction;
   hg=(typHOE *)userdata;
 
+  old_zoom=hg->plot_zoom;
+
   if(flagPlot){
-    switch(hg->plot_center){
-    case PLOT_CENTER_MIDNIGHT:
-      if(direction & GDK_SCROLL_DOWN){
-	if(hg->plot_ihst0>PLOT_HST0){
-	  hg->plot_ihst0-=1.0;
-	}
-	if(hg->plot_ihst1<PLOT_HST1){
-	  hg->plot_ihst1+=1.0;
-	}
+    if(direction & GDK_SCROLL_DOWN){
+      if(hg->plot_zoom>0){
+	hg->plot_zoom--;
       }
-      else{
-	if(hg->plot_ihst1 - hg->plot_ihst0 >3){
-	  hg->plot_ihst0+=1.0;
-	  hg->plot_ihst1-=1.0;
-	}
-      }
-      break;
-
-      case PLOT_CENTER_CURRENT:
-	if(hg->skymon_mode==SKYMON_SET){
-	  iyear=hg->skymon_year;
-	  month=hg->skymon_month;
-	  iday=hg->skymon_day;
-      
-	  hour=hg->skymon_hour;
-	  min=hg->skymon_min;
-	  sec=0.0;
-	}
-	else{
-	  get_current_obs_time(hg,&iyear, &month, &iday, &hour, &min, &sec);
-	}
-
-	{
-	  gfloat delta_hst=hg->plot_ihst1-hg->plot_ihst0;
-	  
-	  if(direction & GDK_SCROLL_DOWN){
-	    if(delta_hst<10.0){
-	      hg->plot_ihst1=(gfloat)hour+(gfloat)min/60.
-		+(delta_hst+1.0)*0.75;
-	      hg->plot_ihst0=(gfloat)hour+(gfloat)min/60.
-		-(delta_hst+1.0)*0.25;
-	    }
-	  }
-	  else{
-	    if(delta_hst > 2.){
-	      hg->plot_ihst1=(gfloat)hour+(gfloat)min/60.
-		+(delta_hst-1.0)*0.75;
-	      hg->plot_ihst0=(gfloat)hour+(gfloat)min/60.
-		-(delta_hst-1.0)*0.25;
-	    }
-	  }
-	}
-	break;
-
-    case PLOT_CENTER_MERIDIAN:
-      if(direction & GDK_SCROLL_DOWN){
-	if(hg->plot_ihst1 - hg->plot_ihst0 < 12.){
-	  hg->plot_ihst0-=1.0;
-	  hg->plot_ihst1+=1.0;
-	}
-      }
-      else{
-	if(hg->plot_ihst1 - hg->plot_ihst0 >3.){
-	  hg->plot_ihst0+=1.0;
-	  hg->plot_ihst1-=1.0;
-	}
-      }
-      break;
-
     }
-      
-    draw_plot_cairo(hg->plot_dw,hg);
+    else{
+      if(hg->plot_zoom<9){
+	hg->plot_zoom++;
+      }
+    }
+
+    if(hg->plot_zoom!=old_zoom){
+      draw_plot_cairo(hg->plot_dw,hg);
+    }
   }
 
-  return(TRUE);
+  return(FALSE);
 }
   
 static void do_plot_moon (GtkWidget *w,   gpointer gdata)
@@ -4950,7 +4951,7 @@ void calc_moon_skymon(typHOE *hg){
   }
 }
 
-gfloat get_meridian_hour(typHOE *hg){
+gdouble get_meridian_JD(typHOE *hg){
   int iyear;
   int month;
   int iday;
@@ -4964,7 +4965,7 @@ gfloat get_meridian_hour(typHOE *hg){
   struct ln_date odate;
   struct ln_zonedate transit;
   struct ln_lnlat_posn observer;
-  double JD;
+  double JD_now, JD;
 
   observer.lat = hg->obs_latitude;
   observer.lng = hg->obs_longitude;
@@ -4982,36 +4983,41 @@ gfloat get_meridian_hour(typHOE *hg){
     get_current_obs_time(hg,&iyear, &month, &iday, &hour, &min, &sec);
   }
 
-  if(hour<8){
-    add_day(hg, &iyear, &month, &iday, -1);
-  }
-
-  zonedate.years=iyear;
-  zonedate.months=month;
-  zonedate.days=iday;
-  zonedate.hours=hour;
-  zonedate.minutes=min;
-  zonedate.seconds=sec;
-  zonedate.gmtoff=(long)hg->obs_timezone*60;
-
   oequ.ra=ra_to_deg(hg->obj[hg->plot_i].ra);
   oequ.dec=dec_to_deg(hg->obj[hg->plot_i].dec);
   
-  JD = ln_get_julian_local_date(&zonedate);
-  ln_get_equ_prec2 (&oequ, get_julian_day_of_equinox(hg->obj[hg->plot_i].equinox),
-		    JD, &oequ_prec);
-  ln_get_object_rst (JD, &observer, &oequ_prec, &orst);
+  JD_now = get_julian_from_local_date(iyear,month,iday,hour,min,sec,
+				      (long)hg->obs_timezone*60);
+
+  ln_get_equ_prec2 (&oequ, 
+		    get_julian_day_of_equinox(hg->obj[hg->plot_i].equinox),
+		    JD_now, &oequ_prec);
+  ln_get_object_rst (JD_now, &observer, &oequ_prec, &orst);
   ln_get_date (orst.transit, &odate);
   ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*60);
 
-  if(transit.hours < 12){
-    ln_get_object_next_rst (JD, &observer, &oequ_prec, &orst);
+  JD = ln_get_julian_local_date(&transit);
+
+  if((JD-JD_now)>0.5){
+    JD_now=JD_now+1.0;
+    ln_get_equ_prec2 (&oequ, 
+		      get_julian_day_of_equinox(hg->obj[hg->plot_i].equinox),
+		      JD_now, &oequ_prec);
+    ln_get_object_rst (JD_now, &observer, &oequ_prec, &orst);
     ln_get_date (orst.transit, &odate);
     ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*60);
-    transit.hours+=24;
+  }
+  else if((JD-JD_now)<-0.5){
+    JD_now=JD_now-1.0;
+    ln_get_equ_prec2 (&oequ, 
+		      get_julian_day_of_equinox(hg->obj[hg->plot_i].equinox),
+		      JD_now, &oequ_prec);
+    ln_get_object_rst (JD_now, &observer, &oequ_prec, &orst);
+    ln_get_date (orst.transit, &odate);
+    ln_date_to_zonedate(&odate,&transit,(long)hg->obs_timezone*60);
   }
 
-  return((gfloat)transit.hours+(gfloat)transit.minutes/60.);
+  return(ln_get_julian_local_date(&transit));
 }
 
 
@@ -5079,6 +5085,21 @@ gdouble get_julian_day_of_equinox(gdouble equinox){
   return(JD2000 + diff_y*365.25);
 }
 
+gdouble get_julian_from_local_date(int iyear, int month, int iday,
+				   int hour, int min, double sec,
+				   long offset){
+  struct ln_zonedate zonedate;
+
+  zonedate.years=iyear;
+  zonedate.months=month;
+  zonedate.days=iday;
+  zonedate.hours=hour;
+  zonedate.minutes=min;
+  zonedate.seconds=sec;
+  zonedate.gmtoff=offset;
+
+  return(ln_get_julian_local_date(&zonedate));
+}
 
 gdouble deg_sep(gdouble az1, gdouble alt1, gdouble az2, gdouble alt2){
   double d;

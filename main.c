@@ -14160,8 +14160,7 @@ void param_init(typHOE *hg){
   hg->plot_moon=TRUE;
   hg->plot_timer=-1;
   hg->plot_center=PLOT_CENTER_CURRENT;
-  hg->plot_ihst0=PLOT_HST0;
-  hg->plot_ihst1=PLOT_HST1;
+  hg->plot_zoom=0;
 
   hg->allsky_flag=FALSE;
   hg->allsky_diff_flag=TRUE;

@@ -692,9 +692,6 @@ enum{
 #define PLOT_WIDTH_MM 160
 #define PLOT_HEIGHT_MM 160
 
-#define PLOT_HST0 17
-#define PLOT_HST1 31
-
 // popup message
 #define GTK_MSG
 // time out for error popup window [sec]
@@ -1666,8 +1663,9 @@ struct _typHOE{
   gboolean plot_moon;
   gint plot_center;
   gint plot_center_transit;
-  gfloat plot_ihst0;
-  gfloat plot_ihst1;
+  gdouble plot_jd0;
+  gdouble plot_jd1;
+  gint plot_zoom;
   gint plot_output;
 
 
@@ -2177,7 +2175,7 @@ gdouble date_to_jd();
 void calc_moon();
 double get_julian_day_of_equinox();
 gboolean draw_plot_cairo();
-gfloat get_meridian_hour();
+//void get_plot_time_meridian();
 gdouble deg_sep();
 void ext_play();
 
