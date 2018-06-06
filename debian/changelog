@@ -1,4 +1,4 @@
-hskymon (3.5.7) trusty; urgency=medium
+hskymon (3.6.0) trusty; urgency=medium
 
   * Revised time calculation in plot function to the JD based one.
 
