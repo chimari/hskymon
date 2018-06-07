@@ -4382,7 +4382,7 @@ void calc_moon(typHOE *hg){
   struct ln_equ_posn equ, sequ, equ_geoc;
   struct ln_hms hms;
   struct ln_dms dms;
-  struct ln_rst_time rst;
+  struct ln_rst_time rst, rst0;
   struct ln_date date;
   struct ln_date ldate;
   struct ln_zonedate set,rise;
@@ -4475,10 +4475,24 @@ void calc_moon(typHOE *hg){
   hg->moon.c_phase=ln_get_lunar_phase(JD);
   hg->moon.c_limb=ln_get_lunar_bright_limb(JD);
 
+  hg->moon.c_age=(hg->moon.c_limb>180) ? 
+    (180-hg->moon.c_phase)/360.*29.5 :     // Jo-gen
+    hg->moon.c_phase/360.*29.5 + 29.5/2.;  // Ka-gen
+
   if (ln_get_lunar_rst (JD, &observer, &rst) == 1){
     hg->moon.c_circum=TRUE;
   }
   else {
+    if(rst.rise>JD){  // Next Rise_Set or Current Rise_Set
+      if(ln_get_lunar_rst (JD-1.0, &observer, &rst0)!=1){
+	if(rst0.set>JD){
+	  rst.rise=rst0.rise;
+	  rst.set=rst0.set;
+	  rst.transit=rst0.transit;
+	}
+      }
+    }
+
     ln_get_date (rst.rise, &date);
     ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*60);
     ln_get_date (rst.set, &date);
@@ -4669,7 +4683,7 @@ void calc_moon_skymon(typHOE *hg){
   struct ln_hms hms;
   struct ln_dms dms;
   struct ln_zonedate local_date;
-  struct ln_rst_time rst;
+  struct ln_rst_time rst, rst0;
   struct ln_date date;
   struct ln_zonedate set,rise;
   gdouble d_t,d_ss;
@@ -4771,14 +4785,29 @@ void calc_moon_skymon(typHOE *hg){
   hg->moon.s_phase=ln_get_lunar_phase(JD);
   hg->moon.s_limb=ln_get_lunar_bright_limb(JD);
 
-  if (ln_get_lunar_rst (JD, &observer, &rst) == 1){
+  hg->moon.s_age=(hg->moon.s_limb>180) ? 
+    (180-hg->moon.s_phase)/360.*29.5 :      // Jo-gen
+    hg->moon.s_phase/360.*29.5 + 29.5/2.;   // Ka-gen
+
+  if(ln_get_lunar_rst (JD, &observer, &rst) == 1){
     hg->moon.s_circum=TRUE;
   }
   else {
+    if(rst.rise>JD){  // Next Rise_Set or Current Rise_Set
+      if(ln_get_lunar_rst (JD-1.0, &observer, &rst0)!=1){
+	if(rst0.set>JD){
+	  rst.rise=rst0.rise;
+	  rst.set=rst0.set;
+	  rst.transit=rst0.transit;
+	}
+      }
+    }
+
     ln_get_date (rst.rise, &date);
     ln_date_to_zonedate(&date,&rise,(long)hg->obs_timezone*60);
     ln_get_date (rst.set, &date);
     ln_date_to_zonedate(&date,&set,(long)hg->obs_timezone*60);
+
     hg->moon.s_circum=FALSE;
 
     hg->moon.s_rise.hours=rise.hours;

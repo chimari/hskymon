@@ -1453,6 +1453,7 @@ struct _Moonpara{
   gdouble c_disk;
   gdouble c_phase;
   gdouble c_limb;
+  gdouble c_age;
   my_hms c_rise;
   my_hms c_set;
   gboolean c_circum;
@@ -1464,6 +1465,7 @@ struct _Moonpara{
   gdouble s_disk;
   gdouble s_phase;
   gdouble s_limb;
+  gdouble s_age;
   my_hms s_rise;
   my_hms s_set;
   gboolean s_circum;
