@@ -559,8 +559,6 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   gdouble jd0, jd1;
   gfloat ihst1_moon;
   //int ihst0=17, ihst1=31;
-  double utstart,utend;
-  double ut_offset;
   double a0,d0,d0rad;
   double ut,d_ut;
   double flst, ha;
@@ -2386,6 +2384,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   sinphi=sin(M_PI*phi/180.0);
   cosphi=cos(M_PI*phi/180.0);
 
+  /*
   zonedate.years=iyear;
   zonedate.months=month;
   zonedate.days=iday;
@@ -2394,12 +2393,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   zonedate.seconds=0.0;
   zonedate.gmtoff=(long)hg->obs_timezone*60;
   ln_zonedate_to_date(&zonedate, &date);
-
-  utstart=(double)date.hours;
-  utend=utstart+(double)(ihst1-ihst0);
-  
-  ut_offset=(double)(zonedate.hours-date.hours+ (gdouble)zonedate.minutes/60.);
-
+  */
 
   /* Lunar RA, DEC */
   if(((hg->plot_moon)&&(hg->plot_mode==PLOT_EL))
@@ -2455,8 +2449,6 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       ln_get_hrz_from_equ (&oequ, &observer, orst.transit, &ohrz);
       moon_tr_el=ohrz.alt;
     }
-    
-    ut=utstart;
     
     i=1;
     d_ut=16.0/190.0;
@@ -2595,8 +2587,6 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       a0=oequ_prec.ra*24./360.; //[hour]
       d0rad=oequ_prec.dec*M_PI/180.;
 
-      ut=utstart;
-      
       i=1;
       d_ut=(gdouble)(hg->plot_jd1-hg->plot_jd0)*24.0/190.0;
 
@@ -3429,8 +3419,6 @@ void calcpa2_main(typHOE* hg){
   int min,hour;
   gdouble sec;
   double a0,d0,d0rad;
-  double ut;
-  double ut_offset;
   double flst, ha;
   double el0, az0;
   double el0d, d1rad, d1, ume1, den1, ha1rad, ha1;
@@ -3622,7 +3610,6 @@ void calcpa2_main(typHOE* hg){
       else{
 	adsec=100;
       }
-      hst=ut+ut_offset;
 
 
       if(hrz.az>180) hrz.az-=360;
@@ -3942,12 +3929,11 @@ void calcpa2_skymon(typHOE* hg){
   gdouble sec;
   double a0,d0,a0rad,d0rad;
   double ut;
-  double ut_offset;
   double flst, ha;
   double el0, az0;
   double el0d, d1rad, d1, ume1, den1, ha1rad, ha1;
   double delta_a, delta_d, pa, padeg;
-  double zrad, ad1, ad0, adsec, hst;
+  double zrad, ad1, ad0, adsec;
   double a1;
   int i_list;
 
@@ -4136,9 +4122,6 @@ void calcpa2_skymon(typHOE* hg){
       else{
 	adsec=100;
       }
-
-      hst=ut+ut_offset;
-      
 
       if(hrz.az>180) hrz.az-=360;
       hg->obj[i_list].s_az=hrz.az;

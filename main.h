@@ -1818,6 +1818,7 @@ struct _typHOE{
   gint fcdb_gaia_mag;
   gint fcdb_gaia_diam;
   gboolean fcdb_gaia_fil;
+  gboolean fcdb_gaia_sat;
   gint fcdb_2mass_mag;
   gint fcdb_2mass_diam;
   gboolean fcdb_2mass_fil;

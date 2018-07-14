@@ -6908,6 +6908,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_usno_fil,
     tmp_sdss_fil[NUM_SDSS_BAND], 
     tmp_gaia_fil, tmp_2mass_fil, tmp_wise_fil,
+    tmp_gaia_sat,
     tmp_smoka_shot,
     tmp_smoka_subaru[NUM_SMOKA_SUBARU],
     tmp_smoka_kiso[NUM_SMOKA_KISO],
@@ -6963,6 +6964,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_usno_mag=hg->fcdb_usno_mag;
   tmp_usno_diam=hg->fcdb_usno_diam;
   tmp_gaia_fil=hg->fcdb_gaia_fil;
+  tmp_gaia_sat=hg->fcdb_gaia_sat;
   tmp_gaia_mag=hg->fcdb_gaia_mag;
   tmp_gaia_diam=hg->fcdb_gaia_diam;
   tmp_2mass_fil=hg->fcdb_2mass_fil;
@@ -8145,6 +8147,21 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_gaia_mag);
+
+
+  check = gtk_check_button_new_with_label("HSC masking area plot for bright stars");
+#ifdef USE_GTK3
+  gtk_grid_attach(GTK_GRID(table), check, 0, 2, 2, 1);
+#else
+  gtk_table_attach(GTK_TABLE(table), check, 0, 2, 2, 3,
+		   GTK_FILL,GTK_SHRINK,0,0);
+#endif
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_gaia_sat);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       hg->fcdb_gaia_sat);
+
 
 
   vbox = gtkut_vbox_new (FALSE, 0);
@@ -9333,6 +9350,7 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_usno_mag  = tmp_usno_mag;
       hg->fcdb_usno_diam  = tmp_usno_diam;
       hg->fcdb_gaia_fil  = tmp_gaia_fil;
+      hg->fcdb_gaia_sat  = tmp_gaia_sat;
       hg->fcdb_gaia_mag  = tmp_gaia_mag;
       hg->fcdb_gaia_diam  = tmp_gaia_diam;
       hg->fcdb_2mass_fil  = tmp_2mass_fil;
@@ -9417,6 +9435,7 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_usno_mag = 19;
       hg->fcdb_usno_diam = FCDB_USNO_ARCMIN_MAX;
       hg->fcdb_gaia_fil = TRUE;
+      hg->fcdb_gaia_sat = FALSE;
       hg->fcdb_gaia_mag = 19;
       hg->fcdb_gaia_diam = FCDB_ARCMIN_MAX;
       hg->fcdb_2mass_fil = TRUE;
@@ -13791,7 +13810,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->pres=PRES_SUBARU;
 
     hg->fcdb_simbad         =FCDB_SIMBAD_STRASBG;
-    hg->fcdb_vizier         =FCDB_VIZIER_NAOJ;
+    hg->fcdb_vizier         =FCDB_VIZIER_HARVARD;
     hg->fc_mode_def         =FC_SKYVIEW_DSS2R;
     hg->fc_mode_RGB[0]      =FC_SKYVIEW_DSS2IR;
     hg->fc_mode_RGB[1]      =FC_SKYVIEW_DSS2R;
@@ -14290,6 +14309,7 @@ void param_init(typHOE *hg){
   hg->fcdb_usno_mag=19;
   hg->fcdb_usno_diam=FCDB_USNO_ARCMIN_MAX;
   hg->fcdb_gaia_fil=TRUE;
+  hg->fcdb_gaia_sat=FALSE;
   hg->fcdb_gaia_mag=19;
   hg->fcdb_gaia_diam=FCDB_ARCMIN_MAX;
   hg->fcdb_2mass_fil=TRUE;
@@ -18222,7 +18242,7 @@ void ReadConf(typHOE *hg)
     hg->dss_arcmin=DSS_ARCMIN;
     hg->dss_pix=DSS_PIX;
     hg->fcdb_simbad         =FCDB_SIMBAD_STRASBG;
-    hg->fcdb_vizier         =FCDB_VIZIER_NAOJ;
+    hg->fcdb_vizier         =FCDB_VIZIER_HARVARD;
     hg->fc_mode_def         =FC_SKYVIEW_DSS2R;
     hg->fc_mode             =hg->fc_mode_def;
     hg->fc_mode_RGB[0]      =FC_SKYVIEW_DSS2IR;

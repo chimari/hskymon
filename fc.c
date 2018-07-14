@@ -77,7 +77,8 @@ static void fcdb_toggle ();
 GdkPixbuf* rgb_pixbuf();
 gchar *rgb_source_txt();
 
-
+gdouble hsc_sat_radius();
+void draw_hsc_sat();
 
 gboolean flag_getDSS=FALSE, flag_getFCDB=FALSE;
 gboolean flagHSCDialog=FALSE;
@@ -3851,47 +3852,89 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 	if(hg->dss_flip) hg->fcdb[i_list].x=-hg->fcdb[i_list].x;
       }
 
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
+      if(hg->dss_invert){ 
+	cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+      }
+      else{
+	if((hg->fcdb_type==FCDB_TYPE_GAIA)&&(hg->fcdb_gaia_sat)){
+	  cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.7);
+	}
+	else{
+	  cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
+	}
+      }
       cairo_set_line_width (cr, 2*scale);
       for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
 	if(hg->fcdb_tree_focus!=i_list){
-	  cairo_rectangle(cr,hg->fcdb[i_list].x-6,hg->fcdb[i_list].y-6,12,12);
-	  cairo_stroke(cr);
+	  if((hg->fcdb_type==FCDB_TYPE_GAIA)&&(hg->fcdb_gaia_sat)){
+	    if(hg->fcdb[i_list].v < 20){
+	      gdouble rad=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*hsc_sat_radius(hg->fcdb[i_list].v)/30.;
+
+	      draw_hsc_sat(cr, rad, 
+			   hg->fcdb[i_list].x, hg->fcdb[i_list].y,
+			   hg->dss_pa, hg->dss_flip);
+	    }
+	  }
+	  else{
+	    cairo_rectangle(cr,hg->fcdb[i_list].x-6,hg->fcdb[i_list].y-6,12,12);
+	    cairo_stroke(cr);
+	  }
 	}
       }
 
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.7, 0.0, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
+      if(hg->dss_invert){
+	cairo_set_source_rgba(cr, 0.7, 0.0, 0.0, 1.0);
+      }
+      else{
+	if((hg->fcdb_type==FCDB_TYPE_GAIA)&&(hg->fcdb_gaia_sat)){
+	  cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.7);
+	}
+	else{
+	  cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
+	}
+      }
       cairo_set_line_width (cr, 4*scale);
       for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
 	if(hg->fcdb_tree_focus==i_list){
-	  cairo_rectangle(cr,hg->fcdb[i_list].x-8,hg->fcdb[i_list].y-8,16,16);
-	  cairo_stroke(cr);
+	  if((hg->fcdb_type==FCDB_TYPE_GAIA)&&(hg->fcdb_gaia_sat)){
+	    if(hg->fcdb[i_list].v < 20){
+	      gdouble rad=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*hsc_sat_radius(hg->fcdb[i_list].v)/30.;
+
+	      draw_hsc_sat(cr, rad, 
+			   hg->fcdb[i_list].x, hg->fcdb[i_list].y,
+			   hg->dss_pa, hg->dss_flip);
+	    }
+	  }
+	  else{
+	    cairo_rectangle(cr,hg->fcdb[i_list].x-8,hg->fcdb[i_list].y-8,16,16);
+	    cairo_stroke(cr);
+	  }
 	}
       }
 
       // Proper Motion
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.5, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 0.2, 1.0, 0.2, 1.0);
-      cairo_set_line_width (cr, 1.5*scale);
-      for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
-	if(hg->fcdb[i_list].pm){
-	  pmx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0
-		+hg->fcdb[i_list].pmra/1000/60/60*yrs)*60.
-	    *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
-	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	  pmy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0
-		+hg->fcdb[i_list].pmdec/1000/60/60*yrs)*60.
-	    *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	  if(hg->dss_flip) {
-	    pmx=-pmx;
+      if((hg->fcdb_type!=FCDB_TYPE_GAIA)||(!hg->fcdb_gaia_sat)){
+	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.5, 0.0, 1.0);
+	else cairo_set_source_rgba(cr, 0.2, 1.0, 0.2, 1.0);
+	cairo_set_line_width (cr, 1.5*scale);
+	for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+	  if(hg->fcdb[i_list].pm){
+	    pmx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0
+		  +hg->fcdb[i_list].pmra/1000/60/60*yrs)*60.
+	      *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
+	      *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	    pmy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0
+		  +hg->fcdb[i_list].pmdec/1000/60/60*yrs)*60.
+	      *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	    if(hg->dss_flip) {
+	      pmx=-pmx;
+	    }
+	    cairo_move_to(cr,hg->fcdb[i_list].x,hg->fcdb[i_list].y);
+	    cairo_line_to(cr,pmx,pmy);
+	    cairo_stroke(cr);
+	    cairo_arc(cr,pmx,pmy,5,0,2*M_PI);
+	    cairo_fill(cr);
 	  }
-	  cairo_move_to(cr,hg->fcdb[i_list].x,hg->fcdb[i_list].y);
-	  cairo_line_to(cr,pmx,pmy);
-	  cairo_stroke(cr);
-	  cairo_arc(cr,pmx,pmy,5,0,2*M_PI);
-	  cairo_fill(cr);
 	}
       }
       cairo_restore(cr);
@@ -8034,3 +8077,45 @@ gchar *rgb_source_txt(typHOE *hg, gint i){
   return(ret_name);
 }
 
+// See eq. (2) in Coupon et al. 2017, PASJ 70, 1
+gdouble hsc_sat_radius(gdouble g_mag){
+  gdouble r;
+
+  if(g_mag < 9.0){
+    r = 708.9 * exp(-g_mag/8.41);
+  }
+  else{
+    r = 694.7 * exp(-g_mag/4.04);
+  }
+
+  return(r);
+}
+
+
+void draw_hsc_sat(cairo_t *cr, gdouble rad, 
+		  gdouble x, gdouble y, gint dss_pa, gboolean dss_flip){
+  
+  cairo_arc(cr, x, y, rad, 0, M_PI*2);
+
+  cairo_translate(cr, x, y);
+  if(dss_flip){
+    cairo_rotate (cr, M_PI*(gdouble)(-dss_pa)/180.);
+  }
+  else{
+    cairo_rotate (cr, -M_PI*(gdouble)(-dss_pa)/180.);
+  }
+  cairo_rectangle(cr, 
+		  -rad*1.5,
+		  -rad*0.15,
+		  rad*3.0,rad*0.3);
+
+  cairo_fill(cr);
+
+  if(dss_flip){
+    cairo_rotate (cr,-M_PI*(gdouble)(-dss_pa)/180.);
+  }
+  else{
+    cairo_rotate (cr,M_PI*(gdouble)(-dss_pa)/180.);
+  }
+  cairo_translate(cr, -x, -y);
+}

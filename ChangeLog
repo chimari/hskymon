@@ -1,3 +1,8 @@
+2018.07.XX ver3.6.2 - Added HSC masking area plot for bright srats
+	              with FCDB GAIA search.
+	              (Recommend to use for GAIA G < ~12 mag)
+	            - Changed the default Vizier host from NAOJ to Harvard.
+
 2018.06.07 ver3.6.1 - Revised lunar rise/set calculation.
 	              When moon is still above horizon, the rise/set times
 	              displaying at the bottom left corner are now those for
