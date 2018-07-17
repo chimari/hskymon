@@ -1,3 +1,9 @@
+hskymon (3.6.2ubuntu) trusty; urgency=medium
+
+  * Added HSC masking area plot in FC with GAIA search.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Mon, 16 Jul 2018 14:56:11 -1000
+
 hskymon (3.6.1ubuntu) trusty; urgency=medium
 
   * Revised lunar rise/set and age calculation.

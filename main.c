@@ -8149,7 +8149,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_gaia_mag);
 
 
-  check = gtk_check_button_new_with_label("HSC masking area plot for bright stars");
+  check = gtk_check_button_new_with_label("HSC masking area plot for bright stars (Coupon+ 2018, PASJ, 70, S7)");
 #ifdef USE_GTK3
   gtk_grid_attach(GTK_GRID(table), check, 0, 2, 2, 1);
 #else
