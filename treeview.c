@@ -4560,7 +4560,7 @@ fcdb_add_columns (typHOE *hg,
       // References
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
-		       GINT_TO_POINTER (COLUMN_FCDB_OTYPE));
+		       GINT_TO_POINTER (COLUMN_FCDB_REF));
       column=gtk_tree_view_column_new_with_attributes ("ref.",
 						       renderer,
 						       "text",
@@ -4706,7 +4706,7 @@ fcdb_add_columns (typHOE *hg,
       // nDetections
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
-			 GINT_TO_POINTER (COLUMN_FCDB_OTYPE));
+			 GINT_TO_POINTER (COLUMN_FCDB_REF));
       column=gtk_tree_view_column_new_with_attributes ("nDet.",
 						       renderer,
 						       "text",

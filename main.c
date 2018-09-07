@@ -18978,8 +18978,8 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
 	  gtk_list_store_insert (GTK_LIST_STORE (model), &iter, i_list);
 	  trdb_tree_update_azel_item(hg, model, iter, i_list);
 	}
-	//remake_tree(hg);
-	//trdb_make_tree(hg);
+	remake_tree(hg);
+	trdb_make_tree(hg);
       }
     }
     else{
