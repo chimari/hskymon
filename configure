@@ -660,6 +660,7 @@ PKG_CONFIG_PATH
 PKG_CONFIG
 WINSOCK_LIBS
 WINMM_LIBS
+OSX_LDADD
 ALLOCA
 OBJCOPY
 HAVE_WINDRES_FALSE
@@ -2333,7 +2334,7 @@ PACKAGE=hskymon
 
 MAJOR_VERSION=3
 MINOR_VERSION=6
-MICRO_VERSION=2
+MICRO_VERSION=3
 BUILD_REVISION=0
 EXTRA_VERSION=
 VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION$EXTRA_VERSION
@@ -13017,6 +13018,13 @@ $as_echo "#define USE_OSX /**/" >>confdefs.h
 
 	;;
 esac
+
+if test x"${os_osx}" = "xyes"; then
+        OSX_LDADD="-headerpad_max_install_names"
+else
+        OSX_LDADD=""
+fi
+
 
 
 # Check whether --with-win32 was given.

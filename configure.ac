@@ -5,7 +5,7 @@ PACKAGE=hskymon
 dnl version number
 MAJOR_VERSION=3
 MINOR_VERSION=6
-MICRO_VERSION=2
+MICRO_VERSION=3
 BUILD_REVISION=0
 EXTRA_VERSION=
 VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION$EXTRA_VERSION
@@ -53,6 +53,13 @@ case "$target" in
 dnl	CFLAGS="$CFLAGS -no-cpp-precomp -fno-common"
 	;;
 esac
+
+if test x"${os_osx}" = "xyes"; then
+        OSX_LDADD="-headerpad_max_install_names"
+else
+        OSX_LDADD=""
+fi
+AC_SUBST(OSX_LDADD)
 
 dnl Win32
 AC_ARG_WITH(win32,

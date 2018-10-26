@@ -1,3 +1,9 @@
+2018.10.26 ver3.6.3 - Remake Object List tree in Sync OPE.
+	            - Added Kepler IC10 for FCDB.
+	            - Updated LAMOST database to DR4.
+	            - Added command line option "-d" to show HTTP debug
+	              messages.
+
 2018.07.16 ver3.6.2 - Added HSC masking area plot for bright srats
 	              with FCDB GAIA search.
 	              (Recommend to use for GAIA G < ~12 mag)

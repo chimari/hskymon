@@ -2003,6 +2003,188 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
 }
 
 
+void fcdb_kepler_vo_parse(typHOE *hg, gboolean magextract) {
+  xmlTextReaderPtr reader;
+  list_field *vfield_move;
+  list_tabledata *vtabledata_move;
+  VOTable votable;
+  int nbFields, process_column;
+  int *columns;
+  int i_list=0, i_all=0;
+  gdouble sep;
+  gdouble mag;
+  int i_mag;
+
+  reader = Init_VO_Parser(hg->fcdb_file,&votable);
+  if(!reader) {
+    fprintf (stderr,"!!Cannot initialize xmlTextRedader!! Skipped.\n");
+    hg->fcdb_i_max=0;
+    hg->fcdb_i_all=0;
+    return;
+  }
+
+  Extract_Att_VO_Table(reader,&votable,hg->fcdb_file,hg->skymon_main);
+
+  Extract_VO_Fields(reader,&votable,&nbFields,&columns);
+  for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
+    if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Kepler ID") == 0) 
+      columns[0] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RA (J2000)") == 0)
+      columns[1] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Dec (J2000)") == 0) 
+      columns[2] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"r Mag") == 0) 
+      columns[3] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"J Mag") == 0) 
+      columns[4] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Kepler Mag") == 0) 
+      columns[5] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Teff (deg K)") == 0) 
+      columns[6] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Log G (cm/s/s)") == 0) 
+      columns[7] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Metallicity (solar=0.0)") == 0) 
+      columns[8] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"E(B-V)") == 0) 
+      columns[9] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Radius (solar=1.0)") == 0) 
+      columns[10] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Total PM (arcsec/yr)") == 0) 
+      columns[11] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"g-r color") == 0) 
+      columns[12] = vfield_move->position;
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"2MASS ID") == 0) 
+      columns[13] = vfield_move->position;
+  }
+
+
+  Extract_VO_TableData(reader,&votable, nbFields, columns);
+  for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+    if(i_list==MAX_FCDB) break;
+    
+    if (vtabledata_move->colomn == columns[0]){
+      if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
+      hg->fcdb[i_list].name=g_strdup((const char*)vtabledata_move->value);
+      i_all++;
+      i_list++;
+    }
+    else if (vtabledata_move->colomn == columns[1]){
+      hg->fcdb[i_list].d_ra=atof((const char*)vtabledata_move->value);
+      hg->fcdb[i_list].ra=deg_to_ra(hg->fcdb[i_list].d_ra);
+    }
+    else if (vtabledata_move->colomn == columns[2]){
+      hg->fcdb[i_list].d_dec=atof((const char*)vtabledata_move->value);
+      hg->fcdb[i_list].dec=deg_to_dec(hg->fcdb[i_list].d_dec);
+    }
+    else if (vtabledata_move->colomn == columns[3]){ // r Mag
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].r=atof((const char*)vtabledata_move->value);
+      }
+      else{
+	hg->fcdb[i_list].r=+100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[4]){ // J Mag
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].j=atof((const char*)vtabledata_move->value);
+      }
+      else{
+	hg->fcdb[i_list].j=+100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[5]){ // Kp Mag
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].v=atof((const char*)vtabledata_move->value);
+      }
+      else{
+	hg->fcdb[i_list].v=+100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[6]){ // Teff
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].u=atof((const char*)vtabledata_move->value);
+	if(hg->fcdb[i_list].u<0) hg->fcdb[i_list].u=-1;
+      }
+      else{
+	hg->fcdb[i_list].u=-1;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[7]){ // log g
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].h=atof((const char*)vtabledata_move->value);
+	if(hg->fcdb[i_list].h<-10) hg->fcdb[i_list].h=-10;
+      }
+      else{
+	hg->fcdb[i_list].h=-10;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[8]){ // [Fe/H]
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].b=atof((const char*)vtabledata_move->value);
+      }
+      else{
+	hg->fcdb[i_list].b=+100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[9]){  // E(B-V)
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].k=atof((const char*)vtabledata_move->value);
+      }
+      else{
+	hg->fcdb[i_list].k=+100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[10]){  // Radius
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].i=atof((const char*)vtabledata_move->value);
+      }
+      else{
+	hg->fcdb[i_list].i=-100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[11]){  // PM
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].plx=atof((const char*)vtabledata_move->value);
+      }
+      else{
+	hg->fcdb[i_list].plx=-10000;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[12]){  // g-r
+      if(vtabledata_move->value){
+	hg->fcdb[i_list].eplx=atof((const char*)vtabledata_move->value);
+      }
+      else{
+	hg->fcdb[i_list].eplx=100;
+      }
+    }
+    else if (vtabledata_move->colomn == columns[13]){  // 2MASS ID
+      if(hg->fcdb[i_list].otype) g_free(hg->fcdb[i_list].otype);
+      hg->fcdb[i_list].otype=g_strdup((const char*)vtabledata_move->value);
+    }
+  }
+  hg->fcdb_i_max=i_list;
+  hg->fcdb_i_all=i_all;
+
+  if (Free_VO_Parser(reader,&votable,&columns) == 1)
+    fprintf(stderr,"memory problem\n");
+
+
+  for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    if(!hg->fcdb[i_list].otype) hg->fcdb[i_list].otype=g_strdup("---");
+
+    hg->fcdb[i_list].equinox=2000.00;
+    hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
+				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+    hg->fcdb[i_list].pmra=0;
+    hg->fcdb[i_list].pmdec=0;
+    hg->fcdb[i_list].pm=FALSE;
+  }
+
+}
+
+
+
 void fcdb_2mass_vo_parse(typHOE *hg) {
   xmlTextReaderPtr reader;
   list_field *vfield_move;

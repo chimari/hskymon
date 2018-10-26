@@ -1641,13 +1641,16 @@ void create_fc_dialog(typHOE *hg)
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "SDSS DR14");
   }
   else if(hg->fcdb_type==FCDB_TYPE_LAMOST){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "LAMOST DR3");
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "LAMOST DR4");
   }
   else if(hg->fcdb_type==FCDB_TYPE_USNO){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "USNO-B");
   }
   else if(hg->fcdb_type==FCDB_TYPE_GAIA){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "GAIA DR2");
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_KEPLER){
+    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "Kepler IC10");
   }
   else if(hg->fcdb_type==FCDB_TYPE_2MASS){
     gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "2MASS");
@@ -5696,6 +5699,7 @@ void fcdb_dl(typHOE *hg)
   switch(hg->fcdb_type){
   case FCDB_TYPE_SDSS:
   case FCDB_TYPE_LAMOST:
+  case FCDB_TYPE_KEPLER:
   case FCDB_TYPE_SMOKA:
   case FCDB_TYPE_HST:
   case FCDB_TYPE_ESO:
@@ -5738,7 +5742,7 @@ void fcdb_dl(typHOE *hg)
     break;
 
   case FCDB_TYPE_LAMOST:
-    label=gtk_label_new("Searching objects in LAMOST DR3 ...");
+    label=gtk_label_new("Searching objects in LAMOST DR4 ...");
     break;
 
   case FCDB_TYPE_USNO:
@@ -5747,6 +5751,10 @@ void fcdb_dl(typHOE *hg)
 
   case FCDB_TYPE_GAIA:
     label=gtk_label_new("Searching objects in GAIA DR2 ...");
+    break;
+
+  case FCDB_TYPE_KEPLER:
+    label=gtk_label_new("Searching objects in Kepler IC10 ...");
     break;
 
   case FCDB_TYPE_2MASS:
@@ -5851,11 +5859,15 @@ void fcdb_dl(typHOE *hg)
     break;
 
   case FCDB_TYPE_LAMOST:
-    hg->plabel=gtk_label_new("Searching objects in LAMOST DR3 ...");
+    hg->plabel=gtk_label_new("Searching objects in LAMOST DR4 ...");
     break;
 
   case FCDB_TYPE_GAIA:
-    hg->plabel=gtk_label_new("Searching objects in GAIA ...");
+    hg->plabel=gtk_label_new("Searching objects in GAIA DR2 ...");
+    break;
+
+  case FCDB_TYPE_KEPLER:
+    hg->plabel=gtk_label_new("Searching objects in Kepler IC10 ...");
     break;
 
   case FCDB_TYPE_2MASS:
@@ -6994,6 +7006,28 @@ void fcdb_item2 (typHOE *hg)
 
     break;
 
+  case FCDB_TYPE_KEPLER:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(FCDB_HOST_KEPLER);
+
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+    hg->fcdb_path=g_strdup(FCDB_KEPLER_PATH);
+
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+
+    fcdb_dl(hg);
+
+    fcdb_kepler_vo_parse(hg);
+
+    break;
+
   case FCDB_TYPE_2MASS:
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     if(hg->fcdb_host) g_free(hg->fcdb_host);
@@ -7432,6 +7466,21 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       COLUMN_FCDB_K, hg->fcdb[i_list].k,  // E(BP-RP)
 		       -1);
   }
+  else if(hg->fcdb_type==FCDB_TYPE_KEPLER){
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_V, hg->fcdb[i_list].v,  // Kp
+		       COLUMN_FCDB_R, hg->fcdb[i_list].r,  // r
+		       COLUMN_FCDB_J, hg->fcdb[i_list].j,  // J
+		       COLUMN_FCDB_U, hg->fcdb[i_list].u,  // Teff
+		       COLUMN_FCDB_H, hg->fcdb[i_list].h,  // log g
+		       COLUMN_FCDB_B, hg->fcdb[i_list].b,  // [Fe/H]
+		       COLUMN_FCDB_K, hg->fcdb[i_list].k,  // E(B-V)
+		       COLUMN_FCDB_I, hg->fcdb[i_list].i,  // Radius
+		       COLUMN_FCDB_PLX, hg->fcdb[i_list].plx, //PM
+		       COLUMN_FCDB_EPLX, hg->fcdb[i_list].eplx, //g-r
+		       COLUMN_FCDB_OTYPE, hg->fcdb[i_list].otype, //2MASS ID
+		       -1);
+  }
   else if(hg->fcdb_type==FCDB_TYPE_2MASS){
     // JHK
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
@@ -7619,6 +7668,9 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
     break;
   case FCDB_TYPE_GAIA:
     db_name=g_strdup("GAIA");
+    break;
+  case FCDB_TYPE_KEPLER:
+    db_name=g_strdup("Kepler");
     break;
   case FCDB_TYPE_2MASS:
     db_name=g_strdup("2MASS");

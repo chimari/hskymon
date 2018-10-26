@@ -1,7 +1,7 @@
 bin_PROGRAMS    = hskymon
 SUBDIRS = . libnova std_data debian sample icons
 hskymon_SOURCES   =\
-	 main.c calcpa.c fc.c fc_output.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c json_parse.c resources.c votable.h remoteObjects.h configfile.h esostd.h ssl.h gen2.h post.h post_sdss.h post_lamost.h post_smoka.h post_hst.h post_eso.h get_gemini.h resources.h
+	 main.c calcpa.c fc.c fc_output.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c json_parse.c resources.c votable.h remoteObjects.h configfile.h esostd.h ssl.h gen2.h post.h post_sdss.h post_lamost.h post_kepler.h post_smoka.h post_hst.h post_eso.h get_gemini.h resources.h
 
 CLEANFILES      = *~ libnova/*~ std_data/*~ debian/*~ sample/*~ icons/*~
 DISTCLEANFILES  = .deps/*.P
@@ -48,7 +48,7 @@ resources.c: gresource.xml $(resource_files) resources.h
 	$(AM_V_GEN) $(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=$(srcdir) --generate-source $(srcdir)/gresource.xml
 
 INCLUDES        = @GTK_CFLAGS@  $(GTK3_CFLAGS) $(GTKMAC_CFLAGS) $(XMLRPC_CFLAGS) $(XML_CPPFLAGS)
-LDADD           = @GTK_LIBS@  $(GTK3_LIBS) $(GTKMAC_LIBS) $(WINMM_LIBS) $(WINSOCK_LIBS) $(XMLRPC_LIBS) $(XML_LIBS) $(HSKYMON_RES)
+LDADD           = $(OSX_LDADD) @GTK_LIBS@  $(GTK3_LIBS) $(GTKMAC_LIBS) $(WINMM_LIBS) $(WINSOCK_LIBS) $(XMLRPC_LIBS) $(XML_LIBS) $(HSKYMON_RES)
 
 GZIP_ENV =
 BZIP2_ENV =

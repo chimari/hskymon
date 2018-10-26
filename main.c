@@ -6895,7 +6895,7 @@ static void fcdb_para_item (GtkWidget *widget, gpointer data)
 void create_fcdb_para_dialog (typHOE *hg)
 {
   GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox, 
-    *spinner, *combo, *table, *check, *rb[16], 
+    *spinner, *combo, *table, *check, *rb[17], 
     *table1, *hbox1, *vbox1;
   GtkAdjustment *adj;
   gint tmp_band, tmp_mag, tmp_otype, tmp_ned_otype, tmp_ned_diam, 
@@ -6903,11 +6903,12 @@ void create_fcdb_para_dialog (typHOE *hg)
     tmp_sdss_search,
     tmp_sdss_magmax[NUM_SDSS_BAND], tmp_sdss_magmin[NUM_SDSS_BAND], 
     tmp_sdss_diam, tmp_usno_mag, tmp_usno_diam,
-    tmp_gaia_mag, tmp_gaia_diam, tmp_2mass_mag, tmp_2mass_diam,
+    tmp_gaia_mag, tmp_gaia_diam, tmp_kepler_mag, 
+    tmp_2mass_mag, tmp_2mass_diam,
     tmp_wise_mag, tmp_wise_diam;
   gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_usno_fil,
     tmp_sdss_fil[NUM_SDSS_BAND], 
-    tmp_gaia_fil, tmp_2mass_fil, tmp_wise_fil,
+    tmp_gaia_fil, tmp_kepler_fil, tmp_2mass_fil, tmp_wise_fil,
     tmp_gaia_sat,
     tmp_smoka_shot,
     tmp_smoka_subaru[NUM_SMOKA_SUBARU],
@@ -6967,6 +6968,8 @@ void create_fcdb_para_dialog (typHOE *hg)
   tmp_gaia_sat=hg->fcdb_gaia_sat;
   tmp_gaia_mag=hg->fcdb_gaia_mag;
   tmp_gaia_diam=hg->fcdb_gaia_diam;
+  tmp_kepler_fil=hg->fcdb_kepler_fil;
+  tmp_kepler_mag=hg->fcdb_kepler_mag;
   tmp_2mass_fil=hg->fcdb_2mass_fil;
   tmp_2mass_mag=hg->fcdb_2mass_mag;
   tmp_2mass_diam=hg->fcdb_2mass_diam;
@@ -7086,6 +7089,11 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_widget_show (rb[7]);
   my_signal_connect (rb[7], "toggled", radio_fcdb, (gpointer)hg);
 
+  rb[8] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "Kepler");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[8], FALSE, FALSE, 0);
+  gtk_widget_show (rb[8]);
+  my_signal_connect (rb[8], "toggled", radio_fcdb, (gpointer)hg);
+
   hbox1 = gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     hbox1,FALSE, FALSE, 0);
@@ -7099,25 +7107,25 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (frame), hbox);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
-  rb[8] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "2MASS");
-  gtk_box_pack_start(GTK_BOX(hbox), rb[8], FALSE, FALSE, 0);
-  gtk_widget_show (rb[8]);
-  my_signal_connect (rb[8], "toggled", radio_fcdb, (gpointer)hg);
-
-  rb[9] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "WISE");
+  rb[9] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "2MASS");
   gtk_box_pack_start(GTK_BOX(hbox), rb[9], FALSE, FALSE, 0);
   gtk_widget_show (rb[9]);
   my_signal_connect (rb[9], "toggled", radio_fcdb, (gpointer)hg);
 
-  rb[10] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "AKARI/IRC");
+  rb[10] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "WISE");
   gtk_box_pack_start(GTK_BOX(hbox), rb[10], FALSE, FALSE, 0);
   gtk_widget_show (rb[10]);
   my_signal_connect (rb[10], "toggled", radio_fcdb, (gpointer)hg);
 
-  rb[11] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "AKARI/FIS");
+  rb[11] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "AKARI/IRC");
   gtk_box_pack_start(GTK_BOX(hbox), rb[11], FALSE, FALSE, 0);
   gtk_widget_show (rb[11]);
   my_signal_connect (rb[11], "toggled", radio_fcdb, (gpointer)hg);
+
+  rb[12] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "AKARI/FIS");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[12], FALSE, FALSE, 0);
+  gtk_widget_show (rb[12]);
+  my_signal_connect (rb[12], "toggled", radio_fcdb, (gpointer)hg);
 
   frame = gtk_frame_new ("Data Archive");
   gtk_container_add (GTK_CONTAINER (hbox1), frame);
@@ -7127,25 +7135,25 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (frame), hbox);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
-  rb[12] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "SMOKA");
-  gtk_box_pack_start(GTK_BOX(hbox), rb[12], FALSE, FALSE, 0);
-  gtk_widget_show (rb[12]);
-  my_signal_connect (rb[12], "toggled", radio_fcdb, (gpointer)hg);
-
-  rb[13] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "HST");
+  rb[13] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "SMOKA");
   gtk_box_pack_start(GTK_BOX(hbox), rb[13], FALSE, FALSE, 0);
   gtk_widget_show (rb[13]);
   my_signal_connect (rb[13], "toggled", radio_fcdb, (gpointer)hg);
 
-  rb[14] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "ESO");
+  rb[14] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "HST");
   gtk_box_pack_start(GTK_BOX(hbox), rb[14], FALSE, FALSE, 0);
   gtk_widget_show (rb[14]);
   my_signal_connect (rb[14], "toggled", radio_fcdb, (gpointer)hg);
 
-  rb[15] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "Gemini");
+  rb[15] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "ESO");
   gtk_box_pack_start(GTK_BOX(hbox), rb[15], FALSE, FALSE, 0);
   gtk_widget_show (rb[15]);
   my_signal_connect (rb[15], "toggled", radio_fcdb, (gpointer)hg);
+
+  rb[16] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]), "Gemini");
+  gtk_box_pack_start(GTK_BOX(hbox), rb[16], FALSE, FALSE, 0);
+  gtk_widget_show (rb[16]);
+  my_signal_connect (rb[16], "toggled", radio_fcdb, (gpointer)hg);
 
   fcdb_group=gtk_radio_button_get_group(GTK_RADIO_BUTTON(rb[0]));
 
@@ -7927,7 +7935,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 
 
   vbox = gtkut_vbox_new (FALSE, 0);
-  label = gtk_label_new ("LAMOST DR3");
+  label = gtk_label_new ("LAMOST DR4");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
 #ifdef USE_GTK3      
@@ -8162,6 +8170,76 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
 			       hg->fcdb_gaia_sat);
 
+
+  vbox = gtkut_vbox_new (FALSE, 0);
+  label = gtk_label_new ("Kepler IC10");
+  gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
+
+#ifdef USE_GTK3      
+  table = gtk_grid_new();
+  gtk_grid_set_row_spacing (GTK_GRID (table), 10);
+  gtk_grid_set_column_spacing (GTK_GRID (table), 5);
+#else
+  table = gtk_table_new(3,6,FALSE);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
+#endif
+  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  gtk_container_add (GTK_CONTAINER (vbox), table);
+
+  label = gtk_label_new ("Search Diameter = Finding Chart Diameter");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+  gtk_grid_attach(GTK_GRID(table), label, 0, 0, 3, 1);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 3, 0, 1,
+		   GTK_FILL,GTK_SHRINK,0,0);
+#endif
+
+  check = gtk_check_button_new_with_label("Mag. filter");
+#ifdef USE_GTK3
+  gtk_grid_attach(GTK_GRID(table), check, 0, 1, 1, 1);
+#else
+  gtk_table_attach(GTK_TABLE(table), check, 0, 1, 1, 2,
+		   GTK_FILL,GTK_SHRINK,0,0);
+#endif
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_kepler_fil);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       hg->fcdb_kepler_fil);
+
+  hbox = gtkut_hbox_new(FALSE,0);
+#ifdef USE_GTK3
+  gtk_grid_attach(GTK_GRID(table), hbox, 1, 1, 1, 1);
+  gtk_widget_set_halign(hbox,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(hbox,GTK_ALIGN_CENTER);
+#else
+  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, 1, 2,
+		   GTK_SHRINK,GTK_SHRINK,0,0);
+#endif
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  label = gtk_label_new ("Kep (0.42 - 0.90 um) < ");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), label,FALSE, FALSE, 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(tmp_kepler_mag,
+					    8, 22, 1, 1, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
+			 FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_kepler_mag);
 
 
   vbox = gtkut_vbox_new (FALSE, 0);
@@ -9353,6 +9431,8 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_gaia_sat  = tmp_gaia_sat;
       hg->fcdb_gaia_mag  = tmp_gaia_mag;
       hg->fcdb_gaia_diam  = tmp_gaia_diam;
+      hg->fcdb_kepler_fil  = tmp_kepler_fil;
+      hg->fcdb_kepler_mag  = tmp_kepler_mag;
       hg->fcdb_2mass_fil  = tmp_2mass_fil;
       hg->fcdb_2mass_mag  = tmp_2mass_mag;
       hg->fcdb_2mass_diam  = tmp_2mass_diam;
@@ -9438,6 +9518,8 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_gaia_sat = FALSE;
       hg->fcdb_gaia_mag = 19;
       hg->fcdb_gaia_diam = FCDB_ARCMIN_MAX;
+      hg->fcdb_kepler_fil=TRUE;
+      hg->fcdb_kepler_mag=19;
       hg->fcdb_2mass_fil = TRUE;
       hg->fcdb_2mass_mag = 12;
       hg->fcdb_2mass_diam = FCDB_ARCMIN_MAX;
@@ -9506,11 +9588,13 @@ void create_fcdb_para_dialog (typHOE *hg)
       else if(hg->fcdb_type==FCDB_TYPE_SDSS)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"SDSS DR14");
       else if(hg->fcdb_type==FCDB_TYPE_LAMOST)
-	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"LAMOST DR3");
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"LAMOST DR4");
       else if(hg->fcdb_type==FCDB_TYPE_USNO)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"USNO-B");
       else if(hg->fcdb_type==FCDB_TYPE_GAIA)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"GAIA DR2");
+      else if(hg->fcdb_type==FCDB_TYPE_KEPLER)
+	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"Kepler IC10");
       else if(hg->fcdb_type==FCDB_TYPE_2MASS)
 	gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"2MASS");
       else if(hg->fcdb_type==FCDB_TYPE_WISE)
@@ -9808,6 +9892,10 @@ gchar *fcdb_csv_name (typHOE *hg){
 
   case FCDB_TYPE_GAIA:
     fname=g_strconcat("FCDB_", oname, "_by_GAIA." CSV_EXTENSION,NULL);
+    break;
+
+  case FCDB_TYPE_KEPLER:
+    fname=g_strconcat("FCDB_", oname, "_by_Kepler." CSV_EXTENSION,NULL);
     break;
 
   case FCDB_TYPE_2MASS:
@@ -14312,6 +14400,8 @@ void param_init(typHOE *hg){
   hg->fcdb_gaia_sat=FALSE;
   hg->fcdb_gaia_mag=19;
   hg->fcdb_gaia_diam=FCDB_ARCMIN_MAX;
+  hg->fcdb_kepler_fil=TRUE;
+  hg->fcdb_kepler_mag=19;
   hg->fcdb_2mass_fil=TRUE;
   hg->fcdb_2mass_mag=12;
   hg->fcdb_2mass_diam=FCDB_ARCMIN_MAX;
@@ -17465,6 +17555,7 @@ void usage(void)
   g_print("     -s, --server [server-address] : Override Telstat Server\n");
 #endif
   g_print("     -l, --log [log-file]          : Output log file\n");
+  g_print("     -d, --debug                   : Show HTTP debug messages\n");
 
   exit(0);
 }
@@ -17475,6 +17566,8 @@ void get_option(int argc, char **argv, typHOE *hg)
   int i_opt, i;
   int valid=1;
   gchar *cwdname=NULL;
+
+  debug_flg = 0;      /* -d オプションを付けると turn on する */
   
   hg->filename_ope=NULL;
   hg->filename_list=NULL;
@@ -17553,6 +17646,11 @@ void get_option(int argc, char **argv, typHOE *hg)
 	       (strcmp(argv[i_opt], "--help") == 0)) {
 	i_opt++;
 	usage();
+      }
+      else if ((strcmp(argv[i_opt], "-d") == 0) ||
+	       (strcmp(argv[i_opt], "--debug") == 0)) {
+	debug_flg=1;
+	i_opt++;
       }
       else{
 	fprintf(stderr,"!!! \"%s\" : Invalid option.\n", argv[i_opt]);
