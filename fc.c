@@ -129,6 +129,10 @@ void fc_item2 (typHOE *hg)
 	hg->fc_inst=FC_INST_HSCA;
 	hg->dss_arcmin=HSC_SIZE;
       }
+      else if(strcmp(hg->stat_obcp,"PFS")==0){
+	hg->fc_inst=FC_INST_PFS;
+	hg->dss_arcmin=HSC_SIZE;
+      }
       else{
 	hg->fc_inst=FC_INST_NONE;
       }
@@ -1550,6 +1554,11 @@ void create_fc_dialog(typHOE *hg)
 		       1, FC_INST_HSCA, -1);
     if(hg->fc_inst==FC_INST_HSCA) iter_set=iter;
 
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "PFS",
+		       1, FC_INST_PFS, -1);
+    if(hg->fc_inst==FC_INST_PFS) iter_set=iter;
+
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 #ifdef USE_GTK3      
     gtk_grid_attach(GTK_GRID(table), combo, 1, 1, 1, 1);
@@ -2216,6 +2225,7 @@ void translate_to_center(cairo_t *cr, int width, int height, int width_file, int
     case FC_INST_FOCAS:
     case FC_INST_MOIRCS:
     case FC_INST_FMOS:
+    case FC_INST_PFS:
       if(hg->dss_flip){
 	cairo_rotate (cr,-M_PI*(gdouble)hg->dss_pa/180.);
       }
@@ -3127,6 +3137,34 @@ gboolean draw_fc_cairo(GtkWidget *widget,
       }
       break;
 
+    case FC_INST_PFS:
+      cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+      cairo_set_line_width (cr, 3.0*scale);
+      
+      cairo_arc(cr,0,0,
+		((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*PFS_R_ARCMIN,
+		0,M_PI*2);
+      cairo_stroke(cr);
+
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			      CAIRO_FONT_WEIGHT_NORMAL);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+	
+      tmp=g_strdup_printf("PFS FOV (%.1farcmin)",PFS_R_ARCMIN);
+      cairo_text_extents (cr,tmp, &extents);
+      cairo_move_to(cr,
+		    -extents.width/2,
+		    -PFS_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
+      cairo_show_text(cr, tmp);
+      if(tmp) g_free(tmp);
+
+      break;
+
     case FC_INST_FMOS:
       cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
 
@@ -3754,6 +3792,7 @@ gboolean draw_fc_cairo(GtkWidget *widget,
     case FC_INST_FOCAS:
     case FC_INST_MOIRCS:
     case FC_INST_FMOS:
+    case FC_INST_PFS:
       if(hg->dss_flip){
 	theta=M_PI*(gdouble)hg->dss_pa/180.;
       }
@@ -4310,6 +4349,7 @@ void rot_pa(cairo_t *cr, typHOE *hg){
   case FC_INST_FOCAS:
   case FC_INST_MOIRCS:
   case FC_INST_FMOS:
+  case FC_INST_PFS:
     if(hg->dss_flip){
 	cairo_rotate (cr,-M_PI*(gdouble)hg->dss_pa/180.);
     }
@@ -4606,6 +4646,7 @@ static void cc_get_fc_inst (GtkWidget *widget,  gpointer * gdata)
 			     
   case FC_INST_HSCDET:
   case FC_INST_HSCA:
+  case FC_INST_PFS:
     switch(hg->fc_mode){
     case FC_PANCOL:
     case FC_PANG:

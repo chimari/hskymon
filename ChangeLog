@@ -3,6 +3,7 @@
 	            - Updated LAMOST database to DR4.
 	            - Added command line option "-d" to show HTTP debug
 	              messages.
+	            - Added PFS for the new instrument on FC.
 
 2018.07.16 ver3.6.2 - Added HSC masking area plot for bright srats
 	              with FCDB GAIA search.
