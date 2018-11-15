@@ -1,3 +1,6 @@
+2018.11.14 ver3.6.4 - Changed lower limit for Telescope Velocity
+	              (0.1 --> 0.01).
+
 2018.10.26 ver3.6.3 - Remake Object List tree in Sync OPE.
 	            - Added Kepler IC10 for FCDB.
 	            - Updated LAMOST database to DR4.

@@ -1,3 +1,9 @@
+hskymon (3.6.4ubuntu) trusty; urgency=medium
+
+  * Changed the lower limits for Telescope velocity (0.1 --> 0.01).
+
+ -- Akito TAJITSU <tajitu@naoj.org>  Wed, 14 Nov 2018 19:19:04 -1000
+
 hskymon (3.6.3ubuntu) trusty; urgency=medium
 
   * Added Kepler IC10 for FCDB.

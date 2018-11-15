@@ -11315,8 +11315,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 #endif
   
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->vel_az,
-					    0.1, 5.0, 
-					    0.1,0.1,0);
+					    0.01, 10.0, 
+					    0.01,0.1,0);
   spinner =  gtk_spin_button_new (adj, 2, 2);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
@@ -11345,8 +11345,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 #endif
   
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->vel_el,
-					    0.1, 5.0, 
-					    0.1,0.1,0);
+					    0.01, 10.0, 
+					    0.01,0.1,0);
   spinner =  gtk_spin_button_new (adj, 2, 2);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
