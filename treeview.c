@@ -20,7 +20,6 @@ gint stddb_tree_update_azel ();
 void close_tree2();
 void close_tree();
 void stddb_set_label();
-gchar *make_ttgs();
 void make_std_tgt();
 void make_fcdb_tgt();
 void copy_stacstd();
@@ -793,7 +792,7 @@ void tree_update_azel_item(typHOE *hg,
     sprintf(tmp," p-%3d",hg->obj[i_list].ope_i+1);
   }
   else{
-    sprintf(tmp,"%2d-%3d",hg->obj[i_list].ope+1,hg->obj[i_list].ope_i+1);
+    sprintf(tmp,"%2d-%3d",hg->obj[i_list].ope+1, hg->obj[i_list].ope_i+1);
   }
   tmp[strlen(tmp)] = '\0';
   gtk_list_store_set (GTK_LIST_STORE(model), &iter,
@@ -1391,7 +1390,7 @@ static void add_item (typHOE *hg)
   init_obj(&hg->obj[i]);
   
   if(hg->obj[i].def) g_free(hg->obj[i].def);
-  hg->obj[i].def=make_tgt(hg->addobj_name);
+  hg->obj[i].def=make_tgt(hg->addobj_name, "TGT_");
   if(hg->obj[i].name) g_free(hg->obj[i].name);
   hg->obj[i].name=g_strdup(hg->addobj_name);
   
@@ -1448,7 +1447,7 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   case FCDB_TYPE_PS1:
   case FCDB_TYPE_SDSS:
   case FCDB_TYPE_USNO:
-    hg->obj[i].def=make_ttgs(hg->obj[hg->fcdb_i].name,hg->obj[hg->fcdb_i].def);
+    hg->obj[i].def=make_tgt(hg->obj[hg->fcdb_i].name, "TTGS_");
     hg->obj[i].name=g_strconcat(hg->obj[hg->fcdb_i].name," TTGS",NULL);
     hg->obj[i].note=g_strconcat("added via FC (",hg->obj[hg->fcdb_i].name,")",NULL);
     hg->obj[i].type=OBJTYPE_TTGS;
@@ -1467,7 +1466,7 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   case FCDB_TYPE_ESO:
   case FCDB_TYPE_GEMINI:
   default:
-    hg->obj[i].def=make_tgt(hg->fcdb[hg->fcdb_tree_focus].name);
+    hg->obj[i].def=make_tgt(hg->fcdb[hg->fcdb_tree_focus].name, "TGT_");
     hg->obj[i].name=g_strdup(hg->fcdb[hg->fcdb_tree_focus].name);
     hg->obj[i].note=g_strconcat("added via FC (",hg->obj[hg->fcdb_i].name,")",NULL);
     hg->obj[i].type=OBJTYPE_OBJ;
@@ -1531,7 +1530,7 @@ void add_item_std(GtkWidget *w, gpointer gdata){
 
   init_obj(&hg->obj[i]);
 
-  hg->obj[i].def=make_tgt(hg->std[hg->stddb_tree_focus].name);
+  hg->obj[i].def=make_tgt(hg->std[hg->stddb_tree_focus].name, "TGT_");
   hg->obj[i].name=g_strdup(hg->std[hg->stddb_tree_focus].name);
   hg->obj[i].note=g_strdup("standard");
   hg->obj[i].type=OBJTYPE_STD;
@@ -7331,21 +7330,12 @@ void close_tree2(GtkWidget *w, gpointer gdata){
   // calling next close_tree
 }
 
-gchar *make_tgt(gchar * obj_name){
-  gchar *tgt_name, *ret_name;
+gchar *make_tgt(gchar *obj_name, const gchar *head){
+  gchar tgt_name[BUFFSIZE], *ret_name;
   gint  i_obj,i_tgt;
 
-  i_tgt=strlen("TGT_");
-
-  if((tgt_name=(gchar *)g_malloc(sizeof(gchar)*(strlen(obj_name)+i_tgt+1)))
-     ==NULL){
-    fprintf(stderr, "!!! Memory allocation error in fgets_new().\n");
-    fflush(stderr);
-    return(NULL);
-  }
-
-  strcpy(tgt_name,"TGT_");
-  
+  strcpy(tgt_name, head);
+  i_tgt=strlen(tgt_name);
 
   for(i_obj=0;i_obj<strlen(obj_name);i_obj++){
     if(isalnum(obj_name[i_obj])){
@@ -7356,24 +7346,6 @@ gchar *make_tgt(gchar * obj_name){
 
   tgt_name[i_tgt]='\0';
   ret_name=g_strdup(tgt_name);
-
-  if(tgt_name) g_free(tgt_name);
-
-  return(ret_name);
-}
-
-gchar *make_ttgs(gchar * obj_name, gchar * obj_tgt){
-  gchar *ret_name, *tmp;
-  gint  i_obj,i_tgt;
-
-  if(!obj_tgt){
-    tmp=make_tgt(obj_name);
-    ret_name=g_strconcat(tmp,"_TT",NULL);
-    if(tmp) g_free(tmp);
-  }
-  else{
-    ret_name=g_strconcat(obj_tgt,"_TT",NULL);
-  }
 
   return(ret_name);
 }
@@ -7387,7 +7359,7 @@ void make_std_tgt(GtkWidget *w, gpointer gdata){
 
 
   if((hg->stddb_tree_focus>=0)&&(hg->stddb_tree_focus<hg->std_i_max)){
-    tgt=make_tgt(hg->std[hg->stddb_tree_focus].name);
+    tgt=make_tgt(hg->std[hg->stddb_tree_focus].name, "TGT_");
     if(hg->std[hg->stddb_tree_focus].pm){
       yrs=current_yrs(hg);
       new_d_ra=hg->std[hg->stddb_tree_focus].d_ra+
@@ -7428,7 +7400,7 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
     case FCDB_TYPE_PS1:
     case FCDB_TYPE_SDSS:
     case FCDB_TYPE_USNO:
-      tgt=make_ttgs(hg->obj[hg->fcdb_i].name,hg->obj[hg->fcdb_i].def);
+      tgt=make_tgt(hg->obj[hg->fcdb_i].name, "TTGS_");
       break;
 
     case FCDB_TYPE_LAMOST:
@@ -7443,7 +7415,7 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
     case FCDB_TYPE_ESO:
     case FCDB_TYPE_GEMINI:
     default:
-      tgt=make_tgt(hg->fcdb[hg->fcdb_tree_focus].name);
+      tgt=make_tgt(hg->fcdb[hg->fcdb_tree_focus].name, "TGT_");
       break;
     }
 

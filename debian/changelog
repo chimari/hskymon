@@ -1,3 +1,9 @@
+hskymon (3.6.5ubuntu) bionic; urgency=medium
+
+  * GS drawing on FC for IRCS.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Thu, 03 Jan 2019 13:22:37 -1000
+
 hskymon (3.6.4ubuntu) trusty; urgency=medium
 
   * Changed the lower limits for Telescope velocity (0.1 --> 0.01).

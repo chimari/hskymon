@@ -5,16 +5,11 @@
 //                                           2010.3.15  A.Tajitsu
 
 
-#include"main.h"
-#include"version.h"
+#include "main.h"
+#include "version.h"
 #include "hsc.h"
 #include <cairo.h>
 #include <cairo-pdf.h>
-
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
-#include <signal.h>
 
 
 #ifdef USE_GTK3
@@ -34,7 +29,7 @@ static void cancel_fc();
 static gboolean resize_draw_fc();
 static gboolean button_draw_fc();
 void rot_pa();
-void translate_hsc_dith(cairo_t *cr, typHOE *hg, int width_file, gfloat r);
+void translate_hsc_dith();
 static void refresh_fc();
 static void orbit_fc();
 void set_hsc_dith_label();
@@ -79,6 +74,30 @@ gchar *rgb_source_txt();
 
 gdouble hsc_sat_radius();
 void draw_hsc_sat();
+
+void draw_nst();
+void draw_pts();
+void draw_fcdb1();
+void draw_fcdb2();
+
+void draw_hds();
+void draw_ircs();
+void draw_comics();
+void draw_focas();
+void draw_moircs();
+void draw_spcam();
+void draw_hsc();
+void draw_fmos();
+void draw_pfs();
+
+void draw_fc_label();
+
+void draw_hsc_dither();
+
+void draw_pa();
+
+void draw_gs_hskymon();
+
 
 gboolean flag_getDSS=FALSE, flag_getFCDB=FALSE;
 gboolean flagHSCDialog=FALSE;
@@ -220,6 +239,7 @@ void fc_dl (typHOE *hg)
 #endif
   gint timer=-1;
   gint mode;
+  gchar *tmp;
   
   if(flag_getDSS) return;
   flag_getDSS=TRUE;
@@ -269,7 +289,8 @@ void fc_dl (typHOE *hg)
   }
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW((flagFC) ? hg->fc_main : hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -285,172 +306,10 @@ void fc_dl (typHOE *hg)
     mode=hg->fc_mode;
   }
 
-  switch(mode){
-  case FC_STSCI_DSS1R:
-    label=gtk_label_new("Retrieving DSS (POSS1 Red) image from \"" FC_HOST_STSCI "\" ...");
-    break;
-    
-  case FC_STSCI_DSS1B:
-    label=gtk_label_new("Retrieving DSS (POSS1 Blue) image from \"" FC_HOST_STSCI "\" ...");
-    break;
-    
-  case FC_STSCI_DSS2R:
-    label=gtk_label_new("Retrieving DSS (POSS2 Red) image from \"" FC_HOST_STSCI "\" ...");
-    break;
-    
-  case FC_STSCI_DSS2B:
-    label=gtk_label_new("Retrieving DSS (POSS2 Blue) image from \"" FC_HOST_STSCI "\" ...");
-    break;
-    
-  case FC_STSCI_DSS2IR:
-    label=gtk_label_new("Retrieving DSS (POSS2 IR) image from \"" FC_HOST_STSCI "\" ...");
-    break;
-    
-  case FC_ESO_DSS1R:
-    label=gtk_label_new("Retrieving DSS (POSS1 Red) image from \"" FC_HOST_ESO "\" ...");
-    break;
-    
-  case FC_ESO_DSS2R:
-    label=gtk_label_new("Retrieving DSS (POSS2 Red) image from \"" FC_HOST_ESO "\" ...");
-      break;
-      
-  case FC_ESO_DSS2B:
-    label=gtk_label_new("Retrieving DSS (POSS2 Blue) image from \"" FC_HOST_ESO "\" ...");
-    break;
-    
-  case FC_ESO_DSS2IR:
-    label=gtk_label_new("Retrieving DSS (POSS2 IR) image from \"" FC_HOST_ESO "\" ...");
-    break;
-    
-  case FC_SKYVIEW_GALEXF:
-    label=gtk_label_new("Retrieving GALEX (Far UV) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_GALEXN:
-    label=gtk_label_new("Retrieving GALEX (Near UV) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_DSS1R:
-    label=gtk_label_new("Retrieving DSS (POSS1 Red) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_DSS1B:
-    label=gtk_label_new("Retrieving DSS (POSS1 Blue) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_DSS2R:
-    label=gtk_label_new("Retrieving DSS (POSS2 Red) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_DSS2B:
-    label=gtk_label_new("Retrieving DSS (POSS2 Blue) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_DSS2IR:
-    label=gtk_label_new("Retrieving DSS (POSS2 IR) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_SDSSU:
-    label=gtk_label_new("Retrieving SDSS (u-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_SDSSG:
-    label=gtk_label_new("Retrieving SDSS (g-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_SDSSR:
-    label=gtk_label_new("Retrieving SDSS (r-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_SDSSI:
-    label=gtk_label_new("Retrieving SDSS (i-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_SDSSZ:
-    label=gtk_label_new("Retrieving SDSS (z-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_2MASSJ:
-    label=gtk_label_new("Retrieving 2MASS (J-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_2MASSH:
-    label=gtk_label_new("Retrieving 2MASS (H-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_2MASSK:
-    label=gtk_label_new("Retrieving 2MASS (K-Band) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_WISE34:
-    label=gtk_label_new("Retrieving WISE (3.4um) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_WISE46:
-    label=gtk_label_new("Retrieving WISE (4.6um) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_WISE12:
-    label=gtk_label_new("Retrieving WISE (12um) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_WISE22:
-    label=gtk_label_new("Retrieving WISE (22um) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_AKARIN60:
-    label=gtk_label_new("Retrieving AKARI N60 image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-
-  case FC_SKYVIEW_AKARIWS:
-    label=gtk_label_new("Retrieving AKARI WIDE-S image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-
-  case FC_SKYVIEW_AKARIWL:
-    label=gtk_label_new("Retrieving AKARI WIDE-L image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-
-  case FC_SKYVIEW_AKARIN160:
-    label=gtk_label_new("Retrieving AKARI N160 image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SKYVIEW_NVSS:
-    label=gtk_label_new("Retrieving NVSS (1.4GHz) image from \"" FC_HOST_SKYVIEW "\" ...");
-    break;
-    
-  case FC_SDSS:
-    label=gtk_label_new("Retrieving SDSS (DR7/color) image from \"" FC_HOST_SDSS "\" ...");
-    break;
-    
-  case FC_SDSS13:
-    label=gtk_label_new("Retrieving SDSS (DR14/color) image from \"" FC_HOST_SDSS13 "\" ...");
-    break;
-    
-  case FC_PANCOL:
-    label=gtk_label_new("Retrieving PanSTARRS-1 (color) image from \"" FC_HOST_PANCOL "\" ...");
-    break;
-    
-  case FC_PANG:
-    label=gtk_label_new("Retrieving PanSTARRS-1 (g) image from \"" FC_HOST_PANCOL "\" ...");
-    break;
-    
-  case FC_PANR:
-    label=gtk_label_new("Retrieving PanSTARRS-1 (r) image from \"" FC_HOST_PANCOL "\" ...");
-    break;
-    
-  case FC_PANI:
-    label=gtk_label_new("Retrieving PanSTARRS-1 (i) image from \"" FC_HOST_PANCOL "\" ...");
-    break;
-    
-  case FC_PANZ:
-    label=gtk_label_new("Retrieving PanSTARRS-1 (z) image from \"" FC_HOST_PANCOL "\" ...");
-    break;
-    
-  case FC_PANY:
-    label=gtk_label_new("Retrieving PanSTARRS-1 (y) image from \"" FC_HOST_PANCOL "\" ...");
-    break;
-    
-  }
+  tmp=g_strdup_printf("Retrieving %s image from \"%s\" ...", FC_img[mode], FC_host[mode]);
+  label=gtk_label_new(tmp);
+  g_free(tmp);
+  
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -557,7 +416,7 @@ gboolean progress_timeout( gpointer data ){
       sz=sz/1024;
       
       if(sz>1024){
-	tmp=g_strdup_printf("Downloaded %.2f MB",(gfloat)sz/1024.);
+	tmp=g_strdup_printf("Downloaded %.2lf MB",(gdouble)sz/1024.);
       }
       else{
 	tmp=g_strdup_printf("Downloaded %ld kB",sz);
@@ -1094,235 +953,22 @@ void create_fc_dialog(typHOE *hg)
     GtkTreeIter iter, iter_set;	  
     GtkCellRenderer *renderer;
     GtkWidget *bar;
+    gint i_fc;
     
     store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
     
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "STScI: DSS1 (Red)",
-		       1, FC_STSCI_DSS1R, 2, TRUE, -1);
-    if(hg->fc_mode==FC_STSCI_DSS1R) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "STScI: DSS1 (Blue)",
-		       1, FC_STSCI_DSS1B, 2, TRUE, -1);
-    if(hg->fc_mode==FC_STSCI_DSS1B) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "STScI: DSS2 (Red)",
-		       1, FC_STSCI_DSS2R, 2, TRUE, -1);
-    if(hg->fc_mode==FC_STSCI_DSS2R) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "STScI: DSS2 (Blue)",
-		       1, FC_STSCI_DSS2B, 2, TRUE, -1);
-    if(hg->fc_mode==FC_STSCI_DSS2B) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "STScI: DSS2 (IR)",
-		       1, FC_STSCI_DSS2IR, 2, TRUE, -1);
-    if(hg->fc_mode==FC_STSCI_DSS2IR) iter_set=iter;
-
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
-			0, NULL,
-			1, FC_SEP1,2, FALSE, -1);
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "ESO: DSS1 (Red)",
-		       1, FC_ESO_DSS1R, 2, TRUE, -1);
-    if(hg->fc_mode==FC_ESO_DSS1R) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "ESO: DSS2 (Red)",
-		       1, FC_ESO_DSS2R, 2, TRUE, -1);
-    if(hg->fc_mode==FC_ESO_DSS2R) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "ESO: DSS2 (Blue)",
-		       1, FC_ESO_DSS2B, 2, TRUE, -1);
-    if(hg->fc_mode==FC_ESO_DSS2B) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "ESO: DSS2 (IR)",
-		       1, FC_ESO_DSS2IR, 2, TRUE, -1);
-    if(hg->fc_mode==FC_ESO_DSS2IR) iter_set=iter;
-
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
-			0, NULL, 1, FC_SEP2, 2, FALSE, -1);
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: GALEX (Far UV)",
-		       1, FC_SKYVIEW_GALEXF, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_GALEXF) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: GALEX (Near UV)",
-		       1, FC_SKYVIEW_GALEXN, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_GALEXN) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: DSS1 (Red)",
-		       1, FC_SKYVIEW_DSS1R, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_DSS1R) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: DSS1 (Blue)",
-		       1, FC_SKYVIEW_DSS1B, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_DSS1B) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: DSS2 (Red)",
-		       1, FC_SKYVIEW_DSS2R, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_DSS2R) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: DSS2 (Blue)",
-		       1, FC_SKYVIEW_DSS2B, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_DSS2B) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: DSS2 (IR)",
-		       1, FC_SKYVIEW_DSS2IR, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_DSS2IR) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (u)",
-		       1, FC_SKYVIEW_SDSSU, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_SDSSU) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (g)",
-		       1, FC_SKYVIEW_SDSSG, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_SDSSG) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (r)",
-		       1, FC_SKYVIEW_SDSSR, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_SDSSR) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (i)",
-		       1, FC_SKYVIEW_SDSSI, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_SDSSI) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (z)",
-		       1, FC_SKYVIEW_SDSSZ, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_SDSSZ) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (J)",
-		       1, FC_SKYVIEW_2MASSJ, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_2MASSJ) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (H)",
-		       1, FC_SKYVIEW_2MASSH, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_2MASSH) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (K)",
-		       1, FC_SKYVIEW_2MASSK, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_2MASSK) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: WISE (3.4um)",
-		       1, FC_SKYVIEW_WISE34, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_WISE34) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: WISE (4.6um)",
-		       1, FC_SKYVIEW_WISE46, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_WISE46) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: WISE (12um)",
-		       1, FC_SKYVIEW_WISE12, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_WISE12) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: WISE (22um)",
-		       1, FC_SKYVIEW_WISE22, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_WISE22) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI N60",
-		       1, FC_SKYVIEW_AKARIN60, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_AKARIN60) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI WIDE-S",
-		       1, FC_SKYVIEW_AKARIWS, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_AKARIWS) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI WIDE-L",
-		       1, FC_SKYVIEW_AKARIWL, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_AKARIWL) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI N160",
-		       1, FC_SKYVIEW_AKARIN160, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_AKARIN160) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: NVSS (1.4GHz)",
-		       1, FC_SKYVIEW_NVSS, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_NVSS) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: RGB composite",
-		       1, FC_SKYVIEW_RGB, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SKYVIEW_RGB) iter_set=iter;
-	
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
-			0, NULL, 1, FC_SEP3, 2, FALSE, -1);
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SDSS DR7 (color)",
-		       1, FC_SDSS, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SDSS) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SDSS DR14 (color)",
-		       1, FC_SDSS13, 2, TRUE, -1);
-    if(hg->fc_mode==FC_SDSS13) iter_set=iter;
-
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
-			0, NULL, 1, FC_SEP4, 2, FALSE, -1);
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (color)",
-		       1, FC_PANCOL, 2, TRUE, -1);
-    if(hg->fc_mode==FC_PANCOL) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (g)",
-		       1, FC_PANG, 2, TRUE, -1);
-    if(hg->fc_mode==FC_PANG) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (r)",
-		       1, FC_PANR, 2, TRUE, -1);
-    if(hg->fc_mode==FC_PANR) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (i)",
-		       1, FC_PANI, 2, TRUE, -1);
-    if(hg->fc_mode==FC_PANI) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (z)",
-		       1, FC_PANZ, 2, TRUE, -1);
-    if(hg->fc_mode==FC_PANZ) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (y)",
-		       1, FC_PANY, 2, TRUE, -1);
-    if(hg->fc_mode==FC_PANY) iter_set=iter;
+    for(i_fc=0;i_fc<NUM_FC;i_fc++){
+      gtk_list_store_append(store, &iter);
+      if(FC_name[i_fc]){
+	gtk_list_store_set(store, &iter, 0, FC_name[i_fc],
+			   1, i_fc, 2, TRUE, -1);
+	if(hg->fc_mode==i_fc) iter_set=iter;
+      }
+      else{
+	gtk_list_store_set(store, &iter, 0, NULL,
+			   1, i_fc, 2, FALSE, -1);
+      }
+    }
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 #ifdef USE_GTK3      
@@ -2209,85 +1855,72 @@ static void cancel_fc(GtkWidget *w, gpointer gdata)
 }
 
 
-void translate_to_center(cairo_t *cr, int width, int height, int width_file, int height_file, gfloat r, typHOE *hg)
+void translate_to_center(typHOE *hg,
+			 cairo_t *cr,
+			 int width,
+			 int height,
+			 int width_file,
+			 int height_file,
+			 gdouble r)
 {
-    cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
-		     (height-(gint)((gdouble)height_file*r))/2);
+  gdouble angle;
+  
+  cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
+		   (height-(gint)((gdouble)height_file*r))/2);
 
-    cairo_translate (cr, (gdouble)width_file*r/2,
-		     (gdouble)height_file*r/2);
+  cairo_translate (cr, (gdouble)width_file*r/2,
+		   (gdouble)height_file*r/2);
 
-    switch(hg->fc_inst){
-    case FC_INST_NONE:
-    case FC_INST_HDS:
-    case FC_INST_IRCS:
-    case FC_INST_COMICS:
-    case FC_INST_FOCAS:
-    case FC_INST_MOIRCS:
-    case FC_INST_FMOS:
-    case FC_INST_PFS:
-      if(hg->dss_flip){
-	cairo_rotate (cr,-M_PI*(gdouble)hg->dss_pa/180.);
-      }
-      else{
-	cairo_rotate (cr,M_PI*(gdouble)hg->dss_pa/180.);
-      }
+  switch(hg->fc_inst){
+  case FC_INST_NONE:
+  case FC_INST_HDS:
+  case FC_INST_COMICS:
+  case FC_INST_FOCAS:
+  case FC_INST_MOIRCS:
+  case FC_INST_FMOS:
+  case FC_INST_PFS:
+    angle=M_PI*(gdouble)hg->dss_pa/180.;
+    break;
 
-      break;
-
-    case FC_INST_HDSAUTO:
-      if(hg->skymon_mode==SKYMON_SET){
-	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
-				 (gdouble)((int)hg->obj[hg->dss_i].s_hpa));
-      }
-      else{
-	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
-				 (gdouble)((int)hg->obj[hg->dss_i].c_hpa));
-      }
-      if(hg->dss_flip){
-	cairo_rotate (cr,-M_PI*(gdouble)hg->dss_pa/180.);
-      }
-      else{
-	cairo_rotate (cr,M_PI*(gdouble)hg->dss_pa/180.);
-      }
-      break;
-
-    case FC_INST_HDSZENITH:
-      if(hg->skymon_mode==SKYMON_SET){
-	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
-				 (gdouble)((int)hg->obj[hg->dss_i].s_pa));
-      }
-      else{
-	gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
-				 (gdouble)((int)hg->obj[hg->dss_i].c_pa));
-      }
-      if(hg->dss_flip){
-	cairo_rotate (cr,-M_PI*(gdouble)hg->dss_pa/180.);
-      }
-      else{
-	cairo_rotate (cr,M_PI*(gdouble)hg->dss_pa/180.);
-      }
-      break;
-
-    case FC_INST_SPCAM:
-      if(hg->dss_flip){
-	cairo_rotate (cr,-M_PI*(gdouble)(90-hg->dss_pa)/180.);
-      }
-      else{
-	cairo_rotate (cr,M_PI*(gdouble)(90-hg->dss_pa)/180.);
-      }
-      break;
-
-    case FC_INST_HSCDET:
-    case FC_INST_HSCA:
-      if(hg->dss_flip){
-	cairo_rotate (cr,-M_PI*(gdouble)(270-hg->dss_pa)/180.);
-      }
-      else{
-	cairo_rotate (cr,M_PI*(gdouble)(270-hg->dss_pa)/180.);
-      }
-      break;
+  case FC_INST_HDSAUTO:
+    if(hg->skymon_mode==SKYMON_SET){
+      gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
+			       (gdouble)((int)hg->obj[hg->dss_i].s_hpa));
     }
+    else{
+      gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
+			       (gdouble)((int)hg->obj[hg->dss_i].c_hpa));
+    }
+    angle=M_PI*(gdouble)hg->dss_pa/180.;
+    break;
+
+  case FC_INST_HDSZENITH:
+    if(hg->skymon_mode==SKYMON_SET){
+      gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
+			       (gdouble)((int)hg->obj[hg->dss_i].s_pa));
+    }
+    else{
+      gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
+			       (gdouble)((int)hg->obj[hg->dss_i].c_pa));
+    }
+    angle=M_PI*(gdouble)hg->dss_pa/180.;
+    break;
+
+  case FC_INST_IRCS:
+    angle=M_PI*(gdouble)(-90+hg->dss_pa)/180.;
+    break;
+
+  case FC_INST_SPCAM:
+    angle=M_PI*(gdouble)(90-hg->dss_pa)/180.;
+    break;
+
+  case FC_INST_HSCDET:
+  case FC_INST_HSCA:
+    angle=M_PI*(gdouble)(270-hg->dss_pa)/180.;
+    break;
+  }
+
+  cairo_rotate (cr, (hg->dss_flip) ? -angle : angle);
 }
 
 #ifdef USE_GTK3
@@ -2341,12 +1974,12 @@ gboolean draw_fc_cairo(GtkWidget *widget,
   gint from_set, to_rise;
   int width, height;
   int width_file, height_file;
-  gfloat r_w,r_h, r;
+  gdouble r_w,r_h, r;
   gint shift_x=0, shift_y=0;
 
   gchar *tmp;
   GdkPixbuf *pixbuf_flip=NULL;
-  gfloat x_ccd, y_ccd, gap_ccd;
+  gdouble x_ccd, y_ccd, gap_ccd;
   gdouble scale;
 
   struct ln_equ_posn object;
@@ -2500,8 +2133,8 @@ gboolean draw_fc_cairo(GtkWidget *widget,
     width_file = gdk_pixbuf_get_width(pixbuf_fc);
     height_file = gdk_pixbuf_get_height(pixbuf_fc);
     
-    r_w =  (gfloat)width/(gfloat)width_file;
-    r_h =  (gfloat)height/(gfloat)height_file;
+    r_w =  (gdouble)width/(gdouble)width_file;
+    r_h =  (gdouble)height/(gdouble)height_file;
     
     if(pixbuf2_fc) g_object_unref(G_OBJECT(pixbuf2_fc));
     
@@ -2529,7 +2162,7 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 
     cairo_save (cr);
 
-    translate_to_center(cr,width,height,width_file,height_file,r,hg);
+    translate_to_center(hg, cr,width,height,width_file,height_file,r);
 
     cairo_translate (cr, -(gdouble)width_file*r/2,
 		     -(gdouble)height_file*r/2);
@@ -2559,1722 +2192,88 @@ gboolean draw_fc_cairo(GtkWidget *widget,
     case FC_INST_HDS:
     case FC_INST_HDSAUTO:
     case FC_INST_HDSZENITH:
-      if(hg->dss_draw_slit){
-	cairo_arc(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2,
-		  ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.,
-		  0,M_PI*2);
-	cairo_clip(cr);
-	cairo_new_path(cr);
-	
-	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.3);
-	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.3);
-	cairo_set_line_width (cr, (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip/60.*HDS_SLIT_MASK_ARCSEC);
-	
-	cairo_move_to(cr,((gdouble)width_file*r)/2,
-		      ((gdouble)height_file*r)/2-((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.);
-	cairo_line_to(cr,((gdouble)width_file*r)/2,
-		      ((gdouble)height_file*r)/2-(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*HDS_SLIT_LENGTH/2./500./60.);
-	
-	cairo_move_to(cr,((gdouble)width_file*r)/2,
-		      ((gdouble)height_file*r)/2+(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*HDS_SLIT_LENGTH/2./500./60.);
-	cairo_line_to(cr,((gdouble)width_file*r)/2,
-		      ((gdouble)height_file*r)/2+((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.);
-	cairo_stroke(cr);
-	
-	cairo_set_line_width (cr, (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip/60.*HDS_SLIT_WIDTH/500.);
-	cairo_move_to(cr,((gdouble)width_file*r)/2,
-		      ((gdouble)height_file*r)/2-(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*HDS_SLIT_LENGTH/2./500./60.);
-	cairo_line_to(cr,((gdouble)width_file*r)/2,
-		      ((gdouble)height_file*r)/2+(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*HDS_SLIT_LENGTH/2./500./60.);
-	cairo_stroke(cr);
-	
-	cairo_reset_clip(cr);
-      }
-      
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-      
-      cairo_set_line_width (cr, 3.0*scale);
-      
-      cairo_arc(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2,
-		((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.,
-		0,M_PI*2);
-      cairo_stroke(cr);
-      
-      cairo_move_to(cr,
-		    ((gdouble)width_file*r)/2+((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*cos(M_PI/4),
-		    ((gdouble)height_file*r)/2-((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*sin(M_PI/4));
-      cairo_set_line_width (cr, 1.5*scale);
-      cairo_line_to(cr,
-		    ((gdouble)width_file*r)/2+1.5*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*cos(M_PI/4),
-		    ((gdouble)height_file*r)/2-1.5*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*sin(M_PI/4));
-      cairo_stroke(cr);
-      
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-      cairo_move_to(cr,
-		    ((gdouble)width_file*r)/2+1.5*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*cos(M_PI/4),
-		    ((gdouble)height_file*r)/2-1.5*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*sin(M_PI/4));
-      cairo_show_text(cr, "HDS SV FOV (1arcmin)");
-      
+      draw_hds(hg, cr, width, height, width_file, height_file, scale, r);
       break;
-
 
     case FC_INST_IRCS:
-      cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-
-      if(hg->dss_draw_slit){
-	cairo_set_line_width (cr, 1.5*scale);
-	cairo_arc(cr,0,0,
-		  ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*IRCS_TTGS_ARCMIN,
-		  0,M_PI*2);
-	cairo_stroke(cr);
-
-	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-	
-	tmp=g_strdup_printf("Tip-Tilt Guide Star w/LGS (%darcmin)",IRCS_TTGS_ARCMIN/2);
-	cairo_text_extents (cr,tmp, &extents);
-	cairo_move_to(cr,
-		      -extents.width/2,
-		      -IRCS_TTGS_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
-	cairo_show_text(cr, tmp);
-	if(tmp) g_free(tmp);
-      }
-
-      cairo_set_line_width (cr, 3.0*scale);
-
-      cairo_rectangle(cr,
-		      -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_X_ARCSEC/60.)/2.,
-		      -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_Y_ARCSEC/60.)/2.,
-		      (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_X_ARCSEC/60.,
-		      (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_Y_ARCSEC/60.);
-      cairo_stroke(cr);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-
-      tmp=g_strdup_printf("IRCS FOV (%dx%darcsec)",(gint)IRCS_X_ARCSEC, (gint)IRCS_Y_ARCSEC);
-      cairo_text_extents (cr,tmp, &extents);
-      cairo_move_to(cr,-extents.width/2,
-		    -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_Y_ARCSEC/60.)/2.-5*scale);
-      cairo_show_text(cr, tmp);
-      if(tmp) g_free(tmp);
-
+      draw_ircs(hg, cr, width, height, width_file, height_file, scale, r);
       break;
-
-
-    case FC_INST_COMICS:
-      cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-      cairo_set_line_width (cr, 3.0*scale);
-
-      cairo_rectangle(cr,
-		      -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_X_ARCSEC/60.)/2.,
-		      -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_Y_ARCSEC/60.)/2.,
-		      (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_X_ARCSEC/60.,
-		      (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_Y_ARCSEC/60.);
-      cairo_stroke(cr);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-
-      tmp=g_strdup_printf("COMICS FOV (%dx%darcsec)",(gint)COMICS_X_ARCSEC, (gint)COMICS_Y_ARCSEC);
-      cairo_text_extents (cr,tmp, &extents);
-      cairo_move_to(cr,-extents.width/2,
-		    -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_Y_ARCSEC/60.)/2.-5*scale);
-      cairo_show_text(cr, tmp);
-      if(tmp) g_free(tmp);
-
-      break;
-
 
     case FC_INST_FOCAS:
-      cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-      cairo_set_line_width (cr, 3.0*scale);
-      
-      cairo_arc(cr,0,0,
-		((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FOCAS_R_ARCMIN,
-		0,M_PI*2);
-      cairo_stroke(cr);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-	
-      tmp=g_strdup_printf("FOCAS FOV (%darcmin)",FOCAS_R_ARCMIN);
-      cairo_text_extents (cr,tmp, &extents);
-      cairo_move_to(cr,
-		    -extents.width/2,
-		    -FOCAS_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
-      cairo_show_text(cr, tmp);
-      if(tmp) g_free(tmp);
-
-      if(hg->dss_draw_slit){
-	cairo_new_path(cr);
-	cairo_arc(cr,0,0,
-		  ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FOCAS_R_ARCMIN,
-		  0,M_PI*2);
-	cairo_clip(cr);
-	cairo_new_path(cr);
-	
-	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-	cairo_set_line_width (cr, FOCAS_GAP_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip));
-	cairo_move_to(cr,-(gdouble)width/2,0);
-	cairo_line_to(cr,(gdouble)width/2,0);
-	cairo_stroke(cr);
-	
-	cairo_reset_clip(cr);
-
-	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-	cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-	cairo_text_extents (cr,"Chip 2", &extents);
-
-	cairo_move_to(cr,
-		      cos(M_PI/4)*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FOCAS_R_ARCMIN+5*scale,
-		      -sin(M_PI/4)*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FOCAS_R_ARCMIN-5*scale);
-	cairo_show_text(cr,"Chip 2");
-	
-	cairo_move_to(cr,
-		      cos(M_PI/4)*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FOCAS_R_ARCMIN+5*scale,
-		      sin(M_PI/4)*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FOCAS_R_ARCMIN+extents.height+5*scale);
-	cairo_show_text(cr,"Chip 1");
-      }
-
+      draw_focas(hg, cr, width, height, width_file, height_file, scale, r);
       break;
-
 
     case FC_INST_MOIRCS:
-      cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-      cairo_set_line_width (cr, 3.0*scale);
-
-      cairo_rectangle(cr,
-		      -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.,
-		      -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.,
-		      (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN,
-		      (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN);
-      cairo_stroke(cr);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-
-      tmp=g_strdup_printf("MOIRCS FOV (%dx%darcmin)",(gint)MOIRCS_X_ARCMIN, (gint)MOIRCS_Y_ARCMIN);
-      cairo_text_extents (cr,tmp, &extents);
-      cairo_move_to(cr,-extents.width/2,
-		    -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.-5*scale);
-      cairo_show_text(cr, tmp);
-      if(tmp) g_free(tmp);
-
-      if(hg->dss_draw_slit){
-	cairo_new_path(cr);
-	cairo_rectangle(cr,
-			-((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.,
-			-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.,
-			(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN,
-			(gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN);
-	cairo_clip(cr);
-	cairo_new_path(cr);
-	
-	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-	cairo_set_line_width (cr, MOIRCS_GAP_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip));
-	cairo_move_to(cr,-(gdouble)width/2,0);
-	cairo_line_to(cr,(gdouble)width/2,0);
-	cairo_stroke(cr);
-	
-	cairo_move_to(cr,
-		      -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.,
-		      ((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.);
-	cairo_line_to(cr,
-		      -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.+MOIRCS_VIG1X_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip),
-		      ((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.);
-	cairo_line_to(cr,
-		      -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.,
-		      ((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.-MOIRCS_VIG1Y_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip));
-	cairo_close_path(cr);
-	cairo_fill_preserve(cr);
-
-	cairo_move_to(cr,
-		      -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.,
-		      -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.);
-	cairo_line_to(cr,
-		      -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.+MOIRCS_VIG2X_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip),
-		      -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.);
-	cairo_line_to(cr,
-		      -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.,
-		      -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.+MOIRCS_VIG2Y_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip));
-	cairo_close_path(cr);
-	cairo_fill_preserve(cr);
-
-	cairo_new_path(cr);
-
-	cairo_reset_clip(cr);
-
-	cairo_set_line_width(cr,1.5*scale);
-	cairo_arc(cr,0,0,
-		  (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_VIGR_ARCMIN/2.,
-		  0,M_PI*2);
-	cairo_stroke(cr);
-
-	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-	cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-	cairo_text_extents (cr,"Detector 2", &extents);
-
-	cairo_move_to(cr,
-		      ((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.+5*scale,
-		      -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.+extents.height);
-	cairo_show_text(cr,"Detector 2");
-	
-	cairo_move_to(cr,
-		      ((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.+5*scale,
-		      ((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.);
-	cairo_show_text(cr,"Detector 1");
-
-	cairo_rotate (cr,-M_PI/2);
-	cairo_text_extents (cr,"6 arcmin from the center", &extents);
-	cairo_move_to(cr,-extents.width/2.,
-		      -(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_VIGR_ARCMIN/2.-5*scale);
-	cairo_show_text(cr,"6 arcmin from the center");
-      }
-
-
+      draw_moircs(hg, cr, width, height, width_file, height_file, scale, r);
       break;
 
-
     case FC_INST_SPCAM:
-      cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-      cairo_set_line_width (cr, 3.0*scale);
-
-      cairo_rectangle(cr,
-		      -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*SPCAM_X_ARCMIN)/2.,
-		      -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SPCAM_Y_ARCMIN)/2.,
-		      (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*SPCAM_X_ARCMIN,
-		      (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SPCAM_Y_ARCMIN);
-      cairo_stroke(cr);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-
-      tmp=g_strdup_printf("Suprime-Cam FOV (%dx%darcmin)",SPCAM_X_ARCMIN, SPCAM_Y_ARCMIN);
-      cairo_text_extents (cr,tmp, &extents);
-      cairo_move_to(cr,-extents.width/2,
-		    -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SPCAM_Y_ARCMIN)/2.-5*scale);
-      cairo_show_text(cr, tmp);
-      if(tmp) g_free(tmp);
-
-      if(hg->dss_draw_slit){
-	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.3);
-	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.3);
-	cairo_set_line_width (cr, 1.5*scale);
-
-	x_ccd=0.20/60.*2048.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip);
-	y_ccd=0.20/60.*4096.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip);
-	gap_ccd=SPCAM_GAP_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip);
-	//2 fio
-	cairo_rectangle(cr,-x_ccd/2.,-y_ccd-gap_ccd/2.,
-			x_ccd,y_ccd);
-	//5 satsuki
-	cairo_rectangle(cr,-x_ccd/2.,+gap_ccd/2.,
-			x_ccd,y_ccd);
-
-	//7 clarisse
-	cairo_rectangle(cr,-x_ccd/2*3.-gap_ccd,-y_ccd-gap_ccd/2.,
-			x_ccd,y_ccd);
-	//9 san
-	cairo_rectangle(cr,-x_ccd/2.*3.-gap_ccd,+gap_ccd/2.,
-			x_ccd,y_ccd);
-
-	//6 chihiro
-	cairo_rectangle(cr,-x_ccd/2*5.-gap_ccd*2.,-y_ccd-gap_ccd/2.,
-			x_ccd,y_ccd);
-	//8 ponyo
-	cairo_rectangle(cr,-x_ccd/2.*5.-gap_ccd*2.,+gap_ccd/2.,
-			x_ccd,y_ccd);
-
-	//2 fio
-	cairo_rectangle(cr,x_ccd/2.+gap_ccd,-y_ccd-gap_ccd/2.,
-			x_ccd,y_ccd);
-	//5 satsuki
-	cairo_rectangle(cr,x_ccd/2.+gap_ccd,+gap_ccd/2.,
-			x_ccd,y_ccd);
-
-	//0 nausicca
-	cairo_rectangle(cr,x_ccd/2.*3.+gap_ccd*2.,-y_ccd-gap_ccd/2.,
-			x_ccd,y_ccd);
-	//3 sophie
-	cairo_rectangle(cr,x_ccd/2.*3.+gap_ccd*2,+gap_ccd/2.,
-			x_ccd,y_ccd);
-
-
-	cairo_stroke(cr);
-
-	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-	cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-	cairo_text_extents (cr,"2. fio", &extents);
-
-	//2 fio
-	cairo_move_to(cr,-x_ccd/2.+15*scale,-y_ccd-gap_ccd/2.+15*scale+extents.height);
-	cairo_show_text(cr,"2. fio");
-
-	//5 satsuki
-	cairo_move_to(cr,-x_ccd/2.+15*scale,+gap_ccd/2.+y_ccd-15*scale);
-	cairo_show_text(cr,"5. satsuki");
-
-	//7 clarisse
-	cairo_move_to(cr,-x_ccd/2*3.-gap_ccd+15*scale,-y_ccd-gap_ccd/2.+15*scale+extents.height);
-	cairo_show_text(cr,"7. clarisse");
-
-	//9 san
-	cairo_move_to(cr,-x_ccd/2.*3.-gap_ccd+15*scale,+gap_ccd/2.+y_ccd-15*scale);
-	cairo_show_text(cr,"9. san");
-
-	//6 chihiro
-	cairo_move_to(cr,-x_ccd/2*5.-gap_ccd*2.+15*scale,-y_ccd-gap_ccd/2.+15*scale+extents.height);
-	cairo_show_text(cr,"6. chihiro");
-
-	//8 ponyo
-	cairo_move_to(cr,-x_ccd/2.*5.-gap_ccd*2.+15*scale,+gap_ccd/2.+y_ccd-15*scale);
-	cairo_show_text(cr,"8. ponyo");
-
-	//1 kiki
-	cairo_move_to(cr,x_ccd/2.+gap_ccd+15*scale,-y_ccd-gap_ccd/2.+15*scale+extents.height);
-	cairo_show_text(cr,"1. kiki");
-
-	//4 sheeta
-	cairo_move_to(cr,x_ccd/2.+gap_ccd+15*scale,+gap_ccd/2.+y_ccd-15*scale);
-	cairo_show_text(cr,"4. sheeta");
-
-	//0 nausicaa
-	cairo_move_to(cr,x_ccd/2.*3.+gap_ccd*2.+15*scale,-y_ccd-gap_ccd/2.+15*scale+extents.height);
-	cairo_show_text(cr,"0. nausicaa");
-
-	//3 sophie
-	cairo_move_to(cr,x_ccd/2.*3.+gap_ccd*2+15*scale,+gap_ccd/2.+y_ccd-15*scale);
-	cairo_show_text(cr,"3. sophie");
-      }
-
+      draw_spcam(hg, cr, width, height, width_file, height_file, scale, r);
       break;
 
     case FC_INST_HSCDET:
     case FC_INST_HSCA:
-      cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
-
-      translate_hsc_dith(cr, hg, width_file, r);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-      cairo_set_line_width (cr, 3.0*scale);
-      
-      cairo_arc(cr,0,0,
-		((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*HSC_R_ARCMIN,
-		0,M_PI*2);
-      cairo_stroke(cr);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-	
-      if(!hg->dss_draw_slit){
-	tmp=g_strdup_printf("HSC FOV (%darcmin)",HSC_R_ARCMIN);
-	cairo_text_extents (cr,tmp, &extents);
-	cairo_move_to(cr,
-		      -extents.width/2,
-		      -HSC_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
-	cairo_show_text(cr, tmp);
-	if(tmp) g_free(tmp);
-      }
-      else{
-	gint i_chip;
-	gdouble pscale;
-	gdouble x_0,y_0;
-	
-	pscale=(1.5*60.*60./(497./0.015))/60.*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	// HSC pix scale 1.5deg = 497mm phi
-
-	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-	cairo_set_line_width (cr, 0.8*scale);
-
-	cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_BOLD);
-
-	// Dead chips
-	{
-	  gint i_dead;
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.3);
-	  else cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
-
-	  for(i_dead=0;i_dead<HSC_DEAD_ALL;i_dead++){
-	  
-	    y_0=(-(gdouble)hsc_dead[i_dead].crpix1*(gdouble)hsc_dead[i_dead].cd1_1/0.015-(gdouble)hsc_dead[i_dead].crpix2*(gdouble)hsc_dead[i_dead].cd1_2/0.015)*pscale;
-	    x_0=(-(gdouble)hsc_dead[i_dead].crpix1*(gdouble)hsc_dead[i_dead].cd2_1/0.015-(gdouble)hsc_dead[i_dead].crpix2*(gdouble)hsc_dead[i_dead].cd2_2/0.015)*pscale;
-	    if((hsc_dead[i_dead].cd1_2<0)&&(hsc_dead[i_dead].cd2_1<0)){
-	      cairo_rectangle(cr, x_0-2048*pscale/4*(hsc_dead[i_dead].ch),
-			      y_0-4224*pscale, 2048*pscale/4, 4224*pscale );
-	    }
-	    else if((hsc_dead[i_dead].cd1_2>0)&&(hsc_dead[i_dead].cd2_1>0)){
-	      cairo_rectangle(cr,x_0+2048*pscale/4*(hsc_dead[i_dead].ch-1), y_0, 2048*pscale/4, 4224*pscale);
-	    }
-	    else if((hsc_dead[i_dead].cd1_1>0)&&(hsc_dead[i_dead].cd2_2<0)){
-	      cairo_rectangle(cr,x_0-4224*pscale, y_0+2048*pscale/4*(hsc_dead[i_dead].ch-1),  4224*pscale, 2048*pscale/4);
-	    }
-	    else{
-	      cairo_rectangle(cr,x_0, y_0-2048*pscale/4*(hsc_dead[i_dead].ch), 4224*pscale, 2048*pscale/4);
-	    }
-	    cairo_fill(cr);
-	  }
-	}
-
-	for(i_chip=0;i_chip<HSC_CHIP_ALL;i_chip++){
-
-	  if(hsc_param[i_chip].bees==2){
-	    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.6, 0.0, 0.6);
-	    else cairo_set_source_rgba(cr, 0.4, 1.0, 0.4, 0.6);
-	  }
-	  else if(hsc_param[i_chip].bees==0){
-	    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.0, 0.5, 0.6);
-	    else cairo_set_source_rgba(cr, 0.8, 0.4, 0.8, 0.6);
-	  }
-	  else{
-	    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-	    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-	  }
-	  
-	  cairo_set_font_size (cr, 600*pscale);
-	  cairo_text_extents (cr,"000", &extents);
-
-	  y_0=(-(gdouble)hsc_param[i_chip].crpix1*(gdouble)hsc_param[i_chip].cd1_1/0.015-(gdouble)hsc_param[i_chip].crpix2*(gdouble)hsc_param[i_chip].cd1_2/0.015)*pscale;
-	  x_0=(-(gdouble)hsc_param[i_chip].crpix1*(gdouble)hsc_param[i_chip].cd2_1/0.015-(gdouble)hsc_param[i_chip].crpix2*(gdouble)hsc_param[i_chip].cd2_2/0.015)*pscale;
-
-	  if((hsc_param[i_chip].cd1_2<0)&&(hsc_param[i_chip].cd2_1<0)){
-	    cairo_rectangle(cr, x_0-2048*pscale, y_0-4224*pscale, 2048*pscale, 4224*pscale );
-	    cairo_move_to(cr, x_0-2048*pscale+2044*pscale*0.05, y_0-4224*pscale+2044*pscale*0.05-extents.y_bearing);
-	  }
-	  else if((hsc_param[i_chip].cd1_2>0)&&(hsc_param[i_chip].cd2_1>0)){
-	    cairo_rectangle(cr,x_0, y_0, 2048*pscale, 4224*pscale);
-	    cairo_move_to(cr, x_0+2048*pscale*0.05, y_0+2048*pscale*0.05-extents.y_bearing);
-	  }
-	  else if((hsc_param[i_chip].cd1_1>0)&&(hsc_param[i_chip].cd2_2<0)){
-	    cairo_rectangle(cr,x_0-4224*pscale, y_0,  4224*pscale, 2048*pscale);
-	    cairo_move_to(cr, x_0-4224*pscale+2048*pscale*0.05, y_0+2048*pscale*0.05-extents.y_bearing);
-	  }
-	  else{
-	    cairo_rectangle(cr,x_0, y_0-2048*pscale, 4224*pscale, 2048*pscale );
-	    cairo_move_to(cr, x_0+2048*pscale*0.05, y_0-2048*pscale+2048*pscale*0.05-extents.y_bearing);
-	  }
-
-	  cairo_set_font_size (cr, 600*pscale);
-	  if(hg->fc_inst==FC_INST_HSCDET){
-	    tmp=g_strdup_printf("%d",hsc_param[i_chip].det_id);
-	  }
-	  else{
-	    
-	    tmp=g_strdup_printf("%02d",hsc_param[i_chip].hsca);
-	  }
-	  cairo_show_text(cr,tmp);
-	  if(tmp) g_free(tmp);
-
-	  if(hsc_param[i_chip].hsca==35){
-	    cairo_set_font_size (cr, 1600*pscale);
-	    tmp=g_strdup_printf("BEES%d",hsc_param[i_chip].bees);
-	    cairo_text_extents (cr,tmp, &extents);
-	  
-	    if(hsc_param[i_chip].bees==0){
-	      cairo_move_to(cr, x_0+4224*pscale-2048*pscale*0.5-extents.width, y_0+2048*pscale*0.2-extents.y_bearing);
-	    }
-	    else{
-	      cairo_move_to(cr, x_0-4224*pscale+2048*pscale*0.5, y_0-2048*pscale*0.2);
-	    }
-	    cairo_show_text(cr,tmp);
-	    if(tmp) g_free(tmp);
-	  }
-
-	  cairo_stroke(cr);
-
-	}
-      }
-      break;
-
-    case FC_INST_PFS:
-      cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-      cairo_set_line_width (cr, 3.0*scale);
-      
-      cairo_arc(cr,0,0,
-		((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*PFS_R_ARCMIN,
-		0,M_PI*2);
-      cairo_stroke(cr);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-	
-      tmp=g_strdup_printf("PFS FOV (%.1farcmin)",PFS_R_ARCMIN);
-      cairo_text_extents (cr,tmp, &extents);
-      cairo_move_to(cr,
-		    -extents.width/2,
-		    -PFS_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
-      cairo_show_text(cr, tmp);
-      if(tmp) g_free(tmp);
-
+      draw_hsc(hg, cr, width, height, width_file, height_file, scale, r);
       break;
 
     case FC_INST_FMOS:
-      cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+      draw_fmos(hg, cr, width, height, width_file, height_file, scale, r);
+      break;
 
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
-      cairo_set_line_width (cr, 3.0*scale);
-      
-      cairo_arc(cr,0,0,
-		((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FMOS_R_ARCMIN,
-		0,M_PI*2);
-      cairo_stroke(cr);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
-	
-      tmp=g_strdup_printf("FMOS FOV (%darcmin)",FMOS_R_ARCMIN);
-      cairo_text_extents (cr,tmp, &extents);
-      cairo_move_to(cr,
-		    -extents.width/2,
-		    -FMOS_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
-      cairo_show_text(cr, tmp);
-      if(tmp) g_free(tmp);
-
+    case FC_INST_PFS:
+      draw_pfs(hg, cr, width, height, width_file, height_file, scale, r);
       break;
     }
-
     
     cairo_restore(cr);
 
     cairo_save(cr);
-    cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
-		     (height-(gint)((gdouble)height_file*r))/2);
-    
-    object.ra=ra_to_deg(hg->obj[hg->dss_i].ra);
-    object.dec=dec_to_deg(hg->obj[hg->dss_i].dec);
-
-    ln_equ_to_hequ(&object, &hobject);
-
-    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.3, 0.45, 0.0, 1.0);
-    else cairo_set_source_rgba(cr, 1.0, 1.0, 0.4, 1.0);
-    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			  CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.1*scale);
-    cairo_move_to(cr,5*scale,(gdouble)height_file*r-5*scale);
-    tmp=g_strdup_printf("RA=%02d:%02d:%05.2lf  Dec=%s%02d:%02d:%05.2lf (%.1lf)",
-			hobject.ra.hours,hobject.ra.minutes,
-			hobject.ra.seconds,
-			(hobject.dec.neg) ? "-" : "+", 
-			hobject.dec.degrees, hobject.dec.minutes,
-			hobject.dec.seconds,
-			hg->obj[hg->dss_i].equinox);
-    cairo_text_extents (cr, tmp, &extents);
-    cairo_show_text(cr,tmp);
-    if(tmp) g_free(tmp);
-
-    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			  CAIRO_FONT_WEIGHT_BOLD);
-    cairo_move_to(cr,5*scale,(gdouble)height_file*r-5*scale-extents.height-5*scale);
-    cairo_show_text(cr,hg->obj[hg->dss_i].name);
-
-
-    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
-    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			  CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
-    switch(hg->fc_mode_get){
-    case FC_SKYVIEW_GALEXF:
-      tmp=g_strdup_printf("GALEX (Far UV)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_GALEXN:
-      tmp=g_strdup_printf("GALEX (Near UV)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_STSCI_DSS1R:
-    case FC_ESO_DSS1R:
-    case FC_SKYVIEW_DSS1R:
-      tmp=g_strdup_printf("DSS1 (Red)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_STSCI_DSS1B:
-    case FC_SKYVIEW_DSS1B:
-      tmp=g_strdup_printf("DSS1 (Blue)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_STSCI_DSS2R:
-    case FC_ESO_DSS2R:
-    case FC_SKYVIEW_DSS2R:
-      tmp=g_strdup_printf("DSS2 (Red)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_STSCI_DSS2B:
-    case FC_ESO_DSS2B:
-    case FC_SKYVIEW_DSS2B:
-      tmp=g_strdup_printf("DSS2 (Blue)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_STSCI_DSS2IR:
-    case FC_ESO_DSS2IR:
-    case FC_SKYVIEW_DSS2IR:
-      tmp=g_strdup_printf("DSS2 (IR)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-      
-    case FC_SKYVIEW_SDSSU:
-      tmp=g_strdup_printf("SDSS (u)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_SDSSG:
-      tmp=g_strdup_printf("SDSS (g)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_SDSSR:
-      tmp=g_strdup_printf("SDSS (r)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_SDSSI:
-      tmp=g_strdup_printf("SDSS (i)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_SDSSZ:
-      tmp=g_strdup_printf("SDSS (z)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_2MASSJ:
-      tmp=g_strdup_printf("2MASS (J)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_2MASSH:
-      tmp=g_strdup_printf("2MASS (H)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_2MASSK:
-      tmp=g_strdup_printf("2MASS (K)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_WISE34:
-      tmp=g_strdup_printf("WISE (3.4um)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_WISE46:
-      tmp=g_strdup_printf("WISE (4.6um)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_WISE12:
-      tmp=g_strdup_printf("WISE (12um)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_WISE22:
-      tmp=g_strdup_printf("WISE (22um)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_AKARIN60:
-      tmp=g_strdup_printf("AKARI N60  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_AKARIWS:
-      tmp=g_strdup_printf("AKARI WIDE-S  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_AKARIWL:
-      tmp=g_strdup_printf("AKARI WIDE-L  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_AKARIN160:
-      tmp=g_strdup_printf("AKARI N160  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_NVSS:
-      tmp=g_strdup_printf("NVSS (1.4GHz)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SKYVIEW_RGB:
-      tmp=g_strdup_printf("SkyView RGB composite  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-
-    case FC_SDSS:
-      tmp=g_strdup_printf("SDSS DR7 (color)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-      
-    case FC_SDSS13:
-      tmp=g_strdup_printf("SDSS DR14 (color)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-      
-    case FC_PANCOL:
-      tmp=g_strdup_printf("PanSTARRS-1 (color)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-      
-    case FC_PANG:
-      tmp=g_strdup_printf("PanSTARRS-1 (g)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-      
-    case FC_PANR:
-      tmp=g_strdup_printf("PanSTARRS-1 (r)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-      
-    case FC_PANI:
-      tmp=g_strdup_printf("PanSTARRS-1 (i)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-      
-    case FC_PANZ:
-      tmp=g_strdup_printf("PanSTARRS-1 (z)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-      
-    case FC_PANY:
-      tmp=g_strdup_printf("PanSTARRS-1 (y)  %dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-      break;
-      
-    default:
-      tmp=g_strdup_printf("%dx%d arcmin",
-			  hg->dss_arcmin_ip,hg->dss_arcmin_ip);
-    }
-    cairo_text_extents (cr, tmp, &extents);
-    cairo_move_to(cr,
-		  (gdouble)width_file*r-extents.width-5*scale,
-		  extents.height+5*scale);
-    cairo_show_text(cr,tmp);
-    if(tmp) g_free(tmp);
-
-    if(hg->fc_mode_get==FC_SKYVIEW_RGB){
-      gint y0;
-      gchar *rgb_txt;
-      y0=extents.height;
-
-      //R
-      cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
-      rgb_txt=rgb_source_txt(hg,0);
-      cairo_text_extents (cr, rgb_txt, &extents);
-      cairo_move_to(cr,
-		    (gdouble)width_file*r-extents.width-5*scale,
-		    y0*2+5*2*scale);
-      cairo_show_text(cr,rgb_txt);
-      g_free(rgb_txt);
-
-      //G
-      cairo_set_source_rgba(cr, 0.4, 1.0, 0.4, 1.0);
-      rgb_txt=rgb_source_txt(hg,1);
-      cairo_text_extents (cr, rgb_txt, &extents);
-      cairo_move_to(cr,
-		    (gdouble)width_file*r-extents.width-5*scale,
-		    y0*3+5*3*scale);
-      cairo_show_text(cr,rgb_txt);
-      g_free(rgb_txt);
-
-      //B
-      cairo_set_source_rgba(cr, 0.4, 0.4, 1.0, 1.0);
-      rgb_txt=rgb_source_txt(hg,2);
-      cairo_text_extents (cr, rgb_txt, &extents);
-      cairo_move_to(cr,
-		    (gdouble)width_file*r-extents.width-5*scale,
-		    y0*4+5*4*scale);
-      cairo_show_text(cr,rgb_txt);
-      g_free(rgb_txt);
-    }
-
-    
-    
-
+    draw_fc_label(hg, cr, width, height, width_file, height_file, scale, r);
     cairo_restore(cr);
+
     cairo_save (cr);
 
     if((hg->fc_inst==FC_INST_HSCA)||(hg->fc_inst==FC_INST_HSCDET)){
-      gint i;
-      double x0, y0, dra, ddec, theta;
-
-      translate_to_center(cr,width,height,width_file,height_file,r,hg);
-
-      // Dithering
-
-      switch(hg->hsc_dithp){
-      case HSC_DITH_NO:
-	break;
-
-      case HSC_DITH_5:
-	dra=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-	  *(gdouble)hg->hsc_dra/60.;
-	ddec=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-	  *(gdouble)hg->hsc_ddec/60.;
-
-	// 1
-	if(hg->hsc_dithi==1){
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-	  else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
-	  cairo_set_line_width (cr, 2.5*scale);
-	}
-	else{
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.5);
-	  else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.5);
-	  cairo_set_line_width (cr, 1.5*scale);
-	}
-	cairo_move_to(cr, 0, 0);
-	cairo_rel_move_to(cr, (hg->hsc_dithi==1) ? -7.5 : -5, 0);
-	cairo_rel_line_to(cr, (hg->hsc_dithi==1) ? 15 : 10, 0);
-	cairo_stroke(cr);
-	cairo_move_to(cr, 0, 0);
-	cairo_rel_move_to(cr, 0, (hg->hsc_dithi==1) ? -7.5 : -5);
-	cairo_rel_line_to(cr, 0, (hg->hsc_dithi==1) ? 15: 10);
-	cairo_stroke(cr);
-	
-	// 2
-	if(hg->hsc_dithi==2){
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-	  else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
-	  cairo_set_line_width (cr, 2.5*scale);
-	}
-	else{
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.5);
-	  else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.5);
-	  cairo_set_line_width (cr, 1.5*scale);
-	}
-	cairo_move_to(cr, -dra*1, +ddec*2);
-	cairo_rel_move_to(cr, (hg->hsc_dithi==2) ? -7.5 : -5, 0);
-	cairo_rel_line_to(cr, (hg->hsc_dithi==2) ? 15 : 10, 0);
-	cairo_stroke(cr);
-	cairo_move_to(cr, -dra*1, +ddec*2);
-	cairo_rel_move_to(cr, 0, (hg->hsc_dithi==2) ? -7.5 : -5);
-	cairo_rel_line_to(cr, 0, (hg->hsc_dithi==2) ? 15: 10);
-	cairo_stroke(cr);
-
-	// 3
-	if(hg->hsc_dithi==3){
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-	  else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
-	  cairo_set_line_width (cr, 2.5*scale);
-	}
-	else{
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.5);
-	  else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.5);
-	  cairo_set_line_width (cr, 1.5*scale);
-	}
-	cairo_move_to(cr, -dra*2, -ddec*1);
-	cairo_rel_move_to(cr, (hg->hsc_dithi==3) ? -7.5 : -5, 0);
-	cairo_rel_line_to(cr, (hg->hsc_dithi==3) ? 15 : 10, 0);
-	cairo_stroke(cr);
-	cairo_move_to(cr, -dra*2, -ddec*1);
-	cairo_rel_move_to(cr, 0, (hg->hsc_dithi==3) ? -7.5 : -5);
-	cairo_rel_line_to(cr, 0, (hg->hsc_dithi==3) ? 15 : 10);
-	cairo_stroke(cr);
-
-	// 4
-	if(hg->hsc_dithi==4){
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-	  else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
-	  cairo_set_line_width (cr, 2.5*scale);
-	}
-	else{
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.5);
-	  else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.5);
-	  cairo_set_line_width (cr, 1.5*scale);
-	}
-	cairo_move_to(cr, +dra*1, -ddec*2);
-	cairo_rel_move_to(cr, (hg->hsc_dithi==4) ? -7.5 : -5, 0);
-	cairo_rel_line_to(cr, (hg->hsc_dithi==4) ? 15 : 10, 0);
-	cairo_stroke(cr);
-	cairo_move_to(cr, +dra*1, -ddec*2);
-	cairo_rel_move_to(cr, 0, (hg->hsc_dithi==4) ? -7.5 : -5);
-	cairo_rel_line_to(cr, 0, (hg->hsc_dithi==4) ? 15 : 10);
-	cairo_stroke(cr);
-
-	// 5
-	if(hg->hsc_dithi==5){
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-	  else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
-	  cairo_set_line_width (cr, 2.5*scale);
-	}
-	else{
-	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.5);
-	  else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.5);
-	  cairo_set_line_width (cr, 1.5*scale);
-	}
-	cairo_move_to(cr, +dra*2, +ddec*1);
-	cairo_rel_move_to(cr, (hg->hsc_dithi==5) ? -7.5 : -5, 0);
-	cairo_rel_line_to(cr, (hg->hsc_dithi==5) ? 15 : 10, 0);
-	cairo_stroke(cr);
-	cairo_move_to(cr, +dra*2, +ddec*1);
-	cairo_rel_move_to(cr, 0, (hg->hsc_dithi==5) ? -7.5 : -5);
-	cairo_rel_line_to(cr, 0, (hg->hsc_dithi==5) ? 15 : 10);
-	cairo_stroke(cr);
-	break;
-
-      case HSC_DITH_N:
-	for(i=0;i<hg->hsc_ndith;i++){
-	  if(hg->hsc_dithi==i+1){
-	    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-	    else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
-	    cairo_set_line_width (cr, 2.5*scale);
-	  }
-	  else{
-	    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.5);
-	    else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.5);
-	    cairo_set_line_width (cr, 1.5*scale);
-	  }
-	  
-	  y0=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-	    *(double)hg->hsc_rdith/60*
-	    cos(-(double)hg->hsc_tdith*M_PI/180
-		-2*M_PI/(double)hg->hsc_ndith*(double)i-M_PI/2);
-	  x0=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-	    *(double)hg->hsc_rdith/60*
-	    sin(-(double)hg->hsc_tdith*M_PI/180
-		-2*M_PI/(double)hg->hsc_ndith*(double)i-M_PI/2);
-
-	  cairo_move_to(cr, x0, y0);
-	  cairo_rel_move_to(cr, (hg->hsc_dithi==i+1) ? -7.5 : -5, 0);
-	  cairo_rel_line_to(cr, (hg->hsc_dithi==i+1) ? 15 : 10, 0);
-	  cairo_stroke(cr);
-	  cairo_move_to(cr, x0, y0);
-	  cairo_rel_move_to(cr, 0, (hg->hsc_dithi==i+1) ? -7.5 : -5);
-	  cairo_rel_line_to(cr, 0, (hg->hsc_dithi==i+1) ? 15 : 10);
-	  cairo_stroke(cr);
-	}
-	break;
-      }
+      cairo_save (cr);
+      draw_hsc_dither(hg, cr, width, height, width_file, height_file, scale, r);
+      cairo_restore (cr);
     }
-
-    cairo_restore (cr);
-    cairo_save (cr);
-
-    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-    else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
-    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			  CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.1*scale);
-    cairo_text_extents (cr, "N", &extents);
-
-    cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
-		     (height-(gint)((gdouble)height_file*r))/2);
-    cairo_translate (cr, 
-		     5+(gdouble)width_file*r*0.05+extents.width*1.5,
-		     5+(gdouble)width_file*r*0.05+extents.height*1.5);
-    
-    rot_pa(cr, hg);
 
     // Position Angle
-    if(hg->fc_mag==1){
-      cairo_move_to(cr,
-		    -extents.width/2,
-		    -(gdouble)width_file*r*0.05);
-      cairo_show_text(cr,"N");
-      cairo_move_to(cr,
-		    -(gdouble)width_file*r*0.05-extents.width,
-		    +extents.height/2);
-      if(hg->dss_flip){
-	cairo_show_text(cr,"W");
-      }
-      else{
-	cairo_show_text(cr,"E");
-      }
-      
-      cairo_set_line_width (cr, 1.5*scale*hg->fc_mag);
-      cairo_move_to(cr,
-		    0,
-		    -(gdouble)width_file*r*0.05);
-      cairo_line_to(cr, 0, 0);
-      cairo_line_to(cr,
-		    -(gdouble)width_file*r*0.05, 0);
-      
-      cairo_stroke(cr);
-      
-      if(hg->dss_flip){
-	cairo_move_to(cr,0,0);
-	cairo_text_extents (cr, "(flipped)", &extents);
-	cairo_rel_move_to(cr,-extents.width/2.,extents.height+5*scale);
-	cairo_show_text(cr,"(flipped)");
-      }
-    } // Position Angle
+    cairo_save (cr);
+    draw_pa(hg, cr, width, height, width_file, height_file,
+	    shift_x, shift_y, scale, r);
+    cairo_restore(cr);
+
+    // DB results
+    cairo_save(cr);
+    draw_fcdb1(hg, cr, width, height, width_file, height_file,
+	       shift_x, shift_y, scale, r);
+    cairo_restore(cr);
     
+    // DB selected and Proper Motion
+    cairo_save(cr);
+    draw_fcdb2(hg, cr, width, height, width_file, height_file, scale, r);
     cairo_restore(cr);
 
-   // Position Angle  for mag
-    if(hg->fc_mag!=1){
-      gdouble wh_small;
-      gdouble xsec,ysec;
-      gdouble pscale;
-
-      cairo_save (cr);
-
-      wh_small=(gdouble)(width>height?height:width)/(gdouble)hg->fc_mag;
-      pscale=(gdouble)hg->dss_arcmin_ip*60./wh_small;
-      xsec=(gdouble)width*pscale/(gdouble)hg->fc_mag/(gdouble)hg->fc_mag;
-      ysec=(gdouble)height*pscale/(gdouble)hg->fc_mag/(gdouble)hg->fc_mag;
-	
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_BOLD);
-
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
-      if((xsec>60.) && (ysec>60.)){
-	tmp=g_strdup_printf("x%d : %.2lfx%.2lf arcmin",hg->fc_mag,
-			    xsec/60.,
-			    ysec/60.);
-      }
-      else{
-	tmp=g_strdup_printf("x%d : %.1lfx%.1lf arcsec",hg->fc_mag,xsec,ysec);
-      }
-
-      // Edge for magnification
-      cairo_text_extents (cr, tmp, &extents);
-      cairo_translate(cr,
-           	      width/(gdouble)hg->fc_mag-shift_x,
-		      height/(gdouble)hg->fc_mag-shift_y);
-      cairo_move_to(cr,
-		    -extents.width-wh_small*0.02,
-		    -wh_small*0.02);
-      cairo_show_text(cr,tmp);
-      if(tmp) g_free(tmp);
-
-      cairo_translate(cr,
-		      -width/(gdouble)hg->fc_mag,
-		      -height/(gdouble)hg->fc_mag);
-
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_BOLD);
-
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.1*scale);
-      cairo_text_extents (cr, "N", &extents);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
-      
-      cairo_translate(cr,
-           	      extents.height+wh_small*0.07,
-		      extents.height+wh_small*0.07);
-
-      rot_pa(cr, hg);
-
-      cairo_move_to(cr,
-		    -extents.width/2,
-		    -wh_small*0.05);
-      cairo_show_text(cr,"N");
-      cairo_move_to(cr,
-		    -wh_small*0.05-extents.width,
-		    +extents.height/2);
-      if(hg->dss_flip){
-	cairo_show_text(cr,"W");
-      }
-      else{
-	cairo_show_text(cr,"E");
-      }
-      
-      cairo_set_line_width (cr, 1.5*scale);
-      cairo_move_to(cr,
-		    0,
-		    -wh_small*0.05);
-      cairo_line_to(cr, 0, 0);
-      cairo_line_to(cr,
-		    -wh_small*0.05, 0);
-
-      cairo_stroke(cr);
-      
-      if(hg->dss_flip){
-	cairo_move_to(cr,0,0);
-	cairo_text_extents (cr, "(flipped)", &extents);
-	cairo_rel_move_to(cr,-extents.width/2.,extents.height+5*scale);
-	cairo_show_text(cr,"(flipped)");
-      }
-
-      cairo_restore(cr);
-    } // Position Angle
-  }
-
-
-  if(hg->fc_ptn==-1){
-    gdouble cx, cy;
-    gdouble ptx, pty, ptx0, pty0;
-    gdouble rad, rad_min=1000.0, ptr;
-    gint i, i_list, i_sel=-1;
-    gdouble theta;
-
-  
-    cx=((gdouble)width-(gdouble)width_file*r)/2+(gdouble)width_file*r/2;
-    cy=((gdouble)height-(gdouble)height_file*r)/2+(gdouble)height_file*r/2;
-    if(hg->fc_mag!=1){
-      cx-=-shift_x;
-      cy-=-shift_y;
-    }
-
-    ptx0=((gdouble)hg->fc_ptx1-cx);
-    pty0=((gdouble)hg->fc_pty1-cy);
-
-    switch(hg->fc_inst){
-    case FC_INST_NONE:
-    case FC_INST_HDS:
-    case FC_INST_HDSAUTO:
-    case FC_INST_HDSZENITH:
-    case FC_INST_IRCS:
-    case FC_INST_COMICS:
-    case FC_INST_FOCAS:
-    case FC_INST_MOIRCS:
-    case FC_INST_FMOS:
-    case FC_INST_PFS:
-      if(hg->dss_flip){
-	theta=M_PI*(gdouble)hg->dss_pa/180.;
-      }
-      else{
-	theta=-M_PI*(gdouble)hg->dss_pa/180.;
-      }
-
-      break;
-
-    case FC_INST_SPCAM:
-      if(hg->dss_flip){
-	theta=M_PI*(gdouble)(90-hg->dss_pa)/180.;
-      }
-      else{
-	theta=-M_PI*(gdouble)(90-hg->dss_pa)/180.;
-      }
-      break;
-
-    case FC_INST_HSCDET:
-    case FC_INST_HSCA:
-      if(hg->dss_flip){
-	theta=M_PI*(gdouble)(270-hg->dss_pa)/180.;
-      }
-      else{
-	theta=-M_PI*(gdouble)(270-hg->dss_pa)/180.;
-      }
-      break;
-    }
-
-    ptx=ptx0*cos(theta)-pty0*sin(theta);
-    pty=ptx0*sin(theta)+pty0*cos(theta);
-
-    for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
-      if((fabs(hg->fcdb[i_list].x-ptx)<10)&&(fabs(hg->fcdb[i_list].y-pty)<10)){
-	rad=(hg->fcdb[i_list].x-ptx)*(hg->fcdb[i_list].x-ptx)
-	  +(hg->fcdb[i_list].y-pty)*(hg->fcdb[i_list].y-pty);
-	if(rad<rad_min){
-	  i_sel=i_list;
-	  rad_min=rad;
-	}
-      }
-    }
-      
-    if(i_sel>=0){
-      hg->fcdb_tree_focus=i_sel;
-      if(flagTree){
-	GtkTreeModel *model 
-	  = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
-	GtkTreePath *path;
-	GtkTreeIter  iter;
-	
-	path=gtk_tree_path_new_first();
-	
-	for(i=0;i<hg->fcdb_i_max;i++){
-	  gtk_tree_model_get_iter (model, &iter, path);
-	  gtk_tree_model_get (model, &iter, COLUMN_FCDB_NUMBER, &i_list, -1);
-	  i_list--;
-	  
-	  if(i_list==i_sel){
-	    gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),2);
-	    gtk_widget_grab_focus (hg->fcdb_tree);
-	    gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->fcdb_tree), 
-				     path, NULL, FALSE);
-	    raise_tree();
-	    break;
-	  }
-	  else{
-	    gtk_tree_path_next(path);
-	  }
-	}
-	gtk_tree_path_free(path);
-      }
-    }
-
-    hg->fc_ptn=0;
-  }
-
-  {
-    gdouble pmx, pmy;
-    gdouble yrs;
-
-    if((hg->fcdb_flag)&&(hg->fcdb_i==hg->dss_i)){
-      cairo_save(cr);
-
-      translate_to_center(cr,width,height,width_file,height_file,r,hg);
-      if(hg->fcdb_type==FCDB_TYPE_GAIA){
-	yrs=current_yrs(hg)-15.0;
-      }
-      else{
-	yrs=current_yrs(hg);
-      }
-
-      for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
-	hg->fcdb[i_list].x=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0)*60.
-	  *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
-	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	hg->fcdb[i_list].y=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
-	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	if(hg->dss_flip) hg->fcdb[i_list].x=-hg->fcdb[i_list].x;
-      }
-
-      if(hg->dss_invert){ 
-	cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-      }
-      else{
-	if((hg->fcdb_type==FCDB_TYPE_GAIA)&&(hg->fcdb_gaia_sat)){
-	  cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.7);
-	}
-	else{
-	  cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
-	}
-      }
-      cairo_set_line_width (cr, 2*scale);
-      for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
-	if(hg->fcdb_tree_focus!=i_list){
-	  if((hg->fcdb_type==FCDB_TYPE_GAIA)&&(hg->fcdb_gaia_sat)){
-	    if(hg->fcdb[i_list].v < 20){
-	      gdouble rad=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*hsc_sat_radius(hg->fcdb[i_list].v)/30.;
-
-	      draw_hsc_sat(cr, rad, 
-			   hg->fcdb[i_list].x, hg->fcdb[i_list].y,
-			   hg->dss_pa, hg->dss_flip);
-	    }
-	  }
-	  else{
-	    cairo_rectangle(cr,hg->fcdb[i_list].x-6,hg->fcdb[i_list].y-6,12,12);
-	    cairo_stroke(cr);
-	  }
-	}
-      }
-
-      if(hg->dss_invert){
-	cairo_set_source_rgba(cr, 0.7, 0.0, 0.0, 1.0);
-      }
-      else{
-	if((hg->fcdb_type==FCDB_TYPE_GAIA)&&(hg->fcdb_gaia_sat)){
-	  cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.7);
-	}
-	else{
-	  cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
-	}
-      }
-      cairo_set_line_width (cr, 4*scale);
-      for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
-	if(hg->fcdb_tree_focus==i_list){
-	  if((hg->fcdb_type==FCDB_TYPE_GAIA)&&(hg->fcdb_gaia_sat)){
-	    if(hg->fcdb[i_list].v < 20){
-	      gdouble rad=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*hsc_sat_radius(hg->fcdb[i_list].v)/30.;
-
-	      draw_hsc_sat(cr, rad, 
-			   hg->fcdb[i_list].x, hg->fcdb[i_list].y,
-			   hg->dss_pa, hg->dss_flip);
-	    }
-	  }
-	  else{
-	    cairo_rectangle(cr,hg->fcdb[i_list].x-8,hg->fcdb[i_list].y-8,16,16);
-	    cairo_stroke(cr);
-	  }
-	}
-      }
-
-      // Proper Motion
-      if((hg->fcdb_type!=FCDB_TYPE_GAIA)||(!hg->fcdb_gaia_sat)){
-	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.5, 0.0, 1.0);
-	else cairo_set_source_rgba(cr, 0.2, 1.0, 0.2, 1.0);
-	cairo_set_line_width (cr, 1.5*scale);
-	for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
-	  if(hg->fcdb[i_list].pm){
-	    pmx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0
-		  +hg->fcdb[i_list].pmra/1000/60/60*yrs)*60.
-	      *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
-	      *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	    pmy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0
-		  +hg->fcdb[i_list].pmdec/1000/60/60*yrs)*60.
-	      *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	    if(hg->dss_flip) {
-	      pmx=-pmx;
-	    }
-	    cairo_move_to(cr,hg->fcdb[i_list].x,hg->fcdb[i_list].y);
-	    cairo_line_to(cr,pmx,pmy);
-	    cairo_stroke(cr);
-	    cairo_arc(cr,pmx,pmy,5,0,2*M_PI);
-	    cairo_fill(cr);
-	  }
-	}
-      }
-      cairo_restore(cr);
-    }
-  }
-
-  {  //Non-Sidereal Orbit
-    if((hg->orbit_flag)&&(hg->obj[hg->dss_i].i_nst>=0)){
-      gint i, i_step=0, i_step_max=1, i_tag=3, i_tag_max=3; 
-      gdouble x, y, x0, y0;
-      gdouble d_ra, d_dec;
-      gdouble d_step, t_step;
-      struct ln_equ_posn object, object_prec;
-      struct ln_zonedate zonedate;
-
-      cairo_save(cr);
-
-      translate_to_center(cr,width,height,width_file,height_file,r,hg);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.5, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 1.0);
-
-      object.ra=ra_to_deg(hg->obj[hg->dss_i].ra);
-      object.dec=dec_to_deg(hg->obj[hg->dss_i].dec);
-
-      ln_get_equ_prec2 (&object, 
-			get_julian_day_of_equinox(hg->obj[hg->dss_i].equinox),
-			JD2000, &object_prec);
-
-      d_ra=ra_to_deg(hg->nst[hg->obj[hg->dss_i].i_nst].eph[0].ra);
-      d_dec=dec_to_deg(hg->nst[hg->obj[hg->dss_i].i_nst].eph[0].dec);
-
-      x=-(d_ra-object_prec.ra)*60.
-	*cos(d_dec/180.*M_PI)
-	*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-      y=-(d_dec-object_prec.dec)*60.
-	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-      if(hg->dss_flip) x=-x;
-
-      cairo_move_to(cr,x,y);
-      
-      for(i=1;i<hg->nst[hg->obj[hg->dss_i].i_nst].i_max;i++){
-	x0=x;
-	y0=y;
-
-	d_ra=ra_to_deg(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].ra);
-	d_dec=dec_to_deg(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].dec);
-
-	x=-(d_ra-object_prec.ra)*60.
-	  *cos(d_dec/180.*M_PI)
-	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	y=-(d_dec-object_prec.dec)*60.
-	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
-	if(hg->dss_flip) x=-x;
-
-	if(i==1){
-	  d_step=sqrt((x-x0)*(x-x0)+(y-y0)*(y-y0));
-	  if(d_step<(gdouble)width_file*r/20){
-	    i_step_max=(gint)((gdouble)width_file*r/20/d_step);
-	  }
-	  i_step=1;
-	}
-
-	cairo_set_line_width (cr, 2.5*scale);
-	cairo_line_to(cr,x,y);
-	cairo_stroke(cr);
-
-	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.0*scale);
-
-	if(i_step>0){
-
-	  if(i_step==i_step_max){
-	    cairo_set_line_width (cr, 1.5*scale);
-	    if(fabs(x-x0)>fabs(y-y0)){
-	      if(i_tag==i_tag_max){
-		my_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
-				  &zonedate, 
-				  hg->obs_timezone);
-		tmp=g_strdup_printf("%d/%d %d:%02d",
-				    zonedate.months,
-				    zonedate.days,
-				    zonedate.hours,
-				    zonedate.minutes);
-		cairo_text_extents (cr, tmp, &extents);
-		cairo_move_to(cr,x,y-10);
-		cairo_rel_move_to(cr,extents.height/2, 0);
-		cairo_rotate (cr,-M_PI/2);
-		cairo_show_text(cr,tmp);
-		cairo_rotate (cr,M_PI/2);
-		if(tmp) g_free(tmp);
-		i_tag=0;
-	      }
-	      else{
-		i_tag++;
-	      }
-	      cairo_move_to(cr,x,y-5);
-	      cairo_line_to(cr,x,y+5);
-	    }
-	    else{
-	      if(i_tag==i_tag_max){
-		my_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
-				  &zonedate, 
-				  hg->obs_timezone);
-		tmp=g_strdup_printf("%d/%d %d:%02d",
-				    zonedate.months,
-				    zonedate.days,
-				    zonedate.hours,
-				    zonedate.minutes);
-		cairo_text_extents (cr, tmp, &extents);
-		cairo_move_to(cr,x+10,y);
-		cairo_rel_move_to(cr,0,extents.height/2);
-		cairo_show_text(cr,tmp);
-		if(tmp) g_free(tmp);
-		i_tag=0;
-	      }
-	      else{
-		i_tag++;
-	      }
-	      cairo_move_to(cr,x-5,y);
-	      cairo_line_to(cr,x+5,y);
-	    }
-	    cairo_stroke(cr);
-	    i_step=1;
-	  }
-	  else{
-	  }
-	  i_step++;
-	}
-	else{
-	  cairo_set_line_width (cr, 1.5*scale);
-	  if(fabs(x-x0)>fabs(y-y0)){
-	    if(i_tag==i_tag_max){
-	      my_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
-				&zonedate, 
-				hg->obs_timezone);
-	      tmp=g_strdup_printf("%d/%d %d:%02d",
-				  zonedate.months,
-				  zonedate.days,
-				  zonedate.hours,
-				  zonedate.minutes);
-	      cairo_text_extents (cr, tmp, &extents);
-	      cairo_move_to(cr,x,y-10);
-	      cairo_rel_move_to(cr,extents.height/2, 0);
-	      cairo_rotate (cr,-M_PI/2);
-	      cairo_show_text(cr,tmp);
-	      cairo_rotate (cr,M_PI/2);
-	      if(tmp) g_free(tmp);
-	      i_tag=0;
-	    }
-	    else{
-	      i_tag++;
-	    }
-	    cairo_move_to(cr,x,y-5);
-	    cairo_line_to(cr,x,y+5);
-	  }
-	  else{	
-	    if(i_tag==i_tag_max){
-	      my_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
-				&zonedate, 
-				hg->obs_timezone);
-	      tmp=g_strdup_printf("%d/%d %d:%02d",
-				  zonedate.months,
-				  zonedate.days,
-				  zonedate.hours,
-				  zonedate.minutes);
-	      cairo_text_extents (cr, tmp, &extents);
-	      cairo_move_to(cr,x+10,y);
-	      cairo_rel_move_to(cr,0,extents.height/2);
-	      cairo_show_text(cr,tmp);
-	      if(tmp) g_free(tmp);
-	      i_tag=0;
-	    }
-	    else{
-	      i_tag++;
-	    }
-	    cairo_move_to(cr,x-5,y);
-	    cairo_line_to(cr,x+5,y);
-	  }
-	  cairo_stroke(cr);
-	}
-
-	cairo_move_to(cr,x,y);
-      }
-
-      if(hg->fc_mag==1){
-	cairo_restore(cr);
-
-	cairo_save(cr);
-
-	cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
-			 (height-(gint)((gdouble)height_file*r))/2);
-
-	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.5, 0.0, 1.0);
-	else cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 1.0);
-
-	t_step=(hg->nst[hg->obj[hg->dss_i].i_nst].eph[1].jd
-		-hg->nst[hg->obj[hg->dss_i].i_nst].eph[0].jd)
-	  *24.*60.*(gdouble)i_step_max; //min
-	
-	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
-	if(t_step<5){
-	  tmp=g_strdup_printf("Step=%dsec",(gint)(t_step*60));
-	}
-	else if(t_step<60){
-	  tmp=g_strdup_printf("Step=%dmin",(gint)t_step);
-	}
-	else{
-	  tmp=g_strdup_printf("Step=%.1lfhrs",t_step/60);
-	}
-	cairo_text_extents (cr, tmp, &extents);
-	cairo_move_to(cr,
-		      (gdouble)width_file*r-extents.width-5*scale,
-		      (gdouble)height_file*r-5*scale);
-	cairo_show_text(cr,tmp);
-	if(tmp) g_free(tmp);
-      }
-
-     cairo_restore(cr);
-    }
-  }
-
-  {  // Points and Distance
-    gdouble distance;
-    gdouble arad;
-
-    if(hg->fc_ptn>=1){
-      cairo_save(cr);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.8);
-      else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.8);
-
-      cairo_set_line_width (cr, 2*scale);
-
-      if(hg->fc_mag!=1){
-	cairo_translate(cr,
-			-shift_x,
-			-shift_y);
-      }
-
-      cairo_move_to(cr,hg->fc_ptx1-5,hg->fc_pty1-5);
-      cairo_rel_line_to(cr,10,10);
-      
-      cairo_move_to(cr,hg->fc_ptx1-5,hg->fc_pty1+5);
-      cairo_rel_line_to(cr,10,-10);
-
-      cairo_stroke(cr);
-    }
-
-    if(hg->fc_ptn==2){
-      cairo_move_to(cr,hg->fc_ptx2-5,hg->fc_pty2-5);
-      cairo_rel_line_to(cr,10,10);
-      
-      cairo_move_to(cr,hg->fc_ptx2-5,hg->fc_pty2+5);
-      cairo_rel_line_to(cr,10,-10);
-
-      cairo_stroke(cr);
-
-      cairo_set_line_width (cr, 0.8*scale);
-      
-      cairo_move_to(cr,hg->fc_ptx1,hg->fc_pty1);
-      cairo_line_to(cr,hg->fc_ptx2,hg->fc_pty2);
-
-      cairo_stroke(cr);
-
-      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
-      else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
-      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2*scale);
-
-      distance=sqrt((gdouble)((hg->fc_ptx1-hg->fc_ptx2)
-			      *(hg->fc_ptx1-hg->fc_ptx2))
-		    +(gdouble)((hg->fc_pty1-hg->fc_pty2)
-			       *(hg->fc_pty1-hg->fc_pty2)))
-	/((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)*60.0;
-
-      if(distance > 300){
-	tmp=g_strdup_printf("%.2lf'",distance/60.0);
-      }
-      else{
-	tmp=g_strdup_printf("%.2lf\"",distance);
-      }
-      cairo_text_extents (cr, tmp, &extents);
-
-      arad=atan2((hg->fc_ptx1-hg->fc_ptx2),(hg->fc_pty1-hg->fc_pty2));
-      cairo_translate(cr,
-		      (hg->fc_ptx1+hg->fc_ptx2)/2,
-		      (hg->fc_pty1+hg->fc_pty2)/2);
-      cairo_rotate (cr,-(arad+M_PI/2));
-      
-      cairo_move_to(cr,-extents.width/2.,-extents.height*0.8);
-      cairo_show_text(cr,tmp);
-      if(tmp) g_free(tmp);
-    }
-
+    // Guide Star
+    cairo_save(cr);
+    draw_gs_hskymon(hg, cr, width, height, width_file, height_file, scale, r);
+    cairo_restore(cr);
+
+    // Non-Sidereal Track
+    cairo_save(cr);
+    draw_nst(hg, cr, width, height, width_file, height_file, scale, r);
+    cairo_restore(cr);
+
+    // Points and Distance
+    cairo_save(cr);
+    draw_pts(hg, cr, width, height, width_file, height_file,
+	     shift_x, shift_y, scale, r);
     cairo_restore(cr);
   }
-  
+
+  // Output
   switch(hg->fc_output){
   case FC_OUTPUT_PDF:
     cairo_destroy(cr);
@@ -4338,47 +2337,41 @@ static void orbit_fc (GtkWidget *widget, gpointer data)
 }
 
 
-void rot_pa(cairo_t *cr, typHOE *hg){
+void rot_pa(typHOE *hg, cairo_t *cr){
+  gdouble angle;
+  
   switch(hg->fc_inst){
   case FC_INST_NONE:
   case FC_INST_HDS:
   case FC_INST_HDSAUTO:
   case FC_INST_HDSZENITH:
-  case FC_INST_IRCS:
   case FC_INST_COMICS:
   case FC_INST_FOCAS:
   case FC_INST_MOIRCS:
   case FC_INST_FMOS:
   case FC_INST_PFS:
-    if(hg->dss_flip){
-	cairo_rotate (cr,-M_PI*(gdouble)hg->dss_pa/180.);
-    }
-    else{
-      cairo_rotate (cr,M_PI*(gdouble)hg->dss_pa/180.);
-    }
+    angle=M_PI*(gdouble)hg->dss_pa/180.;
     break;
     
-  case FC_INST_SPCAM:
-    if(hg->dss_flip){
-      cairo_rotate (cr,-M_PI*(gdouble)(90-hg->dss_pa)/180.);
-    }
-    else{
-      cairo_rotate (cr,M_PI*(gdouble)(90-hg->dss_pa)/180.);
-    }
+  case FC_INST_IRCS:
+    angle=M_PI*(gdouble)(-90+hg->dss_pa)/180.;
     break;
+
+  case FC_INST_SPCAM:
+    angle=M_PI*(gdouble)(90-hg->dss_pa)/180.;
+    break;
+
   case FC_INST_HSCDET:
   case FC_INST_HSCA:
-    if(hg->dss_flip){
-      cairo_rotate (cr,-M_PI*(gdouble)(270-hg->dss_pa)/180.);
-    }
-    else{
-      cairo_rotate (cr,M_PI*(gdouble)(270-hg->dss_pa)/180.);
-    }
+    angle=M_PI*(gdouble)(270-hg->dss_pa)/180.;
     break;
   }
+
+  cairo_rotate (cr, (hg->dss_flip) ? -angle : angle);
 }
 
-void translate_hsc_dith(cairo_t *cr, typHOE *hg, int width_file, gfloat r){
+
+void translate_hsc_dith(cairo_t *cr, typHOE *hg, int width_file, gdouble r){
   gdouble dra, ddec, x0, y0, x1, y1, theta;
   
   if((hg->fc_inst==FC_INST_HSCA)||(hg->fc_inst==FC_INST_HSCDET)){
@@ -5617,6 +3610,7 @@ void ver_dl(typHOE *hg)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -5728,7 +3722,8 @@ void fcdb_dl(typHOE *hg)
   flag_getFCDB=TRUE;
 
   dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW((flagFC) ? hg->fc_main : hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -6051,6 +4046,7 @@ void addobj_dl(typHOE *hg)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
@@ -6270,7 +4266,6 @@ void trdb_run (typHOE *hg)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
-  
   gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
 
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
@@ -8212,3 +6207,1727 @@ void draw_hsc_sat(cairo_t *cr, gdouble rad,
   }
   cairo_translate(cr, -x, -y);
 }
+
+
+
+void draw_nst(typHOE *hg,
+	      cairo_t *cr,
+	      gint width, gint height,
+	      gint width_file, gint height_file,
+	      gdouble scale,
+	      gdouble r)
+{  //Non-Sidereal Orbit
+  gint i, i_step=0, i_step_max=1, i_tag=3, i_tag_max=3; 
+  gdouble x, y, x0, y0;
+  gdouble d_ra, d_dec;
+  gdouble d_step, t_step;
+  struct ln_equ_posn object, object_prec;
+  struct ln_zonedate zonedate;
+  cairo_text_extents_t extents;
+  gchar *tmp;
+  
+  if((hg->orbit_flag)&&(hg->obj[hg->dss_i].i_nst>=0)){
+    
+    translate_to_center(hg,cr,width,height,width_file,height_file,r);
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.5, 0.0, 1.0);
+    else cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 1.0);
+    
+    object.ra=ra_to_deg(hg->obj[hg->dss_i].ra);
+    object.dec=dec_to_deg(hg->obj[hg->dss_i].dec);
+    
+    ln_get_equ_prec2 (&object, 
+		      get_julian_day_of_equinox(hg->obj[hg->dss_i].equinox),
+		      JD2000, &object_prec);
+    
+    d_ra=ra_to_deg(hg->nst[hg->obj[hg->dss_i].i_nst].eph[0].ra);
+    d_dec=dec_to_deg(hg->nst[hg->obj[hg->dss_i].i_nst].eph[0].dec);
+    
+    x=-(d_ra-object_prec.ra)*60.
+      *cos(d_dec/180.*M_PI)
+      *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+    y=-(d_dec-object_prec.dec)*60.
+      *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+    if(hg->dss_flip) x=-x;
+    
+    cairo_move_to(cr,x,y);
+    
+    for(i=1;i<hg->nst[hg->obj[hg->dss_i].i_nst].i_max;i++){
+      x0=x;
+      y0=y;
+      
+      d_ra=ra_to_deg(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].ra);
+      d_dec=dec_to_deg(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].dec);
+      
+      x=-(d_ra-object_prec.ra)*60.
+	*cos(d_dec/180.*M_PI)
+	*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+      y=-(d_dec-object_prec.dec)*60.
+	*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+      if(hg->dss_flip) x=-x;
+      
+      if(i==1){
+	d_step=sqrt((x-x0)*(x-x0)+(y-y0)*(y-y0));
+	if(d_step<(gdouble)width_file*r/20){
+	  i_step_max=(gint)((gdouble)width_file*r/20/d_step);
+	}
+	i_step=1;
+      }
+      
+      cairo_set_line_width (cr, 2.5*scale);
+      cairo_line_to(cr,x,y);
+      cairo_stroke(cr);
+      
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.0*scale);
+      
+      if(i_step>0){
+	
+	if(i_step==i_step_max){
+	  cairo_set_line_width (cr, 1.5*scale);
+	  if(fabs(x-x0)>fabs(y-y0)){
+	    if(i_tag==i_tag_max){
+	      ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
+				&zonedate, 
+				hg->obs_timezone/60);
+	      tmp=g_strdup_printf("%d/%d %d:%02d",
+				  zonedate.months,
+				  zonedate.days,
+				  zonedate.hours,
+				  zonedate.minutes);
+	      cairo_text_extents (cr, tmp, &extents);
+	      cairo_move_to(cr,x,y-10);
+	      cairo_rel_move_to(cr,extents.height/2, 0);
+	      cairo_rotate (cr,-M_PI/2);
+	      cairo_show_text(cr,tmp);
+	      cairo_rotate (cr,M_PI/2);
+	      if(tmp) g_free(tmp);
+	      i_tag=0;
+	    }
+	    else{
+	      i_tag++;
+	    }
+	    cairo_move_to(cr,x,y-5);
+	    cairo_line_to(cr,x,y+5);
+	  }
+	  else{
+	    if(i_tag==i_tag_max){
+	      ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
+				&zonedate, 
+				hg->obs_timezone/60);
+	      tmp=g_strdup_printf("%d/%d %d:%02d",
+				  zonedate.months,
+				  zonedate.days,
+				  zonedate.hours,
+				  zonedate.minutes);
+	      cairo_text_extents (cr, tmp, &extents);
+	      cairo_move_to(cr,x+10,y);
+	      cairo_rel_move_to(cr,0,extents.height/2);
+	      cairo_show_text(cr,tmp);
+	      if(tmp) g_free(tmp);
+	      i_tag=0;
+	    }
+	    else{
+	      i_tag++;
+	    }
+	    cairo_move_to(cr,x-5,y);
+	    cairo_line_to(cr,x+5,y);
+	  }
+	  cairo_stroke(cr);
+	  i_step=1;
+	}
+	else{
+	}
+	i_step++;
+      }
+      else{
+	cairo_set_line_width (cr, 1.5*scale);
+	if(fabs(x-x0)>fabs(y-y0)){
+	  if(i_tag==i_tag_max){
+	    ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
+			      &zonedate, 
+			      hg->obs_timezone/60);
+	    tmp=g_strdup_printf("%d/%d %d:%02d",
+				zonedate.months,
+				zonedate.days,
+				zonedate.hours,
+				zonedate.minutes);
+	    cairo_text_extents (cr, tmp, &extents);
+	    cairo_move_to(cr,x,y-10);
+	    cairo_rel_move_to(cr,extents.height/2, 0);
+	    cairo_rotate (cr,-M_PI/2);
+	    cairo_show_text(cr,tmp);
+	    cairo_rotate (cr,M_PI/2);
+	    if(tmp) g_free(tmp);
+	    i_tag=0;
+	  }
+	  else{
+	    i_tag++;
+	  }
+	  cairo_move_to(cr,x,y-5);
+	  cairo_line_to(cr,x,y+5);
+	}
+	else{	
+	  if(i_tag==i_tag_max){
+	    ln_get_local_date(hg->nst[hg->obj[hg->dss_i].i_nst].eph[i].jd,
+			      &zonedate, 
+			      hg->obs_timezone/60);
+	    tmp=g_strdup_printf("%d/%d %d:%02d",
+				zonedate.months,
+				zonedate.days,
+				zonedate.hours,
+				zonedate.minutes);
+	    cairo_text_extents (cr, tmp, &extents);
+	    cairo_move_to(cr,x+10,y);
+	    cairo_rel_move_to(cr,0,extents.height/2);
+	    cairo_show_text(cr,tmp);
+	    if(tmp) g_free(tmp);
+	    i_tag=0;
+	  }
+	  else{
+	    i_tag++;
+	  }
+	  cairo_move_to(cr,x-5,y);
+	  cairo_line_to(cr,x+5,y);
+	}
+	cairo_stroke(cr);
+      }
+      
+      cairo_move_to(cr,x,y);
+    }
+    
+    if(hg->fc_mag==1){
+      cairo_restore(cr);
+      
+      cairo_save(cr);
+      
+      cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
+		       (height-(gint)((gdouble)height_file*r))/2);
+      
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.5, 0.0, 1.0);
+      else cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 1.0);
+      
+      t_step=(hg->nst[hg->obj[hg->dss_i].i_nst].eph[1].jd
+	      -hg->nst[hg->obj[hg->dss_i].i_nst].eph[0].jd)
+	*24.*60.*(gdouble)i_step_max; //min
+      
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
+      if(t_step<5){
+	tmp=g_strdup_printf("Step=%dsec",(gint)(t_step*60+0.5));
+      }
+      else if(t_step<60){
+	tmp=g_strdup_printf("Step=%dmin",(gint)t_step);
+      }
+      else{
+	tmp=g_strdup_printf("Step=%.1lfhrs",t_step/60);
+      }
+      cairo_text_extents (cr, tmp, &extents);
+      cairo_move_to(cr,
+		    (gdouble)width_file*r-extents.width-5*scale,
+		    (gdouble)height_file*r-5*scale);
+      cairo_show_text(cr,tmp);
+      if(tmp) g_free(tmp);
+    }
+
+  }
+}
+
+
+void draw_pts(typHOE *hg,
+	      cairo_t *cr,
+	      gint width, gint height,
+	      gint width_file, gint height_file,
+	      gint shift_x, gint shift_y,
+	      gdouble scale,
+	      gdouble r)
+{  // Points and Distance
+  gdouble distance;
+  gdouble arad;
+  cairo_text_extents_t extents;
+  gchar *tmp;
+  
+  if(hg->fc_ptn>=1){
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.8);
+    else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.8);
+    
+    cairo_set_line_width (cr, 2*scale);
+    
+    if(hg->fc_mag!=1){
+      cairo_translate(cr,
+		      -shift_x,
+		      -shift_y);
+    }
+    
+    cairo_move_to(cr,hg->fc_ptx1-5,hg->fc_pty1-5);
+    cairo_rel_line_to(cr,10,10);
+    
+    cairo_move_to(cr,hg->fc_ptx1-5,hg->fc_pty1+5);
+    cairo_rel_line_to(cr,10,-10);
+    
+    cairo_stroke(cr);
+  }
+
+  if(hg->fc_ptn==2){
+    cairo_move_to(cr,hg->fc_ptx2-5,hg->fc_pty2-5);
+    cairo_rel_line_to(cr,10,10);
+    
+    cairo_move_to(cr,hg->fc_ptx2-5,hg->fc_pty2+5);
+    cairo_rel_line_to(cr,10,-10);
+    
+    cairo_stroke(cr);
+    
+    cairo_set_line_width (cr, 0.8*scale);
+    
+    cairo_move_to(cr,hg->fc_ptx1,hg->fc_pty1);
+    cairo_line_to(cr,hg->fc_ptx2,hg->fc_pty2);
+    
+    cairo_stroke(cr);
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+    else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.2*scale);
+    
+    distance=sqrt((gdouble)((hg->fc_ptx1-hg->fc_ptx2)
+			    *(hg->fc_ptx1-hg->fc_ptx2))
+		  +(gdouble)((hg->fc_pty1-hg->fc_pty2)
+			     *(hg->fc_pty1-hg->fc_pty2)))
+      /((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)*60.0;
+    
+    if(distance > 300){
+      tmp=g_strdup_printf("%.2lf'",distance/60.0);
+    }
+    else{
+      tmp=g_strdup_printf("%.2lf\"",distance);
+    }
+    cairo_text_extents (cr, tmp, &extents);
+    
+    arad=atan2((hg->fc_ptx1-hg->fc_ptx2),(hg->fc_pty1-hg->fc_pty2));
+    cairo_translate(cr,
+		    (hg->fc_ptx1+hg->fc_ptx2)/2,
+		    (hg->fc_pty1+hg->fc_pty2)/2);
+    cairo_rotate (cr,-(arad+M_PI/2));
+    
+    cairo_move_to(cr,-extents.width/2.,-extents.height*0.8);
+    cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
+  }
+}
+
+
+void draw_fcdb1(typHOE *hg,
+		cairo_t *cr,
+		gint width, gint height,
+		gint width_file, gint height_file,
+		gint shift_x, gint shift_y,
+		gdouble scale,
+		gdouble r)
+{
+  gdouble cx, cy;
+  gdouble ptx, pty, ptx0, pty0;
+  gdouble rad, rad_min=1000.0, ptr;
+  gint i, i_list, i_sel=-1;
+  gdouble theta;
+  cairo_text_extents_t extents;
+  gchar *tmp;
+  
+  if(hg->fc_ptn==-1){
+    cx=((gdouble)width-(gdouble)width_file*r)/2+(gdouble)width_file*r/2;
+    cy=((gdouble)height-(gdouble)height_file*r)/2+(gdouble)height_file*r/2;
+    if(hg->fc_mag!=1){
+      cx-=-shift_x;
+      cy-=-shift_y;
+    }
+
+    ptx0=((gdouble)hg->fc_ptx1-cx);
+    pty0=((gdouble)hg->fc_pty1-cy);
+    
+    switch(hg->fc_inst){
+    case FC_INST_NONE:
+    case FC_INST_HDS:
+    case FC_INST_HDSAUTO:
+    case FC_INST_HDSZENITH:
+    case FC_INST_COMICS:
+    case FC_INST_FOCAS:
+    case FC_INST_MOIRCS:
+    case FC_INST_FMOS:
+      theta=-M_PI*(gdouble)hg->dss_pa/180.;
+      break;
+      
+    case FC_INST_IRCS:
+      theta=-M_PI*(gdouble)(-90+hg->dss_pa)/180.;
+      break;
+      
+    case FC_INST_SPCAM:
+      theta=-M_PI*(gdouble)(90-hg->dss_pa)/180.;
+      break;
+      
+    case FC_INST_HSCDET:
+    case FC_INST_HSCA:
+      theta=-M_PI*(gdouble)(270-hg->dss_pa)/180.;
+      break;
+    }
+    
+    if(hg->dss_flip){
+      theta=-theta;;
+    }
+    
+    ptx=ptx0*cos(theta)-pty0*sin(theta);
+    pty=ptx0*sin(theta)+pty0*cos(theta);
+
+    for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+      if((fabs(hg->fcdb[i_list].x-ptx)<10)&&(fabs(hg->fcdb[i_list].y-pty)<10)){
+	rad=(hg->fcdb[i_list].x-ptx)*(hg->fcdb[i_list].x-ptx)
+	  +(hg->fcdb[i_list].y-pty)*(hg->fcdb[i_list].y-pty);
+	if(rad<rad_min){
+	  i_sel=i_list;
+	  rad_min=rad;
+	}
+      }
+    }
+      
+    if(i_sel>=0){
+      hg->fcdb_tree_focus=i_sel;
+      {
+	GtkTreeModel *model 
+	  = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->fcdb_tree));
+	GtkTreePath *path;
+	GtkTreeIter  iter;
+	
+	path=gtk_tree_path_new_first();
+	
+	for(i=0;i<hg->fcdb_i_max;i++){
+	  gtk_tree_model_get_iter (model, &iter, path);
+	  gtk_tree_model_get (model, &iter, COLUMN_FCDB_NUMBER, &i_list, -1);
+	  i_list--;
+	  
+	  if(i_list==i_sel){
+	    gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),2);
+	    gtk_widget_grab_focus (hg->fcdb_tree);
+	    gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->fcdb_tree), 
+				     path, NULL, FALSE);
+	    break;
+	  }
+	  else{
+	    gtk_tree_path_next(path);
+	  }
+	}
+	gtk_tree_path_free(path);
+      }
+    }
+
+    hg->fc_ptn=0;
+  }
+}
+
+void draw_fcdb2(typHOE *hg,
+		cairo_t *cr,
+		gint width, gint height,
+		gint width_file, gint height_file,
+		gdouble scale,
+		gdouble r)
+{
+  gdouble pmx, pmy;
+  gdouble yrs;
+  gint i_list;
+  cairo_text_extents_t extents;
+  gchar *tmp;
+  
+  if((hg->fcdb_flag)&&(hg->fcdb_i==hg->dss_i)){
+
+    translate_to_center(hg,cr,width,height,width_file,height_file,r);
+    if(hg->fcdb_type==FCDB_TYPE_GAIA){
+      yrs=current_yrs(hg)-15.5;
+    }
+    else{
+      yrs=current_yrs(hg);
+    }
+    
+    for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+      hg->fcdb[i_list].x=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0)*60.
+	*cos(hg->fcdb[i_list].d_dec/180.*M_PI)
+	*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+      hg->fcdb[i_list].y=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0)*60.
+	*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+      if(hg->dss_flip) hg->fcdb[i_list].x=-hg->fcdb[i_list].x;
+    }
+    
+    if(hg->dss_invert){
+      cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+    }
+    else{
+      if((hg->fcdb_type==FCDB_TYPE_GAIA)&&(hg->fcdb_gaia_sat)){
+	cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.7);
+      }
+      else{
+	cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
+	}
+    }
+    cairo_set_line_width (cr, 2*scale);
+    for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+      if(hg->fcdb_tree_focus!=i_list){
+	if((hg->fcdb_type==FCDB_TYPE_GAIA)&&(hg->fcdb_gaia_sat)){
+	  if(hg->fcdb[i_list].v < 20){
+	    gdouble rad=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*hsc_sat_radius(hg->fcdb[i_list].v)/30.;
+	    
+	    draw_hsc_sat(cr, rad, 
+			   hg->fcdb[i_list].x, hg->fcdb[i_list].y,
+			 hg->dss_pa, hg->dss_flip);
+	  }
+	}
+	else{
+	  cairo_rectangle(cr,hg->fcdb[i_list].x-6,hg->fcdb[i_list].y-6,12,12);
+	  cairo_stroke(cr);
+	}
+      }
+    }
+    
+    if(hg->dss_invert){
+      cairo_set_source_rgba(cr, 0.7, 0.0, 0.0, 1.0);
+    }
+    else{
+      if((hg->fcdb_type==FCDB_TYPE_GAIA)&&(hg->fcdb_gaia_sat)){
+	cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.7);
+      }
+      else{
+	cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
+      }
+    }
+    cairo_set_line_width (cr, 4*scale);
+    for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+      if(hg->fcdb_tree_focus==i_list){
+	if((hg->fcdb_type==FCDB_TYPE_GAIA)&&(hg->fcdb_gaia_sat)){
+	  if(hg->fcdb[i_list].v < 20){
+	    gdouble rad=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*hsc_sat_radius(hg->fcdb[i_list].v)/30.;
+	    
+	    draw_hsc_sat(cr, rad, 
+			 hg->fcdb[i_list].x, hg->fcdb[i_list].y,
+			 hg->dss_pa, hg->dss_flip);
+	  }
+	}
+	else{
+	  cairo_rectangle(cr,hg->fcdb[i_list].x-8,hg->fcdb[i_list].y-8,16,16);
+	  cairo_stroke(cr);
+	}
+      }
+    }
+    
+    // Proper Motion
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.5, 0.0, 1.0);
+    else cairo_set_source_rgba(cr, 0.2, 1.0, 0.2, 1.0);
+    cairo_set_line_width (cr, 1.5*scale);
+    for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+      if(hg->fcdb[i_list].pm){
+	pmx=-(hg->fcdb[i_list].d_ra-hg->fcdb_d_ra0
+	      +hg->fcdb[i_list].pmra/1000/60/60*yrs)*60.
+	  *cos(hg->fcdb[i_list].d_dec/180.*M_PI)
+	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	pmy=-(hg->fcdb[i_list].d_dec-hg->fcdb_d_dec0
+	      +hg->fcdb[i_list].pmdec/1000/60/60*yrs)*60.
+	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	if(hg->dss_flip) {
+	  pmx=-pmx;
+	}
+	cairo_move_to(cr,hg->fcdb[i_list].x,hg->fcdb[i_list].y);
+	cairo_line_to(cr,pmx,pmy);
+	cairo_stroke(cr);
+	cairo_arc(cr,pmx,pmy,5,0,2*M_PI);
+	cairo_fill(cr);
+      }
+    }
+    
+  }
+}
+
+
+void draw_hds(typHOE *hg,
+	      cairo_t *cr,
+	      gint width, gint height,
+	      gint width_file, gint height_file,
+	      gdouble scale,
+	      gdouble r)
+{ // Drawing Inst (HDS)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+  
+  if(hg->dss_draw_slit){
+    cairo_arc(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2,
+	      ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.,
+	      0,M_PI*2);
+    cairo_clip(cr);
+    cairo_new_path(cr);
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.3);
+    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.3);
+    cairo_set_line_width (cr, (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip/60.*HDS_SLIT_MASK_ARCSEC);
+    
+    cairo_move_to(cr,((gdouble)width_file*r)/2,
+		  ((gdouble)height_file*r)/2-((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.);
+    cairo_line_to(cr,((gdouble)width_file*r)/2,
+		  ((gdouble)height_file*r)/2-(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*HDS_SLIT_LENGTH/2./500./60.);
+    
+    cairo_move_to(cr,((gdouble)width_file*r)/2,
+		  ((gdouble)height_file*r)/2+(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*HDS_SLIT_LENGTH/2./500./60.);
+    cairo_line_to(cr,((gdouble)width_file*r)/2,
+		  ((gdouble)height_file*r)/2+((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.);
+    cairo_stroke(cr);
+    
+    cairo_set_line_width (cr, (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip/60.*HDS_SLIT_WIDTH/500.);
+    cairo_move_to(cr,((gdouble)width_file*r)/2,
+		  ((gdouble)height_file*r)/2-(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*HDS_SLIT_LENGTH/2./500./60.);
+    cairo_line_to(cr,((gdouble)width_file*r)/2,
+		  ((gdouble)height_file*r)/2+(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*HDS_SLIT_LENGTH/2./500./60.);
+    cairo_stroke(cr);
+    
+    cairo_reset_clip(cr);
+  }
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_arc(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2,
+	    ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.,
+	    0,M_PI*2);
+  cairo_stroke(cr);
+  
+  cairo_move_to(cr,
+		((gdouble)width_file*r)/2+((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*cos(M_PI/4),
+		((gdouble)height_file*r)/2-((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*sin(M_PI/4));
+  cairo_set_line_width (cr, 1.5*scale);
+  cairo_line_to(cr,
+		((gdouble)width_file*r)/2+1.5*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*cos(M_PI/4),
+		((gdouble)height_file*r)/2-1.5*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*sin(M_PI/4));
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  cairo_move_to(cr,
+		((gdouble)width_file*r)/2+1.5*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*cos(M_PI/4),
+		((gdouble)height_file*r)/2-1.5*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*sin(M_PI/4));
+  cairo_show_text(cr, "HDS SV FOV (1arcmin)");
+}
+
+
+void draw_ircs(typHOE *hg,
+	       cairo_t *cr,
+	       gint width, gint height,
+	       gint width_file, gint height_file,
+	       gdouble scale,
+	       gdouble r)
+{ // Drawing Inst (IRCS)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+  
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  
+  if(hg->dss_draw_slit){
+    cairo_set_line_width (cr, 1.5*scale);
+    cairo_arc(cr,0,0,
+	      ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*IRCS_TTGS_ARCMIN,
+	      0,M_PI*2);
+    cairo_stroke(cr);
+    
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+    
+    tmp=g_strdup_printf("Tip-Tilt Guide Star w/LGS (%darcmin)",IRCS_TTGS_ARCMIN/2);
+    cairo_text_extents (cr,tmp, &extents);
+    cairo_move_to(cr,
+		  -extents.width/2,
+		  -IRCS_TTGS_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
+    cairo_show_text(cr, tmp);
+    if(tmp) g_free(tmp);
+  }
+  
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_rectangle(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_X_ARCSEC/60.)/2.,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_Y_ARCSEC/60.)/2.,
+		  (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_X_ARCSEC/60.,
+		  (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_Y_ARCSEC/60.);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  tmp=g_strdup_printf("IRCS FOV (%dx%darcsec)",(gint)IRCS_X_ARCSEC, (gint)IRCS_Y_ARCSEC);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,-extents.width/2,
+		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_Y_ARCSEC/60.)/2.-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+}
+
+
+void draw_comics(typHOE *hg,
+		 cairo_t *cr,
+		 gint width, gint height,
+		 gint width_file, gint height_file,
+		 gdouble scale,
+		 gdouble r)
+{ // Drawing Inst (COMICS)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_rectangle(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_X_ARCSEC/60.)/2.,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_Y_ARCSEC/60.)/2.,
+		  (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_X_ARCSEC/60.,
+		  (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_Y_ARCSEC/60.);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  tmp=g_strdup_printf("COMICS FOV (%dx%darcsec)",(gint)COMICS_X_ARCSEC, (gint)COMICS_Y_ARCSEC);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,-extents.width/2,
+		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_Y_ARCSEC/60.)/2.-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+}
+
+
+
+void draw_focas(typHOE *hg,
+		cairo_t *cr,
+		gint width, gint height,
+		gint width_file, gint height_file,
+		gdouble scale,
+		gdouble r)
+{ // Drawing Inst (FOCAS)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_arc(cr,0,0,
+	    ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FOCAS_R_ARCMIN,
+	    0,M_PI*2);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  tmp=g_strdup_printf("FOCAS FOV (%darcmin)",FOCAS_R_ARCMIN);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,
+		-extents.width/2,
+		-FOCAS_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+  
+  if(hg->dss_draw_slit){
+    cairo_new_path(cr);
+    cairo_arc(cr,0,0,
+	      ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FOCAS_R_ARCMIN,
+	      0,M_PI*2);
+    cairo_clip(cr);
+    cairo_new_path(cr);
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+    cairo_set_line_width (cr, FOCAS_GAP_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip));
+    cairo_move_to(cr,-(gdouble)width/2,0);
+    cairo_line_to(cr,(gdouble)width/2,0);
+    cairo_stroke(cr);
+    
+    cairo_reset_clip(cr);
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+    cairo_text_extents (cr,"Chip 2", &extents);
+    
+    cairo_move_to(cr,
+		  cos(M_PI/4)*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FOCAS_R_ARCMIN+5*scale,
+		  -sin(M_PI/4)*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FOCAS_R_ARCMIN-5*scale);
+    cairo_show_text(cr,"Chip 2");
+	
+    cairo_move_to(cr,
+		  cos(M_PI/4)*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FOCAS_R_ARCMIN+5*scale,
+		  sin(M_PI/4)*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FOCAS_R_ARCMIN+extents.height+5*scale);
+    cairo_show_text(cr,"Chip 1");
+  }
+}
+  
+
+void draw_moircs(typHOE *hg,
+		 cairo_t *cr,
+		 gint width, gint height,
+		 gint width_file, gint height_file,
+		 gdouble scale,
+		 gdouble r)
+{ // Drawing Inst (MOIRCS)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_rectangle(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.,
+		  (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN,
+		  (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  tmp=g_strdup_printf("MOIRCS FOV (%dx%darcmin)",(gint)MOIRCS_X_ARCMIN, (gint)MOIRCS_Y_ARCMIN);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,-extents.width/2,
+		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+  
+  if(hg->dss_draw_slit){
+    cairo_new_path(cr);
+    cairo_rectangle(cr,
+		    -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.,
+		    -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.,
+		    (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN,
+		    (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN);
+    cairo_clip(cr);
+    cairo_new_path(cr);
+	
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+    cairo_set_line_width (cr, MOIRCS_GAP_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip));
+    cairo_move_to(cr,-(gdouble)width/2,0);
+    cairo_line_to(cr,(gdouble)width/2,0);
+    cairo_stroke(cr);
+	
+    cairo_move_to(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.,
+		  ((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.);
+    cairo_line_to(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.+MOIRCS_VIG1X_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip),
+		  ((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.);
+    cairo_line_to(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.,
+		  ((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.-MOIRCS_VIG1Y_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip));
+    cairo_close_path(cr);
+    cairo_fill_preserve(cr);
+    
+    cairo_move_to(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.);
+    cairo_line_to(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.+MOIRCS_VIG2X_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip),
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.);
+    cairo_line_to(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.+MOIRCS_VIG2Y_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip));
+    cairo_close_path(cr);
+    cairo_fill_preserve(cr);
+    
+    cairo_new_path(cr);
+    
+    cairo_reset_clip(cr);
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+    
+    cairo_set_line_width(cr,1.5*scale);
+    cairo_arc(cr,0,0,
+	      (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_VIGR_ARCMIN/2.,
+	      0,M_PI*2);
+    cairo_stroke(cr);
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+    cairo_text_extents (cr,"Detector 2", &extents);
+    
+    cairo_move_to(cr,
+		  ((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.+5*scale,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.+extents.height);
+    cairo_show_text(cr,"Detector 2");
+    
+    cairo_move_to(cr,
+		  ((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_X_ARCMIN)/2.+5*scale,
+		  ((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.);
+    cairo_show_text(cr,"Detector 1");
+    
+    cairo_rotate (cr,-M_PI/2);
+    cairo_text_extents (cr,"6 arcmin from the center", &extents);
+    cairo_move_to(cr,-extents.width/2.,
+		  -(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_VIGR_ARCMIN/2.-5*scale);
+    cairo_show_text(cr,"6 arcmin from the center");
+  }
+}
+
+
+void draw_spcam(typHOE *hg,
+		cairo_t *cr,
+		gint width, gint height,
+		gint width_file, gint height_file,
+		gdouble scale,
+		gdouble r)
+{ // Drawing Inst (SupCam)
+  gdouble x_ccd, y_ccd, gap_ccd;
+  cairo_text_extents_t extents;
+  gchar *tmp;
+  
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_rectangle(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*SPCAM_X_ARCMIN)/2.,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SPCAM_Y_ARCMIN)/2.,
+		  (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*SPCAM_X_ARCMIN,
+		  (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SPCAM_Y_ARCMIN);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  tmp=g_strdup_printf("Suprime-Cam FOV (%dx%darcmin)",SPCAM_X_ARCMIN, SPCAM_Y_ARCMIN);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,-extents.width/2,
+		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SPCAM_Y_ARCMIN)/2.-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+  
+  if(hg->dss_draw_slit){
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.3);
+    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.3);
+    cairo_set_line_width (cr, 1.5*scale);
+    
+    x_ccd=0.20/60.*2048.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip);
+    y_ccd=0.20/60.*4096.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip);
+    gap_ccd=SPCAM_GAP_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip);
+    //2 fio
+    cairo_rectangle(cr,-x_ccd/2.,-y_ccd-gap_ccd/2.,
+		    x_ccd,y_ccd);
+    //5 satsuki
+    cairo_rectangle(cr,-x_ccd/2.,+gap_ccd/2.,
+		    x_ccd,y_ccd);
+    
+    //7 clarisse
+    cairo_rectangle(cr,-x_ccd/2*3.-gap_ccd,-y_ccd-gap_ccd/2.,
+		    x_ccd,y_ccd);
+    //9 san
+    cairo_rectangle(cr,-x_ccd/2.*3.-gap_ccd,+gap_ccd/2.,
+		    x_ccd,y_ccd);
+    
+    //6 chihiro
+    cairo_rectangle(cr,-x_ccd/2*5.-gap_ccd*2.,-y_ccd-gap_ccd/2.,
+		    x_ccd,y_ccd);
+    //8 ponyo
+    cairo_rectangle(cr,-x_ccd/2.*5.-gap_ccd*2.,+gap_ccd/2.,
+		    x_ccd,y_ccd);
+    
+    //2 fio
+    cairo_rectangle(cr,x_ccd/2.+gap_ccd,-y_ccd-gap_ccd/2.,
+		    x_ccd,y_ccd);
+    //5 satsuki
+    cairo_rectangle(cr,x_ccd/2.+gap_ccd,+gap_ccd/2.,
+		    x_ccd,y_ccd);
+    
+    //0 nausicca
+    cairo_rectangle(cr,x_ccd/2.*3.+gap_ccd*2.,-y_ccd-gap_ccd/2.,
+		    x_ccd,y_ccd);
+    //3 sophie
+    cairo_rectangle(cr,x_ccd/2.*3.+gap_ccd*2,+gap_ccd/2.,
+		    x_ccd,y_ccd);
+    
+    
+    cairo_stroke(cr);
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+    cairo_text_extents (cr,"2. fio", &extents);
+    
+    //2 fio
+    cairo_move_to(cr,-x_ccd/2.+15*scale,-y_ccd-gap_ccd/2.+15*scale+extents.height);
+    cairo_show_text(cr,"2. fio");
+    
+    //5 satsuki
+    cairo_move_to(cr,-x_ccd/2.+15*scale,+gap_ccd/2.+y_ccd-15*scale);
+    cairo_show_text(cr,"5. satsuki");
+    
+    //7 clarisse
+    cairo_move_to(cr,-x_ccd/2*3.-gap_ccd+15*scale,-y_ccd-gap_ccd/2.+15*scale+extents.height);
+    cairo_show_text(cr,"7. clarisse");
+    
+    //9 san
+    cairo_move_to(cr,-x_ccd/2.*3.-gap_ccd+15*scale,+gap_ccd/2.+y_ccd-15*scale);
+    cairo_show_text(cr,"9. san");
+    
+    //6 chihiro
+    cairo_move_to(cr,-x_ccd/2*5.-gap_ccd*2.+15*scale,-y_ccd-gap_ccd/2.+15*scale+extents.height);
+    cairo_show_text(cr,"6. chihiro");
+    
+    //8 ponyo
+    cairo_move_to(cr,-x_ccd/2.*5.-gap_ccd*2.+15*scale,+gap_ccd/2.+y_ccd-15*scale);
+    cairo_show_text(cr,"8. ponyo");
+    
+    //1 kiki
+    cairo_move_to(cr,x_ccd/2.+gap_ccd+15*scale,-y_ccd-gap_ccd/2.+15*scale+extents.height);
+    cairo_show_text(cr,"1. kiki");
+    
+    //4 sheeta
+    cairo_move_to(cr,x_ccd/2.+gap_ccd+15*scale,+gap_ccd/2.+y_ccd-15*scale);
+    cairo_show_text(cr,"4. sheeta");
+    
+    //0 nausicaa
+    cairo_move_to(cr,x_ccd/2.*3.+gap_ccd*2.+15*scale,-y_ccd-gap_ccd/2.+15*scale+extents.height);
+    cairo_show_text(cr,"0. nausicaa");
+    
+    //3 sophie
+    cairo_move_to(cr,x_ccd/2.*3.+gap_ccd*2+15*scale,+gap_ccd/2.+y_ccd-15*scale);
+    cairo_show_text(cr,"3. sophie");
+  }
+}
+
+
+void draw_hsc(typHOE *hg,
+	      cairo_t *cr,
+	      gint width, gint height,
+	      gint width_file, gint height_file,
+	      gdouble scale,
+	      gdouble r)
+{ // Drawing Inst (HSC)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  translate_hsc_dith(cr, hg, width_file, r);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_arc(cr,0,0,
+	    ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*HSC_R_ARCMIN,
+	    0,M_PI*2);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  if(!hg->dss_draw_slit){
+    tmp=g_strdup_printf("HSC FOV (%darcmin)",HSC_R_ARCMIN);
+    cairo_text_extents (cr,tmp, &extents);
+    cairo_move_to(cr,
+		  -extents.width/2,
+		  -HSC_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
+    cairo_show_text(cr, tmp);
+    if(tmp) g_free(tmp);
+  }
+  else{
+    gint i_chip;
+    gdouble pscale;
+    gdouble x_0,y_0;
+    
+    pscale=(1.5*60.*60./(497./0.015))/60.*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+    // HSC pix scale 1.5deg = 497mm phi
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+    cairo_set_line_width (cr, 0.8*scale);
+    
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_BOLD);
+    
+    // Dead chips
+    {
+      gint i_dead;
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.3);
+      else cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
+      
+      for(i_dead=0;i_dead<HSC_DEAD_ALL;i_dead++){
+	
+	y_0=(-(gdouble)hsc_dead[i_dead].crpix1*(gdouble)hsc_dead[i_dead].cd1_1/0.015-(gdouble)hsc_dead[i_dead].crpix2*(gdouble)hsc_dead[i_dead].cd1_2/0.015)*pscale;
+	x_0=(-(gdouble)hsc_dead[i_dead].crpix1*(gdouble)hsc_dead[i_dead].cd2_1/0.015-(gdouble)hsc_dead[i_dead].crpix2*(gdouble)hsc_dead[i_dead].cd2_2/0.015)*pscale;
+	if((hsc_dead[i_dead].cd1_2<0)&&(hsc_dead[i_dead].cd2_1<0)){
+	  cairo_rectangle(cr, x_0-2048*pscale/4*(hsc_dead[i_dead].ch),
+			  y_0-4224*pscale, 2048*pscale/4, 4224*pscale );
+	}
+	else if((hsc_dead[i_dead].cd1_2>0)&&(hsc_dead[i_dead].cd2_1>0)){
+	  cairo_rectangle(cr,x_0+2048*pscale/4*(hsc_dead[i_dead].ch-1), y_0, 2048*pscale/4, 4224*pscale);
+	}
+	else if((hsc_dead[i_dead].cd1_1>0)&&(hsc_dead[i_dead].cd2_2<0)){
+	  cairo_rectangle(cr,x_0-4224*pscale, y_0+2048*pscale/4*(hsc_dead[i_dead].ch-1),  4224*pscale, 2048*pscale/4);
+	}
+	else{
+	  cairo_rectangle(cr,x_0, y_0-2048*pscale/4*(hsc_dead[i_dead].ch), 4224*pscale, 2048*pscale/4);
+	}
+	cairo_fill(cr);
+      }
+    }
+    
+    for(i_chip=0;i_chip<HSC_CHIP_ALL;i_chip++){
+      
+      if(hsc_param[i_chip].bees==2){
+	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.6, 0.0, 0.6);
+	else cairo_set_source_rgba(cr, 0.4, 1.0, 0.4, 0.6);
+      }
+      else if(hsc_param[i_chip].bees==0){
+	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.0, 0.5, 0.6);
+	else cairo_set_source_rgba(cr, 0.8, 0.4, 0.8, 0.6);
+      }
+      else{
+	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+	else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+      }
+      
+      cairo_set_font_size (cr, 600*pscale);
+      cairo_text_extents (cr,"000", &extents);
+      
+      y_0=(-(gdouble)hsc_param[i_chip].crpix1*(gdouble)hsc_param[i_chip].cd1_1/0.015-(gdouble)hsc_param[i_chip].crpix2*(gdouble)hsc_param[i_chip].cd1_2/0.015)*pscale;
+      x_0=(-(gdouble)hsc_param[i_chip].crpix1*(gdouble)hsc_param[i_chip].cd2_1/0.015-(gdouble)hsc_param[i_chip].crpix2*(gdouble)hsc_param[i_chip].cd2_2/0.015)*pscale;
+      
+      if((hsc_param[i_chip].cd1_2<0)&&(hsc_param[i_chip].cd2_1<0)){
+	cairo_rectangle(cr, x_0-2048*pscale, y_0-4224*pscale, 2048*pscale, 4224*pscale );
+	cairo_move_to(cr, x_0-2048*pscale+2044*pscale*0.05, y_0-4224*pscale+2044*pscale*0.05-extents.y_bearing);
+      }
+      else if((hsc_param[i_chip].cd1_2>0)&&(hsc_param[i_chip].cd2_1>0)){
+	cairo_rectangle(cr,x_0, y_0, 2048*pscale, 4224*pscale);
+	cairo_move_to(cr, x_0+2048*pscale*0.05, y_0+2048*pscale*0.05-extents.y_bearing);
+      }
+      else if((hsc_param[i_chip].cd1_1>0)&&(hsc_param[i_chip].cd2_2<0)){
+	cairo_rectangle(cr,x_0-4224*pscale, y_0,  4224*pscale, 2048*pscale);
+	cairo_move_to(cr, x_0-4224*pscale+2048*pscale*0.05, y_0+2048*pscale*0.05-extents.y_bearing);
+      }
+      else{
+	cairo_rectangle(cr,x_0, y_0-2048*pscale, 4224*pscale, 2048*pscale );
+	cairo_move_to(cr, x_0+2048*pscale*0.05, y_0-2048*pscale+2048*pscale*0.05-extents.y_bearing);
+      }
+      
+      cairo_set_font_size (cr, 600*pscale);
+      if(hg->fc_inst==FC_INST_HSCDET){
+	tmp=g_strdup_printf("%d",hsc_param[i_chip].det_id);
+      }
+      else{
+	
+	tmp=g_strdup_printf("%02d",hsc_param[i_chip].hsca);
+      }
+      cairo_show_text(cr,tmp);
+      if(tmp) g_free(tmp);
+      
+      if(hsc_param[i_chip].hsca==35){
+	cairo_set_font_size (cr, 1600*pscale);
+	tmp=g_strdup_printf("BEES%d",hsc_param[i_chip].bees);
+	cairo_text_extents (cr,tmp, &extents);
+	
+	if(hsc_param[i_chip].bees==0){
+	  cairo_move_to(cr, x_0+4224*pscale-2048*pscale*0.5-extents.width, y_0+2048*pscale*0.2-extents.y_bearing);
+	}
+	else{
+	  cairo_move_to(cr, x_0-4224*pscale+2048*pscale*0.5, y_0-2048*pscale*0.2);
+	}
+	cairo_show_text(cr,tmp);
+	if(tmp) g_free(tmp);
+      }
+      
+      cairo_stroke(cr);
+      
+    }
+  }
+}
+
+
+void draw_fmos(typHOE *hg,
+	       cairo_t *cr,
+	       gint width, gint height,
+	       gint width_file, gint height_file,
+	       gdouble scale,
+	       gdouble r)
+{ // Drawing Inst (FMOS)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+  
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_arc(cr,0,0,
+	    ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*FMOS_R_ARCMIN,
+	    0,M_PI*2);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  tmp=g_strdup_printf("FMOS FOV (%darcmin)",FMOS_R_ARCMIN);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,
+		-extents.width/2,
+		-FMOS_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+}
+
+
+void draw_pfs(typHOE *hg,
+	      cairo_t *cr,
+	      gint width, gint height,
+	      gint width_file, gint height_file,
+	      gdouble scale,
+	      gdouble r)
+{ // Drawing Inst (PFS)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_arc(cr,0,0,
+	    ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*PFS_R_ARCMIN,
+	    0,M_PI*2);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  tmp=g_strdup_printf("PFS FOV (%.1farcmin)",PFS_R_ARCMIN);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,
+		-extents.width/2,
+		-PFS_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+}
+
+
+void draw_fc_label(typHOE *hg,
+		   cairo_t *cr,
+		   gint width, gint height,
+		   gint width_file, gint height_file,
+		   gdouble scale,
+		   gdouble r)
+{ // Drawing Labels  (Object Name,  RA/Dec,  Image Source)
+  struct ln_equ_posn object;
+  struct lnh_equ_posn hobject;
+  cairo_text_extents_t extents;
+  gchar *tmp;
+
+  cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
+		   (height-(gint)((gdouble)height_file*r))/2);
+  
+  object.ra=ra_to_deg(hg->obj[hg->dss_i].ra);
+  object.dec=dec_to_deg(hg->obj[hg->dss_i].dec);
+  
+  ln_equ_to_hequ(&object, &hobject);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.3, 0.45, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 1.0, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.1*scale);
+  cairo_move_to(cr,5*scale,(gdouble)height_file*r-5*scale);
+  tmp=g_strdup_printf("RA=%02d:%02d:%05.2lf  Dec=%s%02d:%02d:%05.2lf (%.1lf)",
+		      hobject.ra.hours,hobject.ra.minutes,
+		      hobject.ra.seconds,
+		      (hobject.dec.neg) ? "-" : "+", 
+		      hobject.dec.degrees, hobject.dec.minutes,
+		      hobject.dec.seconds,
+		      hg->obj[hg->dss_i].equinox);
+  cairo_text_extents (cr, tmp, &extents);
+  cairo_show_text(cr,tmp);
+  if(tmp) g_free(tmp);
+  
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_BOLD);
+  cairo_move_to(cr,5*scale,(gdouble)height_file*r-5*scale-extents.height-5*scale);
+  cairo_show_text(cr,hg->obj[hg->dss_i].name);
+  
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
+  tmp=g_strdup_printf("%s  %dx%d arcmin",
+		      FC_img[hg->fc_mode_get],
+		      hg->dss_arcmin_ip,hg->dss_arcmin_ip);
+  cairo_text_extents (cr, tmp, &extents);
+  cairo_move_to(cr,
+		(gdouble)width_file*r-extents.width-5*scale,
+		extents.height+5*scale);
+  cairo_show_text(cr,tmp);
+  if(tmp) g_free(tmp);
+
+  if(hg->fc_mode_get==FC_SKYVIEW_RGB){
+    gint y0;
+    gchar *rgb_txt;
+    y0=extents.height;
+    
+    //R
+    cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+    rgb_txt=rgb_source_txt(hg,0);
+    cairo_text_extents (cr, rgb_txt, &extents);
+    cairo_move_to(cr,
+		  (gdouble)width_file*r-extents.width-5*scale,
+		  y0*2+5*2*scale);
+    cairo_show_text(cr,rgb_txt);
+    g_free(rgb_txt);
+    
+    //G
+    cairo_set_source_rgba(cr, 0.4, 1.0, 0.4, 1.0);
+    rgb_txt=rgb_source_txt(hg,1);
+    cairo_text_extents (cr, rgb_txt, &extents);
+    cairo_move_to(cr,
+		  (gdouble)width_file*r-extents.width-5*scale,
+		  y0*3+5*3*scale);
+    cairo_show_text(cr,rgb_txt);
+    g_free(rgb_txt);
+    
+    //B
+    cairo_set_source_rgba(cr, 0.4, 0.4, 1.0, 1.0);
+    rgb_txt=rgb_source_txt(hg,2);
+    cairo_text_extents (cr, rgb_txt, &extents);
+    cairo_move_to(cr,
+		  (gdouble)width_file*r-extents.width-5*scale,
+		  y0*4+5*4*scale);
+    cairo_show_text(cr,rgb_txt);
+    g_free(rgb_txt);
+  }
+}
+    
+
+
+void draw_hsc_dither(typHOE *hg,
+		     cairo_t *cr,
+		     gint width, gint height,
+		     gint width_file, gint height_file,
+		     gdouble scale,
+		     gdouble r)
+{ // Drawing HSC Dithering Positions
+  cairo_text_extents_t extents;
+  gchar *tmp;
+  gint i;
+  double x0, y0, dra, ddec, theta;
+  
+  translate_to_center(hg,cr,width,height,width_file,height_file,r);
+  
+  // Dithering
+  
+  switch(hg->hsc_dithp){
+  case HSC_DITH_NO:
+    break;
+    
+  case HSC_DITH_5:
+    dra=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
+      *(gdouble)hg->hsc_dra/60.;
+    ddec=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
+      *(gdouble)hg->hsc_ddec/60.;
+    
+    // 1
+    if(hg->hsc_dithi==1){
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+      else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
+      cairo_set_line_width (cr, 2.5*scale);
+    }
+    else{
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.5);
+      else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.5);
+      cairo_set_line_width (cr, 1.5*scale);
+    }
+    cairo_move_to(cr, 0, 0);
+    cairo_rel_move_to(cr, (hg->hsc_dithi==1) ? -7.5 : -5, 0);
+    cairo_rel_line_to(cr, (hg->hsc_dithi==1) ? 15 : 10, 0);
+    cairo_stroke(cr);
+    cairo_move_to(cr, 0, 0);
+    cairo_rel_move_to(cr, 0, (hg->hsc_dithi==1) ? -7.5 : -5);
+    cairo_rel_line_to(cr, 0, (hg->hsc_dithi==1) ? 15: 10);
+    cairo_stroke(cr);
+    
+    // 2
+    if(hg->hsc_dithi==2){
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+      else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
+      cairo_set_line_width (cr, 2.5*scale);
+    }
+    else{
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.5);
+      else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.5);
+      cairo_set_line_width (cr, 1.5*scale);
+    }
+    cairo_move_to(cr, -dra*1, +ddec*2);
+    cairo_rel_move_to(cr, (hg->hsc_dithi==2) ? -7.5 : -5, 0);
+    cairo_rel_line_to(cr, (hg->hsc_dithi==2) ? 15 : 10, 0);
+    cairo_stroke(cr);
+    cairo_move_to(cr, -dra*1, +ddec*2);
+    cairo_rel_move_to(cr, 0, (hg->hsc_dithi==2) ? -7.5 : -5);
+    cairo_rel_line_to(cr, 0, (hg->hsc_dithi==2) ? 15: 10);
+    cairo_stroke(cr);
+      
+    // 3
+    if(hg->hsc_dithi==3){
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+      else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
+      cairo_set_line_width (cr, 2.5*scale);
+    }
+    else{
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.5);
+      else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.5);
+      cairo_set_line_width (cr, 1.5*scale);
+    }
+    cairo_move_to(cr, -dra*2, -ddec*1);
+    cairo_rel_move_to(cr, (hg->hsc_dithi==3) ? -7.5 : -5, 0);
+    cairo_rel_line_to(cr, (hg->hsc_dithi==3) ? 15 : 10, 0);
+    cairo_stroke(cr);
+    cairo_move_to(cr, -dra*2, -ddec*1);
+    cairo_rel_move_to(cr, 0, (hg->hsc_dithi==3) ? -7.5 : -5);
+    cairo_rel_line_to(cr, 0, (hg->hsc_dithi==3) ? 15 : 10);
+    cairo_stroke(cr);
+    
+    // 4
+    if(hg->hsc_dithi==4){
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+      else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
+      cairo_set_line_width (cr, 2.5*scale);
+    }
+    else{
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.5);
+      else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.5);
+      cairo_set_line_width (cr, 1.5*scale);
+    }
+    cairo_move_to(cr, +dra*1, -ddec*2);
+    cairo_rel_move_to(cr, (hg->hsc_dithi==4) ? -7.5 : -5, 0);
+    cairo_rel_line_to(cr, (hg->hsc_dithi==4) ? 15 : 10, 0);
+    cairo_stroke(cr);
+    cairo_move_to(cr, +dra*1, -ddec*2);
+    cairo_rel_move_to(cr, 0, (hg->hsc_dithi==4) ? -7.5 : -5);
+    cairo_rel_line_to(cr, 0, (hg->hsc_dithi==4) ? 15 : 10);
+    cairo_stroke(cr);
+    
+    // 5
+    if(hg->hsc_dithi==5){
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+      else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
+      cairo_set_line_width (cr, 2.5*scale);
+    }
+    else{
+      if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.5);
+      else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.5);
+      cairo_set_line_width (cr, 1.5*scale);
+    }
+    cairo_move_to(cr, +dra*2, +ddec*1);
+    cairo_rel_move_to(cr, (hg->hsc_dithi==5) ? -7.5 : -5, 0);
+    cairo_rel_line_to(cr, (hg->hsc_dithi==5) ? 15 : 10, 0);
+    cairo_stroke(cr);
+    cairo_move_to(cr, +dra*2, +ddec*1);
+    cairo_rel_move_to(cr, 0, (hg->hsc_dithi==5) ? -7.5 : -5);
+    cairo_rel_line_to(cr, 0, (hg->hsc_dithi==5) ? 15 : 10);
+    cairo_stroke(cr);
+    break;
+    
+  case HSC_DITH_N:
+    for(i=0;i<hg->hsc_ndith;i++){
+      if(hg->hsc_dithi==i+1){
+	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+	else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
+	cairo_set_line_width (cr, 2.5*scale);
+      }
+      else{
+	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 0.5);
+	else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 0.5);
+	cairo_set_line_width (cr, 1.5*scale);
+      }
+      
+      y0=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
+	*(double)hg->hsc_rdith/60*
+	cos(-(double)hg->hsc_tdith*M_PI/180
+	    -2*M_PI/(double)hg->hsc_ndith*(double)i-M_PI/2);
+      x0=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
+	*(double)hg->hsc_rdith/60*
+	sin(-(double)hg->hsc_tdith*M_PI/180
+	    -2*M_PI/(double)hg->hsc_ndith*(double)i-M_PI/2);
+      
+      cairo_move_to(cr, x0, y0);
+      cairo_rel_move_to(cr, (hg->hsc_dithi==i+1) ? -7.5 : -5, 0);
+      cairo_rel_line_to(cr, (hg->hsc_dithi==i+1) ? 15 : 10, 0);
+      cairo_stroke(cr);
+      cairo_move_to(cr, x0, y0);
+      cairo_rel_move_to(cr, 0, (hg->hsc_dithi==i+1) ? -7.5 : -5);
+      cairo_rel_line_to(cr, 0, (hg->hsc_dithi==i+1) ? 15 : 10);
+      cairo_stroke(cr);
+    }
+    break;
+  }
+}
+
+
+
+void draw_pa(typHOE *hg,
+	     cairo_t *cr,
+	     gint width, gint height,
+	     gint width_file, gint height_file,
+	     gint shift_x, gint shift_y,
+	     gdouble scale,
+	     gdouble r)
+{ // Drawing Position Angle
+  gdouble wh_small;
+  gdouble xsec,ysec;
+  gdouble pscale;
+  cairo_text_extents_t extents;
+  gchar *tmp;
+
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_BOLD);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.1*scale);
+  cairo_text_extents (cr, "N", &extents);
+  
+  // Position Angle (w/o Magnificaion)
+  if(hg->fc_mag==1){
+    cairo_translate (cr, (width-(gint)((gdouble)width_file*r))/2,
+		     (height-(gint)((gdouble)height_file*r))/2);
+    cairo_translate (cr, 
+		     5+(gdouble)width_file*r*0.05+extents.width*1.5,
+		     5+(gdouble)width_file*r*0.05+extents.height*1.5);
+  
+    rot_pa(hg, cr);
+
+    cairo_move_to(cr,
+		  -extents.width/2,
+		  -(gdouble)width_file*r*0.05);
+    cairo_show_text(cr,"N");
+    cairo_move_to(cr,
+		  -(gdouble)width_file*r*0.05-extents.width,
+		  +extents.height/2);
+    if(hg->dss_flip){
+      cairo_show_text(cr,"W");
+    }
+    else{
+      cairo_show_text(cr,"E");
+    }
+    
+    cairo_set_line_width (cr, 1.5*scale*hg->fc_mag);
+    cairo_move_to(cr,
+		  0,
+		  -(gdouble)width_file*r*0.05);
+    cairo_line_to(cr, 0, 0);
+    cairo_line_to(cr,
+		  -(gdouble)width_file*r*0.05, 0);
+    
+    cairo_stroke(cr);
+    
+    if(hg->dss_flip){
+      cairo_move_to(cr,0,0);
+      cairo_text_extents (cr, "(flipped)", &extents);
+      cairo_rel_move_to(cr,-extents.width/2.,extents.height+5*scale);
+      cairo_show_text(cr,"(flipped)");
+    }
+  } // Position Angle (w/o Magnification)
+  else{    // Position Angle (w/ Magnificaion)
+    wh_small=(gdouble)(width>height?height:width)/(gdouble)hg->fc_mag;
+    pscale=(gdouble)hg->dss_arcmin_ip*60./wh_small;
+    xsec=(gdouble)width*pscale/(gdouble)hg->fc_mag/(gdouble)hg->fc_mag;
+    ysec=(gdouble)height*pscale/(gdouble)hg->fc_mag/(gdouble)hg->fc_mag;
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+    else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_BOLD);
+    
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.4*scale);
+    if((xsec>60.) && (ysec>60.)){
+      tmp=g_strdup_printf("x%d : %.2lfx%.2lf arcmin",hg->fc_mag,
+			  xsec/60.,
+			  ysec/60.);
+    }
+    else{
+      tmp=g_strdup_printf("x%d : %.1lfx%.1lf arcsec",hg->fc_mag,xsec,ysec);
+    }
+    
+    // Edge for magnification (moved to top of this function)
+    
+    cairo_text_extents (cr, tmp, &extents);
+    cairo_translate(cr,
+		    width/(gdouble)hg->fc_mag-shift_x,
+		    height/(gdouble)hg->fc_mag-shift_y);
+    cairo_move_to(cr,
+		  -extents.width-wh_small*0.02,
+		  -wh_small*0.02);
+    cairo_show_text(cr,tmp);
+    if(tmp) g_free(tmp);
+    
+    cairo_translate(cr,
+		    -width/(gdouble)hg->fc_mag,
+		    -height/(gdouble)hg->fc_mag);
+    
+    cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_BOLD);
+    
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.1*scale);
+    cairo_text_extents (cr, "N", &extents);
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+    else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
+    
+    cairo_translate(cr,
+		    extents.height+wh_small*0.07,
+		    extents.height+wh_small*0.07);
+    
+    rot_pa(hg, cr);
+    
+    cairo_move_to(cr,
+		  -extents.width/2,
+		  -wh_small*0.05);
+    cairo_show_text(cr,"N");
+    cairo_move_to(cr,
+		  -wh_small*0.05-extents.width,
+		  +extents.height/2);
+    if(hg->dss_flip){
+      cairo_show_text(cr,"W");
+    }
+    else{
+      cairo_show_text(cr,"E");
+    }
+      
+    cairo_set_line_width (cr, 1.5*scale);
+    cairo_move_to(cr,
+		  0,
+		  -wh_small*0.05);
+    cairo_line_to(cr, 0, 0);
+    cairo_line_to(cr,
+		  -wh_small*0.05, 0);
+    
+    cairo_stroke(cr);
+    
+    if(hg->dss_flip){
+      cairo_move_to(cr,0,0);
+      cairo_text_extents (cr, "(flipped)", &extents);
+      cairo_rel_move_to(cr,-extents.width/2.,extents.height+5*scale);
+      cairo_show_text(cr,"(flipped)");
+    }
+   }
+}
+  
+void draw_gs_hskymon(typHOE *hg,
+		     cairo_t *cr,
+		     gint width, gint height,
+		     gint width_file, gint height_file,
+		     gdouble scale,
+		     gdouble r)
+{
+  gdouble gs_x, gs_y, gs_d_ra, gs_d_dec, obj_d_ra, obj_d_dec, m_sep;
+  cairo_text_extents_t extents;
+  gchar *tmp;
+  gint i_list;
+  gboolean gs_flag;
+
+  translate_to_center(hg,cr,width,height,width_file,height_file,r);
+  
+  gs_flag=check_ttgs(hg->obj[hg->dss_i].def);
+  
+  obj_d_ra=ra_to_deg(hg->obj[hg->dss_i].ra);
+  obj_d_dec=dec_to_deg(hg->obj[hg->dss_i].dec);
+  
+  for(i_list=0;i_list<hg->i_max;i_list++){
+    if(check_ttgs(hg->obj[i_list].def)!=gs_flag){
+      gs_d_ra=ra_to_deg(hg->obj[i_list].ra);
+      gs_d_dec=dec_to_deg(hg->obj[i_list].dec);
+      
+      m_sep=deg_sep(gs_d_ra, gs_d_dec, obj_d_ra, obj_d_dec)*60.0;
+
+      if(hg->dss_arcmin>m_sep/2.){
+	gs_x=-(gs_d_ra-obj_d_ra)*60.*cos(gs_d_dec/180.*M_PI)
+	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	gs_y=-(gs_d_dec-obj_d_dec)*60.
+	  *((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+	if(hg->dss_flip) gs_x=-gs_x;
+    
+	cairo_set_line_width (cr, 2*scale);
+	if(!gs_flag){
+	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.5, 0.0, 1.0);
+	  else cairo_set_source_rgba(cr, 0.2, 1.0, 0.2, 1.0);
+	}
+	else{
+	  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
+	  else cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
+	}
+	cairo_arc(cr,gs_x*scale,gs_y*scale,15*scale,0,2*M_PI);
+	cairo_stroke(cr);
+	
+	cairo_select_font_face (cr, hg->fontfamily_all, 
+				CAIRO_FONT_SLANT_NORMAL,
+				CAIRO_FONT_WEIGHT_BOLD);
+	cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+	if(!gs_flag){
+	  tmp=g_strdup("Guide");
+	}
+	else{
+	  tmp=g_strdup("Target");
+	}
+	cairo_text_extents (cr,tmp, &extents);
+	cairo_move_to(cr,
+		      gs_x*scale-extents.width/2,
+		      gs_y*scale-17*scale);
+	cairo_show_text(cr, tmp);
+	if(tmp) g_free(tmp);
+      }
+    }
+  }
+}
+

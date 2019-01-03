@@ -406,37 +406,6 @@ void create_skymon_dialog(typHOE *hg)
   		     time_spin_input,
   		     (gpointer)hg);
 
-  /*
-  hg->skymon_adj_hour = (GtkAdjustment *)gtk_adjustment_new(hg->skymon_hour,
-							    0, 23,
-							    1.0, 1.0, 0);
-  spinner =  gtk_spin_button_new (hg->skymon_adj_hour, 0, 0);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox1),spinner,FALSE,FALSE,0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
-  my_signal_connect (hg->skymon_adj_hour, "value_changed",
-		     cc_get_adj,
-		     &hg->skymon_hour);
-
-  label=gtk_label_new(":");
-  gtk_box_pack_start(GTK_BOX(hbox1),label,FALSE,FALSE,1);
-
-  hg->skymon_adj_min = (GtkAdjustment *)gtk_adjustment_new(hg->skymon_min,
-							   0, 59,
-							   1.0, 1.0, 0);
-  spinner =  gtk_spin_button_new (hg->skymon_adj_min, 0, 0);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox1),spinner,FALSE,FALSE,0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
-  my_signal_connect (hg->skymon_adj_min, "value_changed",
-		     cc_get_adj,
-		     &hg->skymon_min);
-  */
-
 #ifdef USE_XMLRPC
   frame = gtk_frame_new ("ASC/Telstat");
 #else
@@ -476,7 +445,7 @@ void create_skymon_dialog(typHOE *hg)
 		    (gpointer)hg);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
-			      "Hide Objects unused in OPE file");
+			      "Hide Tip-Tilt GS / Offset Natural GS / Objects unused in OPE file");
 #endif
 
 #ifdef USE_GTK3

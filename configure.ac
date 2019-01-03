@@ -5,7 +5,7 @@ PACKAGE=hskymon
 dnl version number
 MAJOR_VERSION=3
 MINOR_VERSION=6
-MICRO_VERSION=4
+MICRO_VERSION=5
 BUILD_REVISION=0
 EXTRA_VERSION=
 VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION$EXTRA_VERSION
@@ -83,7 +83,7 @@ AC_SUBST(WINMM_LIBS)
 AC_SUBST(WINSOCK_LIBS)
 
 dnl Gtk+
-AM_PATH_GLIB_2_0(2.24.0,, AC_MSG_ERROR([glib-2.x is required]), gthread gobject)
+AM_PATH_GLIB_2_0(2.32.0,, AC_MSG_ERROR([glib-2.x is required]), gthread gobject)
 dnl GTK 3 or 2 
 AC_ARG_WITH(gtk3,
              AC_HELP_STRING([--with-gtk3],

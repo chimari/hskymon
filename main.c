@@ -106,7 +106,8 @@ gboolean ObjOverlap();
 void MergeListOPE();
 void MergeListPRM();
 void MergeListPRM2();
-gboolean check_ttgs();
+//gboolean check_ttgs();
+gint check_tgt_ngs();
 void CheckTargetDefOPE();
 gint CheckTargetDefOPE2();
 void MergeList();
@@ -3674,6 +3675,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : About This Program");
 
@@ -3816,7 +3818,7 @@ gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
 #endif
   gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
   
-  label = gtk_label_new ("Copyright (C) 2003-18 Akito Tajitsu <tajitsu@naoj.org>");
+  label = gtk_label_new ("Copyright (C) 2003-19 Akito Tajitsu <tajitsu@naoj.org>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_CENTER);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -3983,6 +3985,7 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(parent));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Help");
 
@@ -4297,6 +4300,7 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Differential Images of All-Sky Camera");
 
@@ -4711,6 +4715,7 @@ void create_disp_para_dialog (GtkWidget *widget, gpointer gdata)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Displaying All-Sky Camera Images");
 
@@ -4926,6 +4931,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for Searching Stndards");
 
@@ -5598,6 +5604,7 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : SMOKA List Query");
 
@@ -5878,6 +5885,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : HST archive List Query");
 
@@ -6177,6 +6185,7 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : ESO archive List Query");
 
@@ -6683,6 +6692,7 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Gemini archive List Query");
 
@@ -7026,6 +7036,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Change Parameters for database query");
 
@@ -9628,7 +9639,7 @@ void do_save_pdf (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  fdialog = gtk_file_chooser_dialog_new("HOE : Input PDF File to be Saved",
+  fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Input PDF File to be Saved",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
 #ifdef USE_GTK3
@@ -9715,7 +9726,7 @@ void do_save_OpeDef (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  fdialog = gtk_file_chooser_dialog_new("HOE : Ope Def File to be Saved",
+  fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Ope Def File to be Saved",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
 #ifdef USE_GTK3
@@ -9789,7 +9800,7 @@ void do_save_TextList (GtkWidget *widget, gpointer gdata)
 
   hg=(typHOE *)gdata;
 
-  fdialog = gtk_file_chooser_dialog_new("HOE : Ope Def File to be Saved",
+  fdialog = gtk_file_chooser_dialog_new("Sky Monitor : Ope Def File to be Saved",
 					GTK_WINDOW(hg->skymon_main),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
 #ifdef USE_GTK3
@@ -10692,6 +10703,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Properties");
 
@@ -12607,239 +12619,22 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     GtkListStore *store;
     GtkTreeIter iter, iter_set;	  
     GtkCellRenderer *renderer;
+    gint i_fc;
     
     store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
-    
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "STScI: DSS1 (Red)",
-		       1, FC_STSCI_DSS1R, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_STSCI_DSS1R) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "STScI: DSS1 (Blue)",
-		       1, FC_STSCI_DSS1B, 2, TRUE,-1);
-    if(hg->fc_mode_def==FC_STSCI_DSS1B) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "STScI: DSS2 (Red)",
-		       1, FC_STSCI_DSS2R, 2, TRUE,-1);
-    if(hg->fc_mode_def==FC_STSCI_DSS2R) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "STScI: DSS2 (Blue)",
-		       1, FC_STSCI_DSS2B, 2, TRUE,-1);
-    if(hg->fc_mode_def==FC_STSCI_DSS2B) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "STScI: DSS2 (IR)",
-		       1, FC_STSCI_DSS2IR, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_STSCI_DSS2IR) iter_set=iter;
 
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
-			0, NULL,
-			1, FC_SEP1,2, FALSE, -1);
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "ESO: DSS1 (Red)",
-		       1, FC_ESO_DSS1R, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_ESO_DSS1R) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "ESO: DSS2 (Red)",
-		       1, FC_ESO_DSS2R, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_ESO_DSS2R) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "ESO: DSS2 (Blue)",
-		       1, FC_ESO_DSS2B, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_ESO_DSS2B) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "ESO: DSS2 (IR)",
-		       1, FC_ESO_DSS2IR, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_ESO_DSS2IR) iter_set=iter;
-
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
-			0, NULL,
-			1, FC_SEP2,2, FALSE, -1);
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: GALEX (Far UV)",
-		       1, FC_SKYVIEW_GALEXF, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_GALEXF) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: GALEX (Near UV)",
-		       1, FC_SKYVIEW_GALEXN, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_GALEXN) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: DSS1 (Red)",
-		       1, FC_SKYVIEW_DSS1R, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_DSS1R) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: DSS1 (Blue)",
-		       1, FC_SKYVIEW_DSS1B, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_DSS1B) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: DSS2 (Red)",
-		       1, FC_SKYVIEW_DSS2R, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_DSS2R) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: DSS2 (Blue)",
-		       1, FC_SKYVIEW_DSS2B, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_DSS2B) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: DSS2 (IR)",
-		       1, FC_SKYVIEW_DSS2IR, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_DSS2IR) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (u)",
-		       1, FC_SKYVIEW_SDSSU, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_SDSSU) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (g)",
-		       1, FC_SKYVIEW_SDSSG, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_SDSSG) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (r)",
-		       1, FC_SKYVIEW_SDSSR, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_SDSSR) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (i)",
-		       1, FC_SKYVIEW_SDSSI, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_SDSSI) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (z)",
-		       1, FC_SKYVIEW_SDSSZ, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_SDSSZ) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (J)",
-		       1, FC_SKYVIEW_2MASSJ, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_2MASSJ) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (H)",
-		       1, FC_SKYVIEW_2MASSH, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_2MASSH) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (K)",
-		       1, FC_SKYVIEW_2MASSK, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_2MASSK) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: WISE (3.4um)",
-		       1, FC_SKYVIEW_WISE34, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_WISE34) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: WISE (4.6um)",
-		       1, FC_SKYVIEW_WISE46, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_WISE46) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: WISE (12um)",
-		       1, FC_SKYVIEW_WISE12, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_WISE12) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: WISE (22um)",
-		       1, FC_SKYVIEW_WISE22, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_WISE22) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI N60",
-		       1, FC_SKYVIEW_AKARIN60, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_AKARIN60) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI WIDE-S",
-		       1, FC_SKYVIEW_AKARIWS, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_AKARIWS) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI WIDE-L",
-		       1, FC_SKYVIEW_AKARIWL, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_AKARIWL) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: AKARI N160",
-		       1, FC_SKYVIEW_AKARIN160, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_AKARIN160) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: NVSS (1.4GHz)",
-		       1, FC_SKYVIEW_NVSS, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_NVSS) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SkyView: RGB composite",
-		       1, FC_SKYVIEW_RGB, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SKYVIEW_RGB) iter_set=iter;
-	
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
-			0, NULL,
-			1, FC_SEP3,2, FALSE, -1);
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SDSS DR7 (color)",
-		       1, FC_SDSS, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SDSS) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SDSS DR14 (color)",
-		       1, FC_SDSS13, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_SDSS13) iter_set=iter;
-	
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
-			0, NULL,
-			1, FC_SEP4,2, FALSE, -1);
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (color)",
-		       1, FC_PANCOL, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_PANCOL) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (g)",
-		       1, FC_PANG, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_PANG) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (r)",
-		       1, FC_PANR, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_PANR) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (i)",
-		       1, FC_PANI, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_PANI) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (z)",
-		       1, FC_PANZ, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_PANZ) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PanSTARRS-1 (y)",
-		       1, FC_PANY, 2, TRUE, -1);
-    if(hg->fc_mode_def==FC_PANY) iter_set=iter;
-	
+    for(i_fc=0;i_fc<NUM_FC;i_fc++){
+      gtk_list_store_append(store, &iter);
+      if(FC_name[i_fc]){
+	gtk_list_store_set(store, &iter, 0, FC_name[i_fc],
+			   1, i_fc, 2, TRUE, -1);
+	if(hg->fc_mode_def==i_fc) iter_set=iter;
+      }
+      else{
+	gtk_list_store_set(store, &iter, 0, NULL,
+			   1, i_fc, 2, FALSE, -1);
+      }
+    }
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 #ifdef USE_GTK3
@@ -17063,26 +16858,38 @@ void init_obj(OBJpara *obj){
 
 
 gboolean check_ttgs(gchar *def){
-  gchar *ep;
-  ep=def+strlen(def)-strlen("_TT");
-
-  if(g_ascii_strncasecmp(ep,"_TT",strlen("_TT"))==0){
+  if(g_ascii_strncasecmp(def,"TTGS_",strlen("TTGS_"))==0){
     return(TRUE);
   }
+  else if(g_ascii_strncasecmp(def,"NGS_",strlen("NGS_"))==0){
+    return(TRUE);
+  }
+  return(FALSE);
+}
 
-  ep=def+strlen(def)-strlen("_TT")-1;
-  if(g_ascii_strncasecmp(ep,"_TT",strlen("_TT"))==0){
-    if(isdigit(def[strlen(def)-1])){
-      return(TRUE);
+
+gint check_tgt_ngs(typHOE *hg, gchar *def){
+  gint i_list;
+  gchar *cp, *tp, *tgt=NULL;
+
+  if(g_ascii_strncasecmp(def,"NGS_",strlen("NGS_"))==0){
+    cp=def+strlen("NGS_");
+    tgt=g_strdup_printf("TGT_%s", cp);
+    for(i_list=0; i_list<hg->i_max; i_list++){
+      if(g_ascii_strcasecmp(tgt, hg->obj[i_list].def)==0){
+	g_free(tgt);
+	return(i_list);
+      }
     }
   }
 
-  return(FALSE);
+  if(tgt) g_free(tgt);
+  return(-1);
 }
 
 void CheckTargetDefOPE(typHOE *hg, gint i0){
   FILE *fp;
-  int i_list=0;
+  int i_list=0, i_ret=-1;
   gchar *tmp_char;
   gchar *buf;
   gchar *BUF=NULL, *buf0=NULL;
@@ -17218,6 +17025,11 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
 		    hg->obj[i_list].check_used=TRUE;
 		    hg->obj[i_list].check_std=FALSE;
 		  }
+		}
+		else if((i_ret=check_tgt_ngs(hg, hg->obj[i_list].def))>=0){
+		  hg->obj[i_ret].check_disp=TRUE;
+		  hg->obj[i_ret].check_used=TRUE;
+		  hg->obj[i_ret].check_std=FALSE;
 		}
 	      }
 	    }
@@ -19742,7 +19554,7 @@ void Export_OpeDef(typHOE *hg){
   }
 
   for(i_list=0;i_list<hg->i_max;i_list++){
-    if(!hg->obj[i_list].def) hg->obj[i_list].def=make_tgt(hg->obj[i_list].name);
+    if(!hg->obj[i_list].def) hg->obj[i_list].def=make_tgt(hg->obj[i_list].name, "TGT_");
 
     fprintf(fp,"%s=OBJECT=\"%s\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf\n",
 	    hg->obj[i_list].def,

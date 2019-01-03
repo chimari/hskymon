@@ -1,3 +1,11 @@
+2019.01.02 ver3.6.5 - TTGS/Offset NGS for AO188 obs. are hidden by "-" button
+	              skymon GUI.
+                    - Added modal window operations.
+                    - Revised FC mode selecter.
+                    - Revised FC drawing codes.
+                    - Guide Stra drawing on FC for IRCS.
+	              (OPE files written by hoe-4.0.0 or later are required.)
+
 2018.11.14 ver3.6.4 - Changed lower limit for Telescope Velocity
 	              (0.1 --> 0.01).
 
