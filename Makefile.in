@@ -116,7 +116,7 @@ am_hskymon_OBJECTS = main.$(OBJEXT) calcpa.$(OBJEXT) fc.$(OBJEXT) \
 	dynamical_time.$(OBJEXT) http-client.$(OBJEXT) \
 	configfile.$(OBJEXT) skymon.$(OBJEXT) treeview.$(OBJEXT) \
 	telstat.$(OBJEXT) remoteObjects.$(OBJEXT) votable.$(OBJEXT) \
-	json_parse.$(OBJEXT) resources.$(OBJEXT)
+	json_parse.$(OBJEXT) io_gui.$(OBJEXT) resources.$(OBJEXT)
 hskymon_OBJECTS = $(am_hskymon_OBJECTS)
 hskymon_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
@@ -441,7 +441,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = . libnova std_data debian sample icons
 hskymon_SOURCES = \
-	 main.c calcpa.c fc.c fc_output.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c json_parse.c resources.c votable.h remoteObjects.h configfile.h esostd.h ssl.h gen2.h post.h post_sdss.h post_lamost.h post_kepler.h post_smoka.h post_hst.h post_eso.h get_gemini.h resources.h
+	 main.c calcpa.c fc.c fc_output.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c json_parse.c io_gui.c resources.c votable.h remoteObjects.h configfile.h esostd.h ssl.h gen2.h post.h post_sdss.h post_lamost.h post_kepler.h post_smoka.h post_hst.h post_eso.h get_gemini.h io_gui.h resources.h
 
 CLEANFILES = *~ libnova/*~ std_data/*~ debian/*~ sample/*~ icons/*~ \
 	$(BUILT_SOURCES)
@@ -595,6 +595,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fc_output.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http-client.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/io_gui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/json_parse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/julian_day.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jupiter.Po@am__quote@

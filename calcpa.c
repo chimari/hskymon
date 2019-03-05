@@ -358,7 +358,7 @@ void create_plot_dialog(typHOE *hg)
   button=gtkut_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
   my_signal_connect (button, "clicked",
-		     G_CALLBACK (do_save_pdf), (gpointer)hg);
+		     G_CALLBACK (do_save_plot_pdf), (gpointer)hg);
   gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,

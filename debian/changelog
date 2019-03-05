@@ -1,3 +1,9 @@
+hskymon (3.7.0ubuntu) bionic; urgency=medium
+
+  * Create io_gui.c/h to open/save files.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Tue, 05 Mar 2019 12:08:46 -1000
+
 hskymon (3.6.5ubuntu) bionic; urgency=medium
 
   * GS drawing on FC for IRCS.

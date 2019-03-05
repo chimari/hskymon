@@ -61,6 +61,7 @@
 #include "post_eso.h"
 #include "get_gemini.h"
 
+#include "io_gui.h"
 
 
 #ifdef USE_WIN32
@@ -2298,8 +2299,6 @@ void get_current_obs_time();
 void add_day();
 void do_save_FCDB_List();
 void do_save_TRDB_CSV();
-void do_save_pdf();
-void do_save_fc_pdf();
 void do_quit();
 void do_plot();
 void do_update_azel();
@@ -2314,6 +2313,22 @@ gint update_telstat();
 void clear_trdb();
 void init_obj();
 gboolean check_ttgs();
+gchar *cut_spc();
+gboolean is_number();
+gchar* to_utf8();
+gchar* to_locale();
+gchar* check_ext();
+gchar* make_head();
+gchar *make_filehead();
+void update_c_label();
+gboolean ObjOverlap();
+void CheckTargetDefOPE();
+gint CheckTargetDefOPE2();
+gchar *trdb_csv_name();
+gchar *fcdb_csv_name();
+void ReadTRDB();
+void WriteTRDB();
+
 
 //adc.c
 void do_adc();
@@ -2357,8 +2372,7 @@ void fcdb_make_tree();
 void trdb_make_tree();
 
 //fc_output.c
-void Export_FCDB_List();
-void Export_TRDB_List();
+void Export_FCDB_CSV();
 void Export_TRDB_CSV();
 
 //http-client.c

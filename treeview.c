@@ -759,7 +759,7 @@ void tree_update_azel_item(typHOE *hg,
 			   GtkTreeIter iter, 
 			   gint i_list)
 {
-  gchar tmp[12];
+  gchar *tmp;
   gint i;
   gdouble s_rt=-1;
 
@@ -776,27 +776,28 @@ void tree_update_azel_item(typHOE *hg,
   if(hg->obj[i_list].ope<0){
     switch(hg->obj[i_list].ope){
     case ADDTYPE_STD:
-      sprintf(tmp,"Std");
+      tmp=g_strdup("Std");
       break;
 
     case ADDTYPE_TTGS:
-      sprintf(tmp,"TTGS");
+      tmp=g_strdup("TTGS");
       break;
 
     default:
-      sprintf(tmp,"add");
+      tmp=g_strdup("add");
       break;
     }
   }
   else if(hg->obj[i_list].ope==MAX_ROPE-1){
-    sprintf(tmp," p-%3d",hg->obj[i_list].ope_i+1);
+    tmp=g_strdup_printf(" p-%3d",hg->obj[i_list].ope_i+1);
   }
   else{
-    sprintf(tmp,"%2d-%3d",hg->obj[i_list].ope+1, hg->obj[i_list].ope_i+1);
+    tmp=g_strdup_printf("%2d-%3d",hg->obj[i_list].ope+1, hg->obj[i_list].ope_i+1);
   }
-  tmp[strlen(tmp)] = '\0';
   gtk_list_store_set (GTK_LIST_STORE(model), &iter,
    		      COLUMN_OBJ_OPENUM, tmp, -1);
+
+  g_free(tmp);
 
   // Def
   if(hg->show_def){
@@ -7017,7 +7018,7 @@ do_editable_cells (typHOE *hg)
 #endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
-		       G_CALLBACK (do_save_FCDB_List), (gpointer)hg);
+		       G_CALLBACK (do_save_FCDB_csv), (gpointer)hg);
 #ifdef __GTK_TOOLTIP_H__
     gtk_widget_set_tooltip_text(button,"Save queried List to CSV file");
 #endif
@@ -7130,7 +7131,7 @@ do_editable_cells (typHOE *hg)
 #endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
-    		       G_CALLBACK (do_save_TRDB_CSV), (gpointer)hg);
+    		       G_CALLBACK (do_save_TRDB_csv), (gpointer)hg);
 #ifdef __GTK_TOOLTIP_H__
     gtk_widget_set_tooltip_text(button,"Save queried List to CSV file");
 #endif

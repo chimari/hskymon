@@ -341,7 +341,7 @@ void fcdb_out_eso(typHOE *hg, FILE *fp){
 }
 
 
-void Export_FCDB_List(typHOE *hg){
+void Export_FCDB_CSV(typHOE *hg){
   FILE *fp;
 
   if(hg->fcdb_i_max<=0) return;

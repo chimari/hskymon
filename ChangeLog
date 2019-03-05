@@ -1,3 +1,5 @@
+2019.03.05 ver3.7.0 - Created io_gui.c/h for Open/Save files.
+
 2019.01.02 ver3.6.5 - TTGS/Offset NGS for AO188 obs. are hidden by "-" button
 	              skymon GUI.
                     - Added modal window operations.

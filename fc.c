@@ -161,7 +161,7 @@ void fc_item2 (typHOE *hg)
     }
   }
 #endif
-
+  
   if(hg->fc_mode==FC_SKYVIEW_RGB){
     GdkPixbuf *pixbuf_fc_RGB[3];
     gint i;
@@ -5612,7 +5612,7 @@ void trdb_tree_update_azel_item(typHOE *hg,
 				GtkTreeIter iter, 
 				gint i_list)
 {
-  gchar tmp[12];
+  gchar *tmp;
 
   // Num/Name
   gtk_list_store_set (GTK_LIST_STORE(model), &iter,
@@ -5628,25 +5628,24 @@ void trdb_tree_update_azel_item(typHOE *hg,
   if(hg->obj[i_list].ope<0){
     switch(hg->obj[i_list].ope){
     case ADDTYPE_STD:
-      sprintf(tmp,"Std");
+      tmp=g_strdup("Std");
       break;
 
     case ADDTYPE_TTGS:
-      sprintf(tmp,"TTGS");
+      tmp=g_strdup("TTGS");
       break;
 
     default:
-      sprintf(tmp,"add");
+      tmp=g_strdup("add");
       break;
     }
   }
   else if(hg->obj[i_list].ope==MAX_ROPE-1){
-    sprintf(tmp," p-%3d",hg->obj[i_list].ope_i+1);
+    tmp=g_strdup_printf(" p-%3d",hg->obj[i_list].ope_i+1);
   }
   else{
-    sprintf(tmp,"%2d-%3d",hg->obj[i_list].ope+1,hg->obj[i_list].ope_i+1);
+    tmp=g_strdup_printf("%2d-%3d",hg->obj[i_list].ope+1,hg->obj[i_list].ope_i+1);
   }
-  tmp[strlen(tmp)] = '\0';
   gtk_list_store_set (GTK_LIST_STORE(model), &iter,
    		      COLUMN_TRDB_OPENUM, tmp, -1);
 
@@ -5654,6 +5653,8 @@ void trdb_tree_update_azel_item(typHOE *hg,
   gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 		     COLUMN_TRDB_DATA, 
 		     hg->obj[i_list].trdb_str, -1);
+
+  g_free(tmp);
 }
 
 
@@ -6662,7 +6663,7 @@ void draw_fcdb2(typHOE *hg,
       }
       else{
 	cairo_set_source_rgba(cr, 1.0, 1.0, 0.2, 1.0);
-	}
+      }
     }
     cairo_set_line_width (cr, 2*scale);
     for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
@@ -6672,7 +6673,7 @@ void draw_fcdb2(typHOE *hg,
 	    gdouble rad=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*hsc_sat_radius(hg->fcdb[i_list].v)/30.;
 	    
 	    draw_hsc_sat(cr, rad, 
-			   hg->fcdb[i_list].x, hg->fcdb[i_list].y,
+			 hg->fcdb[i_list].x, hg->fcdb[i_list].y,
 			 hg->dss_pa, hg->dss_flip);
 	  }
 	}

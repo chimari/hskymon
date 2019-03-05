@@ -374,7 +374,7 @@ fi &&
 if test "$ENABLE_AUTOMAKE" = "yes"; then
   #echo "Running automake --add-missing $automake_flags..." &&
   echo "実行中... automake --add-missing $automake_flags..." &&
-  automake --add-missing $automake_flags
+  automake --add-missing -c $automake_flags
 fi &&
 # configure の実行。autogen.sh スクリプトの引数がそのまま渡される。
 # config.cache があるときは削除する。
