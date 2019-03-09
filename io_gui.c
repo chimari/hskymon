@@ -215,17 +215,12 @@ void hskymon_OpenFile(typHOE *hg, guint mode){
     tgt_file=&hg->filename_trdb_save;
     break;
     
+  case OPEN_FILE_LGS_PAM:
+    tmp=g_strdup("Sky Monitor : Select a LGS Collision PAM file");
+    tgt_file=&hg->filename_lgs_pam;
+    break;
+    
     /*
-  case OPEN_FILE_UPLOAD_OPE:
-    tmp=g_strdup("HOE : Select an OPE File to be uploaded to the summit system");
-    tgt_file=&hg->filename_read;
-    break;
-
-  case OPEN_FILE_EDIT_OPE:
-    tmp=g_strdup("HOE : Select an OPE File to edited");
-    tgt_file=&hg->filename_write;
-    break;
-
   case OPEN_FILE_READ_HOE:
     tmp=g_strdup("HOE : Select a Config file (.hoe)");
     tgt_file=&hg->filename_hoe;
@@ -310,6 +305,12 @@ void hskymon_OpenFile(typHOE *hg, guint mode){
 			       NULL);
     break;
     
+  case OPEN_FILE_LGS_PAM:
+    my_file_chooser_add_filter(fdialog,"PAM File", 
+			       "PAM*." LIST3_EXTENSION,
+			       NULL);
+    break;
+    
     /*
       case OPEN_FILE_READ_HOE:
       case OPEN_FILE_MERGE_HOE:
@@ -376,7 +377,6 @@ void hskymon_OpenFile(typHOE *hg, guint mode){
 	hg->filehead=make_head(dest_file);
 	i_base=hg->i_max;
 	MergeListOPE(hg, hg->ope_max);
-	MergeListOPE(hg);
 	break;
 
       case OPEN_FILE_MERGE_PRM:
@@ -404,6 +404,10 @@ void hskymon_OpenFile(typHOE *hg, guint mode){
 	fcdb_type_tmp=hg->fcdb_type;
 	hg->fcdb_type=hg->trdb_used;
 	make_trdb_label(hg);
+	break;
+	
+      case OPEN_FILE_LGS_PAM:
+	ReadLGSPAM(hg);
 	break;
 	
 	/*
@@ -513,30 +517,8 @@ void hskymon_OpenFile(typHOE *hg, guint mode){
       break;
 	
 	/*
-      case OPEN_FILE_UPLOAD_OPE:
-      case OPEN_FILE_EDIT_OPE:
-	break;
-
       case OPEN_FILE_READ_HOE:
       case OPEN_FILE_MERGE_HOE:
-	if(flagSkymon){
-	  refresh_skymon(hg->skymon_dw,(gpointer)hg);
-	  skymon_set_and_draw(NULL, (gpointer)hg);
-	}
-	break;
-
-      case OPEN_FILE_READ_JPL:
-	//// Current Condition
-	if(hg->skymon_mode==SKYMON_SET){
-	  calcpa2_skymon(hg);
-	}
-	else{
-	  calcpa2_main(hg);
-	}
-	
-	make_obj_tree(hg);
-	trdb_make_tree(hg);
-
 	if(flagSkymon){
 	  refresh_skymon(hg->skymon_dw,(gpointer)hg);
 	  skymon_set_and_draw(NULL, (gpointer)hg);
@@ -1176,6 +1158,8 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 
 	  if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	    if(!ObjOverlap(hg,i_list)){
+	      init_obj(&hg->obj[i_list], hg);
+	      
 	      if(hg->obj[i_list].note) g_free(hg->obj[i_list].note);
 	      hg->obj[i_list].note=g_path_get_basename(hg->filename_ope);
 	      
@@ -1558,9 +1542,11 @@ void MergeListPRM(typHOE *hg){
 	  tmp_def=g_strndup(buf,strcspn(buf," =\n"));
 
 	  for(i_list=0;i_list<hg->i_max;i_list++){
-	    if(g_ascii_strcasecmp(tmp_def,hg->obj[i_list].def)==0){
-	      newdef=FALSE;
-	      break;
+	    if(hg->obj[i_list].def){
+	      if(g_ascii_strcasecmp(tmp_def,hg->obj[i_list].def)==0){
+		newdef=FALSE;
+		break;
+	      }
 	    }
 	  }
 	  
@@ -1769,9 +1755,11 @@ void MergeListPRM2(typHOE *hg){
 	  tmp_def=g_strndup(buf,strcspn(buf," =\n"));
 
 	  for(i_list=0;i_list<hg->i_max;i_list++){
-	    if(g_ascii_strcasecmp(tmp_def,hg->obj[i_list].def)==0){
-	      newdef=FALSE;
-	      break;
+	    if(hg->obj[i_list].def){
+	      if(g_ascii_strcasecmp(tmp_def,hg->obj[i_list].def)==0){
+		newdef=FALSE;
+		break;
+	      }
 	    }
 	  }
 
@@ -3217,6 +3205,7 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
   gchar *tmp;
   gchar **tgt_file;
   gchar *cpp, *basename0, *basename1;
+  GtkFileChooserAction caction;
 
   switch(mode){
   case SAVE_FILE_PDF_PLOT:	
@@ -3227,11 +3216,25 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
     pw=hg->fc_main;
     break;
     
+  case SAVE_FILE_PAM_CSV:
+    pw=hg->pam_main;
+    break;
+    
   default:
     pw=hg->skymon_main;
     break;
   }
   
+  switch(mode){
+  case SAVE_FILE_PAM_ALL:
+    caction=GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
+    break;
+
+  default:
+    caction=GTK_FILE_CHOOSER_ACTION_SAVE;
+    break;
+  }
+
   switch(mode){
   case SAVE_FILE_PDF_PLOT:	
   case SAVE_FILE_PDF_FC:	    
@@ -3263,14 +3266,24 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
     break;
     
   case SAVE_FILE_CONV_JPL:
-    tmp=g_strdup("HOE : Input TSC Tracking File to be saved");
+    tmp=g_strdup("Sky Monitor : Input TSC Tracking File to be saved");
     tgt_file=&hg->filename_tscconv;
+    break;
+
+  case SAVE_FILE_PAM_CSV:
+    tmp=g_strdup("Sky Monitor : CSV File to be Saved (LGS Collision / PAM)");
+    tgt_file=&hg->filename_pamout;
+    break;
+
+  case SAVE_FILE_PAM_ALL:
+    tmp=g_strdup("Sky Monitor : Input directory to save CSV files for all targets");
+    tgt_file=&hg->dirname_pamout;
     break;
   }
 
   fdialog = gtk_file_chooser_dialog_new(tmp,
 					GTK_WINDOW(pw),
-					GTK_FILE_CHOOSER_ACTION_SAVE,
+					caction,
 #ifdef USE_GTK3
 					"_Cancel",GTK_RESPONSE_CANCEL,
 					"_Save", GTK_RESPONSE_ACCEPT,
@@ -3324,7 +3337,16 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
     *tgt_file=trdb_csv_name(hg, CSV_EXTENSION);
     break;
     
-  default:
+  case SAVE_FILE_PAM_CSV:
+    if(*tgt_file) g_free(*tgt_file);
+    *tgt_file=pam_csv_name(hg, hg->pam_obj_i);
+    break;
+
+  case SAVE_FILE_PAM_ALL:
+    if(hg->filehead){
+      if(*tgt_file) g_free(*tgt_file);
+      *tgt_file=g_path_get_dirname(hg->filehead);
+    }
     break;
   }
   
@@ -3375,6 +3397,7 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
     
   case SAVE_FILE_FCDB_CSV:
   case SAVE_FILE_TRDB_CSV:
+  case SAVE_FILE_PAM_CSV:
     my_file_chooser_add_filter(fdialog,"CSV File",
 			       "*." CSV_EXTENSION,NULL);
     break;
@@ -3420,6 +3443,7 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
 
     case SAVE_FILE_FCDB_CSV:
     case SAVE_FILE_TRDB_CSV:
+    case SAVE_FILE_PAM_CSV:
       dest_file=check_ext(pw, dest_file,CSV_EXTENSION);
       break;
 
@@ -3427,64 +3451,127 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
       break;
     }
 
-    if(access(dest_file,F_OK)==0){
-      ret=ow_dialog(hg, dest_file, pw);
-    }
-
-    if(ret){
-      if((fp_test=fopen(dest_file,"w"))!=NULL){
-	fclose(fp_test);
+    switch(mode){
+    case SAVE_FILE_PAM_ALL:
+      {
+	gint i_list;
+	gint i_saved=0;
+	gboolean ow_checked=FALSE;
+	gchar *tmp_fname=NULL;
 	
 	if(*tgt_file) g_free(*tgt_file);
 	*tgt_file=g_strdup(dest_file);
-	
-	switch(mode){
-	case SAVE_FILE_PDF_PLOT:	
-	  pdf_plot(hg);
-	  break;
-	  
-	case SAVE_FILE_PDF_FC:
-	  pdf_fc(hg);
-	  break;
-	  
-	case SAVE_FILE_TXT_LIST:
-	  Export_TextList(hg);
-	  break;
-	  
-	case SAVE_FILE_OPE_DEF:
-	  Export_OpeDef(hg);
-	  break;
-	  
-	case SAVE_FILE_TRDB:
-	  WriteTRDB(hg);
-	  break;
-	  
-	case SAVE_FILE_FCDB_CSV:
-	  Export_FCDB_CSV(hg);
-	  break;
 
-	case SAVE_FILE_TRDB_CSV:	
-	  Export_TRDB_CSV(hg);
-	  break;
+	for(i_list=0;i_list<hg->i_max;i_list++){
+	  if(hg->obj[i_list].pam>=0){
+	    if(hg->filename_pamout) g_free(hg->filename_pamout);
+	    tmp_fname=pam_csv_name(hg, i_list);
+	    hg->filename_pamout=g_strconcat(*tgt_file,
+					    G_DIR_SEPARATOR_S,
+					    tmp_fname,
+					    NULL);
+	    if(tmp_fname) g_free(tmp_fname);
+	    
+	    if((!ow_checked) && (access(hg->filename_pamout,F_OK)==0)){
+	      ret=ow_dialog(hg, hg->filename_pamout, pw);
+	      ow_checked=TRUE;
+	    }
 
-	case SAVE_FILE_CONV_JPL:
-	  ConvJPL(hg);
-	  break;
+	    if(ret){
+	      Export_PAM_CSV(hg, i_list);
+	      i_saved++;
+	    }
+	  }
+	}
+
+	if(i_saved>0){
+	  tmp_fname=g_strdup_printf("Created %d CSV files.", i_saved);
+	  popup_message(pw, 
+#ifdef USE_GTK3
+			"dialog-information", 
+#else
+			GTK_STOCK_DIALOG_INFO,
+#endif
+			POPUP_TIMEOUT,
+			tmp_fname,
+			NULL);
+	  g_free(tmp_fname);
+	}
+	else{
+	  popup_message(pw, 
+#ifdef USE_GTK3
+			"dialog-warning", 
+#else
+			GTK_STOCK_DIALOG_WARNING,
+#endif
+			POPUP_TIMEOUT,
+			"Warning: No CSV files have been saved.",
+			NULL);
 	}
       }
-      else{
-	popup_message(pw, 
-#ifdef USE_GTK3
-		      "dialog-warning", 
-#else
-		      GTK_STOCK_DIALOG_WARNING,
-#endif
-		      POPUP_TIMEOUT,
-		      "Error: File cannot be opened.",
-		      " ",
-		      fname,
-		      NULL);
+      break;
+      
+    default:
+      if(access(dest_file,F_OK)==0){
+	ret=ow_dialog(hg, dest_file, pw);
       }
+      
+      if(ret){
+	if((fp_test=fopen(dest_file,"w"))!=NULL){
+	  fclose(fp_test);
+	  
+	  if(*tgt_file) g_free(*tgt_file);
+	  *tgt_file=g_strdup(dest_file);
+	  
+	  switch(mode){
+	  case SAVE_FILE_PDF_PLOT:	
+	    pdf_plot(hg);
+	    break;
+	    
+	  case SAVE_FILE_PDF_FC:
+	    pdf_fc(hg);
+	    break;
+	    
+	  case SAVE_FILE_TXT_LIST:
+	    Export_TextList(hg);
+	    break;
+	    
+	  case SAVE_FILE_OPE_DEF:
+	    Export_OpeDef(hg);
+	    break;
+	    
+	  case SAVE_FILE_TRDB:
+	    WriteTRDB(hg);
+	    break;
+	    
+	  case SAVE_FILE_FCDB_CSV:
+	    Export_FCDB_CSV(hg);
+	    break;
+	    
+	  case SAVE_FILE_TRDB_CSV:	
+	    Export_TRDB_CSV(hg);
+	    break;
+	    
+	  case SAVE_FILE_CONV_JPL:
+	    ConvJPL(hg);
+	    break;
+	  }
+	}
+	else{
+	  popup_message(pw, 
+#ifdef USE_GTK3
+			"dialog-warning", 
+#else
+			GTK_STOCK_DIALOG_WARNING,
+#endif
+			POPUP_TIMEOUT,
+			"Error: File cannot be opened.",
+			" ",
+			fname,
+		      NULL);
+	}
+      }
+      break;
     }
 
     g_free(dest_file);
@@ -3559,6 +3646,31 @@ void do_save_TRDB_csv (GtkWidget *widget, gpointer gdata)
   hskymon_SaveFile(hg, SAVE_FILE_TRDB_CSV);
 }
 
+
+
+////////////////// PAM
+void do_save_pam_csv (GtkWidget *widget, gpointer gdata)
+{
+  typHOE *hg;
+  hg=(typHOE *)gdata;
+
+  if(hg->lgs_pam_i_max<=0) return;
+  if(hg->obj[hg->pam_obj_i].pam<0) return;
+
+  hskymon_SaveFile(hg, SAVE_FILE_PAM_CSV);
+}
+
+
+void do_save_pam_all (GtkWidget *widget, gpointer gdata)
+{
+  typHOE *hg;
+  hg=(typHOE *)gdata;
+
+  if(hg->i_max<=0) return;
+  if(hg->lgs_pam_i_max<=0) return;
+
+  hskymon_SaveFile(hg, SAVE_FILE_PAM_ALL);
+}
 
 
 void Export_TextList(typHOE *hg){

@@ -25,7 +25,7 @@ enum
     OPEN_FILE_CONV_JPL,
     OPEN_FILE_TRDB,
     //OPEN_FILE_MERGE_HOE,
-    //OPEN_FILE_LGS_PAM,
+    OPEN_FILE_LGS_PAM,
     NUM_OPEN_FILE
 };
 
@@ -66,6 +66,8 @@ enum
   SAVE_FILE_FCDB_CSV,
   SAVE_FILE_TRDB_CSV,
   SAVE_FILE_CONV_JPL,
+  SAVE_FILE_PAM_CSV,
+  SAVE_FILE_PAM_ALL,
   NUM_SAVE_FILE
 };
 
@@ -79,6 +81,9 @@ void do_save_ope_def();
 void do_save_TRDB();
 void do_save_FCDB_csv();
 void do_save_TRDB_csv();
+///////// PAM
+void do_save_pam_csv();
+void do_save_pam_all();
 
 void Export_TextList();
 void Export_OpeDef();

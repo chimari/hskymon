@@ -28,8 +28,9 @@ gboolean expose_plot_cairo();
 #endif
 gboolean configure_plot_cb();
 gboolean resize_plot_cairo();
-static gboolean refresh_plot();
-static void do_plot_moon();
+gboolean refresh_plot();
+void do_plot_moon();
+void do_plot_pam();
 gboolean update_plot();
 
 void cc_get_plot_mode();
@@ -52,6 +53,8 @@ gdouble get_moon_sep();
 
 gdouble get_meridian_JD();
 gdouble get_julian_from_local_date();
+
+gboolean plot_button_signal();
 
 #ifdef USE_GTK3
 GdkPixbuf *pixbuf_plot=NULL;
@@ -198,6 +201,12 @@ void get_plot_time_midnight(typHOE *hg, gdouble delta_hst){
     				    (long)hg->obs_timezone*60)+1.0;
   }
 
+  if(hg->plot_zoom!=0){
+    if(hg->plot_zoom>0){
+      JD+=14.0/24.0*hg->plot_zoomr;
+    }
+  }
+  
   hg->plot_jd0 = JD - delta_hst*0.5/24;
   hg->plot_jd1 = JD + delta_hst*0.5/24;
 }
@@ -224,7 +233,7 @@ void get_plot_time_meridian(typHOE *hg, gdouble delta_hst){
 void get_plot_time(typHOE *hg){
   switch(hg->plot_center){
   case PLOT_CENTER_MIDNIGHT:
-    get_plot_time_midnight(hg, 12.0*(gdouble)(10-hg->plot_zoom)/10.);
+    get_plot_time_midnight(hg, 14.0*(gdouble)(10-hg->plot_zoom)/10.);
     break;
 
   case PLOT_CENTER_CURRENT:
@@ -241,7 +250,7 @@ void get_plot_time(typHOE *hg){
 void create_plot_dialog(typHOE *hg)
 {
   GtkWidget *vbox;
-  GtkWidget *hbox, *hbox1;
+  GtkWidget *hbox, *hbox1, *ebox;
   GtkWidget *frame, *check, *label, *button;
   GSList *group=NULL;
   GtkAdjustment *adj;
@@ -391,6 +400,21 @@ void create_plot_dialog(typHOE *hg)
   gtk_widget_set_tooltip_text(button,
 			      "Plot Moon");
 #endif
+
+  icon = gdk_pixbuf_new_from_resource ("/icons/lgs_icon.png", NULL);
+  button=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
+  g_object_unref(icon);
+  gtk_container_set_border_width (GTK_CONTAINER (button), 0);
+  gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->plot_pam);
+  my_signal_connect(button,"toggled",
+		    G_CALLBACK (do_plot_pam), 
+		    (gpointer)hg);
+#ifdef __GTK_TOOLTIP_H__
+  gtk_widget_set_tooltip_text(button,
+			      "Overlay LGS Collisions");
+#endif
+
   
   frame = gtk_frame_new ("Plot");
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
@@ -478,6 +502,8 @@ void create_plot_dialog(typHOE *hg)
   }
 
   // Drawing Area
+  ebox=gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(vbox), ebox, TRUE, TRUE, 0);
   hg->plot_dw = gtk_drawing_area_new();
 
   gtk_widget_set_events(hg->plot_dw, GDK_SCROLL_MASK |
@@ -505,9 +531,15 @@ void create_plot_dialog(typHOE *hg)
 		    (gpointer)hg);
 
   gtk_widget_set_size_request (hg->plot_dw, (gint)(hg->sz_plot*1.5), hg->sz_plot);
-  gtk_box_pack_start(GTK_BOX(vbox), hg->plot_dw, TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(ebox), hg->plot_dw);
   gtk_widget_set_app_paintable(hg->plot_dw, TRUE);
   gtk_widget_show(hg->plot_dw);
+
+  gtk_widget_set_events(ebox, GDK_BUTTON_PRESS_MASK);
+  my_signal_connect(ebox, 
+		    "button-press-event", 
+		    plot_button_signal,
+		    (gpointer)hg);
 
   gtk_widget_show_all(hg->plot_main);
 
@@ -522,6 +554,75 @@ void create_plot_dialog(typHOE *hg)
 }
 
 
+gboolean plot_button_signal(GtkWidget *widget, 
+			    GdkEventButton *event, 
+			    gpointer userdata){
+  typHOE *hg;
+  gint x,y;
+  gint i_slot, i_slot_max, i_sel=-1;
+  gint r_min=15, r;
+
+  hg=(typHOE *)userdata;
+
+  if (!hg->plot_pam) return(FALSE);
+  if (hg->lgs_pam_i_max<=0) return(FALSE);
+
+    if ( event->button==1 ) {
+#ifdef USE_GTK3
+    gdk_window_get_device_position(gtk_widget_get_window(widget),
+				   event->device, &x,&y,NULL);
+#else
+    gdk_window_get_pointer(gtk_widget_get_window(widget),&x,&y,NULL);
+#endif
+
+    i_slot_max=hg->lgs_pam[hg->obj[hg->plot_i].pam].line;
+    
+    for(i_slot=0;i_slot<i_slot_max;i_slot++){
+      
+      if(hg->pam_x[i_slot]>0){
+	r=abs(hg->pam_x[i_slot]-x);
+	if(r<r_min){
+	  i_sel=i_slot;
+	  r_min=r;
+	}
+      }
+    }
+
+    hg->pam_slot_i=i_sel;
+      
+    if(i_sel>=0){
+      refresh_plot(NULL, (gpointer)hg);
+
+      if(!flagPAM){
+	create_pam_dialog(hg);
+      }
+	 
+      {
+	GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->pam_tree));
+	GtkTreePath *path;
+	GtkTreeIter  iter;
+	  
+	path=gtk_tree_path_new_first();
+	
+	for(i_slot=0;i_slot<i_slot_max;i_slot++){
+	  if(i_slot==hg->pam_slot_i){
+	    gtk_widget_grab_focus (hg->pam_tree);
+	    gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->pam_tree), path, NULL, FALSE);
+	    break;
+	  }
+	  else{
+	    gtk_tree_path_next(path);
+	  }
+	}
+	gtk_tree_path_free(path);
+      }
+    }
+  }
+  
+  return FALSE;
+}
+
+
 gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   cairo_t *cr;
   cairo_surface_t *surface;
@@ -529,7 +630,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   double x,y;
   gint i_list;
   gint from_set, to_rise;
-  double dx,dy,lx,ly;
+  double dx,dy,dy2,lx,ly;
   double y0,y1,ymin,ymax;
   double x_pos, y_pos;
 
@@ -625,9 +726,16 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     scale=1.0;
 
     dx=width*0.1;
-    dy=height*0.1;
+    dy=height*0.1;    
     lx=width*0.8;
-    ly=height*0.8;
+    if(hg->plot_pam){
+      dy2=height*0.2;
+      ly=height*0.7;
+    }
+    else{
+      dy2=height*0.1;
+      ly=height*0.8;
+    }
 
     surface = cairo_pdf_surface_create(hg->filename_pdf, width, height);
     cr = cairo_create(surface); 
@@ -646,7 +754,14 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     dx=width*0.1;
     dy=height*0.1;
     lx=width*0.8;
-    ly=height*0.8;
+    if(hg->plot_pam){
+      dy2=height*0.2;
+      ly=height*0.7;
+    }
+    else{
+      dy2=height*0.1;
+      ly=height*0.8;
+    }
 
     cr = gtk_print_context_get_cairo_context (hg->context);
 
@@ -664,10 +779,18 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       gtk_window_get_size(GTK_WINDOW(hg->skymon_main), &width, &height);
     }
     scale=1.0;
+    
     dx=width*0.1;
     dy=height*0.1;
     lx=width*0.8;
-    ly=height*0.8;
+    if(hg->plot_pam){
+      dy2=height*0.2;
+      ly=height*0.7;
+    }
+    else{
+      dy2=height*0.1;
+      ly=height*0.8;
+    }
 
 #ifdef USE_GTK3
     surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
@@ -720,7 +843,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   /* draw a rectangle */
  
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
-  cairo_rectangle(cr,  dx,dy, lx,ly);
+  cairo_rectangle(cr,  dx,dy2, lx,ly);
   cairo_fill(cr);
 
 
@@ -731,23 +854,23 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       gfloat x0;
 
       cairo_set_source_rgba(cr, 1.0, 1.0, 0, 0.2);
-      cairo_rectangle(cr,  dx, dy, lx,ly*10/90);
+      cairo_rectangle(cr,  dx, dy2, lx,ly*10/90);
       cairo_fill(cr);
 
       cairo_set_source_rgba(cr, 1.0, 1.0, 0, 0.2);
-      cairo_rectangle(cr,  dx, dy+ly*(90-30)/90, lx,ly*15/90);
+      cairo_rectangle(cr,  dx, dy2+ly*(90-30)/90, lx,ly*15/90);
       cairo_fill(cr);
       
       cairo_set_source_rgba(cr, 1.0, 0, 0, 0.2);
-      cairo_rectangle(cr,  dx, dy+ly*(90-15)/90, lx,ly*15/90);
+      cairo_rectangle(cr,  dx, dy2+ly*(90-15)/90, lx,ly*15/90);
       cairo_fill(cr);
       
       cairo_set_source_rgba(cr, 1.0, 0.6, 0.4, 1.0);
-      cairo_move_to ( cr, dx, dy);
-      cairo_line_to ( cr, width-dx, dy);
+      cairo_move_to ( cr, dx, dy2);
+      cairo_line_to ( cr, width-dx, dy2);
       cairo_line_to ( cr, width-dx, height-dy);
       cairo_line_to ( cr, dx, height-dy);
-      cairo_line_to ( cr, dx, dy);
+      cairo_line_to ( cr, dx, dy2);
       cairo_set_line_width(cr,2.0*scale);
       cairo_stroke(cr);
       
@@ -814,37 +937,37 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_text_extents (cr, "90", &extents);
       x = dx-extents.width-5*scale;
-      y = dy-(extents.height/2 + extents.y_bearing);
+      y = dy2-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "90");
       
       cairo_text_extents (cr, "60", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*(90-60)/90-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(90-60)/90-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "60");
       
       cairo_text_extents (cr, "30", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*(90-30)/90-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(90-30)/90-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "30");
       
       cairo_text_extents (cr, "15", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*(90-15)/90-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(90-15)/90-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "15");
     
       cairo_text_extents (cr, "0", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "0");
 
       cairo_text_extents (cr, "80", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*(90-80)/90-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(90-80)/90-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "80");
     
@@ -876,46 +999,46 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       gfloat x0;
 
       cairo_set_source_rgba(cr, 1.0, 0.6, 0.4, 1.0);
-      cairo_move_to ( cr, dx, dy);
-      cairo_line_to ( cr, width-dx, dy);
+      cairo_move_to ( cr, dx, dy2);
+      cairo_line_to ( cr, width-dx, dy2);
       cairo_line_to ( cr, width-dx, height-dy);
       cairo_line_to ( cr, dx, height-dy);
-      cairo_line_to ( cr, dx, dy);
+      cairo_line_to ( cr, dx, dy2);
       cairo_set_line_width(cr,2.0*scale);
       cairo_stroke(cr);
       
-      cairo_move_to ( cr, dx, dy+ly*45/360);
-      cairo_line_to ( cr, width-dx, dy+ly*45/360);
+      cairo_move_to ( cr, dx, dy2+ly*45/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*45/360);
       cairo_set_line_width(cr,0.5*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*90/360);
-      cairo_line_to ( cr, width-dx, dy+ly*90/360);
+      cairo_move_to ( cr, dx, dy2+ly*90/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*90/360);
       cairo_set_line_width(cr,2.0*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*135/360);
-      cairo_line_to ( cr, width-dx, dy+ly*135/360);
+      cairo_move_to ( cr, dx, dy2+ly*135/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*135/360);
       cairo_set_line_width(cr,0.5*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*180/360);
-      cairo_line_to ( cr, width-dx, dy+ly*180/360);
+      cairo_move_to ( cr, dx, dy2+ly*180/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*180/360);
       cairo_set_line_width(cr,2.0*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*225/360);
-      cairo_line_to ( cr, width-dx, dy+ly*225/360);
+      cairo_move_to ( cr, dx, dy2+ly*225/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*225/360);
       cairo_set_line_width(cr,0.5*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*270/360);
-      cairo_line_to ( cr, width-dx, dy+ly*270/360);
+      cairo_move_to ( cr, dx, dy2+ly*270/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*270/360);
       cairo_set_line_width(cr,2.0*scale);
       cairo_stroke(cr);
       
-      cairo_move_to ( cr, dx, dy+ly*315/360);
-      cairo_line_to ( cr, width-dx, dy+ly*315/360);
+      cairo_move_to ( cr, dx, dy2+ly*315/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*315/360);
       cairo_set_line_width(cr,0.5*scale);
       cairo_stroke(cr);
 
@@ -937,8 +1060,8 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
 	do{
 	  if(y_f%45){
-	    cairo_move_to ( cr, dx, dy+ly*(gdouble)y_f/360);
-	    cairo_line_to ( cr, width-dx, dy+ly*(gdouble)y_f/360);
+	    cairo_move_to ( cr, dx, dy2+ly*(gdouble)y_f/360);
+	    cairo_line_to ( cr, width-dx, dy2+ly*(gdouble)y_f/360);
 	    cairo_set_line_width(cr,0.3*scale);
 	    cairo_stroke(cr);
 	  }
@@ -958,31 +1081,31 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_text_extents (cr, "+180", &extents);
       x = dx-extents.width-5*scale;
-      y = dy-(extents.height/2 + extents.y_bearing);
+      y = dy2-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "+180");
       
       cairo_text_extents (cr, "+90", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*90/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*90/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "+90");
       
       cairo_text_extents (cr, "0", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*180/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*180/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "0");
       
       cairo_text_extents (cr, "-90", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*270/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*270/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "-90");
       
       cairo_text_extents (cr, "-180", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "-180");
 
@@ -990,31 +1113,31 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       cairo_text_extents (cr, "North", &extents);
       x = dx+lx+5*scale;
-      y = dy-(extents.height/2 + extents.y_bearing);
+      y = dy2-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "North");
 
       cairo_text_extents (cr, "West", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*90/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*90/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "West");
 
       cairo_text_extents (cr, "South", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*180/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*180/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "South");
 
       cairo_text_extents (cr, "East", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*270/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*270/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "East");
 
       cairo_text_extents (cr, "North", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "North");
 
@@ -1043,46 +1166,46 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       gfloat x0;
 
       cairo_set_source_rgba(cr, 1.0, 0.6, 0.4, 1.0);
-      cairo_move_to ( cr, dx, dy);
-      cairo_line_to ( cr, width-dx, dy);
+      cairo_move_to ( cr, dx, dy2);
+      cairo_line_to ( cr, width-dx, dy2);
       cairo_line_to ( cr, width-dx, height-dy);
       cairo_line_to ( cr, dx, height-dy);
-      cairo_line_to ( cr, dx, dy);
+      cairo_line_to ( cr, dx, dy2);
       cairo_set_line_width(cr,2.0*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*(4-3.5)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-3.5)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-3.5)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-3.5)/4);
       cairo_set_line_width(cr,0.5*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*(4-3)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-3)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-3)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-3)/4);
       cairo_set_line_width(cr,1.0*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*(4-2.5)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-2.5)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-2.5)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-2.5)/4);
       cairo_set_line_width(cr,0.5*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*(4-2)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-2)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-2)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-2)/4);
       cairo_set_line_width(cr,1.0*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*(4-1.5)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-1.5)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-1.5)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-1.5)/4);
       cairo_set_line_width(cr,0.5*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*(4-1)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-1)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-1)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-1)/4);
       cairo_set_line_width(cr,1.0*scale);
       cairo_stroke(cr);
       
-      cairo_move_to ( cr, dx, dy+ly*(4-0.5)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-0.5)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-0.5)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-0.5)/4);
       cairo_set_line_width(cr,1.0*scale);
       cairo_stroke(cr);
      
@@ -1095,25 +1218,25 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       cairo_text_extents (cr, "4.0", &extents);
       x = dx-extents.width-5*scale;
-      y = dy-(extents.height/2 + extents.y_bearing);
+      y = dy2-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "4.0");
       
       cairo_text_extents (cr, "2.0", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*(4-2)/4-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(4-2)/4-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "2.0");
       
       cairo_text_extents (cr, "1.0", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*(4-1)/4-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(4-1)/4-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "1.0");
       
       cairo_text_extents (cr, "0.5", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*(4-0.5)/4-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(4-0.5)/4-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "0.5");
 
@@ -1135,8 +1258,8 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
 	do{
 	  if(y_f%45){
-	    cairo_move_to ( cr, dx, dy+ly*(gdouble)y_f/360);
-	    cairo_line_to ( cr, width-dx, dy+ly*(gdouble)y_f/360);
+	    cairo_move_to ( cr, dx, dy2+ly*(gdouble)y_f/360);
+	    cairo_line_to ( cr, width-dx, dy2+ly*(gdouble)y_f/360);
 	    cairo_set_line_width(cr,0.3*scale);
 	    cairo_stroke(cr);
 	  }
@@ -1177,31 +1300,31 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       cairo_text_extents (cr, "+180", &extents);
       x = dx+lx+5*scale;
-      y = dy-(extents.height/2 + extents.y_bearing);
+      y = dy2-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "+180");
       
       cairo_text_extents (cr, "+90", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*(360-270)/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(360-270)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "+90");
       
       cairo_text_extents (cr, "0", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*(360-180)/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(360-180)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "0");
 
       cairo_text_extents (cr, "-90", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*(360-90)/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(360-90)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "-90");
       
       cairo_text_extents (cr, "-90", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "-180");
 
@@ -1232,23 +1355,23 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       gfloat x0;
 
       cairo_set_source_rgba(cr, 1.0, 1.0, 0, 0.2);
-      cairo_rectangle(cr,  dx, dy, lx,ly*10/90);
+      cairo_rectangle(cr,  dx, dy2, lx,ly*10/90);
       cairo_fill(cr);
 
       cairo_set_source_rgba(cr, 1.0, 1.0, 0, 0.2);
-      cairo_rectangle(cr,  dx, dy+ly*(90-30)/90, lx,ly*15/90);
+      cairo_rectangle(cr,  dx, dy2+ly*(90-30)/90, lx,ly*15/90);
       cairo_fill(cr);
       
       cairo_set_source_rgba(cr, 1.0, 0, 0, 0.2);
-      cairo_rectangle(cr,  dx, dy+ly*(90-15)/90, lx,ly*15/90);
+      cairo_rectangle(cr,  dx, dy2+ly*(90-15)/90, lx,ly*15/90);
       cairo_fill(cr);
       
       cairo_set_source_rgba(cr, 1.0, 0.6, 0.4, 1.0);
-      cairo_move_to ( cr, dx, dy);
-      cairo_line_to ( cr, width-dx, dy);
+      cairo_move_to ( cr, dx, dy2);
+      cairo_line_to ( cr, width-dx, dy2);
       cairo_line_to ( cr, width-dx, height-dy);
       cairo_line_to ( cr, dx, height-dy);
-      cairo_line_to ( cr, dx, dy);
+      cairo_line_to ( cr, dx, dy2);
       cairo_set_line_width(cr,2.0*scale);
       cairo_stroke(cr);
       
@@ -1271,18 +1394,18 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       cairo_set_source_rgba(cr, 1.0, 0.6, 0.4, 1.0);
 
-      cairo_move_to ( cr, dx, dy+ly*(4-3)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-3)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-3)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-3)/4);
       cairo_set_line_width(cr,1.0*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*(4-2)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-2)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-2)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-2)/4);
       cairo_set_line_width(cr,1.0*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*(4-1)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-1)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-1)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-1)/4);
       cairo_set_line_width(cr,1.0*scale);
       cairo_stroke(cr);
 
@@ -1305,8 +1428,8 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
 	do{
 	  if(y_f%90){
-	    cairo_move_to ( cr, dx, dy+ly*(gdouble)y_f/360);
-	    cairo_line_to ( cr, width-dx, dy+ly*(gdouble)y_f/360);
+	    cairo_move_to ( cr, dx, dy2+ly*(gdouble)y_f/360);
+	    cairo_line_to ( cr, width-dx, dy2+ly*(gdouble)y_f/360);
 	    cairo_set_line_width(cr,0.3*scale);
 	    cairo_stroke(cr);
 	  }
@@ -1332,25 +1455,25 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_text_extents (cr, "90", &extents);
       x = dx-extents.width-5*scale;
-      y = dy-(extents.height/2 + extents.y_bearing);
+      y = dy2-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "90");
       
       cairo_text_extents (cr, "60", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*(90-60)/90-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(90-60)/90-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "60");
       
       cairo_text_extents (cr, "30", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*(90-30)/90-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(90-30)/90-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "30");
       
       cairo_text_extents (cr, "15", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*(90-15)/90-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(90-15)/90-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "15");
     
@@ -1358,7 +1481,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       cairo_text_extents (cr, "0", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "0");
 
@@ -1388,31 +1511,31 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       cairo_text_extents (cr, "+180", &extents);
       x = dx+lx+5*scale;
-      y = dy-(extents.height/2 + extents.y_bearing);
+      y = dy2-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "+180");
       
       cairo_text_extents (cr, "+90", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*(360-270)/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(360-270)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "+90");
       
       cairo_text_extents (cr, "0", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*(360-180)/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(360-180)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "0");
 
       cairo_text_extents (cr, "-90", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*(360-90)/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(360-90)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "-90");
       
       cairo_text_extents (cr, "-90", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "-180");
 
@@ -1443,23 +1566,23 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       gfloat x0;
 
       cairo_set_source_rgba(cr, 1.0, 1.0, 0, 0.2);
-      cairo_rectangle(cr,  dx, dy, lx,ly*10/90);
+      cairo_rectangle(cr,  dx, dy2, lx,ly*10/90);
       cairo_fill(cr);
 
       cairo_set_source_rgba(cr, 1.0, 1.0, 0, 0.2);
-      cairo_rectangle(cr,  dx, dy+ly*(90-30)/90, lx,ly*15/90);
+      cairo_rectangle(cr,  dx, dy2+ly*(90-30)/90, lx,ly*15/90);
       cairo_fill(cr);
       
       cairo_set_source_rgba(cr, 1.0, 0, 0, 0.2);
-      cairo_rectangle(cr,  dx, dy+ly*(90-15)/90, lx,ly*15/90);
+      cairo_rectangle(cr,  dx, dy2+ly*(90-15)/90, lx,ly*15/90);
       cairo_fill(cr);
       
       cairo_set_source_rgba(cr, 1.0, 0.6, 0.4, 1.0);
-      cairo_move_to ( cr, dx, dy);
-      cairo_line_to ( cr, width-dx, dy);
+      cairo_move_to ( cr, dx, dy2);
+      cairo_line_to ( cr, width-dx, dy2);
       cairo_line_to ( cr, width-dx, height-dy);
       cairo_line_to ( cr, dx, height-dy);
-      cairo_line_to ( cr, dx, dy);
+      cairo_line_to ( cr, dx, dy2);
       cairo_set_line_width(cr,2.0*scale);
       cairo_stroke(cr);
       
@@ -1482,18 +1605,18 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       cairo_set_source_rgba(cr, 1.0, 0.6, 0.4, 1.0);
 
-      cairo_move_to ( cr, dx, dy+ly*(4-3)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-3)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-3)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-3)/4);
       cairo_set_line_width(cr,1.0*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*(4-2)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-2)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-2)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-2)/4);
       cairo_set_line_width(cr,1.0*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*(4-1)/4);
-      cairo_line_to ( cr, width-dx, dy+ly*(4-1)/4);
+      cairo_move_to ( cr, dx, dy2+ly*(4-1)/4);
+      cairo_line_to ( cr, width-dx, dy2+ly*(4-1)/4);
       cairo_set_line_width(cr,1.0*scale);
       cairo_stroke(cr);
 
@@ -1516,8 +1639,8 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
 	do{
 	  if(y_f%90){
-	    cairo_move_to ( cr, dx, dy+ly*(gdouble)y_f/360);
-	    cairo_line_to ( cr, width-dx, dy+ly*(gdouble)y_f/360);
+	    cairo_move_to ( cr, dx, dy2+ly*(gdouble)y_f/360);
+	    cairo_line_to ( cr, width-dx, dy2+ly*(gdouble)y_f/360);
 	    cairo_set_line_width(cr,0.3*scale);
 	    cairo_stroke(cr);
 	  }
@@ -1543,25 +1666,25 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_text_extents (cr, "90", &extents);
       x = dx-extents.width-5*scale;
-      y = dy-(extents.height/2 + extents.y_bearing);
+      y = dy2-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "90");
       
       cairo_text_extents (cr, "60", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*(90-60)/90-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(90-60)/90-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "60");
       
       cairo_text_extents (cr, "30", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*(90-30)/90-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(90-30)/90-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "30");
       
       cairo_text_extents (cr, "15", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*(90-15)/90-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(90-15)/90-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "15");
     
@@ -1569,7 +1692,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       cairo_text_extents (cr, "0", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "0");
 
@@ -1599,31 +1722,31 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       cairo_text_extents (cr, "180", &extents);
       x = dx+lx+5*scale;
-      y = dy-(extents.height/2 + extents.y_bearing);
+      y = dy2-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "180");
       
       cairo_text_extents (cr, "135", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*(360-270)/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(360-270)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "135");
       
       cairo_text_extents (cr, "90", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*(360-180)/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(360-180)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "90");
 
       cairo_text_extents (cr, "45", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*(360-90)/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*(360-90)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "45");
       
       cairo_text_extents (cr, "0", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "0");
 
@@ -1655,46 +1778,46 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       gfloat x0, w1;
 
       cairo_set_source_rgba(cr, 1.0, 0.6, 0.4, 1.0);
-      cairo_move_to ( cr, dx, dy);
-      cairo_line_to ( cr, width-dx, dy);
+      cairo_move_to ( cr, dx, dy2);
+      cairo_line_to ( cr, width-dx, dy2);
       cairo_line_to ( cr, width-dx, height-dy);
       cairo_line_to ( cr, dx, height-dy);
-      cairo_line_to ( cr, dx, dy);
+      cairo_line_to ( cr, dx, dy2);
       cairo_set_line_width(cr,2.0*scale);
       cairo_stroke(cr);
       
-      cairo_move_to ( cr, dx, dy+ly*45/360);
-      cairo_line_to ( cr, width-dx, dy+ly*45/360);
+      cairo_move_to ( cr, dx, dy2+ly*45/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*45/360);
       cairo_set_line_width(cr,0.5*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*90/360);
-      cairo_line_to ( cr, width-dx, dy+ly*90/360);
+      cairo_move_to ( cr, dx, dy2+ly*90/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*90/360);
       cairo_set_line_width(cr,2.0*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*135/360);
-      cairo_line_to ( cr, width-dx, dy+ly*135/360);
+      cairo_move_to ( cr, dx, dy2+ly*135/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*135/360);
       cairo_set_line_width(cr,0.5*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*180/360);
-      cairo_line_to ( cr, width-dx, dy+ly*180/360);
+      cairo_move_to ( cr, dx, dy2+ly*180/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*180/360);
       cairo_set_line_width(cr,2.0*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*225/360);
-      cairo_line_to ( cr, width-dx, dy+ly*225/360);
+      cairo_move_to ( cr, dx, dy2+ly*225/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*225/360);
       cairo_set_line_width(cr,0.5*scale);
       cairo_stroke(cr);
 
-      cairo_move_to ( cr, dx, dy+ly*270/360);
-      cairo_line_to ( cr, width-dx, dy+ly*270/360);
+      cairo_move_to ( cr, dx, dy2+ly*270/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*270/360);
       cairo_set_line_width(cr,2.0*scale);
       cairo_stroke(cr);
       
-      cairo_move_to ( cr, dx, dy+ly*315/360);
-      cairo_line_to ( cr, width-dx, dy+ly*315/360);
+      cairo_move_to ( cr, dx, dy2+ly*315/360);
+      cairo_line_to ( cr, width-dx, dy2+ly*315/360);
       cairo_set_line_width(cr,0.5*scale);
       cairo_stroke(cr);
 
@@ -1716,8 +1839,8 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
 	do{
 	  if(y_f%45){
-	    cairo_move_to ( cr, dx, dy+ly*(gdouble)y_f/360);
-	    cairo_line_to ( cr, width-dx, dy+ly*(gdouble)y_f/360);
+	    cairo_move_to ( cr, dx, dy2+ly*(gdouble)y_f/360);
+	    cairo_line_to ( cr, width-dx, dy2+ly*(gdouble)y_f/360);
 	    cairo_set_line_width(cr,0.3*scale);
 	    cairo_stroke(cr);
 	  }
@@ -1737,31 +1860,31 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_text_extents (cr, "+180", &extents);
       x = dx-extents.width-5*scale;
-      y = dy-(extents.height/2 + extents.y_bearing);
+      y = dy2-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "+180");
       
       cairo_text_extents (cr, "+90", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*90/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*90/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "+90");
       
       cairo_text_extents (cr, "0", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*180/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*180/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "0");
       
       cairo_text_extents (cr, "-90", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly*270/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*270/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "-90");
       
       cairo_text_extents (cr, "-180", &extents);
       x = dx-extents.width-5*scale;
-      y = dy+ly-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "-180");
 
@@ -1769,31 +1892,31 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       cairo_text_extents (cr, "S is UP", &extents);
       x = dx+lx+5*scale;
-      y = dy-(extents.height/2 + extents.y_bearing);
+      y = dy2-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "S is UP");
 
       cairo_text_extents (cr, "East", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*90/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*90/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "East");
 
       cairo_text_extents (cr, "North", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*180/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*180/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "North");
 
       cairo_text_extents (cr, "West", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly*270/360-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly*270/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "West");
 
       cairo_text_extents (cr, "South", &extents);
       x = dx+lx+5*scale;
-      y = dy+ly-(extents.height/2 + extents.y_bearing);
+      y = dy2+ly-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "South");
 
@@ -1839,7 +1962,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
   // HST
   {
-    cairo_rectangle(cr, dx,dy,lx,ly);
+    cairo_rectangle(cr, dx,dy2,lx,ly);
     cairo_clip(cr);
 
 
@@ -1853,21 +1976,21 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       
       if( (ihst1<24) && ((ihst1<sun_set)&&((sun_rise-24.)<ihst0)) ){
 	cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
-	cairo_rectangle(cr,  dx, dy, lx,ly);
+	cairo_rectangle(cr,  dx, dy2, lx,ly);
 	cairo_fill(cr);
       }
       else{
 	if( (sun_set>ihst0) && (sun_set<ihst1) ){
 	  x=lx*(sun_set-ihst0)/(ihst1-ihst0);
 	  cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
-	  cairo_rectangle(cr,  dx, dy, x,ly);
+	  cairo_rectangle(cr,  dx, dy2, x,ly);
 	  cairo_fill(cr);
 	  
 	  tmp=g_strdup_printf("%d:%02d",
 			      hg->sun.s_set.hours,hg->sun.s_set.minutes);
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
 	  cairo_text_extents (cr, tmp, &extents);
-	  cairo_move_to(cr, dx+x, dy+extents.height+5*scale);
+	  cairo_move_to(cr, dx+x, dy2+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
 	  if(tmp) g_free(tmp);
 	}
@@ -1893,12 +2016,12 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	  tmp=g_strdup_printf("%d:%02d",
 			      hg->sun.s_rise.hours,hg->sun.s_rise.minutes);
 	  cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
-	  cairo_rectangle(cr,  dx+lx-x, dy, x,ly);
+	  cairo_rectangle(cr,  dx+lx-x, dy2, x,ly);
 	  cairo_fill(cr);
 	  
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
 	  cairo_text_extents (cr, tmp, &extents);
-	  cairo_move_to(cr, dx+lx-x-extents.width, dy+extents.height+5*scale);
+	  cairo_move_to(cr, dx+lx-x-extents.width, dy2+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
 	  if(tmp) g_free(tmp);
 	}
@@ -1912,21 +2035,21 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       if( (ihst1<24) && ((ihst1<atw_set)&&((atw_rise-24.)<ihst0)) ){
 	cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
-	cairo_rectangle(cr,  dx, dy, lx,ly);
+	cairo_rectangle(cr,  dx, dy2, lx,ly);
 	cairo_fill(cr);
       }
       else{
 	if( (atw_set>ihst0) && (atw_set<ihst1) ){
 	  x=lx*(atw_set-ihst0)/(ihst1-ihst0);
 	  cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
-	  cairo_rectangle(cr,  dx, dy, x,ly);
+	  cairo_rectangle(cr,  dx, dy2, x,ly);
 	  cairo_fill(cr);
 	  
 	  tmp=g_strdup_printf("%d:%02d",
 			      hg->atw18.s_set.hours,hg->atw18.s_set.minutes);
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
 	  cairo_text_extents (cr, tmp, &extents);
-	  cairo_move_to(cr, dx+x, dy+extents.height+5*scale);
+	  cairo_move_to(cr, dx+x, dy2+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
 	  if(tmp) g_free(tmp);
 	}
@@ -1952,12 +2075,12 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	  tmp=g_strdup_printf("%d:%02d",
 			      hg->atw18.s_rise.hours,hg->atw18.s_rise.minutes);
 	  cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
-	  cairo_rectangle(cr,  dx+lx-x, dy, x,ly);
+	  cairo_rectangle(cr,  dx+lx-x, dy2, x,ly);
 	  cairo_fill(cr);
 	  
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
 	  cairo_text_extents (cr, tmp, &extents);
-	  cairo_move_to(cr, dx+lx-x-extents.width, dy+extents.height+5*scale);
+	  cairo_move_to(cr, dx+lx-x-extents.width, dy2+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
 	  if(tmp) g_free(tmp);
 	}
@@ -1969,21 +2092,21 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       
       if( (ihst1<24) && ((ihst1<sun_set)&&((sun_rise-24.)<ihst0)) ){
 	cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
-	cairo_rectangle(cr,  dx, dy, lx,ly);
+	cairo_rectangle(cr,  dx, dy2, lx,ly);
 	cairo_fill(cr);
       }
       else{
 	if( (sun_set>ihst0) && (sun_set<ihst1) ){
 	  x=lx*(sun_set-ihst0)/(ihst1-ihst0);
 	  cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
-	  cairo_rectangle(cr,  dx, dy, x,ly);
+	  cairo_rectangle(cr,  dx, dy2, x,ly);
 	  cairo_fill(cr);
 	  
 	  tmp=g_strdup_printf("%d:%02d",
 			      hg->sun.c_set.hours,hg->sun.c_set.minutes);
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
 	  cairo_text_extents (cr, tmp, &extents);
-	  cairo_move_to(cr, dx+x, dy+extents.height+5*scale);
+	  cairo_move_to(cr, dx+x, dy2+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
 	  if(tmp) g_free(tmp);
 	}
@@ -2009,12 +2132,12 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	  tmp=g_strdup_printf("%d:%02d",
 			      hg->sun.c_rise.hours,hg->sun.c_rise.minutes);
 	  cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
-	  cairo_rectangle(cr,  dx+lx-x, dy, x,ly);
+	  cairo_rectangle(cr,  dx+lx-x, dy2, x,ly);
 	  cairo_fill(cr);
 	  
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
 	  cairo_text_extents (cr, tmp, &extents);
-	  cairo_move_to(cr, dx+lx-x-extents.width, dy+extents.height+5*scale);
+	  cairo_move_to(cr, dx+lx-x-extents.width, dy2+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
 	  if(tmp) g_free(tmp);
 	}
@@ -2028,21 +2151,21 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       if( (ihst1<24) && ((ihst1<atw_set)&&((atw_rise-24.)<ihst0)) ){
 	cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
-	cairo_rectangle(cr,  dx, dy, lx,ly);
+	cairo_rectangle(cr,  dx, dy2, lx,ly);
 	cairo_fill(cr);
       }
       else{
 	if( (atw_set>ihst0) && (atw_set<ihst1) ){
 	  x=lx*(atw_set-ihst0)/(ihst1-ihst0);
 	  cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
-	  cairo_rectangle(cr,  dx, dy, x,ly);
+	  cairo_rectangle(cr,  dx, dy2, x,ly);
 	  cairo_fill(cr);
 	  
 	  tmp=g_strdup_printf("%d:%02d",
 			      hg->atw18.c_set.hours,hg->atw18.c_set.minutes);
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
 	  cairo_text_extents (cr, tmp, &extents);
-	  cairo_move_to(cr, dx+x, dy+extents.height+5*scale);
+	  cairo_move_to(cr, dx+x, dy2+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
 	  if(tmp) g_free(tmp);
 	}
@@ -2068,12 +2191,12 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	  tmp=g_strdup_printf("%d:%02d",
 			      hg->atw18.c_rise.hours,hg->atw18.c_rise.minutes);
 	  cairo_set_source_rgba(cr, 0.6, 0.6, 1.0, 0.2);
-	  cairo_rectangle(cr,  dx+lx-x, dy, x,ly);
+	  cairo_rectangle(cr,  dx+lx-x, dy2, x,ly);
 	  cairo_fill(cr);
 	  
 	  cairo_set_source_rgba(cr, 0.2, 0.2, 1.0, 0.8);
 	  cairo_text_extents (cr, tmp, &extents);
-	  cairo_move_to(cr, dx+lx-x-extents.width, dy+extents.height+5*scale);
+	  cairo_move_to(cr, dx+lx-x-extents.width, dy2+extents.height+5*scale);
 	  cairo_show_text(cr, tmp);
 	  if(tmp) g_free(tmp);
 	}
@@ -2089,8 +2212,8 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     min_offset=ihst0-(gint)ihst0;
     time_label=(gint)ihst0+1;
     do{
-      cairo_move_to ( cr, dx+lx*(-min_offset+time_label-(gint)ihst0)/(ihst1-ihst0), dy);
-      cairo_line_to ( cr, dx+lx*(-min_offset+time_label-(gint)ihst0)/(ihst1-ihst0), ly+dy);
+      cairo_move_to ( cr, dx+lx*(-min_offset+time_label-(gint)ihst0)/(ihst1-ihst0), dy2);
+      cairo_line_to ( cr, dx+lx*(-min_offset+time_label-(gint)ihst0)/(ihst1-ihst0), ly+dy2);
       if(time_label%2)
 	cairo_set_line_width(cr,0.5*scale);
       else
@@ -2120,8 +2243,8 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       cairo_set_line_width (cr, 0.5*scale);
 
       do{
-	cairo_move_to ( cr, dx+lx*(-min_offset+time_label_f-(gint)ihst0)/(ihst1-ihst0), dy);
-	cairo_line_to ( cr, dx+lx*(-min_offset+time_label_f-(gint)ihst0)/(ihst1-ihst0), ly+dy);
+	cairo_move_to ( cr, dx+lx*(-min_offset+time_label_f-(gint)ihst0)/(ihst1-ihst0), dy2);
+	cairo_line_to ( cr, dx+lx*(-min_offset+time_label_f-(gint)ihst0)/(ihst1-ihst0), ly+dy2);
 	cairo_stroke(cr);
 
 	time_label_f+=1.0;
@@ -2149,8 +2272,8 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 
       do{
 	if(num%3){
-	  cairo_move_to ( cr, dx+lx*(-min_offset+time_label_f-(gint)ihst0)/(ihst1-ihst0), dy);
-	  cairo_line_to ( cr, dx+lx*(-min_offset+time_label_f-(gint)ihst0)/(ihst1-ihst0), ly+dy);
+	  cairo_move_to ( cr, dx+lx*(-min_offset+time_label_f-(gint)ihst0)/(ihst1-ihst0), dy2);
+	  cairo_line_to ( cr, dx+lx*(-min_offset+time_label_f-(gint)ihst0)/(ihst1-ihst0), ly+dy2);
 	  cairo_stroke(cr);
 	}
 	num++;
@@ -2186,7 +2309,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       if((gfloat)time_label>=ihst0){
 	cairo_text_extents (cr, tmp, &extents);
 	x = dx+lx*(-min_offset+time_label-(gint)ihst0)/(ihst1-ihst0)-extents.width/2;
-	y = dy+ly+extents.height+5*scale;
+	y = dy2+ly+extents.height+5*scale;
 	cairo_move_to(cr, x, y);
 	cairo_show_text(cr, tmp);
       }
@@ -2195,7 +2318,32 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       time_label+=d_time_label;
     }while(time_label <= (gint)ihst1);
 
+    if(ihst1-ihst0<3.0){  // draw 30 minutes in x label
+      time_label=(gint)ihst0;
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale*0.9);
+      
+      do{
+	if(time_label>=24){
+	  tmp=g_strdup_printf("%d:30",time_label-24);
+	}
+	else{
+	  tmp=g_strdup_printf("%d:30",time_label);
+	}
+	
+	if((gfloat)time_label+0.5>=ihst0){
+	  cairo_text_extents (cr, tmp, &extents);
+	  x = dx+lx*(-min_offset+0.5+time_label-(gint)ihst0)/(ihst1-ihst0)-extents.width/2;
+	  y = dy2+ly+extents.height+5*scale;
+	  cairo_move_to(cr, x, y);
+	  cairo_show_text(cr, tmp);
+	}
+	if(tmp) g_free(tmp);
+      
+	time_label+=d_time_label;
+      }while((gdouble) time_label + 0.5 <= ihst1);
+    }
 
+    
     // Date
     if(hg->skymon_mode==SKYMON_SET){
       iyear=hg->skymon_year;
@@ -2252,17 +2400,27 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       if((gfloat)hour+(gfloat)min/60.<(ihst1-24)){
 	hour+=24;
       }
-      cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+      if(hg->plot_pam){
+	cairo_set_source_rgba(cr, 0.8, 0.0, 0.8, 0.8);
+      }
+      else{
+	cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+      }
       x=dx+lx*((gfloat)hour-ihst0+(gfloat)min/60.)/(ihst1-ihst0);
-      cairo_move_to ( cr, x, dy);
-      cairo_line_to ( cr, x, ly+dy);
+      cairo_move_to ( cr, x, dy2);
+      cairo_line_to ( cr, x, ly+dy2);
       cairo_set_line_width(cr,3.0*scale);
       cairo_stroke(cr);
       
       cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
       cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+      if(hg->plot_pam){
+	cairo_set_source_rgba(cr, 0.8, 0.0, 0.8, 0.8);
+      }
+      else{
+	cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+      }
       if(hour>=24){
 	tmp=g_strdup_printf("%d:%02d",hour-24,min);
       }
@@ -2274,7 +2432,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       }
       cairo_text_extents (cr, tmp, &extents);
       x += -extents.width/2;
-      y = dy -5*scale;
+      y = dy2 -5*scale;
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, tmp);
       if(tmp) g_free(tmp);
@@ -2375,6 +2533,151 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   }// HST
 
 
+  // Plot PAM (LGS Collisions)
+  if(hg->plot_pam){
+    if(hg->obj[hg->plot_i].pam>0){
+      gint i_slot, n_pam;
+      gdouble JD_st, JD_ed, old_JD_ed, JD0, JD1, dur_s;
+      gdouble x_0, x_1, x_c;
+      gboolean flag_plot;
+      
+      cairo_rectangle(cr, dx,0,lx,height);
+      cairo_clip(cr);
+      
+      n_pam=hg->obj[hg->plot_i].pam;
+      
+      for(i_slot=0;i_slot<=hg->lgs_pam[n_pam].line;i_slot++){
+	hg->pam_x[i_slot]=-1;
+	hg->pam_y[i_slot]=-1;
+	
+	if(i_slot==0){
+	  JD_st=hg->lgs_pam[n_pam].time[i_slot].st;
+	  JD_ed=hg->lgs_pam[n_pam].time[i_slot].ed;
+	  
+	  if(JD_st>hg->plot_jd0){
+	    JD0=hg->plot_jd0;
+	    JD1=JD_st;
+	    flag_plot=TRUE;
+	  }
+	  else{
+	    flag_plot=FALSE;
+	  }
+	}
+	else if(i_slot==hg->lgs_pam[n_pam].line){
+	  if(old_JD_ed<hg->plot_jd1){
+	  JD0=old_JD_ed;
+	  JD1=hg->plot_jd1;
+	  flag_plot=TRUE;
+	  }
+	  else{
+	    flag_plot=FALSE;
+	  }
+	}
+	else{
+	  JD_st=hg->lgs_pam[n_pam].time[i_slot].st;
+	  JD_ed=hg->lgs_pam[n_pam].time[i_slot].ed;
+	  
+	  JD0=old_JD_ed;
+	  JD1=JD_st;
+	  flag_plot=TRUE;
+	}
+	
+	if(flag_plot){
+	  dur_s=(JD1-JD0)*24.0*60.0*60.0;
+	  
+	  x_0=dx+lx*(JD0-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
+	  x_1=dx+lx*(JD1-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
+	  x_c=(x_0+x_1)/2.0;
+
+	  if((hg->pam_slot_i>=0) && (hg->pam_slot_i==i_slot-1)){
+	    cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.8);
+	  }
+	  else{
+	    cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.4);
+	  }
+	  cairo_rectangle(cr,
+			  x_0,
+			  dy2,
+			  x_1-x_0,
+			  ly);
+	  cairo_fill(cr);
+
+	  if(i_slot>0){
+	    if( (x_c>dx) && (x_c<dx+lx)){
+	      if(hg->pam_slot_i==i_slot-1){
+		cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.8);
+		cairo_move_to(cr, x_c,   dy2-10);
+		cairo_line_to(cr, x_c-5, dy2-20);
+		cairo_line_to(cr, x_c+5, dy2-20);
+	      }
+	      else{
+		cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+		cairo_move_to(cr, x_c,   dy2-10);
+		cairo_line_to(cr, x_c-4, dy2-18);
+		cairo_line_to(cr, x_c+4, dy2-18);
+	      }
+	      cairo_close_path(cr);
+	      cairo_fill(cr);
+		
+	      
+	      hg->pam_x[i_slot-1]=(gint)x_c;
+	      hg->pam_y[i_slot-1]=(gint)dy2-15;;
+
+	      cairo_save (cr);
+	      cairo_translate (cr, x_c, dy2-25);
+	      cairo_rotate (cr,-M_PI/2);
+	      
+	      if(hg->pam_slot_i==i_slot-1){
+		cairo_select_font_face (cr, hg->fontfamily_all,
+					CAIRO_FONT_SLANT_NORMAL,
+					CAIRO_FONT_WEIGHT_BOLD);
+		cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.3*scale);
+	      }
+	      else{
+		cairo_select_font_face (cr, hg->fontfamily_all,
+					CAIRO_FONT_SLANT_NORMAL,
+					CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+	      }
+	      
+	      if(dur_s<60){
+		tmp=g_strdup_printf("%d", (gint)dur_s);
+	      }
+	      else{
+		tmp=g_strdup_printf("%d\'%02d",
+				    (gint)(dur_s/60), (gint)dur_s%60);
+	      }
+	      cairo_text_extents (cr, tmp, &extents);
+	      
+	      x = 5;
+	      y = extents.height/2.;
+	      cairo_move_to(cr, x, y);
+	      
+	      cairo_show_text(cr, tmp);
+	      cairo_restore (cr);
+	    }
+	  }
+	
+	}
+	old_JD_ed=JD_ed;
+      }
+    
+    
+      cairo_reset_clip(cr);
+    }
+    else{
+      cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.8);
+      cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.5*scale);
+      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			      CAIRO_FONT_WEIGHT_BOLD);
+      tmp=g_strdup_printf("!!!!! No PAM is found for this target !!!!!");
+      cairo_text_extents (cr, tmp, &extents);
+      cairo_move_to(cr, width/2-extents.width/2, dy2/2);
+      cairo_show_text(cr, tmp);
+      g_free(tmp);
+    }
+  }
+  
   //////////////////////////////////////////
   
 
@@ -2480,7 +2783,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       JD_moon_stock = JD_mt;
     }
     
-    cairo_rectangle(cr, dx,dy,lx,ly);
+    cairo_rectangle(cr, dx,dy2,lx,ly);
     cairo_clip(cr);
     cairo_new_path(cr);
     
@@ -2494,11 +2797,11 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	
 	for(i=1;i<=i_moon_max-1;i++){
 	  x=dx+lx*(jd_moon[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-	  y=dy+ly*(90-pel_moon[i])/90;
+	  y=dy2+ly*(90-pel_moon[i])/90;
 	  cairo_move_to(cr,x,y);
 	    
 	  x=dx+lx*(jd_moon[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-	  y=dy+ly*(90-pel_moon[i+1])/90;
+	  y=dy2+ly*(90-pel_moon[i+1])/90;
 	  cairo_line_to(cr,x,y);
 	  
 	  cairo_stroke(cr);
@@ -2507,7 +2810,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	
 	if((JD_mt>hg->plot_jd0)&&(JD_mt<hg->plot_jd1)){
 	  cairo_move_to(cr,dx+lx*(JD_mt-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0),
-			dy+ly*(90.-moon_tr_el)/90.);
+			dy2+ly*(90.-moon_tr_el)/90.);
 	  
 	  cairo_set_source_rgba(cr, 0.8, 0.6, 0.0, 1.0);
 	  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
@@ -2515,6 +2818,12 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*1.1*scale);
 	  
 	  cairo_text_extents (cr, "moon", &extents);
+	  cairo_get_current_point(cr,&x_pos,&y_pos);
+	  if(y_pos-extents.width < dy2){
+	    cairo_move_to(cr, x_pos, y_pos+extents.width+15*scale);
+	  }
+
+	  
 	  cairo_save(cr);
 	  cairo_rotate (cr,-M_PI/2);
 	  cairo_rel_move_to(cr,5.*scale,+extents.height/2.);
@@ -2666,7 +2975,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       iend=i-1;
       
       cairo_set_source_rgba(cr, 1, 1, 1, 1);
-      cairo_rectangle(cr, dx,dy,lx,ly);
+      cairo_rectangle(cr, dx,dy2,lx,ly);
       cairo_clip(cr);
       cairo_new_path(cr);
 
@@ -2687,11 +2996,11 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	  
 	  for(i=1;i<=iend-1;i++){
 	    x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-	    y=dy+ly*(90-pel[i])/90;
+	    y=dy2+ly*(90-pel[i])/90;
 	    cairo_move_to(cr,x,y);
 	    
 	    x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-	    y=dy+ly*(90-pel[i+1])/90;
+	    y=dy2+ly*(90-pel[i+1])/90;
 	    cairo_line_to(cr,x,y);
 	    
 	    cairo_stroke(cr);
@@ -2701,7 +3010,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	    y_tr=fabs(hg->obs_latitude-oequ_prec.dec);
 	    
 	    cairo_move_to(cr,dx+lx*(JD_tr-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0),
-			  dy+ly*y_tr/90.);
+			  dy2+ly*y_tr/90.);
 	    
 	    if(i_list==hg->plot_i){
 	      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
@@ -2726,7 +3035,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	      if(tmp) g_free(tmp);
 
 	      cairo_move_to(cr,dx+lx*(JD_tr-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0),
-			    dy+ly*y_tr/90.);
+			    dy2+ly*y_tr/90.);
 	      cairo_rel_move_to(cr,0,-extents.height-5*scale);
 
 	      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
@@ -2742,8 +3051,12 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	    }
 
 	    tmp=g_strdup_printf("%s",hg->obj[i_list].name);
-
 	    cairo_text_extents (cr, tmp, &extents);
+	    cairo_get_current_point(cr,&x_pos,&y_pos);
+	    if(y_pos-extents.width < dy2){
+	      cairo_move_to(cr, x_pos, dy2+ly*y_tr/90.+15*scale+extents.width);
+	    }
+	    
 	    cairo_save(cr);
 	    cairo_rotate (cr,-M_PI/2);
 	    cairo_get_current_point(cr,&x_pos,&y_pos);
@@ -2771,11 +3084,11 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	    if((pel[i]>0)&&(pel[i+1]>0)){
 	      if( (fabs(paz[i]-paz[i+1])<180) ) {
 		x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		y=dy+ly*(360-paz[i])/360;
+		y=dy2+ly*(360-paz[i])/360;
 		cairo_move_to(cr,x,y);
 		
 		x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		y=dy+ly*(360-paz[i+1])/360;
+		y=dy2+ly*(360-paz[i+1])/360;
 		cairo_line_to(cr,x,y);
 		
 		cairo_stroke(cr);
@@ -2783,19 +3096,19 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	      else{
 		if(paz[i]<180){
 		  x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-paz[i])/360;
+		  y=dy2+ly*(360-paz[i])/360;
 		  cairo_move_to(cr,x,y);
 		  
 		  x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(paz[i+1]-360))/360;
+		  y=dy2+ly*(360-(paz[i+1]-360))/360;
 		  cairo_line_to(cr,x,y);
 		  
 		  x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(paz[i]+360))/360;
+		  y=dy2+ly*(360-(paz[i]+360))/360;
 		  cairo_move_to(cr,x,y);
 		  
 		  x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-paz[i+1])/360;
+		  y=dy2+ly*(360-paz[i+1])/360;
 		  cairo_line_to(cr,x,y);
 		  
 		  cairo_set_line_width(cr,2.0*scale);
@@ -2820,11 +3133,11 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	  for(i=1;i<=iend-1;i++){
 	    if((pad[i]>0) && (pad[i+1]>0) && (pad[i]<10) && (pad[i+1]<10)){
 	      x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-	      y=dy+ly*(4-pad[i])/4.;
+	      y=dy2+ly*(4-pad[i])/4.;
 	      cairo_move_to(cr,x,y);
 		
 	      x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-	      y=dy+ly*(4-pad[i+1])/4.;
+	      y=dy2+ly*(4-pad[i+1])/4.;
 	      cairo_line_to(cr,x,y);
 	      
 	      cairo_stroke(cr);
@@ -2845,11 +3158,11 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	    if((pel[i]>0)&&(pel[i+1]>0)){
 	      if( (fabs(ppa[i]-ppa[i+1])<180) ) {
 		x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		y=dy+ly*(360-(ppa[i]+180))/360;
+		y=dy2+ly*(360-(ppa[i]+180))/360;
 		cairo_move_to(cr,x,y);
 		
 		x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		y=dy+ly*(360-(ppa[i+1]+180))/360;
+		y=dy2+ly*(360-(ppa[i+1]+180))/360;
 		cairo_line_to(cr,x,y);
 		
 		cairo_stroke(cr);
@@ -2857,19 +3170,19 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	      else{
 		if(ppa[i]<0){
 		  x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(ppa[i]+180))/360;
+		  y=dy2+ly*(360-(ppa[i]+180))/360;
 		  cairo_move_to(cr,x,y);
 		  
 		  x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(ppa[i+1]-360+180))/360;
+		  y=dy2+ly*(360-(ppa[i+1]-360+180))/360;
 		  cairo_line_to(cr,x,y);
 		  
 		  x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(ppa[i]+360+180))/360;
+		  y=dy2+ly*(360-(ppa[i]+360+180))/360;
 		  cairo_move_to(cr,x,y);
 		    
 		  x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(ppa[i+1]+180))/360;
+		  y=dy2+ly*(360-(ppa[i+1]+180))/360;
 		  cairo_line_to(cr,x,y);
 		  
 		  cairo_stroke(cr);
@@ -2893,11 +3206,11 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	  
 	  for(i=1;i<=iend-1;i++){
 	    x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-	    y=dy+ly*(90-pel[i])/90;
+	    y=dy2+ly*(90-pel[i])/90;
 	    cairo_move_to(cr,x,y);
 	    
 	    x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-	    y=dy+ly*(90-pel[i+1])/90;
+	    y=dy2+ly*(90-pel[i+1])/90;
 	    cairo_line_to(cr,x,y);
 	    
 	    cairo_stroke(cr);
@@ -2907,7 +3220,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	    y_tr=fabs(hg->obs_latitude-oequ_prec.dec);
 	    
 	    cairo_move_to(cr,dx+lx*(JD_tr-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0),
-			  dy+ly*y_tr/90.);
+			  dy2+ly*y_tr/90.);
 	    
 	    if(i_list==hg->plot_i){
 	      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
@@ -2948,11 +3261,11 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	    if((pel[i]>0)&&(pel[i+1]>0)){
 	      if( (fabs(ppa[i]-ppa[i+1])<180) ) {
 		x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		y=dy+ly*(360-(ppa[i]+180))/360;
+		y=dy2+ly*(360-(ppa[i]+180))/360;
 		cairo_move_to(cr,x,y);
 		
 		x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		y=dy+ly*(360-(ppa[i+1]+180))/360;
+		y=dy2+ly*(360-(ppa[i+1]+180))/360;
 		cairo_line_to(cr,x,y);
 		
 		cairo_stroke(cr);
@@ -2961,19 +3274,19 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	      else{
 		if(ppa[i]<0){
 		  x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(ppa[i]+180))/360;
+		  y=dy2+ly*(360-(ppa[i]+180))/360;
 		  cairo_move_to(cr,x,y);
 		  
 		  x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(ppa[i+1]-360+180))/360;
+		  y=dy2+ly*(360-(ppa[i+1]-360+180))/360;
 		  cairo_line_to(cr,x,y);
 		  
 		  x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(ppa[i]+360+180))/360;
+		  y=dy2+ly*(360-(ppa[i]+360+180))/360;
 		  cairo_move_to(cr,x,y);
 		    
 		  x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(ppa[i+1]+180))/360;
+		  y=dy2+ly*(360-(ppa[i+1]+180))/360;
 		  cairo_line_to(cr,x,y);
 		  
 		  cairo_stroke(cr);
@@ -2998,11 +3311,11 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	  
 	  for(i=1;i<=iend-1;i++){
 	    x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-	    y=dy+ly*(90-pel[i])/90;
+	    y=dy2+ly*(90-pel[i])/90;
 	    cairo_move_to(cr,x,y);
 	    
 	    x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-	    y=dy+ly*(90-pel[i+1])/90;
+	    y=dy2+ly*(90-pel[i+1])/90;
 	    cairo_line_to(cr,x,y);
 	    
 	    cairo_stroke(cr);
@@ -3012,7 +3325,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	    y_tr=fabs(hg->obs_latitude-oequ_prec.dec);
 	    
 	    cairo_move_to(cr,dx+lx*(JD_tr-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0),
-			  dy+ly*y_tr/90.);
+			  dy2+ly*y_tr/90.);
 	    
 	    if(i_list==hg->plot_i){
 	      cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
@@ -3052,11 +3365,11 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	  for(i=1;i<=iend-2;i++){
 	    if(((pel[i]>0)&&(pel[i+1]>0))&&((sep[i]>0)&&sep[i+1]>0)){
 	      x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-	      y=dy+ly*(180-sep[i])/180;
+	      y=dy2+ly*(180-sep[i])/180;
 	      cairo_move_to(cr,x,y);
 	      
 	      x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-	      y=dy+ly*(180-sep[i+1])/180;
+	      y=dy2+ly*(180-sep[i+1])/180;
 	      cairo_line_to(cr,x,y);
 
 	      if(i_list==hg->plot_i){
@@ -3090,11 +3403,11 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	    if((pel[i]>0)&&(pel[i+1]>0)){
 	      if( (fabs(phpa[i]-phpa[i+1])<180) ) {
 		x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		y=dy+ly*(360-(phpa[i]+180))/360;
+		y=dy2+ly*(360-(phpa[i]+180))/360;
 		cairo_move_to(cr,x,y);
 		
 		x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		y=dy+ly*(360-(phpa[i+1]+180))/360;
+		y=dy2+ly*(360-(phpa[i+1]+180))/360;
 		cairo_line_to(cr,x,y);
 		
 		cairo_stroke(cr);
@@ -3103,38 +3416,38 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	      else{
 		if(phpa[i]<0){
 		  x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(phpa[i]+180))/360;
+		  y=dy2+ly*(360-(phpa[i]+180))/360;
 		  cairo_move_to(cr,x,y);
 		  
 		  x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(phpa[i+1]-360+180))/360;
+		  y=dy2+ly*(360-(phpa[i+1]-360+180))/360;
 		  cairo_line_to(cr,x,y);
 		  
 		  x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(phpa[i]+360+180))/360;
+		  y=dy2+ly*(360-(phpa[i]+360+180))/360;
 		  cairo_move_to(cr,x,y);
 		    
 		  x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(phpa[i+1]+180))/360;
+		  y=dy2+ly*(360-(phpa[i+1]+180))/360;
 		  cairo_line_to(cr,x,y);
 		  
 		  cairo_stroke(cr);
 		}
 		else{
 		  x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(phpa[i]+180))/360;
+		  y=dy2+ly*(360-(phpa[i]+180))/360;
 		  cairo_move_to(cr,x,y);
 		  
 		  x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(phpa[i+1]+360+180))/360;
+		  y=dy2+ly*(360-(phpa[i+1]+360+180))/360;
 		  cairo_line_to(cr,x,y);
 		  
 		  x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(phpa[i]-360+180))/360;
+		  y=dy2+ly*(360-(phpa[i]-360+180))/360;
 		  cairo_move_to(cr,x,y);
 		    
 		  x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(phpa[i+1]+180))/360;
+		  y=dy2+ly*(360-(phpa[i+1]+180))/360;
 		  cairo_line_to(cr,x,y);
 		  
 		  cairo_stroke(cr);
@@ -3151,11 +3464,11 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	      if((pel[i]>0)&&(pel[i+1]>0)){
 		if( (fabs(ppa[i]-ppa[i+1])<180) ) {
 		  x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(ppa[i]+180))/360;
+		  y=dy2+ly*(360-(ppa[i]+180))/360;
 		  cairo_move_to(cr,x,y);
 		  
 		  x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		  y=dy+ly*(360-(ppa[i+1]+180))/360;
+		  y=dy2+ly*(360-(ppa[i+1]+180))/360;
 		  cairo_line_to(cr,x,y);
 		  
 		  cairo_stroke(cr);
@@ -3163,19 +3476,19 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 		else{
 		  if(ppa[i]<0){
 		    x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		    y=dy+ly*(360-(ppa[i]+180))/360;
+		    y=dy2+ly*(360-(ppa[i]+180))/360;
 		    cairo_move_to(cr,x,y);
 		  
 		    x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		    y=dy+ly*(360-(ppa[i+1]-360+180))/360;
+		    y=dy2+ly*(360-(ppa[i+1]-360+180))/360;
 		    cairo_line_to(cr,x,y);
 		  
 		    x=dx+lx*(pjd[i]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		    y=dy+ly*(360-(ppa[i]+360+180))/360;
+		    y=dy2+ly*(360-(ppa[i]+360+180))/360;
 		    cairo_move_to(cr,x,y);
 		    
 		    x=dx+lx*(pjd[i+1]-hg->plot_jd0)/(hg->plot_jd1-hg->plot_jd0);
-		    y=dy+ly*(360-(ppa[i+1]+180))/360;
+		    y=dy2+ly*(360-(ppa[i+1]+180))/360;
 		    cairo_line_to(cr,x,y);
 		    
 		    cairo_stroke(cr);
@@ -3227,8 +3540,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 }
 
 
-static gboolean
-refresh_plot (GtkWidget *widget, gpointer data)
+gboolean refresh_plot (GtkWidget *widget, gpointer data)
 {
   typHOE *hg = (typHOE *)data;
 
@@ -3300,6 +3612,7 @@ gboolean resize_plot_cairo(GtkWidget *widget,
   typHOE *hg;
   GdkScrollDirection direction;
   gint old_zoom;
+  gint x, y;
 
   direction = event->direction;
   hg=(typHOE *)userdata;
@@ -3307,6 +3620,32 @@ gboolean resize_plot_cairo(GtkWidget *widget,
   old_zoom=hg->plot_zoom;
 
   if(flagPlot){
+    if(old_zoom==0){
+      GtkAllocation *allocation=g_new(GtkAllocation, 1);
+      gint width;
+    
+      gtk_widget_get_allocation(widget,allocation);
+      width= allocation->width;
+    
+#ifdef USE_GTK3
+      gdk_window_get_device_position(gtk_widget_get_window(widget),
+				     event->device, &x,&y,NULL);
+#else
+      gdk_window_get_pointer(gtk_widget_get_window(widget),&x,&y,NULL);
+#endif
+      if((x > (gint)(0.1*(gdouble)width))
+	 && (x < (gint)(0.9*(gdouble)width))){
+	hg->plot_zoomx=x;
+	hg->plot_zoomr=((gdouble)x-0.5*(gdouble)width)
+	  /(0.8*(gdouble)width);
+      }
+      else{
+	hg->plot_zoomx=-1;
+      }
+      
+      g_free(allocation);
+    }
+
     if(direction & GDK_SCROLL_DOWN){
       if(hg->plot_zoom>0){
 	hg->plot_zoom--;
@@ -3326,13 +3665,27 @@ gboolean resize_plot_cairo(GtkWidget *widget,
   return(FALSE);
 }
   
-static void do_plot_moon (GtkWidget *w,   gpointer gdata)
+void do_plot_moon (GtkWidget *w,   gpointer gdata)
 {
   typHOE *hg;
 
   hg=(typHOE *)gdata;
   
   hg->plot_moon=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
+  
+  if(flagPlot){
+    draw_plot_cairo(hg->plot_dw,hg);
+  }
+}
+
+
+void do_plot_pam (GtkWidget *w,   gpointer gdata)
+{
+  typHOE *hg;
+
+  hg=(typHOE *)gdata;
+  
+  hg->plot_pam=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
   
   if(flagPlot){
     draw_plot_cairo(hg->plot_dw,hg);

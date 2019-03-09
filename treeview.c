@@ -386,32 +386,54 @@ void lock_cell_data_func(GtkTreeViewColumn *col ,
 }
 #endif
 
-void double_cell_data_func(GtkTreeViewColumn *col , 
-			   GtkCellRenderer *renderer,
-			   GtkTreeModel *model, 
-			   GtkTreeIter *iter,
-			   gpointer user_data)
+void obj_cell_data_func(GtkTreeViewColumn *col , 
+			GtkCellRenderer *renderer,
+			GtkTreeModel *model, 
+			GtkTreeIter *iter,
+			gpointer user_data)
 {
   const guint index = GPOINTER_TO_UINT(user_data);
   guint64 size;
-  gdouble value;
-  gchar *str;
-
-  gtk_tree_model_get (model, iter, 
-		      index, &value,
-		      -1);
+  gint int_value;
+  gdouble double_value;
+  gchar *str=NULL;
 
   switch (index) {
   case COLUMN_OBJ_RA:
-    str=g_strdup_printf("%09.2lf",value);
+  case COLUMN_OBJ_DEC:
+  case COLUMN_OBJ_EQUINOX:
+    gtk_tree_model_get (model, iter, 
+			index, &double_value,
+			-1);
+    break;
+
+  case COLUMN_OBJ_PAM:
+    gtk_tree_model_get (model, iter, 
+			index, &int_value,
+			-1);
+    break;
+  }
+
+  switch (index) {
+  case COLUMN_OBJ_RA:
+    str=g_strdup_printf("%09.2lf",double_value);
     break;
 
   case COLUMN_OBJ_DEC:
-    str=g_strdup_printf("%+010.2lf",value);
+    str=g_strdup_printf("%+010.2lf",double_value);
     break;
 
   case COLUMN_OBJ_EQUINOX:
-    str=g_strdup_printf("%7.2lf",value);
+    str=g_strdup_printf("%7.2lf",double_value);
+    break;
+    
+  case COLUMN_OBJ_PAM:
+    if(int_value<0){
+      str=NULL;
+    }
+    else{
+      str=g_strdup_printf("%d",int_value);
+    }
     break;
   }
 
@@ -828,6 +850,10 @@ void tree_update_azel_item(typHOE *hg,
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 		       COLUMN_OBJ_EQUINOX, hg->obj[i_list].equinox, -1);
   }
+  
+  // PAM
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		     COLUMN_OBJ_PAM, hg->obj[i_list].pam, -1);
   
   // NOTE
   if(hg->show_note){
@@ -1257,6 +1283,7 @@ create_items_model (typHOE *hg)
                               G_TYPE_DOUBLE,  // ra
 			      G_TYPE_DOUBLE,  // dec
                               G_TYPE_DOUBLE,  // equinox
+			      G_TYPE_INT,     // PAM
 			      G_TYPE_STRING);  // NOTE
 
   //gtk_list_store_set_column_types (GTK_LIST_STORE (model), 1, 
@@ -3986,7 +4013,7 @@ add_columns (typHOE *hg,
 						     COLUMN_OBJ_RA,
 						     NULL);
     gtk_tree_view_column_set_cell_data_func(column, renderer,
-					    double_cell_data_func,
+					    obj_cell_data_func,
 					    GUINT_TO_POINTER(COLUMN_OBJ_RA),
 					    NULL);
     gtk_tree_view_column_set_sort_column_id(column,COLUMN_OBJ_RA);
@@ -4015,7 +4042,7 @@ add_columns (typHOE *hg,
 						     COLUMN_OBJ_DEC,
 						     NULL);
     gtk_tree_view_column_set_cell_data_func(column, renderer,
-					    double_cell_data_func,
+					    obj_cell_data_func,
 					    GUINT_TO_POINTER(COLUMN_OBJ_DEC),
 					    NULL);
     gtk_tree_view_column_set_sort_column_id(column,COLUMN_OBJ_DEC);
@@ -4042,12 +4069,30 @@ add_columns (typHOE *hg,
 						     COLUMN_OBJ_EQUINOX,
 						     NULL);
     gtk_tree_view_column_set_cell_data_func(column, renderer,
-					    double_cell_data_func,
+					    obj_cell_data_func,
 					    GUINT_TO_POINTER(COLUMN_OBJ_EQUINOX),
 					    NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
   }
 
+  if(hg->show_pam){
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set (renderer,
+		  "editable", FALSE,
+		  NULL);
+    g_object_set_data (G_OBJECT (renderer), "column", 
+		       GINT_TO_POINTER (COLUMN_OBJ_PAM));
+    column=gtk_tree_view_column_new_with_attributes ("PAM",
+						     renderer,
+						     "text",
+						     COLUMN_OBJ_PAM,
+						     NULL);
+    gtk_tree_view_column_set_cell_data_func(column, renderer,
+					    obj_cell_data_func,
+					    GUINT_TO_POINTER(COLUMN_OBJ_PAM),
+					    NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+  }
 
   /* Note column */
   if(hg->show_note){

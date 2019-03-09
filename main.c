@@ -94,7 +94,7 @@ void ReadConf();
 
 
 gboolean close_popup();
-static void destroy_popup();
+gboolean destroy_popup();
 
 
 
@@ -559,6 +559,53 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);
   }
 
+  bar =gtk_separator_menu_item_new();
+  gtk_widget_show (bar);
+  gtk_container_add (GTK_CONTAINER (menu), bar);
+
+  {
+    GtkWidget *new_menu; 
+    GtkWidget *popup_button;
+    GtkWidget *bar;
+
+    new_menu = gtk_menu_new();
+    gtk_widget_show (new_menu);
+
+    //Non-Sidereal/Merge JPL
+    pixbuf = gdk_pixbuf_new_from_resource ("/icons/lgs_icon.png", NULL);
+    pixbuf2=gdk_pixbuf_scale_simple(pixbuf,w,h,GDK_INTERP_BILINEAR);
+    image=gtk_image_new_from_pixbuf (pixbuf2);
+    g_object_unref(G_OBJECT(pixbuf));
+    g_object_unref(G_OBJECT(pixbuf2));
+#ifdef USE_GTK3
+    popup_button =gtkut_image_menu_item_new_with_label (image,
+							"Import Collision Data (PAM)");
+#else
+    popup_button =gtk_image_menu_item_new_with_label ("Import Collision Data (PAM)");
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
+    gtk_widget_show (popup_button);
+    gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
+    my_signal_connect (popup_button, "activate",lgs_read_pam,(gpointer)hg);
+
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("document-save", GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Export PAM to CSV for all targets");
+#else
+    image=gtk_image_new_from_stock (GTK_STOCK_SAVE, GTK_ICON_SIZE_MENU);
+    popup_button =gtk_image_menu_item_new_with_label ("Export PAM to CSV for all targets");
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
+    gtk_widget_show (popup_button);
+    gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
+    my_signal_connect (popup_button, "activate",do_save_pam_all,(gpointer)hg);
+    
+    popup_button =gtk_menu_item_new_with_label ("LGS");
+    gtk_widget_show (popup_button);
+    gtk_container_add (GTK_CONTAINER (menu), popup_button);
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(popup_button),new_menu);    
+  }
+   
   bar =gtk_separator_menu_item_new();
   gtk_widget_show (bar);
   gtk_container_add (GTK_CONTAINER (menu), bar);
@@ -9113,7 +9160,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gboolean tmp_allsky_pixbuf_flag0;
   gboolean tmp_show_def,tmp_show_elmax,tmp_show_secz,tmp_show_ha,tmp_show_ad,
     tmp_show_ang,tmp_show_hpa,tmp_show_moon,
-    tmp_show_ra,tmp_show_dec,tmp_show_equinox,tmp_show_note;
+    tmp_show_ra,tmp_show_dec,tmp_show_equinox,tmp_show_pam,tmp_show_note;
 #ifdef USE_XMLRPC
   gboolean tmp_show_rt;
   gchar *tmp_ro_ns_host;
@@ -9206,7 +9253,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   tmp_show_moon    =hg->show_moon;
   tmp_show_ra      =hg->show_ra;
   tmp_show_dec     =hg->show_dec;
-  tmp_show_equinox   =hg->show_equinox;
+  tmp_show_equinox =hg->show_equinox;
+  tmp_show_pam     =hg->show_pam;
   tmp_show_note    =hg->show_note;
 
 #ifdef USE_XMLRPC
@@ -10945,11 +10993,23 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     cc_get_toggle,
 		     &tmp_show_equinox);
 
-  check = gtk_check_button_new_with_label("Note");
+  check = gtk_check_button_new_with_label("PAM");
 #ifdef USE_GTK3
   gtk_grid_attach(GTK_GRID(table1), check, 0, 3, 1, 1);
 #else
   gtk_table_attach(GTK_TABLE(table1), check, 0, 1, 3, 4,
+		   GTK_FILL,GTK_SHRINK,0,0);
+#endif
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_pam);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_show_pam);
+  
+  check = gtk_check_button_new_with_label("Note");
+#ifdef USE_GTK3
+  gtk_grid_attach(GTK_GRID(table1), check, 1, 3, 1, 1);
+#else
+  gtk_table_attach(GTK_TABLE(table1), check, 1, 2, 3, 4,
 		   GTK_FILL,GTK_SHRINK,0,0);
 #endif
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->show_note);
@@ -12113,6 +12173,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->show_ra	  = tmp_show_ra;
     hg->show_dec  = tmp_show_dec;
     hg->show_equinox= tmp_show_equinox;
+    hg->show_pam  = tmp_show_pam;
     hg->show_note = tmp_show_note;
 
 #ifdef USE_XMLRPC
@@ -12251,6 +12312,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->show_ra	  = TRUE;
     hg->show_dec  = TRUE;
     hg->show_equinox= TRUE;
+    hg->show_pam  = TRUE;
     hg->show_note = TRUE;
 
 #ifdef USE_XMLRPC
@@ -12584,6 +12646,7 @@ void param_init(typHOE *hg){
 
   hg->plot_mode=PLOT_EL;
   hg->plot_moon=TRUE;
+  hg->plot_pam=FALSE;
   hg->plot_timer=-1;
   hg->plot_center=PLOT_CENTER_CURRENT;
   hg->plot_zoom=0;
@@ -12829,6 +12892,10 @@ void param_init(typHOE *hg){
   hg->filename_jpl=NULL;
   hg->filename_tscconv=NULL;
   hg->filehead=NULL;
+  hg->filename_lgs_pam=NULL;
+  hg->filename_pamout=NULL;
+  hg->dirname_pamout=NULL;
+  hg->pam_name=NULL;
   
   
   calc_moon(hg);
@@ -13040,6 +13107,8 @@ void init_obj(OBJpara *obj){
   obj->ope=0;
   obj->ope_i=0;
 
+  obj->pam=-1;
+  
   if(obj->trdb_str) g_free(obj->trdb_str);
   obj->trdb_str=NULL;
   obj->trdb_band_max=0;
@@ -13655,6 +13724,7 @@ void WriteConf(typHOE *hg){
   xmms_cfg_write_boolean(cfgfile, "Show", "RA",hg->show_ra);
   xmms_cfg_write_boolean(cfgfile, "Show", "Dec",hg->show_dec);
   xmms_cfg_write_boolean(cfgfile, "Show", "Equinox",hg->show_equinox);
+  xmms_cfg_write_boolean(cfgfile, "Show", "PAM",hg->show_pam);
   xmms_cfg_write_boolean(cfgfile, "Show", "Note",hg->show_note);
 
 #ifdef USE_XMLRPC
@@ -14080,6 +14150,10 @@ void ReadConf(typHOE *hg)
       hg->show_equinox =b_buf;
     else
       hg->show_equinox =TRUE;
+    if(xmms_cfg_read_boolean(cfgfile, "Show", "PAM", &b_buf))
+      hg->show_pam =b_buf;
+    else
+      hg->show_pam =TRUE;
     if(xmms_cfg_read_boolean(cfgfile, "Show", "Note", &b_buf))
       hg->show_note =b_buf;
     else
@@ -14264,6 +14338,7 @@ void ReadConf(typHOE *hg)
     hg->show_ra=TRUE;
     hg->show_dec=TRUE;
     hg->show_equinox=TRUE;
+    hg->show_pam=TRUE;
     hg->show_note=TRUE;
 
 #ifdef USE_XMLRPC
@@ -14868,35 +14943,51 @@ void do_sync_ope (GtkWidget *widget, gpointer gdata)
 #endif
 
 
-void popup_message(GtkWidget *parent, gchar* stock_id, gint delay, ...){
+void popup_message(GtkWidget *parent, gchar* stock_id,gint delay, ...){
   va_list args;
   gchar *msg1;
   GtkWidget *dialog;
   GtkWidget *label;
   GtkWidget *button;
   GtkWidget *pixmap;
-  GtkWidget *hbox, *vbox;
+  GtkWidget *hbox;
+  GtkWidget *vbox;
   gint timer;
 
   va_start(args, delay);
 
-  dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(parent));
-
-  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_MOUSE);
+  if(delay>0){
+    dialog = gtk_dialog_new();
+  }
+  else{
+    dialog = gtk_dialog_new_with_buttons("Sky Monitor : Message",
+					 GTK_WINDOW(parent),
+					 GTK_DIALOG_MODAL,
+#ifdef USE_GTK3
+					 "_Yes",GTK_RESPONSE_YES,
+#else
+					 GTK_STOCK_YES,GTK_RESPONSE_YES,
+#endif
+					 NULL);
+  }
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(parent));
+  gtk_window_set_title(GTK_WINDOW(dialog),"HOE : Message");
+
+#if !GTK_CHECK_VERSION(2,21,8)
+  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),FALSE);
+#endif
 
   if(delay>0){
     timer=g_timeout_add(delay*1000, (GSourceFunc)close_popup,
 			(gpointer)dialog);
+    my_signal_connect(dialog,"delete-event",destroy_popup, &timer);
   }
 
-  my_signal_connect(dialog,"delete-event",destroy_popup, &timer);
-
-  hbox=gtkut_hbox_new(FALSE,5);
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     hbox, FALSE,FALSE,0);
+		     hbox,FALSE, FALSE, 0);
 
 #ifdef USE_GTK3
   pixmap=gtk_image_new_from_icon_name (stock_id,
@@ -14908,8 +14999,9 @@ void popup_message(GtkWidget *parent, gchar* stock_id, gint delay, ...){
 
   gtk_box_pack_start(GTK_BOX(hbox), pixmap,FALSE, FALSE, 0);
 
-  vbox=gtkut_vbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(hbox),vbox, FALSE,FALSE,0);
+  vbox = gtkut_vbox_new(FALSE,2);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+  gtk_box_pack_start(GTK_BOX(hbox),vbox,FALSE, FALSE, 0);
 
   while(1){
     msg1=va_arg(args,gchar*);
@@ -14922,16 +15014,21 @@ void popup_message(GtkWidget *parent, gchar* stock_id, gint delay, ...){
 #else
     gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
 #endif
-    gtk_box_pack_start(GTK_BOX(vbox), label,TRUE,TRUE,0);
+    gtk_box_pack_start(GTK_BOX(vbox),
+		       label,TRUE,TRUE,0);
   }
 
   va_end(args);
 
   gtk_widget_show_all(dialog);
-  gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
-  gtk_dialog_run(GTK_DIALOG(dialog));
 
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+  if(delay>0){
+    gtk_main();
+  }
+  else{
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+  }
 }
 
 gboolean close_popup(gpointer data)
@@ -14940,14 +15037,17 @@ gboolean close_popup(gpointer data)
 
   dialog=(GtkWidget *)data;
 
-  gtk_dialog_response(GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
+  gtk_main_quit();
+  gtk_widget_destroy(GTK_WIDGET(dialog));
 
   return(FALSE);
 }
 
-static void destroy_popup(GtkWidget *w, GdkEvent *event, gint *data)
+gboolean destroy_popup(GtkWidget *w, GdkEvent *event, gint *data)
 {
   g_source_remove(*data);
+  gtk_main_quit();
+  return(FALSE);
 }
 
 

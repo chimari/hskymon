@@ -63,6 +63,8 @@
 
 #include "io_gui.h"
 
+#include "lgs.h"
+
 
 #ifdef USE_WIN32
 #define USER_CONFFILE "hskymon.ini"
@@ -345,6 +347,53 @@ static const gchar* cal_month[]={"Jan",
 				 "Oct",
 				 "Nov",
 				 "Dec"};
+
+#ifdef USE_GTK3
+static GdkRGBA color_comment = {0.87, 0.00, 0.00, 1};
+static GdkRGBA color_focus =   {0.53, 0.27, 0.00, 1};
+static GdkRGBA color_calib =   {0.00, 0.53, 0.00, 1};
+static GdkRGBA color_black =   {0.00, 0.00, 0.00, 1};
+static GdkRGBA color_red   =   {1.00, 0.00, 0.00, 1};
+static GdkRGBA color_blue =    {0.00, 0.00, 1.00, 1};
+static GdkRGBA color_white =   {1.00, 1.00, 1.00, 1};
+static GdkRGBA color_gray1 =   {0.40, 0.40, 0.40, 1};
+static GdkRGBA color_gray2 =   {0.80, 0.80, 0.80, 1};
+static GdkRGBA color_pink =    {1.00, 0.40, 0.40, 1};
+static GdkRGBA color_pink2 =   {1.00, 0.80, 0.80, 1};
+static GdkRGBA color_pale =    {0.40, 0.40, 1.00, 1};
+static GdkRGBA color_pale2 =   {0.80, 0.80, 1.00, 1};
+static GdkRGBA color_orange =  {1.00, 0.80, 0.40, 1};
+static GdkRGBA color_orange2 = {1.00, 1.00, 0.80, 1};
+static GdkRGBA color_green  =  {0.40, 0.80, 0.80, 1};
+static GdkRGBA color_green2 =  {0.80, 1.00, 0.80, 1};
+static GdkRGBA color_purple2 = {1.00, 0.80, 1.00, 1};
+static GdkRGBA color_com1 =    {0.00, 0.53, 0.00, 1};
+static GdkRGBA color_com2 =    {0.73, 0.53, 0.00, 1};
+static GdkRGBA color_com3 =    {0.87, 0.00, 0.00, 1};
+#else
+static GdkColor color_comment = {0, 0xDDDD, 0x0000, 0x0000};
+static GdkColor color_focus = {0, 0x8888, 0x4444, 0x0000};
+static GdkColor color_calib = {0, 0x0000, 0x8888, 0x0000};
+static GdkColor color_black = {0, 0, 0, 0};
+static GdkColor color_red   = {0, 0xFFFF, 0, 0};
+static GdkColor color_blue = {0, 0, 0, 0xFFFF};
+static GdkColor color_white = {0, 0xFFFF, 0xFFFF, 0xFFFF};
+static GdkColor color_gray1 = {0, 0x6666, 0x6666, 0x6666};
+static GdkColor color_gray2 = {0, 0xBBBB, 0xBBBB, 0xBBBB};
+static GdkColor color_pink = {0, 0xFFFF, 0x6666, 0x6666};
+static GdkColor color_pink2 = {0, 0xFFFF, 0xCCCC, 0xCCCC};
+static GdkColor color_pale = {0, 0x6666, 0x6666, 0xFFFF};
+static GdkColor color_pale2 = {0, 0xCCCC, 0xCCCC, 0xFFFF};
+static GdkColor color_orange = {0, 0xFFFF, 0xCCCC, 0x6666};
+static GdkColor color_orange2 = {0, 0xFFFF, 0xFFFF, 0xCCCC};
+static GdkColor color_green = {0, 0x6666, 0xCCCC, 0x6666};
+static GdkColor color_green2 = {0, 0xCCCC, 0xFFFF, 0xCCCC};
+static GdkColor color_purple2 = {0, 0xFFFF, 0xCCCC, 0xFFFF};
+static GdkColor color_com1 = {0, 0x0000, 0x8888, 0x0000};
+static GdkColor color_com2 = {0, 0xBBBB, 0x8888, 0x0000};
+static GdkColor color_com3 = {0, 0xDDDD, 0x0000, 0x0000};
+#endif
+
 
 // Finding Chart
 enum{FC_STSCI_DSS1R, 
@@ -657,6 +706,7 @@ enum
   COLUMN_OBJ_RA,
   COLUMN_OBJ_DEC,
   COLUMN_OBJ_EQUINOX,
+  COLUMN_OBJ_PAM,
   //COLUMN_OBJ_SETUP
   COLUMN_OBJ_NOTE,
   NUM_OBJ_COLUMNS
@@ -1448,6 +1498,7 @@ struct _OBJpara{
   gdouble ra;
   gdouble dec;
   gdouble equinox;
+  gint pam;
 
   gint hash;
   gint i_nst;
@@ -1712,6 +1763,9 @@ struct _typHOE{
   gchar *filename_nst;
   gchar *filename_jpl;
   gchar *filename_tscconv;
+  gchar *filename_lgs_pam;
+  gchar *filename_pamout;
+  gchar *dirname_pamout;
   gchar *filehead;
 
 #ifdef USE_XMLRPC
@@ -1772,6 +1826,7 @@ struct _typHOE{
   gboolean show_ra;
   gboolean show_dec;
   gboolean show_equinox;
+  gboolean show_pam;
   gboolean show_note;
 
 
@@ -1815,11 +1870,14 @@ struct _typHOE{
   GtkWidget *plot_dw;
   gint plot_i;
   gboolean plot_moon;
+  gboolean plot_pam;
   gint plot_center;
   gint plot_center_transit;
   gdouble plot_jd0;
   gdouble plot_jd1;
   gint plot_zoom;
+  gint plot_zoomx;
+  gdouble plot_zoomr;
   gint plot_output;
 
 
@@ -2216,6 +2274,19 @@ struct _typHOE{
   gint std_mag2;
   gchar *std_band;
   gchar *std_sptype2;
+
+  LGS_PAM_Entry lgs_pam[MAX_LGS_PAM];
+  struct ln_zonedate pam_zonedate;
+  gint lgs_pam_i_max;
+  gchar *pam_name;
+  GtkWidget* pam_main;
+  GtkWidget *pam_tree;
+  GtkWidget *pam_label_obj;
+  GtkWidget *pam_label_pam;
+  gint pam_slot_i;
+  gint pam_obj_i;
+  gint pam_x[MAX_LGS_PAM_TIME];
+  gint pam_y[MAX_LGS_PAM_TIME];
 };
 
 
@@ -2257,6 +2328,7 @@ gboolean  flagPlot;
 gboolean  flagFC;
 gboolean  flagADC;
 gboolean  flag_getting_allsky;
+gboolean  flagPAM;
 int debug_flg;
 
 #ifndef USE_WIN32

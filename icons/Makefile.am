@@ -18,6 +18,7 @@ EXTRA_DIST = \
 	hoe_icon.png\
 	hsc_icon.png\
 	ie_icon.png\
+	lgs_icon.png\
 	moon_icon.png\
 	pdf_icon.png\
 	safari_icon.png\
