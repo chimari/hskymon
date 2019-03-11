@@ -2607,7 +2607,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	    cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.8);
 	  }
 	  else{
-	    cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.4);
+	    cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 0.4);
 	  }
 	  cairo_rectangle(cr,
 			  x_0,

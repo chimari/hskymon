@@ -13624,7 +13624,7 @@ void popup_message(GtkWidget *parent, gchar* stock_id,gint delay, ...){
   }
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(parent));
-  gtk_window_set_title(GTK_WINDOW(dialog),"HOE : Message");
+  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
 
 #if !GTK_CHECK_VERSION(2,21,8)
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog),FALSE);

@@ -68,7 +68,7 @@ gboolean ow_dialog (typHOE *hg, gchar *fname, GtkWidget *parent)
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox;
   gchar *tmp;
 
-  dialog = gtk_dialog_new_with_buttons("HOE : Overwrite?",
+  dialog = gtk_dialog_new_with_buttons("Sky Monitor : Overwrite?",
 				       GTK_WINDOW(parent),
 				       GTK_DIALOG_MODAL,
 #ifdef USE_GTK3
@@ -219,19 +219,6 @@ void hskymon_OpenFile(typHOE *hg, guint mode){
     tmp=g_strdup("Sky Monitor : Select a LGS Collision PAM file");
     tgt_file=&hg->filename_lgs_pam;
     break;
-    
-    /*
-  case OPEN_FILE_READ_HOE:
-    tmp=g_strdup("HOE : Select a Config file (.hoe)");
-    tgt_file=&hg->filename_hoe;
-    break;
-
-  case OPEN_FILE_MERGE_HOE:
-    tmp=g_strdup("HOE : Select a HOE Config file to merge its target list");
-    tgt_file=&hg->filename_hoe;
-    break;
-
-    */
   }
   
   fdialog = gtk_file_chooser_dialog_new(tmp,

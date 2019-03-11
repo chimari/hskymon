@@ -507,7 +507,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   hg->hsc_show_main = gtk_dialog_new();
   gtk_container_set_border_width(GTK_CONTAINER(hg->hsc_show_main),5);
   gtk_window_set_title(GTK_WINDOW(hg->hsc_show_main),
-		       "HOE : HSC Dithering Parameters");
+		       "Sky Monitor : HSC Dithering Parameters");
 
   my_signal_connect(hg->hsc_show_main,"destroy",
 		    close_hsc_dither, 
