@@ -1864,6 +1864,7 @@ struct _typHOE{
   gint skymon_time;
   gint skymon_objsz;
 
+  GtkWidget *pam_button;
   gint plot_mode;
   gint plot_all;
   GtkWidget *plot_main;
@@ -1958,15 +1959,17 @@ struct _typHOE{
   gint fc_ptx2;
   gint fc_pty2;
 
-  gint hsc_dithi;
-  gint hsc_dithp;
-  gint hsc_dra;
-  gint hsc_ddec;
-  gint hsc_ndith;
-  gint hsc_tdith;
-  gint hsc_rdith;
-  gint hsc_offra;
-  gint hsc_offdec;
+  GtkWidget *hsc_show_main;
+  gboolean hsc_show_ol;
+  gint hsc_show_dith_i;
+  gint hsc_show_dith_p;
+  gint hsc_show_dith_ra;
+  gint hsc_show_dith_dec;
+  gint hsc_show_dith_n;
+  gint hsc_show_dith_r;
+  gint hsc_show_dith_t;
+  gint hsc_show_osra;
+  gint hsc_show_osdec;
   GtkWidget *hsc_label_dith;
 
   gchar *std_file;
@@ -2357,6 +2360,9 @@ void cc_get_entry_double();
 void my_entry_set_width_chars();
 GtkWidget* gtkut_hbox_new();
 GtkWidget* gtkut_vbox_new();
+GtkWidget * gtkut_table_new();
+void gtkut_table_attach();
+void gtkut_table_attach_defaults();
 #ifdef USE_GTK3
 GtkWidget * gtkut_button_new_from_icon_name();
 GtkWidget * gtkut_toggle_button_new_from_icon_name();

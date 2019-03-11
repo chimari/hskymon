@@ -2397,11 +2397,15 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
     // Current Time
     if(((gfloat)hour+(gfloat)min/60.<(ihst1-24.)) 
        || (((gfloat)hour+(gfloat)min/60.>=ihst0)&&((gfloat)hour+(gfloat)min/60.<ihst1))){
+
+      cairo_save(cr);
+      
       if((gfloat)hour+(gfloat)min/60.<(ihst1-24)){
 	hour+=24;
       }
+
       if(hg->plot_pam){
-	cairo_set_source_rgba(cr, 0.8, 0.0, 0.8, 0.8);
+	cairo_set_source_rgba(cr, 0.0, 0.8, 0.0, 1.0);
       }
       else{
 	cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
@@ -2416,7 +2420,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
       if(hg->plot_pam){
-	cairo_set_source_rgba(cr, 0.8, 0.0, 0.8, 0.8);
+	cairo_set_source_rgba(cr, 0.0, 0.8, 0.0, 1.0);
       }
       else{
 	cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
@@ -2431,9 +2435,18 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	tmp=g_strdup_printf("%d:%02d",hour,min);
       }
       cairo_text_extents (cr, tmp, &extents);
-      x += -extents.width/2;
-      y = dy2 -5*scale;
+      if(hg->plot_pam){
+	x += 5*scale + extents.height;
+	y = dy2 + ly -5*scale;
+      }
+      else{
+	x += -extents.width/2;
+	y = dy2 -5*scale;
+      }
       cairo_move_to(cr, x, y);
+      if(hg->plot_pam){
+	cairo_rotate (cr, -M_PI/2);
+      }
       cairo_show_text(cr, tmp);
       if(tmp) g_free(tmp);
 
@@ -2529,13 +2542,14 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	  if(tmp) g_free(tmp);
 	}
       }
+      cairo_restore(cr);
     }
   }// HST
 
 
   // Plot PAM (LGS Collisions)
   if(hg->plot_pam){
-    if(hg->obj[hg->plot_i].pam>0){
+    if(hg->obj[hg->plot_i].pam>=0){
       gint i_slot, n_pam;
       gdouble JD_st, JD_ed, old_JD_ed, JD0, JD1, dur_s;
       gdouble x_0, x_1, x_c;

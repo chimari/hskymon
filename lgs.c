@@ -9,11 +9,11 @@ gboolean ReadLGSPAM(typHOE *hg){
   gint i_pam, i_line, i_mon, i_obj;
   gchar *buf=NULL;
   gchar *cp=NULL, *cpp=NULL;
-  gchar *tmp_char, *tmp;
+  gchar *tmp_char, *tmp, *tmp2;
   gint int_tmp;
   gboolean dec_flag;
   gdouble sep, sep_min;
-  gint i_pam_match;
+  gint i_pam_match, i_obj_match;
   gdouble d_ra, d_dec;
   struct ln_date date_st, date_ed;
 
@@ -60,7 +60,7 @@ gboolean ReadLGSPAM(typHOE *hg){
       // hour
       tmp_char=(char *)strtok(NULL,":");
       date_st.hours=(gint)g_strtod(tmp_char, NULL);
-      // hour
+      // min
       tmp_char=(char *)strtok(NULL,":");
       date_st.minutes=(gint)g_strtod(tmp_char, NULL);
       date_st.seconds=0;
@@ -237,6 +237,7 @@ gboolean ReadLGSPAM(typHOE *hg){
   fclose(fp);
   hg->lgs_pam_i_max=i_pam;
 
+  i_obj_match=0;
 
   for(i_obj=0;i_obj<hg->i_max;i_obj++){
     sep_min=LGS_PAM_ALLOW_SEP;
@@ -256,6 +257,7 @@ gboolean ReadLGSPAM(typHOE *hg){
     if(i_pam_match>=0){
       hg->lgs_pam[i_pam_match].use=TRUE;
       hg->obj[i_obj].pam=i_pam_match;
+      i_obj_match++;
     }
   }
 
@@ -268,6 +270,39 @@ gboolean ReadLGSPAM(typHOE *hg){
   
   if(hg->pam_name) g_free(hg->pam_name);
   hg->pam_name=g_path_get_basename(hg->filename_lgs_pam);
+
+  tmp=g_strdup_printf("   PAM File : %s", hg->pam_name);
+  if(i_obj_match>0){
+    tmp2=g_strdup_printf("     %d/%d objects are fouund to be matched with the PAM coordinates.", i_obj_match, hg->i_max);
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-information", 
+#else
+		  GTK_STOCK_DIALOG_INFO,
+#endif
+		  -1,
+		  tmp,
+		  " ",
+		  tmp2,
+		  NULL);
+  }
+  else{
+    tmp2=g_strdup("     NO objects are fouund to be matched with the PAM coordinates.");
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-warning", 
+#else
+		  GTK_STOCK_DIALOG_WARNING,
+#endif
+		  -1,
+		  tmp,
+		  " ",
+		  tmp2,
+		  NULL);
+  }
+  g_free(tmp);
+  g_free(tmp2);
+  
   return(TRUE);
 }
 
@@ -317,7 +352,7 @@ void create_pam_dialog(typHOE *hg)
 			       GTK_WINDOW(hg->skymon_main));
   gtk_container_set_border_width(GTK_CONTAINER(hg->pam_main),5);
   gtk_window_set_title(GTK_WINDOW(hg->pam_main),
-		       "HOE : LGS Collision Information (PAM)");
+		       "Sky Monitor : LGS Collision Information (PAM)");
   my_signal_connect(hg->pam_main,"destroy",
 		    close_pam, 
 		    (gpointer)hg);

@@ -29,13 +29,16 @@ static void cancel_fc();
 static gboolean resize_draw_fc();
 static gboolean button_draw_fc();
 void rot_pa();
+void translate_hsc_offset();
 void translate_hsc_dith();
 static void refresh_fc();
 static void orbit_fc();
-void set_hsc_dith_label();
-static void hsc_dith_back();
-static void hsc_dith_forward();
-static void cc_get_hsc_dith();
+static void hsc_dith_ol_fc();
+void set_hsc_show_dith_label();
+static void hsc_show_dith_back();
+static void hsc_show_dith_forward();
+static void cc_get_hsc_show_dith();
+void set_dss_arcmin_upper();
 static void cc_get_fc_inst();
 static void cc_get_fc_mode();
 static void do_print_fc();
@@ -87,6 +90,7 @@ void draw_focas();
 void draw_moircs();
 void draw_spcam();
 void draw_hsc();
+void draw_hsc_ol();
 void draw_fmos();
 void draw_pfs();
 
@@ -467,16 +471,24 @@ gboolean progress_timeout( gpointer data ){
 }
 
 
-void close_hsc_dither(GtkWidget *w, GtkWidget *dialog)
+void close_hsc_dither(GtkWidget *w, gpointer gdata)
 {
-  gtk_widget_destroy(dialog);
+  typHOE *hg=(typHOE *)gdata;
+    
+  gtk_widget_destroy(hg->hsc_show_main);
   flagHSCDialog=FALSE;
+  hg->hsc_show_ol=FALSE;
+  
+  if(flagFC){
+    hg->fc_output=FC_OUTPUT_WINDOW;
+    draw_fc_cairo(hg->fc_dw,hg);
+  }
 }
-
 
 void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 {
-  GtkWidget *dialog, *label, *button, *hbox, *hbox2, *frame, *spinner, *table;
+  GtkWidget *dialog, *label, *button, *hbox, *hbox2, *frame,
+    *spinner, *table, *check;
   GtkAdjustment *adj;
   typHOE *hg;
   gint i;
@@ -489,20 +501,21 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   }
 
   hg=(typHOE *)gdata;
+  hg->hsc_show_dith_p=HSC_DITH_NO;
+  hg->hsc_show_dith_i=1;
   
-  dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
-  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : HSC Dithering Parameters");
+  hg->hsc_show_main = gtk_dialog_new();
+  gtk_container_set_border_width(GTK_CONTAINER(hg->hsc_show_main),5);
+  gtk_window_set_title(GTK_WINDOW(hg->hsc_show_main),
+		       "HOE : HSC Dithering Parameters");
 
-  my_signal_connect(dialog,"destroy",
+  my_signal_connect(hg->hsc_show_main,"destroy",
 		    close_hsc_dither, 
-		    GTK_WIDGET(dialog));
+		    (gpointer)hg);
 
   hbox = gtkut_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(hg->hsc_show_main))),
 		     hbox,FALSE, FALSE, 0);
-
 
   label=gtk_label_new("Dither Type");
 #ifdef USE_GTK3
@@ -512,8 +525,8 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
 #endif
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 5);
-
-
+  
+  
   {
     GtkWidget *combo;
     GtkListStore *store;
@@ -523,32 +536,32 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
     store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
     
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "None",
+    gtk_list_store_set(store, &iter, 0, "No dither",
 		       1, HSC_DITH_NO, -1);
-    if(hg->hsc_dithp==HSC_DITH_NO) iter_set=iter;
-	
+    if(hg->hsc_show_dith_p==HSC_DITH_NO) iter_set=iter;
+    
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "5-point",
+    gtk_list_store_set(store, &iter, 0, "5-shot",
 		       1, HSC_DITH_5, -1);
-    if(hg->hsc_dithp==HSC_DITH_5) iter_set=iter;
-	
+    if(hg->hsc_show_dith_p==HSC_DITH_5) iter_set=iter;
+    
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "N-point",
+    gtk_list_store_set(store, &iter, 0, "N-shot",
 		       1, HSC_DITH_N, -1);
-    if(hg->hsc_dithp==HSC_DITH_N) iter_set=iter;
-	
-
+    if(hg->hsc_show_dith_p==HSC_DITH_N) iter_set=iter;
+    
+    
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     gtk_box_pack_start(GTK_BOX(hbox),combo,FALSE,FALSE,0);
     g_object_unref(store);
-	
+    
     renderer = gtk_cell_renderer_text_new();
     gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
     gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
-	
+    
     gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
     gtk_widget_show(combo);
-    my_signal_connect (combo,"changed",cc_get_hsc_dith, (gpointer)hg);
+    my_signal_connect (combo,"changed",cc_get_hsc_show_dith, (gpointer)hg);
   }
 
   label=gtk_label_new(" ");
@@ -567,17 +580,17 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 #endif
   gtk_box_pack_start(GTK_BOX(hbox),
 		     button,FALSE,FALSE,0);
-  my_signal_connect (button,"clicked",hsc_dith_back, (gpointer)hg);
+  my_signal_connect (button,"clicked",hsc_show_dith_back, (gpointer)hg);
 
   hg->hsc_label_dith=gtk_label_new(" 1/5 ");
 #ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_CENTER);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+  gtk_widget_set_halign (hg->hsc_label_dith, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (hg->hsc_label_dith, GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (hg->hsc_label_dith), 0.5, 0.5);
 #endif
   gtk_box_pack_start(GTK_BOX(hbox), hg->hsc_label_dith, FALSE, FALSE, 5);
-  set_hsc_dith_label(hg);
+  set_hsc_show_dith_label(hg);
   
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name(NULL,"go-next");
@@ -586,291 +599,273 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 #endif
   gtk_box_pack_start(GTK_BOX(hbox),
 		     button,FALSE,FALSE,0);
-  my_signal_connect (button,"clicked",hsc_dith_forward, (gpointer)hg);
+  my_signal_connect (button,"clicked",hsc_show_dith_forward, (gpointer)hg);
+
+  label=gtk_label_new(" ");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 5);
+
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name(NULL,"view-refresh");
+#else
+  button=gtkut_button_new_from_stock(NULL,GTK_STOCK_REFRESH);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), button,FALSE,FALSE,0);
+  my_signal_connect (button, "clicked",
+		     G_CALLBACK (refresh_fc), (gpointer)hg);
 
 
-  frame = gtk_frame_new ("5-point parameters");
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+  check = gtk_check_button_new_with_label("Draw accumulated dithering area");
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(hg->hsc_show_main))),
+		     check,FALSE, FALSE, 0);
+  my_signal_connect (check, "toggled",
+		     hsc_dith_ol_fc,
+		     (gpointer)hg);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       hg->hsc_show_ol);
+  
+  frame = gtk_frame_new ("5-shot parameters");
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(hg->hsc_show_main))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-#ifdef USE_GTK3      
-  table = gtk_grid_new();
-  gtk_grid_set_row_spacing (GTK_GRID (table), 0);
-  gtk_grid_set_column_spacing (GTK_GRID (table), 5);
-#else
-  table = gtk_table_new(4,1,FALSE);
-  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
-  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-#endif
+  table = gtkut_table_new(4, 1, FALSE, 5, 0, 5);
   gtk_container_add (GTK_CONTAINER (frame), table);
-  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
 
-  label=gtk_label_new("d_RA [arcsec]");
+  label=gtk_label_new("DITH_RA [arcsec]");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 0, 0, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
-		   GTK_FILL,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach(table, label, 0, 1, 0, 1,
+		     GTK_FILL,GTK_SHRINK,0,0);
 
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_dra,
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_show_dith_ra,
 					    60, 300,
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE); 
+			    TRUE);
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), spinner, 1, 0, 1, 1);
-#else
-  gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
 #endif
+  gtkut_table_attach(table, spinner, 1, 2, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
-		     &hg->hsc_dra);
+		     &hg->hsc_show_dith_ra);
 
 
-  label=gtk_label_new("    d_Dec [arcsec]");
+  label=gtk_label_new("    DITH_DEC [arcsec]");
 #ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 2, 0, 1, 1);
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 2, 3, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach(table, label, 2, 3, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
 
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_ddec,
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_show_dith_dec,
 					    60, 300,
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
+			    TRUE);
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), spinner, 3, 0, 1, 1);
-#else
-  gtk_table_attach(GTK_TABLE(table), spinner, 3, 4, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
 #endif
+  gtkut_table_attach(table, spinner, 3, 4, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
-		     &hg->hsc_ddec);
+		     &hg->hsc_show_dith_dec);
 
 
-  frame = gtk_frame_new ("N-point parameters");
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+  frame = gtk_frame_new ("N-shot parameters");
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(hg->hsc_show_main))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-#ifdef USE_GTK3      
-  table = gtk_grid_new();
-  gtk_grid_set_row_spacing (GTK_GRID (table), 0);
-  gtk_grid_set_column_spacing (GTK_GRID (table), 5);
-#else
-  table = gtk_table_new(6,1,FALSE);
-  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
-  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-#endif
+  table = gtkut_table_new(6, 1, FALSE, 5, 0, 5);
   gtk_container_add (GTK_CONTAINER (frame), table);
-  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
-
-  label=gtk_label_new("TDITH [deg]");
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 0, 0, 1, 1);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
-#endif
-
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_tdith,
-					    0, 90,
-					    1.0, 10.0, 0.0);
-  spinner =  gtk_spin_button_new (adj, 0, 0);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
-#ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), spinner, 1, 0, 1, 1);
-#else
-  gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
-#endif
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
-  my_signal_connect (adj, "value_changed",
-		     cc_get_adj,
-		     &hg->hsc_tdith);
-
-
-  label=gtk_label_new("    RDITH [arcsec]");
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 2, 0, 1, 1);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 2, 3, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
-#endif
-
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_rdith,
-					    60, 300,
-					    1.0, 10.0, 0.0);
-  spinner =  gtk_spin_button_new (adj, 0, 0);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
-#ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), spinner, 3, 0, 1, 1);
-#else
-  gtk_table_attach(GTK_TABLE(table), spinner, 3, 4, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
-#endif
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
-  my_signal_connect (adj, "value_changed",
-		     cc_get_adj,
-		     &hg->hsc_rdith);
-
 
   label=gtk_label_new("    NDITH");
 #ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 4, 0, 1, 1);
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 4, 5, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach(table, label, 0, 1, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
 
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_ndith,
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_show_dith_n,
 					    3, 30,
 					    1.0, 1.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
+			    TRUE);
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), spinner, 5, 0, 1, 1);
-#else
-  gtk_table_attach(GTK_TABLE(table), spinner, 5, 6, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
 #endif
+  gtkut_table_attach(table, spinner, 1, 2, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),3);
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
-		     &hg->hsc_ndith);
+		     &hg->hsc_show_dith_n);
+
+
+  label=gtk_label_new("    RDITH [arcsec]");
+#ifdef USE_GTK3
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtkut_table_attach(table, label, 2, 3, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_show_dith_r,
+					    60, 300,
+					    1.0, 10.0, 0.0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
+			    TRUE);
+#ifdef USE_GTK3      
+  gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
+#endif
+  gtkut_table_attach(table, spinner, 3, 4, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
+  my_signal_connect (adj, "value_changed",
+		     cc_get_adj,
+		     &hg->hsc_show_dith_r);
+
+  label=gtk_label_new("TDITH [deg]");
+#ifdef USE_GTK3
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtkut_table_attach(table, label, 4, 5, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_show_dith_t,
+					    0, 90,
+					    1.0, 10.0, 0.0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
+			    TRUE);
+#ifdef USE_GTK3      
+  gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
+#endif
+  gtkut_table_attach(table, spinner, 5, 6, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
+  my_signal_connect (adj, "value_changed",
+		     cc_get_adj,
+		     &hg->hsc_show_dith_t);
 
 
   frame = gtk_frame_new ("Pointing Offset");
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(hg->hsc_show_main))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-#ifdef USE_GTK3      
-  table = gtk_grid_new();
-  gtk_grid_set_row_spacing (GTK_GRID (table), 0);
-  gtk_grid_set_column_spacing (GTK_GRID (table), 5);
-#else
-  table = gtk_table_new(4,1,FALSE);
-  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
-  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-#endif
+  table = gtkut_table_new(4, 1, FALSE, 5, 0, 5);
   gtk_container_add (GTK_CONTAINER (frame), table);
-  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
 
   label=gtk_label_new("RA [arcsec]");
 #ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 0, 0, 1, 1);
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach(table, label, 0, 1, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
 
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_offra,
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_show_osra,
 					    -3000, 3000,
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
+			    TRUE);
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), spinner, 1, 0, 1, 1);
-#else
-  gtk_table_attach(GTK_TABLE(table), spinner, 1, 2, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
 #endif
+  gtkut_table_attach(table, spinner, 1, 2, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
-		     &hg->hsc_offra);
+		     &hg->hsc_show_osra);
 
 
   label=gtk_label_new("    Dec [arcsec]");
 #ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 2, 0, 1, 1);
+  gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 2, 3, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach(table, label, 2, 3, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
 
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_offdec,
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->hsc_show_osdec,
 					    -3000, 3000,
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
+			    TRUE);
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), spinner, 3, 0, 1, 1);
-#else
-  gtk_table_attach(GTK_TABLE(table), spinner, 3, 4, 0, 1,
-		   GTK_SHRINK,GTK_SHRINK,0,0);
+  gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
 #endif
+  gtkut_table_attach(table, spinner, 3, 4, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
-		     &hg->hsc_offdec);
-
-
-#ifdef USE_GTK3
-  button=gtkut_button_new_from_icon_name("Redraw","view-refresh");
-#else
-  button=gtkut_button_new_from_stock("Redraw",GTK_STOCK_REFRESH);
-#endif
-  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
-  my_signal_connect (button, "clicked",
-		     G_CALLBACK (refresh_fc), (gpointer)hg);
+		     &hg->hsc_show_osdec);
 
 #ifdef USE_GTK3
-  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+  button=gtkut_button_new_from_icon_name("Close","window-close");
 #else
   button=gtkut_button_new_from_stock("Close",GTK_STOCK_CANCEL);
 #endif
-  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
+  gtk_dialog_add_action_widget(GTK_DIALOG(hg->hsc_show_main),
+			       button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
 		    close_hsc_dither, 
-		    GTK_WIDGET(dialog));
+		    (gpointer)hg);
 
-
-  gtk_widget_show_all(dialog);
+  gtk_widget_show_all(hg->hsc_show_main); 
 }
 
 
@@ -917,17 +912,8 @@ void create_fc_dialog(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-#ifdef USE_GTK3      
-  table = gtk_grid_new();
-  gtk_grid_set_row_spacing (GTK_GRID (table), 0);
-  gtk_grid_set_column_spacing (GTK_GRID (table), 3);
-#else
-  table = gtk_table_new(5,2,FALSE);
-  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
-  gtk_table_set_col_spacings (GTK_TABLE (table), 3);
-#endif
+  table = gtkut_table_new(5, 2, FALSE, 0, 3, 0);
   gtk_container_add (GTK_CONTAINER (frame), table);
-  gtk_container_set_border_width (GTK_CONTAINER (table), 0);
 
   icon = gdk_pixbuf_new_from_resource ("/icons/dl_icon.png", NULL);
   button=gtkut_button_new_from_pixbuf(NULL, icon);
@@ -935,13 +921,11 @@ void create_fc_dialog(typHOE *hg)
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (fc_item), (gpointer)hg);
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), button, 0, 1, 1, 1);
   gtk_widget_set_halign(button,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(button,GTK_ALIGN_CENTER);
-#else
-  gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, button, 0, 1, 1, 2,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Download & Redraw");
@@ -972,13 +956,11 @@ void create_fc_dialog(typHOE *hg)
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 #ifdef USE_GTK3      
-    gtk_grid_attach(GTK_GRID(table), combo, 1, 1, 1, 1);
     gtk_widget_set_valign(combo,GTK_ALIGN_CENTER);
     gtk_widget_set_hexpand(combo,TRUE);
-#else
-    gtk_table_attach (GTK_TABLE(table), combo, 1, 2, 1, 2,
-		      GTK_FILL|GTK_EXPAND,GTK_SHRINK,0,0);
 #endif
+    gtkut_table_attach (table, combo, 1, 2, 1, 2,
+			GTK_FILL|GTK_EXPAND,GTK_SHRINK,0,0);
     g_object_unref(store);
 	
     renderer = gtk_cell_renderer_text_new();
@@ -995,12 +977,8 @@ void create_fc_dialog(typHOE *hg)
   }
 
   frame = gtk_frame_new ("Size [min]");
-#ifdef USE_GTK3      
-    gtk_grid_attach(GTK_GRID(table), frame, 2, 0, 1, 2);
-#else
-  gtk_table_attach (GTK_TABLE(table), frame, 2, 3, 0, 2,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
-#endif
+  gtkut_table_attach (table, frame, 2, 3, 0, 2,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
 
   hbox2 = gtkut_hbox_new(FALSE,0);
@@ -1019,14 +997,11 @@ void create_fc_dialog(typHOE *hg)
 		     cc_get_adj,
 		     &hg->dss_arcmin);
 
+  set_dss_arcmin_upper(hg);
 
   hg->fc_frame_col = gtk_frame_new ("Scale/Color");
-#ifdef USE_GTK3      
-    gtk_grid_attach(GTK_GRID(table), hg->fc_frame_col, 3, 0, 1, 2);
-#else
-  gtk_table_attach (GTK_TABLE(table), hg->fc_frame_col, 3, 4, 0, 2,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
-#endif
+  gtkut_table_attach (table, hg->fc_frame_col, 3, 4, 0, 2,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->fc_frame_col), 0);
 
   hbox2 = gtkut_hbox_new(FALSE,0);
@@ -1098,17 +1073,8 @@ void create_fc_dialog(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
-#ifdef USE_GTK3      
-  table = gtk_grid_new();
-  gtk_grid_set_row_spacing (GTK_GRID (table), 0);
-  gtk_grid_set_column_spacing (GTK_GRID (table), 3);
-#else
-  table = gtk_table_new(4,2,FALSE);
-  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
-  gtk_table_set_col_spacings (GTK_TABLE (table), 3);
-#endif
+  table = gtkut_table_new(4, 2, FALSE, 0, 3, 0);
   gtk_container_add (GTK_CONTAINER (frame), table);
-  gtk_container_set_border_width (GTK_CONTAINER (table), 0);
 
 
 #ifdef USE_GTK3
@@ -1119,13 +1085,11 @@ void create_fc_dialog(typHOE *hg)
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (refresh_fc), (gpointer)hg);
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), button, 0, 1, 1, 1);
   gtk_widget_set_halign(button,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(button,GTK_ALIGN_CENTER);
-#else
-  gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, button, 0, 1, 1, 2,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Redraw");
@@ -1207,13 +1171,11 @@ void create_fc_dialog(typHOE *hg)
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 #ifdef USE_GTK3      
-    gtk_grid_attach(GTK_GRID(table), combo, 1, 1, 1, 1);
     gtk_widget_set_valign(combo,GTK_ALIGN_CENTER);
     gtk_widget_set_hexpand(combo,TRUE);
-#else
-    gtk_table_attach (GTK_TABLE(table), combo, 1, 2, 1, 2,
-		      GTK_FILL|GTK_EXPAND,GTK_SHRINK,0,0);
 #endif
+    gtkut_table_attach (table, combo, 1, 2, 1, 2,
+			GTK_FILL|GTK_EXPAND,GTK_SHRINK,0,0);
     g_object_unref(store);
 	
     renderer = gtk_cell_renderer_text_new();
@@ -1228,13 +1190,11 @@ void create_fc_dialog(typHOE *hg)
   button=gtk_check_button_new_with_label("Detail");
   gtk_container_set_border_width (GTK_CONTAINER (button), 0);
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), button, 2, 1, 1, 1);
   gtk_widget_set_halign(button,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(button,GTK_ALIGN_CENTER);
-#else
-  gtk_table_attach (GTK_TABLE(table), button, 2, 3, 1, 2,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, button, 2, 3, 1, 2,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->dss_draw_slit);
   my_signal_connect(button,"toggled",
 		    G_CALLBACK (cc_get_toggle), 
@@ -1244,13 +1204,11 @@ void create_fc_dialog(typHOE *hg)
 
   frame = gtk_frame_new ("PA [deg]");
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), frame, 3, 0, 1, 2);
   gtk_widget_set_halign(frame,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(frame,GTK_ALIGN_CENTER);
-#else
-  gtk_table_attach (GTK_TABLE(table), frame, 3, 4, 0, 2,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, frame, 3, 4, 0, 2,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
 
   hbox2 = gtkut_hbox_new(FALSE,0);
@@ -1334,25 +1292,12 @@ void create_fc_dialog(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_frame), 3);
 
-#ifdef USE_GTK3      
-  table = gtk_grid_new();
-  gtk_grid_set_row_spacing (GTK_GRID (table), 0);
-  gtk_grid_set_column_spacing (GTK_GRID (table), 3);
-#else
-  table = gtk_table_new(3,2,FALSE);
-  gtk_table_set_row_spacings (GTK_TABLE (table), 0);
-  gtk_table_set_col_spacings (GTK_TABLE (table), 3);
-#endif
+  table = gtkut_table_new(3, 2, FALSE, 0, 3, 0);
   gtk_container_add (GTK_CONTAINER (hg->fcdb_frame), table);
-  gtk_container_set_border_width (GTK_CONTAINER (table), 0);
 
   label=gtk_label_new("  ");
-#ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), label, 0, 0, 1, 1);
-#else
-  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 0, 1,
-  		    GTK_SHRINK,GTK_FILL,0,0);
-#endif
+  gtkut_table_attach (table, label, 0, 1, 0, 1,
+		      GTK_SHRINK,GTK_FILL,0,0);
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name(NULL,"edit-find");
@@ -1362,13 +1307,11 @@ void create_fc_dialog(typHOE *hg)
   my_signal_connect (button, "clicked",
 		     G_CALLBACK (fcdb_item), (gpointer)hg);
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), button, 0, 1, 1, 1);
   gtk_widget_set_halign(button,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(button,GTK_ALIGN_CENTER);
-#else
-  gtk_table_attach (GTK_TABLE(table), button, 0, 1, 1, 2,
-  		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, button, 0, 1, 1, 2,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Query");
@@ -1376,13 +1319,11 @@ void create_fc_dialog(typHOE *hg)
 
   vbox1 = gtkut_vbox_new(FALSE,0);
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), vbox1, 1, 0, 1, 2);
   gtk_widget_set_halign(vbox1,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(vbox1,GTK_ALIGN_CENTER);
-#else
-  gtk_table_attach (GTK_TABLE(table), vbox1, 1, 2, 0, 2,
-  		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, vbox1, 1, 2, 0, 2,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
 
   hg->fcdb_button=gtk_check_button_new_with_label("Disp");
   gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_button), 0);
@@ -1402,12 +1343,8 @@ void create_fc_dialog(typHOE *hg)
 		    &hg->fcdb_auto);
 
   label=gtk_label_new("  ");
-#ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), label, 2, 0, 1, 1);
-#else
-  gtk_table_attach (GTK_TABLE(table), label, 2, 3, 0, 1,
-  		    GTK_SHRINK,GTK_FILL,0,0);
-#endif
+  gtkut_table_attach (table, label, 2, 3, 0, 1,
+		      GTK_SHRINK,GTK_FILL,0,0);
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name(NULL,"emblem-system");
@@ -1417,13 +1354,11 @@ void create_fc_dialog(typHOE *hg)
   my_signal_connect (button, "clicked",
 		     fcdb_para_item, (gpointer)hg);
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), button, 2, 1, 1, 1);
   gtk_widget_set_halign(button,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(button,GTK_ALIGN_CENTER);
-#else
-  gtk_table_attach (GTK_TABLE(table), button, 2, 3, 1, 2,
-  		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, button, 2, 3, 1, 2,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
 			      "Search Param.");
@@ -2213,7 +2148,12 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 
     case FC_INST_HSCDET:
     case FC_INST_HSCA:
-      draw_hsc(hg, cr, width, height, width_file, height_file, scale, r);
+      if(hg->hsc_show_ol){
+	draw_hsc_ol(hg, cr, width, height, width_file, height_file, scale, r);
+      }
+      else{
+	draw_hsc(hg, cr, width, height, width_file, height_file, scale, r);
+      }
       break;
 
     case FC_INST_FMOS:
@@ -2337,6 +2277,19 @@ static void orbit_fc (GtkWidget *widget, gpointer data)
 }
 
 
+static void hsc_dith_ol_fc (GtkWidget *widget, gpointer data)
+{
+  typHOE *hg = (typHOE *)data;
+
+  if(flagFC){
+    hg->hsc_show_ol=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  
+    hg->fc_output=FC_OUTPUT_WINDOW;
+    draw_fc_cairo(hg->fc_dw,hg);
+  }
+}
+
+
 void rot_pa(typHOE *hg, cairo_t *cr){
   gdouble angle;
   
@@ -2371,105 +2324,111 @@ void rot_pa(typHOE *hg, cairo_t *cr){
 }
 
 
-void translate_hsc_dith(cairo_t *cr, typHOE *hg, int width_file, gdouble r){
-  gdouble dra, ddec, x0, y0, x1, y1, theta;
+void translate_hsc_offset(cairo_t *cr, typHOE *hg, int width_file,
+			  gdouble r){
+  gdouble dra, ddec, theta;
+  dra=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
+    *(gdouble)hg->hsc_show_osra/60.;
+  ddec=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
+    *(gdouble)hg->hsc_show_osdec/60.;
+  theta=M_PI*(gdouble)(270-hg->dss_pa)/180.;
   
-  if((hg->fc_inst==FC_INST_HSCA)||(hg->fc_inst==FC_INST_HSCDET)){
-    dra=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-      *(gdouble)hg->hsc_offra/60.;
-    ddec=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-      *(gdouble)hg->hsc_offdec/60.;
-    theta=M_PI*(gdouble)(270-hg->dss_pa)/180.;
-    
-    if(hg->dss_flip){
-      cairo_translate(cr, 
-		      -(dra*cos(-theta)-ddec*sin(-theta)),
-		      -(dra*sin(-theta)+ddec*cos(-theta)));
-    }
-    else{
-      cairo_translate(cr, 
-		      -(dra*cos(theta)-ddec*sin(theta)),
-		      -(dra*sin(theta)+ddec*cos(theta)));
-    }
-    
-
-    switch(hg->hsc_dithp){
-    case HSC_DITH_5:
-      dra=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-	*(gdouble)hg->hsc_dra/60.;
-      ddec=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-	*(gdouble)hg->hsc_ddec/60.;
-      switch(hg->hsc_dithi){
-      case 1:
-	x0=0;
-	y0=0;
-	break;
-
-      case 2:
-	x0=+ddec*2;
-	y0=+dra*1;
-	break;
-	
-      case 3:
-	x0=-ddec*1;
-	y0=+dra*2;
-	break;
-      
-      case 4:
-	x0=-ddec*2;
-	y0=-dra*1;
-	break;
-	
-      case 5:
-	x0=+ddec*1;
-	y0=-dra*2;
-	break;
-	
-      }
-      
-      x1=x0*cos(-(gdouble)hg->dss_pa*M_PI/180)
-	-y0*sin(-(gdouble)hg->dss_pa*M_PI/180);
-      y1=x0*sin(-(gdouble)hg->dss_pa*M_PI/180)
-	+y0*cos(-(gdouble)hg->dss_pa*M_PI/180);
-
-      cairo_translate(cr, x1, y1);
-      break;
-
-    case HSC_DITH_N:
-      y0=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-	*(gdouble)hg->hsc_rdith/60*
-	cos(-(gdouble)hg->hsc_tdith*M_PI/180
-	    -2*M_PI/(gdouble)(hg->hsc_ndith)*(gdouble)(hg->hsc_dithi-1));
-      x0=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-	*(gdouble)hg->hsc_rdith/60*
-	sin(-(gdouble)hg->hsc_tdith*M_PI/180
-	    -2*M_PI/(gdouble)(hg->hsc_ndith)*(gdouble)(hg->hsc_dithi-1));
-
-      x1=x0*cos(-(gdouble)hg->dss_pa*M_PI/180)
-	-y0*sin(-(gdouble)hg->dss_pa*M_PI/180);
-      y1=x0*sin(-(gdouble)hg->dss_pa*M_PI/180)
-	+y0*cos(-(gdouble)hg->dss_pa*M_PI/180);
-
-      cairo_translate(cr, x1, y1);
-      break;
-    }
+  if(hg->dss_flip){
+    cairo_translate(cr, 
+		    -(dra*cos(-theta)-ddec*sin(-theta)),
+		    -(dra*sin(-theta)+ddec*cos(-theta)));
+  }
+  else{
+    cairo_translate(cr, 
+		    -(dra*cos(theta)-ddec*sin(theta)),
+		    -(dra*sin(theta)+ddec*cos(theta)));
   }
 }
 
-void set_hsc_dith_label (typHOE *hg){
+
+void translate_hsc_dith(cairo_t *cr, typHOE *hg, int width_file,
+			gdouble r, gint i_dith, gboolean flag_back){
+  gdouble dra, ddec, x0, y0, x1=0, y1=0, theta;
+  
+  switch(hg->hsc_show_dith_p){
+  case HSC_DITH_5:
+    dra=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
+      *(gdouble)hg->hsc_show_dith_ra/60.;
+    ddec=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
+      *(gdouble)hg->hsc_show_dith_dec/60.;
+    switch(i_dith){
+    case 1:
+      x0=0;
+      y0=0;
+      break;
+      
+    case 2:
+      x0=+ddec*2;
+      y0=+dra*1;
+      break;
+	
+    case 3:
+      x0=-ddec*1;
+      y0=+dra*2;
+      break;
+      
+    case 4:
+      x0=-ddec*2;
+      y0=-dra*1;
+      break;
+      
+    case 5:
+      x0=+ddec*1;
+      y0=-dra*2;
+	break;
+	
+    }
+    
+    x1=x0*cos(-(gdouble)hg->dss_pa*M_PI/180)
+      -y0*sin(-(gdouble)hg->dss_pa*M_PI/180);
+    y1=x0*sin(-(gdouble)hg->dss_pa*M_PI/180)
+      +y0*cos(-(gdouble)hg->dss_pa*M_PI/180);
+    break;
+    
+  case HSC_DITH_N:
+    y0=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
+      *(gdouble)hg->hsc_show_dith_r/60*
+      cos(-(gdouble)hg->hsc_show_dith_t*M_PI/180
+	  -2*M_PI/(gdouble)(hg->hsc_show_dith_n)*(gdouble)(i_dith-1));
+    x0=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
+      *(gdouble)hg->hsc_show_dith_r/60*
+      sin(-(gdouble)hg->hsc_show_dith_t*M_PI/180
+	  -2*M_PI/(gdouble)(hg->hsc_show_dith_n)*(gdouble)(i_dith-1));
+    
+    x1=x0*cos(-(gdouble)hg->dss_pa*M_PI/180)
+      -y0*sin(-(gdouble)hg->dss_pa*M_PI/180);
+    y1=x0*sin(-(gdouble)hg->dss_pa*M_PI/180)
+      +y0*cos(-(gdouble)hg->dss_pa*M_PI/180);
+    break;
+  }
+  
+  if(flag_back){
+    cairo_translate(cr, -x1, -y1);
+  }
+  else{
+    cairo_translate(cr, x1, y1);
+  }
+}
+
+void set_hsc_show_dith_label (typHOE *hg){
   gchar *tmp;
 
-  switch(hg->hsc_dithp){
+  switch(hg->hsc_show_dith_p){
   case HSC_DITH_NO:
-    tmp=g_strdup_printf(" %d/1 ",hg->hsc_dithi);
+    tmp=g_strdup_printf(" %d/1 ",hg->hsc_show_dith_i);
     break;
 
   case HSC_DITH_5:
-    tmp=g_strdup_printf(" %d/5 ",hg->hsc_dithi);
+    tmp=g_strdup_printf(" %d/5 ",hg->hsc_show_dith_i);
     break;
 
   case HSC_DITH_N:
-    tmp=g_strdup_printf(" %d/%d ",hg->hsc_dithi,hg->hsc_ndith);
+    tmp=g_strdup_printf(" %d/%d ",hg->hsc_show_dith_i,hg->hsc_show_dith_n);
     break;
   }
 
@@ -2479,58 +2438,58 @@ void set_hsc_dith_label (typHOE *hg){
 }
 
 
-static void hsc_dith_back (GtkWidget *widget,  gpointer * gdata)
+static void hsc_show_dith_back (GtkWidget *widget,  gpointer * gdata)
 {
   typHOE *hg;
 
   hg=(typHOE *)gdata;
 
-  switch(hg->hsc_dithp){
+  switch(hg->hsc_show_dith_p){
   case HSC_DITH_NO:
     return;
     break;
 
   case HSC_DITH_5:
   case HSC_DITH_N:
-    if(hg->hsc_dithi>1){
-      hg->hsc_dithi--;
-      set_hsc_dith_label(hg);
+    if(hg->hsc_show_dith_i>1){
+      hg->hsc_show_dith_i--;
+      set_hsc_show_dith_label(hg);
       if(flagFC)  draw_fc_cairo(hg->fc_dw,hg);
     }
     break;
   }
 }
 
-static void hsc_dith_forward (GtkWidget *widget,  gpointer * gdata)
+static void hsc_show_dith_forward (GtkWidget *widget,  gpointer * gdata)
 {
   typHOE *hg;
 
   hg=(typHOE *)gdata;
 
-  switch(hg->hsc_dithp){
+  switch(hg->hsc_show_dith_p){
   case HSC_DITH_NO:
     return;
     break;
 
   case HSC_DITH_5:
-    if(hg->hsc_dithi<5){
-      hg->hsc_dithi++;
-      set_hsc_dith_label(hg);
+    if(hg->hsc_show_dith_i<5){
+      hg->hsc_show_dith_i++;
+      set_hsc_show_dith_label(hg);
       if(flagFC)  draw_fc_cairo(hg->fc_dw,hg);
     }
     break;
 
   case HSC_DITH_N:
-    if(hg->hsc_dithi<hg->hsc_ndith){
-      hg->hsc_dithi++;
-      set_hsc_dith_label(hg);
+    if(hg->hsc_show_dith_i<hg->hsc_show_dith_n){
+      hg->hsc_show_dith_i++;
+      set_hsc_show_dith_label(hg);
       if(flagFC)  draw_fc_cairo(hg->fc_dw,hg);
     }
     break;
   }
 }
 
-static void cc_get_hsc_dith (GtkWidget *widget,  gpointer * gdata)
+static void cc_get_hsc_show_dith (GtkWidget *widget,  gpointer * gdata)
 {
   typHOE *hg;
   GtkTreeIter iter;
@@ -2544,15 +2503,42 @@ static void cc_get_hsc_dith (GtkWidget *widget,  gpointer * gdata)
     model=gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
     gtk_tree_model_get (model, &iter, 1, &n, -1);
 
-    hg->hsc_dithp=n;
-    hg->hsc_dithi=1;
+    hg->hsc_show_dith_p=n;
+    hg->hsc_show_dith_i=1;
 
-    set_hsc_dith_label(hg);
+    set_hsc_show_dith_label(hg);
 
     if(flagFC)  draw_fc_cairo(hg->fc_dw,hg);
   }
 }
 
+
+void set_dss_arcmin_upper(typHOE *hg){
+  switch(hg->fc_mode){
+  case FC_PANCOL:
+  case FC_PANG:
+  case FC_PANR:
+  case FC_PANI:
+  case FC_PANY:
+  case FC_PANZ:
+    if (hg->dss_arcmin>PANSTARRS_MAX_ARCMIN){
+      hg->dss_arcmin=PANSTARRS_MAX_ARCMIN;      
+    }
+    if(flagFC){
+      gtk_adjustment_set_upper(hg->fc_adj_dss_arcmin, 
+			       (gdouble)(PANSTARRS_MAX_ARCMIN));
+      gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			       (gdouble)hg->dss_arcmin);
+    }
+    break;
+  default:
+    if(flagFC){
+      gtk_adjustment_set_upper(hg->fc_adj_dss_arcmin, 
+			       (gdouble)(DSS_ARCMIN_MAX));
+    }
+    break;
+  }
+}
 
 static void cc_get_fc_inst (GtkWidget *widget,  gpointer * gdata)
 {
@@ -2861,6 +2847,8 @@ void set_dss_src_RGB (typHOE *hg, gint i)
 
 void set_fc_mode (typHOE *hg)
 {
+  set_dss_arcmin_upper(hg);
+  
   switch(hg->fc_mode){
   case FC_STSCI_DSS1R:
   case FC_STSCI_DSS1B:
@@ -3153,16 +3141,7 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
   gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Help for Finding Chart");
 
-#ifdef USE_GTK3      
-  table = gtk_grid_new();
-  gtk_grid_set_row_spacing (GTK_GRID (table), 10);
-  gtk_grid_set_column_spacing (GTK_GRID (table), 5);
-#else
-  table = gtk_table_new(2,11,FALSE);
-  gtk_table_set_row_spacings (GTK_TABLE (table), 10);
-  gtk_table_set_col_spacings (GTK_TABLE (table), 5);
-#endif
-  gtk_container_set_border_width (GTK_CONTAINER (table), 5);
+  table = gtkut_table_new(2, 11, FALSE, 10, 5, 5);
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     table,FALSE, FALSE, 0);
 
@@ -3173,13 +3152,11 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   g_object_unref(icon);
   g_object_unref(pixbuf);
 #ifdef USE_GTK3      
-  gtk_grid_attach(GTK_GRID(table), pixmap, 0, 0, 1, 1);
   gtk_widget_set_halign(pixmap,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(pixmap,GTK_ALIGN_CENTER);
-#else
-  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 0, 1,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, pixmap, 0, 1, 0, 1,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
   //g_object_unref(pixmap);
 
@@ -3187,26 +3164,24 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 1, 0, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 0, 1,
-		    GTK_FILL,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 1, 2, 0, 1,
+		      GTK_FILL,GTK_SHRINK,0,0);
   
 
 #ifdef USE_GTK3
   pixmap=gtk_image_new_from_icon_name ("view-refresh", 
 				       GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_grid_attach(GTK_GRID(table), pixmap, 0, 1, 1, 1);
   gtk_widget_set_halign(pixmap,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(pixmap,GTK_ALIGN_CENTER);
 #else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_REFRESH, 
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 1, 2,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, pixmap, 0, 1, 1, 2,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
   //g_object_unref(pixmap);
 
@@ -3214,25 +3189,23 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 1, 1, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 1, 2,
-		    GTK_FILL,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 1, 2, 1, 2,
+		      GTK_FILL,GTK_SHRINK,0,0);
 
 #ifdef USE_GTK3
   pixmap=gtk_image_new_from_icon_name ("edit-find", 
 				       GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_grid_attach(GTK_GRID(table), pixmap, 0, 2, 1, 1);
   gtk_widget_set_halign(pixmap,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(pixmap,GTK_ALIGN_CENTER);
 #else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_FIND,
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 2, 3,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, pixmap, 0, 1, 2, 3,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
   //  g_object_unref(pixmap);
 
@@ -3240,25 +3213,23 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 1, 2, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 2, 3,
-		    GTK_FILL,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 1, 2, 2, 3,
+		      GTK_FILL,GTK_SHRINK,0,0);
 
 #ifdef USE_GTK3
   pixmap=gtk_image_new_from_icon_name ("emblem-system", 
 				       GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_grid_attach(GTK_GRID(table), pixmap, 0, 3, 1, 1);
   gtk_widget_set_halign(pixmap,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(pixmap,GTK_ALIGN_CENTER);
 #else
   pixmap=gtk_image_new_from_stock (GTK_STOCK_PROPERTIES,
 				   GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_table_attach (GTK_TABLE(table), pixmap, 0, 1, 3, 4,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, pixmap, 0, 1, 3, 4,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_widget_show(pixmap);
   //g_object_unref(pixmap);
 
@@ -3266,37 +3237,34 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 1, 3, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 3, 4,
-		    GTK_FILL,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 1, 2, 3, 4,
+		      GTK_FILL,GTK_SHRINK,0,0);
 
 
   label = gtk_label_new ("<wheel-scroll>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 0, 4, 1, 1);
   gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 4, 5,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 0, 1, 4, 5,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   
   label = gtk_label_new ("  Enlarge view around cursor (upto x5)");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 1, 4, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 4, 5,
-		    GTK_FILL,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 1, 2, 4, 5,
+		      GTK_FILL,GTK_SHRINK,0,0);
 
 #ifdef USE_OSX
   label = gtk_label_new ("<option>+<wheel-scroll>");
@@ -3306,145 +3274,133 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 0, 5, 1, 1);
   gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 5, 6,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 0, 1, 5, 6,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   
   label = gtk_label_new ("  Enlarge view w/o moving the center (upto x5)");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 1, 5, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 5, 6,
-		    GTK_FILL,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 1, 2, 5, 6,
+		      GTK_FILL,GTK_SHRINK,0,0);
   
   label = gtk_label_new ("<ctrl>+<wheel-scroll>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 0, 6, 1, 1);
   gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 6, 7,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 0, 1, 6, 7,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   
   label = gtk_label_new ("  Rotate position angle (w/1 deg step)");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 1, 6, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 6, 7,
-		    GTK_FILL,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 1, 2, 6, 7,
+		      GTK_FILL,GTK_SHRINK,0,0);
   
   label = gtk_label_new ("<shift>+<wheel-scroll>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 0, 7, 1, 1);
   gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 7, 8,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 0, 1, 7, 8,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   
   label = gtk_label_new ("  Rotate position angle (w/5 deg step)");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 1, 7, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 7, 8,
-		    GTK_FILL,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 1, 2, 7, 8,
+		      GTK_FILL,GTK_SHRINK,0,0);
   
   label = gtk_label_new ("<left-click>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 0, 8, 1, 1);
   gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 8, 9,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 0, 1, 8, 9,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   
   label = gtk_label_new ("  Focus on the identified object");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 1, 8, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 8, 9,
-		    GTK_FILL,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 1, 2, 8, 9,
+		      GTK_FILL,GTK_SHRINK,0,0);
 
   label = gtk_label_new ("<middle-click>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 0, 9, 1, 1);
   gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 9, 10,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 0, 1, 9, 10,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   
   label = gtk_label_new ("  Move the clicked point to the center");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 1, 9, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 9, 10,
-		    GTK_FILL,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 1, 2, 9, 10,
+		      GTK_FILL,GTK_SHRINK,0,0);
 
   label = gtk_label_new ("<right-click>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 0, 10, 1, 1);
   gtk_widget_set_halign(label,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(label,GTK_ALIGN_CENTER);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 0, 1, 10, 11,
-		    GTK_SHRINK,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 0, 1, 10, 11,
+		      GTK_SHRINK,GTK_SHRINK,0,0);
   
   label = gtk_label_new ("  Measure the distance between 2-points (The 3rd click to clear)");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-  gtk_grid_attach(GTK_GRID(table), label, 1, 10, 1, 1);
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach (GTK_TABLE(table), label, 1, 2, 10, 11,
-		    GTK_FILL,GTK_SHRINK,0,0);
 #endif
+  gtkut_table_attach (table, label, 1, 2, 10, 11,
+		      GTK_FILL,GTK_SHRINK,0,0);
   
 
   label = gtk_label_new ("");
@@ -7244,7 +7200,10 @@ void draw_hsc(typHOE *hg,
 
   cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
   
-  translate_hsc_dith(cr, hg, width_file, r);
+  if(flagHSCDialog){
+    translate_hsc_offset(cr, hg, width_file, r);
+    translate_hsc_dith(cr, hg, width_file, r, hg->hsc_show_dith_i, FALSE);
+  }
   
   if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
   else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
@@ -7314,11 +7273,11 @@ void draw_hsc(typHOE *hg,
     
     for(i_chip=0;i_chip<HSC_CHIP_ALL;i_chip++){
       
-      if(hsc_param[i_chip].bees==2){
+      if(hsc_chips[i_chip].bees==2){
 	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.0, 0.6, 0.0, 0.6);
 	else cairo_set_source_rgba(cr, 0.4, 1.0, 0.4, 0.6);
       }
-      else if(hsc_param[i_chip].bees==0){
+      else if(hsc_chips[i_chip].bees==0){
 	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.0, 0.5, 0.6);
 	else cairo_set_source_rgba(cr, 0.8, 0.4, 0.8, 0.6);
       }
@@ -7330,18 +7289,18 @@ void draw_hsc(typHOE *hg,
       cairo_set_font_size (cr, 600*pscale);
       cairo_text_extents (cr,"000", &extents);
       
-      y_0=(-(gdouble)hsc_param[i_chip].crpix1*(gdouble)hsc_param[i_chip].cd1_1/0.015-(gdouble)hsc_param[i_chip].crpix2*(gdouble)hsc_param[i_chip].cd1_2/0.015)*pscale;
-      x_0=(-(gdouble)hsc_param[i_chip].crpix1*(gdouble)hsc_param[i_chip].cd2_1/0.015-(gdouble)hsc_param[i_chip].crpix2*(gdouble)hsc_param[i_chip].cd2_2/0.015)*pscale;
+      y_0=(-(gdouble)hsc_chips[i_chip].crpix1*(gdouble)hsc_chips[i_chip].cd1_1/0.015-(gdouble)hsc_chips[i_chip].crpix2*(gdouble)hsc_chips[i_chip].cd1_2/0.015)*pscale;
+      x_0=(-(gdouble)hsc_chips[i_chip].crpix1*(gdouble)hsc_chips[i_chip].cd2_1/0.015-(gdouble)hsc_chips[i_chip].crpix2*(gdouble)hsc_chips[i_chip].cd2_2/0.015)*pscale;
       
-      if((hsc_param[i_chip].cd1_2<0)&&(hsc_param[i_chip].cd2_1<0)){
+      if((hsc_chips[i_chip].cd1_2<0)&&(hsc_chips[i_chip].cd2_1<0)){
 	cairo_rectangle(cr, x_0-2048*pscale, y_0-4224*pscale, 2048*pscale, 4224*pscale );
 	cairo_move_to(cr, x_0-2048*pscale+2044*pscale*0.05, y_0-4224*pscale+2044*pscale*0.05-extents.y_bearing);
       }
-      else if((hsc_param[i_chip].cd1_2>0)&&(hsc_param[i_chip].cd2_1>0)){
+      else if((hsc_chips[i_chip].cd1_2>0)&&(hsc_chips[i_chip].cd2_1>0)){
 	cairo_rectangle(cr,x_0, y_0, 2048*pscale, 4224*pscale);
 	cairo_move_to(cr, x_0+2048*pscale*0.05, y_0+2048*pscale*0.05-extents.y_bearing);
       }
-      else if((hsc_param[i_chip].cd1_1>0)&&(hsc_param[i_chip].cd2_2<0)){
+      else if((hsc_chips[i_chip].cd1_1>0)&&(hsc_chips[i_chip].cd2_2<0)){
 	cairo_rectangle(cr,x_0-4224*pscale, y_0,  4224*pscale, 2048*pscale);
 	cairo_move_to(cr, x_0-4224*pscale+2048*pscale*0.05, y_0+2048*pscale*0.05-extents.y_bearing);
       }
@@ -7352,21 +7311,21 @@ void draw_hsc(typHOE *hg,
       
       cairo_set_font_size (cr, 600*pscale);
       if(hg->fc_inst==FC_INST_HSCDET){
-	tmp=g_strdup_printf("%d",hsc_param[i_chip].det_id);
+	tmp=g_strdup_printf("%d",hsc_chips[i_chip].det_id);
       }
       else{
 	
-	tmp=g_strdup_printf("%02d",hsc_param[i_chip].hsca);
+	tmp=g_strdup_printf("%02d",hsc_chips[i_chip].hsca);
       }
       cairo_show_text(cr,tmp);
       if(tmp) g_free(tmp);
       
-      if(hsc_param[i_chip].hsca==35){
+      if(hsc_chips[i_chip].hsca==35){
 	cairo_set_font_size (cr, 1600*pscale);
-	tmp=g_strdup_printf("BEES%d",hsc_param[i_chip].bees);
+	tmp=g_strdup_printf("BEES%d",hsc_chips[i_chip].bees);
 	cairo_text_extents (cr,tmp, &extents);
 	
-	if(hsc_param[i_chip].bees==0){
+	if(hsc_chips[i_chip].bees==0){
 	  cairo_move_to(cr, x_0+4224*pscale-2048*pscale*0.5-extents.width, y_0+2048*pscale*0.2-extents.y_bearing);
 	}
 	else{
@@ -7379,6 +7338,144 @@ void draw_hsc(typHOE *hg,
       cairo_stroke(cr);
       
     }
+  }
+}
+
+
+void draw_hsc_ol(typHOE *hg,
+		 cairo_t *cr,
+		 gint width, gint height,
+		 gint width_file, gint height_file,
+		 gdouble scale,
+		 gdouble r)
+{ // Drawing Inst (HSC) dithering area overlay
+  cairo_text_extents_t extents;
+  gchar *tmp;
+  gint i_chip, i_cnl, i_dead, i_dith;;
+  gdouble pscale;
+  gdouble x_0,y_0;
+  gboolean ok_ch[4], has_dead;
+  gboolean flag_draw;
+
+
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  pscale=(1.5*60.*60./(497./0.015))/60.*((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip;
+  // HSC pix scale 1.5deg = 497mm phi
+    
+  switch(hg->hsc_show_dith_p){
+  case HSC_DITH_NO:
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
+    break;
+
+  case HSC_DITH_5:
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0,
+			  1.0/5.0);
+    break;
+
+  case HSC_DITH_N:
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0,
+			  1.0/(double)hg->hsc_show_dith_n);
+    break;
+  }
+  
+  translate_hsc_offset(cr, hg, width_file, r);
+
+  for(i_dith=0;i_dith<hg->hsc_show_dith_i;i_dith++){
+    translate_hsc_dith(cr, hg, width_file, r, i_dith+1, FALSE);
+    
+    for(i_chip=0;i_chip<HSC_CHIP_ALL;i_chip++){
+      // Dead channel check
+      for(i_cnl=0;i_cnl<4;i_cnl++){
+	ok_ch[i_cnl]=TRUE;
+	has_dead=FALSE;
+      }
+      
+      for(i_dead=0;i_dead<HSC_DEAD_ALL;i_dead++){
+	if(hsc_chips[i_chip].hsca==hsc_dead[i_dead].hsca){
+	  if(hsc_chips[i_chip].bees==hsc_dead[i_dead].bees){
+	    ok_ch[hsc_dead[i_dead].ch-1]=FALSE;
+	    has_dead=TRUE;
+	  }
+	}
+      }
+      
+      if(hsc_chips[i_chip].bees==2){ // Guide Chip
+	flag_draw=FALSE;
+      }
+      else if(hsc_chips[i_chip].bees==0){
+	switch(hsc_chips[i_chip].hsca){ // Focusing chips
+	case 48:
+	case 51:
+	case 52:
+	case 57:
+	  flag_draw=FALSE;
+	  break;
+	  
+	default:
+	  flag_draw=TRUE;
+	  break;
+	}
+      }
+      else{
+	switch(hsc_chips[i_chip].hsca){ // Focusing chips
+	case 48:
+	case 51:
+	case 52:
+	case 57:
+	  flag_draw=FALSE;
+	  break;
+	  
+	default:
+	  flag_draw=TRUE;
+	  break;
+	}
+      }
+      
+      y_0=(-(gdouble)hsc_chips[i_chip].crpix1*(gdouble)hsc_chips[i_chip].cd1_1/0.015-(gdouble)hsc_chips[i_chip].crpix2*(gdouble)hsc_chips[i_chip].cd1_2/0.015)*pscale;
+      x_0=(-(gdouble)hsc_chips[i_chip].crpix1*(gdouble)hsc_chips[i_chip].cd2_1/0.015-(gdouble)hsc_chips[i_chip].crpix2*(gdouble)hsc_chips[i_chip].cd2_2/0.015)*pscale;
+      
+      if(!has_dead){
+	if((hsc_chips[i_chip].cd1_2<0)&&(hsc_chips[i_chip].cd2_1<0)){
+	  cairo_rectangle(cr, x_0-2048*pscale, y_0-4224*pscale, 2048*pscale, 4224*pscale );
+	  cairo_move_to(cr, x_0-2048*pscale+2044*pscale*0.05, y_0-4224*pscale+2044*pscale*0.05-extents.y_bearing);
+	}
+	else if((hsc_chips[i_chip].cd1_2>0)&&(hsc_chips[i_chip].cd2_1>0)){
+	  cairo_rectangle(cr,x_0, y_0, 2048*pscale, 4224*pscale);
+	  cairo_move_to(cr, x_0+2048*pscale*0.05, y_0+2048*pscale*0.05-extents.y_bearing);
+	}
+	else if((hsc_chips[i_chip].cd1_1>0)&&(hsc_chips[i_chip].cd2_2<0)){
+	  cairo_rectangle(cr,x_0-4224*pscale, y_0,  4224*pscale, 2048*pscale);
+	  cairo_move_to(cr, x_0-4224*pscale+2048*pscale*0.05, y_0+2048*pscale*0.05-extents.y_bearing);
+	}
+	else{
+	  cairo_rectangle(cr,x_0, y_0-2048*pscale, 4224*pscale, 2048*pscale );
+	  cairo_move_to(cr, x_0+2048*pscale*0.05, y_0-2048*pscale+2048*pscale*0.05-extents.y_bearing);
+	}
+	cairo_fill(cr);
+      } // has_dead
+      else{
+	for(i_cnl=0;i_cnl<4;i_cnl++){
+	  if(ok_ch[i_cnl]){
+	    if((hsc_chips[i_chip].cd1_2<0)&&(hsc_chips[i_chip].cd2_1<0)){
+	      cairo_rectangle(cr, x_0-2048*pscale/4*(i_cnl+1),
+			      y_0-4224*pscale, 2048*pscale/4, 4224*pscale );
+	    }
+	    else if((hsc_chips[i_chip].cd1_2>0)&&(hsc_chips[i_chip].cd2_1>0)){
+	      cairo_rectangle(cr,x_0+2048*pscale/4*(i_cnl+1-1), y_0, 2048*pscale/4, 4224*pscale);
+	    }
+	    else if((hsc_chips[i_chip].cd1_1>0)&&(hsc_chips[i_chip].cd2_2<0)){
+	      cairo_rectangle(cr,x_0-4224*pscale, y_0+2048*pscale/4*(i_cnl+1-1),  4224*pscale, 2048*pscale/4);
+	    }
+	    else{
+	      cairo_rectangle(cr,x_0, y_0-2048*pscale/4*(i_cnl+1), 4224*pscale, 2048*pscale/4);
+	    }
+	    cairo_fill(cr);
+	  }
+	}
+      }
+    }
+    // Back to dith center
+    translate_hsc_dith(cr, hg, width_file, r, i_dith+1, TRUE);
   }
 }
 
@@ -7570,18 +7667,18 @@ void draw_hsc_dither(typHOE *hg,
   
   // Dithering
   
-  switch(hg->hsc_dithp){
+  switch(hg->hsc_show_dith_p){
   case HSC_DITH_NO:
     break;
     
   case HSC_DITH_5:
     dra=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-      *(gdouble)hg->hsc_dra/60.;
+      *(gdouble)hg->hsc_show_dith_ra/60.;
     ddec=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-      *(gdouble)hg->hsc_ddec/60.;
+      *(gdouble)hg->hsc_show_dith_dec/60.;
     
     // 1
-    if(hg->hsc_dithi==1){
+    if(hg->hsc_show_dith_i==1){
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
       cairo_set_line_width (cr, 2.5*scale);
@@ -7592,16 +7689,16 @@ void draw_hsc_dither(typHOE *hg,
       cairo_set_line_width (cr, 1.5*scale);
     }
     cairo_move_to(cr, 0, 0);
-    cairo_rel_move_to(cr, (hg->hsc_dithi==1) ? -7.5 : -5, 0);
-    cairo_rel_line_to(cr, (hg->hsc_dithi==1) ? 15 : 10, 0);
+    cairo_rel_move_to(cr, (hg->hsc_show_dith_i==1) ? -7.5 : -5, 0);
+    cairo_rel_line_to(cr, (hg->hsc_show_dith_i==1) ? 15 : 10, 0);
     cairo_stroke(cr);
     cairo_move_to(cr, 0, 0);
-    cairo_rel_move_to(cr, 0, (hg->hsc_dithi==1) ? -7.5 : -5);
-    cairo_rel_line_to(cr, 0, (hg->hsc_dithi==1) ? 15: 10);
+    cairo_rel_move_to(cr, 0, (hg->hsc_show_dith_i==1) ? -7.5 : -5);
+    cairo_rel_line_to(cr, 0, (hg->hsc_show_dith_i==1) ? 15: 10);
     cairo_stroke(cr);
     
     // 2
-    if(hg->hsc_dithi==2){
+    if(hg->hsc_show_dith_i==2){
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
       cairo_set_line_width (cr, 2.5*scale);
@@ -7612,16 +7709,16 @@ void draw_hsc_dither(typHOE *hg,
       cairo_set_line_width (cr, 1.5*scale);
     }
     cairo_move_to(cr, -dra*1, +ddec*2);
-    cairo_rel_move_to(cr, (hg->hsc_dithi==2) ? -7.5 : -5, 0);
-    cairo_rel_line_to(cr, (hg->hsc_dithi==2) ? 15 : 10, 0);
+    cairo_rel_move_to(cr, (hg->hsc_show_dith_i==2) ? -7.5 : -5, 0);
+    cairo_rel_line_to(cr, (hg->hsc_show_dith_i==2) ? 15 : 10, 0);
     cairo_stroke(cr);
     cairo_move_to(cr, -dra*1, +ddec*2);
-    cairo_rel_move_to(cr, 0, (hg->hsc_dithi==2) ? -7.5 : -5);
-    cairo_rel_line_to(cr, 0, (hg->hsc_dithi==2) ? 15: 10);
+    cairo_rel_move_to(cr, 0, (hg->hsc_show_dith_i==2) ? -7.5 : -5);
+    cairo_rel_line_to(cr, 0, (hg->hsc_show_dith_i==2) ? 15: 10);
     cairo_stroke(cr);
       
     // 3
-    if(hg->hsc_dithi==3){
+    if(hg->hsc_show_dith_i==3){
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
       cairo_set_line_width (cr, 2.5*scale);
@@ -7632,16 +7729,16 @@ void draw_hsc_dither(typHOE *hg,
       cairo_set_line_width (cr, 1.5*scale);
     }
     cairo_move_to(cr, -dra*2, -ddec*1);
-    cairo_rel_move_to(cr, (hg->hsc_dithi==3) ? -7.5 : -5, 0);
-    cairo_rel_line_to(cr, (hg->hsc_dithi==3) ? 15 : 10, 0);
+    cairo_rel_move_to(cr, (hg->hsc_show_dith_i==3) ? -7.5 : -5, 0);
+    cairo_rel_line_to(cr, (hg->hsc_show_dith_i==3) ? 15 : 10, 0);
     cairo_stroke(cr);
     cairo_move_to(cr, -dra*2, -ddec*1);
-    cairo_rel_move_to(cr, 0, (hg->hsc_dithi==3) ? -7.5 : -5);
-    cairo_rel_line_to(cr, 0, (hg->hsc_dithi==3) ? 15 : 10);
+    cairo_rel_move_to(cr, 0, (hg->hsc_show_dith_i==3) ? -7.5 : -5);
+    cairo_rel_line_to(cr, 0, (hg->hsc_show_dith_i==3) ? 15 : 10);
     cairo_stroke(cr);
     
     // 4
-    if(hg->hsc_dithi==4){
+    if(hg->hsc_show_dith_i==4){
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
       cairo_set_line_width (cr, 2.5*scale);
@@ -7652,16 +7749,16 @@ void draw_hsc_dither(typHOE *hg,
       cairo_set_line_width (cr, 1.5*scale);
     }
     cairo_move_to(cr, +dra*1, -ddec*2);
-    cairo_rel_move_to(cr, (hg->hsc_dithi==4) ? -7.5 : -5, 0);
-    cairo_rel_line_to(cr, (hg->hsc_dithi==4) ? 15 : 10, 0);
+    cairo_rel_move_to(cr, (hg->hsc_show_dith_i==4) ? -7.5 : -5, 0);
+    cairo_rel_line_to(cr, (hg->hsc_show_dith_i==4) ? 15 : 10, 0);
     cairo_stroke(cr);
     cairo_move_to(cr, +dra*1, -ddec*2);
-    cairo_rel_move_to(cr, 0, (hg->hsc_dithi==4) ? -7.5 : -5);
-    cairo_rel_line_to(cr, 0, (hg->hsc_dithi==4) ? 15 : 10);
+    cairo_rel_move_to(cr, 0, (hg->hsc_show_dith_i==4) ? -7.5 : -5);
+    cairo_rel_line_to(cr, 0, (hg->hsc_show_dith_i==4) ? 15 : 10);
     cairo_stroke(cr);
     
     // 5
-    if(hg->hsc_dithi==5){
+    if(hg->hsc_show_dith_i==5){
       if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
       else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
       cairo_set_line_width (cr, 2.5*scale);
@@ -7672,18 +7769,18 @@ void draw_hsc_dither(typHOE *hg,
       cairo_set_line_width (cr, 1.5*scale);
     }
     cairo_move_to(cr, +dra*2, +ddec*1);
-    cairo_rel_move_to(cr, (hg->hsc_dithi==5) ? -7.5 : -5, 0);
-    cairo_rel_line_to(cr, (hg->hsc_dithi==5) ? 15 : 10, 0);
+    cairo_rel_move_to(cr, (hg->hsc_show_dith_i==5) ? -7.5 : -5, 0);
+    cairo_rel_line_to(cr, (hg->hsc_show_dith_i==5) ? 15 : 10, 0);
     cairo_stroke(cr);
     cairo_move_to(cr, +dra*2, +ddec*1);
-    cairo_rel_move_to(cr, 0, (hg->hsc_dithi==5) ? -7.5 : -5);
-    cairo_rel_line_to(cr, 0, (hg->hsc_dithi==5) ? 15 : 10);
+    cairo_rel_move_to(cr, 0, (hg->hsc_show_dith_i==5) ? -7.5 : -5);
+    cairo_rel_line_to(cr, 0, (hg->hsc_show_dith_i==5) ? 15 : 10);
     cairo_stroke(cr);
     break;
     
   case HSC_DITH_N:
-    for(i=0;i<hg->hsc_ndith;i++){
-      if(hg->hsc_dithi==i+1){
+    for(i=0;i<hg->hsc_show_dith_n;i++){
+      if(hg->hsc_show_dith_i==i+1){
 	if(hg->dss_invert) cairo_set_source_rgba(cr, 0.5, 0.5, 0.0, 1.0);
 	else cairo_set_source_rgba(cr, 1.0, 0.7, 0.2, 1.0);
 	cairo_set_line_width (cr, 2.5*scale);
@@ -7695,21 +7792,21 @@ void draw_hsc_dither(typHOE *hg,
       }
       
       y0=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-	*(double)hg->hsc_rdith/60*
-	cos(-(double)hg->hsc_tdith*M_PI/180
-	    -2*M_PI/(double)hg->hsc_ndith*(double)i-M_PI/2);
+	*(double)hg->hsc_show_dith_r/60*
+	cos(-(double)hg->hsc_show_dith_t*M_PI/180
+	    -2*M_PI/(double)hg->hsc_show_dith_n*(double)i-M_PI/2);
       x0=((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip
-	*(double)hg->hsc_rdith/60*
-	sin(-(double)hg->hsc_tdith*M_PI/180
-	    -2*M_PI/(double)hg->hsc_ndith*(double)i-M_PI/2);
+	*(double)hg->hsc_show_dith_r/60*
+	sin(-(double)hg->hsc_show_dith_t*M_PI/180
+	    -2*M_PI/(double)hg->hsc_show_dith_n*(double)i-M_PI/2);
       
       cairo_move_to(cr, x0, y0);
-      cairo_rel_move_to(cr, (hg->hsc_dithi==i+1) ? -7.5 : -5, 0);
-      cairo_rel_line_to(cr, (hg->hsc_dithi==i+1) ? 15 : 10, 0);
+      cairo_rel_move_to(cr, (hg->hsc_show_dith_i==i+1) ? -7.5 : -5, 0);
+      cairo_rel_line_to(cr, (hg->hsc_show_dith_i==i+1) ? 15 : 10, 0);
       cairo_stroke(cr);
       cairo_move_to(cr, x0, y0);
-      cairo_rel_move_to(cr, 0, (hg->hsc_dithi==i+1) ? -7.5 : -5);
-      cairo_rel_line_to(cr, 0, (hg->hsc_dithi==i+1) ? 15 : 10);
+      cairo_rel_move_to(cr, 0, (hg->hsc_show_dith_i==i+1) ? -7.5 : -5);
+      cairo_rel_line_to(cr, 0, (hg->hsc_show_dith_i==i+1) ? 15 : 10);
       cairo_stroke(cr);
     }
     break;

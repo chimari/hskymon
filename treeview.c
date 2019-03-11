@@ -32,6 +32,7 @@ static void search_item ();
 static void trdb_search_item ();
 static void fcdb_item ();
 static void adc_item ();
+void pam_objtree_item();
 void stddb_dl();
 void stddb_signal();
 static void delete_stddb();
@@ -3400,6 +3401,7 @@ focus_item (GtkWidget *widget, gpointer data)
     gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
     i--;
     hg->plot_i=i;
+    hg->pam_slot_i=-1;
     
     if(hg->plot_center==PLOT_CENTER_MERIDIAN){
       get_plot_time_meridian(hg,12.0);      
@@ -3439,6 +3441,20 @@ focus_item (GtkWidget *widget, gpointer data)
   if(flagPlot){
     draw_plot_cairo(hg->plot_dw,hg);
   }
+
+  if(flagPAM){
+    pam_update_dialog(hg);
+  }
+
+  if(flagTree){
+    if(hg->obj[hg->plot_i].pam>=0){
+      gtk_widget_set_sensitive(hg->pam_button, TRUE);
+    }
+    else{
+      gtk_widget_set_sensitive(hg->pam_button, FALSE);
+    }
+  }
+
 
   if(flagADC){
     draw_adc_cairo(hg->adc_dw,hg);
@@ -6544,6 +6560,9 @@ do_editable_cells (typHOE *hg)
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (plot2_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,"Display Elevation (and more) Plot");
+#endif
     
 #ifdef USE_GTK3
     button=gtkut_button_new_from_icon_name("AD","document-print-preview");
@@ -6553,15 +6572,35 @@ do_editable_cells (typHOE *hg)
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (adc_item), (gpointer)hg);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,"Display Atomospheric Dispersion Chart");
+#endif
     
 #ifdef USE_GTK3
-    button=gtkut_button_new_from_icon_name("Finding Chart","starred");
+    button=gtkut_button_new_from_icon_name("FC","starred");
 #else
-    button=gtkut_button_new_from_stock("Finding Chart",GTK_STOCK_ABOUT);
+    button=gtkut_button_new_from_stock("FC",GTK_STOCK_ABOUT);
 #endif
     gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
     my_signal_connect (button, "clicked",
 		       G_CALLBACK (fc_item), (gpointer)hg);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,"Display Find Chart");
+#endif
+
+    
+    icon = gdk_pixbuf_new_from_resource ("/icons/lgs_icon.png", NULL);
+    hg->pam_button=gtkut_button_new_from_pixbuf("LGS", icon);
+    g_object_unref(icon);
+    gtk_box_pack_start(GTK_BOX(hbox),hg->pam_button,FALSE, FALSE, 0);
+    my_signal_connect (hg->pam_button, "clicked",
+		       G_CALLBACK (pam_objtree_item), (gpointer)hg);
+    gtk_widget_set_sensitive(hg->pam_button, FALSE);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(hg->pam_button,
+				"Display LGS Collision Infor (PAM)");
+#endif
+    
     
     label = gtk_label_new ("   ");
     gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
@@ -7976,6 +8015,31 @@ void clip_copy(GtkWidget *widget, gpointer gdata){
   c = gtk_entry_get_text(GTK_ENTRY(entry));
   gtk_clipboard_set_text (clipboard, c, strlen(c));
 }
+
+void pam_objtree_item (GtkWidget *widget, gpointer data)
+{
+  GtkTreeIter iter;
+  typHOE *hg = (typHOE *)data;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->tree));
+
+  if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
+    gint i, i_list;
+    GtkTreePath *path;
+    
+    path = gtk_tree_model_get_path (model, &iter);
+    gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
+    i--;
+
+    if((hg->lgs_pam_i_max>0) && (hg->obj[i].pam>=0)){
+      hg->plot_i=i;
+      create_pam_dialog(hg);
+    }
+
+    gtk_tree_path_free (path);
+  }
+}
+
 
 static void addobj_simbad_query (GtkWidget *widget, gpointer gdata)
 {
