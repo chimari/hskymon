@@ -10669,7 +10669,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
 			 FALSE);
-  gtkut_table_attach(GTK_TABLE(table1), spinner, 3, 4, 0, 1,
+  gtkut_table_attach(table1, spinner, 3, 4, 0, 1,
 		     GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (adj, "value_changed",
