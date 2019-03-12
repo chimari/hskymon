@@ -1,3 +1,9 @@
+hskymon (3.8.0ubuntu) bionic; urgency=medium
+
+  * Added LGS PAM (satellite conllision) data plot functions.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Mon, 11 Mar 2019 14:38:21 -1000
+
 hskymon (3.7.0ubuntu) bionic; urgency=medium
 
   * Create io_gui.c/h to open/save files.

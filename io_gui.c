@@ -814,6 +814,10 @@ void ReadList(typHOE *hg, gint ope_max){
   gtk_window_set_title(GTK_WINDOW(hg->skymon_main), win_title);
   g_free(win_title);
 
+  if(hg->lgs_pam_i_max>0){
+    lgs_check_obj(hg);
+  }
+
   printf_log(hg,"[ReadList] %d targets are loaded in total.",hg->i_max);
 }
 
@@ -933,6 +937,10 @@ void MergeList(typHOE *hg, gint ope_max){
   gtk_window_set_title(GTK_WINDOW(hg->skymon_main), win_title);
   g_free(win_title);
 
+  if(hg->lgs_pam_i_max>0){
+    lgs_check_obj(hg);
+  }
+  
   printf_log(hg,"[MergeList] %d targets are loaded in total.",hg->i_max);
 }
 
@@ -1031,6 +1039,8 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  cpp=BUF;
 	  
 	  do{
+	    init_obj(&hg->obj[i_list], hg);
+	    
 	    if(NULL != (cp = strstr(cpp, "OBJECT="))){
 	      cpp=cp+strlen("OBJECT=");
 	      cp--;
@@ -1131,10 +1141,12 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	    }while(cp);
 	  }
 
-	  if(hg->hide_flag)
+	  if(hg->hide_flag){
 	    hg->obj[i_list].check_disp=FALSE;
-	  else
+	  }
+	  else{
 	    hg->obj[i_list].check_disp=TRUE;
+	  }
 	  hg->obj[i_list].check_sm=FALSE;
 	  hg->obj[i_list].check_lock=FALSE;
 	  hg->obj[i_list].check_used=FALSE;
@@ -1145,8 +1157,6 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 
 	  if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	    if(!ObjOverlap(hg,i_list)){
-	      init_obj(&hg->obj[i_list], hg);
-	      
 	      if(hg->obj[i_list].note) g_free(hg->obj[i_list].note);
 	      hg->obj[i_list].note=g_path_get_basename(hg->filename_ope);
 	      
@@ -1376,6 +1386,10 @@ void ReadListOPE(typHOE *hg, gint ope_max){
   if(BUF) g_free(BUF);
   if(buf_strip) g_free(buf_strip);
   if(cp3) g_free(cp3);
+
+  if(hg->lgs_pam_i_max>0){
+    lgs_check_obj(hg);
+  }
 
   printf_log(hg,"[ReadOPE] %d targets are loaded in total.",hg->i_max);
 }
@@ -1907,6 +1921,8 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  cpp=BUF;
 
 	  do{
+	    init_obj(&hg->obj[i_list]);
+	    
 	    if(NULL != (cp = strstr(cpp, "OBJECT="))){
 	      cpp=cp+strlen("OBJECT=");
 	      cp--;
@@ -1996,7 +2012,6 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  
 	  if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	    if(!ObjOverlap(hg,i_list)){
-	      init_obj(&hg->obj[i_list]);
 	      
 	      if(hg->hide_flag)
 		hg->obj[i_list].check_disp=FALSE;
@@ -2251,6 +2266,10 @@ void MergeListOPE(typHOE *hg, gint ope_max){
   if(BUF) g_free(BUF);
   if(cp3) g_free(cp3);
 
+  if(hg->lgs_pam_i_max>0){
+    lgs_check_obj(hg);
+  }
+  
   printf_log(hg,"[ReadOPE] %d targets are loaded in total.",hg->i_max);
 }
 

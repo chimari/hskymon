@@ -6,15 +6,12 @@
 
 gboolean ReadLGSPAM(typHOE *hg){
   FILE *fp;
-  gint i_pam, i_line, i_mon, i_obj;
+  gint i_pam, i_line, i_mon;
   gchar *buf=NULL;
   gchar *cp=NULL, *cpp=NULL;
-  gchar *tmp_char, *tmp, *tmp2;
+  gchar *tmp_char, *tmp;
   gint int_tmp;
   gboolean dec_flag;
-  gdouble sep, sep_min;
-  gint i_pam_match, i_obj_match;
-  gdouble d_ra, d_dec;
   struct ln_date date_st, date_ed;
 
   
@@ -237,6 +234,21 @@ gboolean ReadLGSPAM(typHOE *hg){
   fclose(fp);
   hg->lgs_pam_i_max=i_pam;
 
+  if(hg->pam_name) g_free(hg->pam_name);
+  hg->pam_name=g_path_get_basename(hg->filename_lgs_pam);
+
+  lgs_check_obj(hg);
+  
+  return(TRUE);
+}
+
+
+void lgs_check_obj(typHOE *hg){
+  gchar *tmp, *tmp2;
+  gdouble sep, sep_min;
+  gint i_pam, i_obj, i_pam_match, i_obj_match;
+  gdouble d_ra, d_dec;
+  
   i_obj_match=0;
 
   for(i_obj=0;i_obj<hg->i_max;i_obj++){
@@ -261,16 +273,15 @@ gboolean ReadLGSPAM(typHOE *hg){
     }
   }
 
+  /*
   for(i_pam=0;i_pam<hg->lgs_pam_i_max;i_pam++){
     if(!hg->lgs_pam[i_pam].use){
       hg->lgs_pam[i_pam].d_ra=-100.0;
       hg->lgs_pam[i_pam].d_dec=-100.0;
     }
   }
+  */
   
-  if(hg->pam_name) g_free(hg->pam_name);
-  hg->pam_name=g_path_get_basename(hg->filename_lgs_pam);
-
   tmp=g_strdup_printf("   PAM File : %s", hg->pam_name);
   if(i_obj_match>0){
     tmp2=g_strdup_printf("     %d/%d objects are fouund to be matched with the PAM coordinates.", i_obj_match, hg->i_max);
@@ -302,10 +313,7 @@ gboolean ReadLGSPAM(typHOE *hg){
   }
   g_free(tmp);
   g_free(tmp2);
-  
-  return(TRUE);
 }
-
 
 void lgs_read_pam (GtkWidget *widget, gpointer gdata){
   typHOE *hg;

@@ -136,6 +136,7 @@ static GdkColor color_pam_close= {0, 0xFFFF, 0xDDDD, 0xDDDD};
 #endif
 
 gboolean ReadLGSPAM();
+void lgs_check_obj();
 void lgs_read_pam();
 
 void close_pam();

@@ -1,3 +1,13 @@
+2019.03.11 ver3.8.0 - LGS PAM (satellite collision data) plot functions for
+	              IRCS obs (imported fromhoe).
+                      In hskymon PAM data can be imported before/after object
+                      list loading. In hoe PAM must be imported only after
+	              otherwise.
+	            - Revised overlay plot of HSC dithering pattern in FC.
+ 	            - Revised gtk_table/grid functions.
+	            - Created lgs.c/lgs.h for LGS PAM functions.
+                    - Added icons/lgs_icon.png .
+
 2019.03.05 ver3.7.0 - Created io_gui.c/h for Open/Save files.
 
 2019.01.02 ver3.6.5 - TTGS/Offset NGS for AO188 obs. are hidden by "-" button
@@ -5,7 +15,7 @@
                     - Added modal window operations.
                     - Revised FC mode selecter.
                     - Revised FC drawing codes.
-                    - Guide Stra drawing on FC for IRCS.
+                    - Guide Star drawing on FC for IRCS.
 	              (OPE files written by hoe-4.0.0 or later are required.)
 
 2018.11.14 ver3.6.4 - Changed lower limit for Telescope Velocity

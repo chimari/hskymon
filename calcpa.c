@@ -2625,7 +2625,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 		cairo_line_to(cr, x_c+5, dy2-20);
 	      }
 	      else{
-		cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+		cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 0.6);
 		cairo_move_to(cr, x_c,   dy2-10);
 		cairo_line_to(cr, x_c-4, dy2-18);
 		cairo_line_to(cr, x_c+4, dy2-18);
