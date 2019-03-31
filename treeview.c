@@ -1784,7 +1784,7 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
 		      GTK_STOCK_DIALOG_ERROR, 
 #endif
 		      POPUP_TIMEOUT,
-		      "Error: The target does not have a HASH ID.",
+		      "<b>Error</b>: The target does not have a HASH ID.",
 		      NULL);
 	return;
       }
@@ -1834,8 +1834,8 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
 			  hobject_prec.dec.seconds);
       break;
 
-    case WWWDB_DR14:
-      tmp=g_strdup_printf(DR14_URL,
+    case WWWDB_SDSS_DRNOW:
+      tmp=g_strdup_printf(SDSS_DRNOW_URL,
 			  ln_hms_to_deg(&hobject_prec.ra),
 			  (hobject_prec.dec.neg) ? "-" : "+", 
 			  fabs(ln_dms_to_deg(&hobject_prec.dec)));
@@ -4224,11 +4224,12 @@ std_add_columns (typHOE *hg,
   renderer = gtk_cell_renderer_text_new ();
   g_object_set_data (G_OBJECT (renderer), "column", 
 		     GINT_TO_POINTER (COLUMN_STD_ROT));
-  column=gtk_tree_view_column_new_with_attributes ("V sin(i)",
+  column=gtk_tree_view_column_new_with_attributes (NULL,
 						   renderer,
 						   "text",
 						   COLUMN_STD_ROT,
 						   NULL);
+  gtkut_tree_view_column_set_markup(column, "<i>v</i> &#xB7; sin <i>i</i>");
   gtk_tree_view_column_set_cell_data_func(column, renderer,
 					  std_double_cell_data_func,
 					  GUINT_TO_POINTER(COLUMN_STD_ROT),
@@ -4672,11 +4673,12 @@ fcdb_add_columns (typHOE *hg,
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_NEDZ));
-      column=gtk_tree_view_column_new_with_attributes ("Z",
+      column=gtk_tree_view_column_new_with_attributes (NULL,
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_NEDZ,
 						       NULL);
+      gtkut_tree_view_column_set_markup(column, "<i>z</i>");
       gtk_tree_view_column_set_cell_data_func(column, renderer,
 					      fcdb_double_cell_data_func,
 					      GUINT_TO_POINTER(COLUMN_FCDB_NEDZ),
@@ -5010,11 +5012,12 @@ fcdb_add_columns (typHOE *hg,
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_NEDZ));
-      column=gtk_tree_view_column_new_with_attributes ("Z",
+      column=gtk_tree_view_column_new_with_attributes (NULL,
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_NEDZ,
 						       NULL);
+      gtkut_tree_view_column_set_markup(column, "<i>z</i>");
       gtk_tree_view_column_set_cell_data_func(column, renderer,
 					      fcdb_double_cell_data_func,
 					      GUINT_TO_POINTER(COLUMN_FCDB_NEDZ),
@@ -5027,11 +5030,12 @@ fcdb_add_columns (typHOE *hg,
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_U));
-      column=gtk_tree_view_column_new_with_attributes ("Teff",
+      column=gtk_tree_view_column_new_with_attributes (NULL,
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_U,
 						       NULL);
+      gtkut_tree_view_column_set_markup(column, "T<sub>eff</sub>");
       gtk_tree_view_column_set_cell_data_func(column, renderer,
 					      fcdb_lamost_afgk_cell_data_func,
 					      GUINT_TO_POINTER(COLUMN_FCDB_U),
@@ -5043,11 +5047,12 @@ fcdb_add_columns (typHOE *hg,
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_B));
-      column=gtk_tree_view_column_new_with_attributes ("log g",
+      column=gtk_tree_view_column_new_with_attributes (NULL,
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_B,
 						       NULL);
+      gtkut_tree_view_column_set_markup(column, "log <i>g</i>");
       gtk_tree_view_column_set_cell_data_func(column, renderer,
 					      fcdb_lamost_afgk_cell_data_func,
 					      GUINT_TO_POINTER(COLUMN_FCDB_B),
@@ -5341,11 +5346,12 @@ fcdb_add_columns (typHOE *hg,
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_U));
-      column=gtk_tree_view_column_new_with_attributes ("Teff",
+      column=gtk_tree_view_column_new_with_attributes (NULL,
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_U,
 						       NULL);
+      gtkut_tree_view_column_set_markup(column, "T<sub>eff</sub>");
       gtk_tree_view_column_set_cell_data_func(column, renderer,
 					      fcdb_lamost_afgk_cell_data_func,
 					      GUINT_TO_POINTER(COLUMN_FCDB_U),
@@ -5406,11 +5412,12 @@ fcdb_add_columns (typHOE *hg,
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_U));
-      column=gtk_tree_view_column_new_with_attributes ("Teff",
+      column=gtk_tree_view_column_new_with_attributes (NULL,
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_U,
 						       NULL);
+      gtkut_tree_view_column_set_markup(column, "T<sub>eff</sub>");
       gtk_tree_view_column_set_cell_data_func(column, renderer,
 					      fcdb_kepler_cell_data_func,
 					      GUINT_TO_POINTER(COLUMN_FCDB_U),
@@ -5422,11 +5429,12 @@ fcdb_add_columns (typHOE *hg,
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_H));
-      column=gtk_tree_view_column_new_with_attributes ("Log G",
+      column=gtk_tree_view_column_new_with_attributes (NULL,
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_H,
 						       NULL);
+      gtkut_tree_view_column_set_markup(column, "log <i>g</i>");
       gtk_tree_view_column_set_cell_data_func(column, renderer,
 					      fcdb_kepler_cell_data_func,
 					      GUINT_TO_POINTER(COLUMN_FCDB_H),
@@ -6700,7 +6708,7 @@ do_editable_cells (typHOE *hg)
     hbox = gtkut_hbox_new (FALSE, 4);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
     
-    label = gtk_label_new ("Browse");
+    label = gtkut_label_new ("<b>Browse</b>");
     gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
     
     {
@@ -6722,9 +6730,9 @@ do_editable_cells (typHOE *hg)
       if(hg->wwwdb_mode==WWWDB_NED) iter_set=iter;
       
       gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SDSS (DR14)",
-			 1, WWWDB_DR14, 2, TRUE, -1);
-      if(hg->wwwdb_mode==WWWDB_DR14) iter_set=iter;
+      gtk_list_store_set(store, &iter, 0, "SDSS (DR15)",
+			 1, WWWDB_SDSS_DRNOW, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_SDSS_DRNOW) iter_set=iter;
       
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, 0, "MAST",
@@ -6844,7 +6852,7 @@ do_editable_cells (typHOE *hg)
       
     }
 
-    label = gtk_label_new ("      Standard");
+    label = gtkut_label_new ("     <b>Standard</b>");
     gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
     
     {
@@ -7828,7 +7836,7 @@ void stddb_dl(typHOE *hg)
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT,
-		    "Error: Please select a target in the Object List.",
+		    "<b>Error</b>: Please select a target in the Object List.",
 		    NULL);
       flag_getSTD=FALSE;
       return;
@@ -8157,7 +8165,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 		     hbox,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
-  label = gtk_label_new ("             RA(2000)");
+  label = gtkut_label_new ("             RA<sub>2000</sub>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -8174,7 +8182,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   my_signal_connect (hg->addobj_entry_ra, "changed", 
 		     cc_get_entry_double, &hg->addobj_ra);
   
-  label = gtk_label_new ("    Dec(2000)");
+  label = gtkut_label_new ("    Dec<sub>2000</sub>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);

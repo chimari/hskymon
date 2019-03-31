@@ -125,7 +125,7 @@ void create_adc_dialog(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
 
-  frame = gtk_frame_new ("Action");
+  frame = gtkut_frame_new ("<b>Action</b>");
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
@@ -161,7 +161,7 @@ void create_adc_dialog(typHOE *hg)
 #endif
 
 
-  frame = gtk_frame_new ("Instrument");
+  frame = gtkut_frame_new ("<b>Instrument</b>");
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
@@ -205,7 +205,7 @@ void create_adc_dialog(typHOE *hg)
     my_signal_connect (combo,"changed",cc_get_adc_inst, (gpointer)hg);
   }
 
-  frame = gtk_frame_new ("PA [deg]");
+  frame = gtkut_frame_new ("PA [&#xB0;]");
   gtkut_table_attach (table, frame, 1, 2, 0, 2,
 		      GTK_SHRINK,GTK_SHRINK,0,0);
 
@@ -235,7 +235,7 @@ void create_adc_dialog(typHOE *hg)
 
 
 
-  frame = gtk_frame_new ("Slit [\"]");
+  frame = gtkut_frame_new ("Slit [\"]");
   gtkut_table_attach (table, frame, 2, 3, 0, 2,
 		      GTK_SHRINK,GTK_SHRINK,0,0);
 
@@ -259,7 +259,7 @@ void create_adc_dialog(typHOE *hg)
   hbox = gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-  frame = gtk_frame_new ("Wavelength [A]");
+  frame = gtkut_frame_new ("<b>Wavelength</b> [&#xC5;]");
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
@@ -300,7 +300,7 @@ void create_adc_dialog(typHOE *hg)
 		     &hg->wave0);
 
 
-  frame = gtk_frame_new ("Seeing [\"]");
+  frame = gtkut_frame_new ("<b>Seeing</b> [\"]");
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
@@ -321,7 +321,7 @@ void create_adc_dialog(typHOE *hg)
 		     cc_get_adj_double,
 		     &hg->adc_seeing);
 
-  frame = gtk_frame_new ("Plot [\"]");
+  frame = gtkut_frame_new ("<b>Plot</b> [\"]");
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 

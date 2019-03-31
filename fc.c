@@ -272,7 +272,7 @@ void fc_dl (typHOE *hg)
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT,
-		    "Error: Please select a target in the Object List.",
+		    "<b>Error</b>: Please select a target in the Object List.",
 		    NULL);
       flag_getDSS=FALSE;
       return;
@@ -286,7 +286,7 @@ void fc_dl (typHOE *hg)
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT,
-		  "Error: Please select a target in the Object List.",
+		  "<b>Error</b>: Please select a target in the Object List.",
 		  NULL);
     flag_getDSS=FALSE;
     return;
@@ -629,7 +629,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
 			       hg->hsc_show_ol);
   
-  frame = gtk_frame_new ("5-shot parameters");
+  frame = gtkut_frame_new ("<b>5-shot parameters</b>");
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(hg->hsc_show_main))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
@@ -695,7 +695,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 		     &hg->hsc_show_dith_dec);
 
 
-  frame = gtk_frame_new ("N-shot parameters");
+  frame = gtkut_frame_new ("<b>N-shot parameters</b>");
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(hg->hsc_show_main))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
@@ -789,7 +789,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 		     &hg->hsc_show_dith_t);
 
 
-  frame = gtk_frame_new ("Pointing Offset");
+  frame = gtkut_frame_new ("<b>Pointing Offset</b>");
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(hg->hsc_show_main))),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
@@ -890,6 +890,7 @@ void create_fc_dialog(typHOE *hg)
   GtkAdjustment *adj;
   GtkWidget *menubar;
   GdkPixbuf *icon;
+  gchar *tmp;
 
   hg->fc_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   //gtk_window_set_transient_for(GTK_WINDOW(hg->fc_main),
@@ -908,7 +909,7 @@ void create_fc_dialog(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(vbox), 
 		     hbox, FALSE, FALSE, 0);
 
-  frame = gtk_frame_new ("Image Source");
+  frame = gtkut_frame_new ("<b>Image Source</b>");
   gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
@@ -1069,7 +1070,7 @@ void create_fc_dialog(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(vbox), 
 		     hbox, FALSE, FALSE, 0);
 
-  frame = gtk_frame_new ("Instrument");
+  frame = gtkut_frame_new ("<b>Instrument</b>");
   gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
@@ -1202,7 +1203,7 @@ void create_fc_dialog(typHOE *hg)
 
 
 
-  frame = gtk_frame_new ("PA [deg]");
+  frame = gtkut_frame_new ("PA [&#xB0;]");
 #ifdef USE_GTK3      
   gtk_widget_set_halign(frame,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(frame,GTK_ALIGN_CENTER);
@@ -1237,58 +1238,9 @@ void create_fc_dialog(typHOE *hg)
 		    &hg->dss_flip);
 
 
-  hg->fcdb_frame = gtk_frame_new ("SIMBAD");
-  if(hg->fcdb_type==FCDB_TYPE_SIMBAD){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "SIMBAD");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_NED){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "NED");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_GSC){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "GSC 2.3");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_PS1){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "PanSTARRS1");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_SDSS){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "SDSS DR14");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_LAMOST){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "LAMOST DR4");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_USNO){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "USNO-B");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_GAIA){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "GAIA DR2");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_KEPLER){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "Kepler IC10");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_2MASS){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "2MASS");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_WISE){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "AKARI/WISE");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_IRC){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "AKARI/IRC");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_FIS){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "AKARI/FIS");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_SMOKA){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "SMOKA");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_HST){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "HST");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_ESO){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "ESO");
-  }
-  else if(hg->fcdb_type==FCDB_TYPE_GEMINI){
-    gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame), "Gemini");
-  }
+  tmp=g_strdup_printf("<b>%s</b>", db_name[hg->fcdb_type]);
+  hg->fcdb_frame = gtkut_frame_new (tmp);
+  g_free(tmp);
   gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->fcdb_frame), 3);
 
@@ -1430,7 +1382,7 @@ void create_fc_dialog(typHOE *hg)
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_INFO);
 #endif
   my_signal_connect (button, "clicked",
-		     G_CALLBACK (show_fc_help), hg->skymon_main);
+		     G_CALLBACK (show_fc_help), hg->fc_main);
   gtk_box_pack_start(GTK_BOX(vbox1), button, FALSE, FALSE, 0);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
@@ -3244,7 +3196,7 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
 		      GTK_FILL,GTK_SHRINK,0,0);
 
 
-  label = gtk_label_new ("<wheel-scroll>");
+  label = gtkut_label_new ("<b>wheel-scroll</b>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -3267,9 +3219,9 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
 		      GTK_FILL,GTK_SHRINK,0,0);
 
 #ifdef USE_OSX
-  label = gtk_label_new ("<option>+<wheel-scroll>");
+  label = gtkut_label_new ("<b>option</b> + <b>wheel-scroll</b>");
 #else  
-  label = gtk_label_new ("<alt>+<wheel-scroll>");
+  label = gtkut_label_new ("<b>alt</b> + <b>wheel-scroll</b>");
 #endif
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
@@ -3292,7 +3244,7 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtkut_table_attach (table, label, 1, 2, 5, 6,
 		      GTK_FILL,GTK_SHRINK,0,0);
   
-  label = gtk_label_new ("<ctrl>+<wheel-scroll>");
+  label = gtkut_label_new ("<b>ctrl</b> + <b>wheel-scroll</b>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -3314,7 +3266,7 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtkut_table_attach (table, label, 1, 2, 6, 7,
 		      GTK_FILL,GTK_SHRINK,0,0);
   
-  label = gtk_label_new ("<shift>+<wheel-scroll>");
+  label = gtkut_label_new ("<b>shift</b> + <b>wheel-scroll</b>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -3336,7 +3288,7 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtkut_table_attach (table, label, 1, 2, 7, 8,
 		      GTK_FILL,GTK_SHRINK,0,0);
   
-  label = gtk_label_new ("<left-click>");
+  label = gtkut_label_new ("<b>left-click</b>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -3358,7 +3310,7 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtkut_table_attach (table, label, 1, 2, 8, 9,
 		      GTK_FILL,GTK_SHRINK,0,0);
 
-  label = gtk_label_new ("<middle-click>");
+  label = gtkut_label_new ("<b>middle-click</b>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -3380,7 +3332,7 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   gtkut_table_attach (table, label, 1, 2, 9, 10,
 		      GTK_FILL,GTK_SHRINK,0,0);
 
-  label = gtk_label_new ("<right-click>");
+  label = gtkut_label_new ("<b>right-click</b>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);

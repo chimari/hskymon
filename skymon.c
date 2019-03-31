@@ -267,6 +267,7 @@ void create_skymon_dialog(typHOE *hg)
 #ifdef USE_GTKMACINTEGRATION
   GtkosxApplication *osxapp;
 #endif
+  gchar *tmp;
 
   skymon_debug_print("Starting create_skymon_dialog\n");
 
@@ -305,7 +306,7 @@ void create_skymon_dialog(typHOE *hg)
   hbox = gtkut_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-  hg->skymon_frame_mode = gtk_frame_new ("Mode");
+  hg->skymon_frame_mode = gtkut_frame_new ("<b>Mode</b>");
   gtk_box_pack_start(GTK_BOX(hbox), hg->skymon_frame_mode, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_frame_mode), 3);
 
@@ -348,7 +349,7 @@ void create_skymon_dialog(typHOE *hg)
   }
 
   
-  hg->skymon_frame_date = gtk_frame_new ("Date");
+  hg->skymon_frame_date = gtkut_frame_new ("<b>Date</b>");
   gtk_box_pack_start(GTK_BOX(hbox), hg->skymon_frame_date, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_frame_date), 3);
 
@@ -377,7 +378,9 @@ void create_skymon_dialog(typHOE *hg)
   gtk_widget_set_tooltip_text(button,"Doublue-Click on calendar to select a new date");
 #endif
 
-  hg->skymon_frame_time = gtk_frame_new (hg->obs_tzname);
+  tmp=g_strdup_printf("<b>%s</b>",hg->obs_tzname);
+  hg->skymon_frame_time = gtkut_frame_new (tmp);
+  g_free(tmp);
   gtk_box_pack_start(GTK_BOX(hbox), hg->skymon_frame_time, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_frame_time), 3);
 
@@ -407,9 +410,9 @@ void create_skymon_dialog(typHOE *hg)
   		     (gpointer)hg);
 
 #ifdef USE_XMLRPC
-  frame = gtk_frame_new ("ASC/Telstat");
+  frame = gtkut_frame_new ("<b>ASC/Telstat</b>");
 #else
-  frame = gtk_frame_new ("ASC");
+  frame = gtkut_frame_new ("<b>ASC</b>");
 #endif
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
@@ -484,7 +487,7 @@ void create_skymon_dialog(typHOE *hg)
 #endif  //USE_XMLRPC
 
 
-  frame = gtk_frame_new ("Action");
+  frame = gtkut_frame_new ("<b>Action</b>");
   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
@@ -580,7 +583,7 @@ void create_skymon_dialog(typHOE *hg)
   gtk_widget_set_sensitive(hg->skymon_button_even,FALSE);
 
   /*
-  hg->skymon_frame_sz = gtk_frame_new ("Sz.");
+  hg->skymon_frame_sz = gtkut_frame_new ("Sz.");
   gtk_box_pack_start(GTK_BOX(hbox), hg->skymon_frame_sz, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_frame_sz), 3);
 
@@ -1239,14 +1242,14 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
     // For Obj Tree Label
     if(hg->tree_label_text) g_free(hg->tree_label_text);
     if(hg->skymon_mode==SKYMON_CUR){
-      hg->tree_label_text=g_strdup_printf("***Current*** (%02d/%02d/%04d  %s=%02d:%02d LST=%02d:%02d)",
+      hg->tree_label_text=g_strdup_printf("<b>Current</b> (%02d/%02d/%04d  %s=%02d:%02d LST=%02d:%02d)",
 					  month,day,year,
 					  hg->obs_tzname,
 					  hour,min,
 					  hg->lst_hour,hg->lst_min);
     }
     else{
-      hg->tree_label_text=g_strdup_printf("***Set*** (%02d/%02d/%04d  %s=%02d:%02d LST=%02d:%02d)",
+      hg->tree_label_text=g_strdup_printf("<b>Set</b> (%02d/%02d/%04d  %s=%02d:%02d LST=%02d:%02d)",
 					  month,day,year,
 					  hg->obs_tzname,
 					  hour,min,
@@ -1254,7 +1257,7 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
     }
     if(flagTree){
       if(!hg->tree_editing){
-	gtk_label_set_text(GTK_LABEL(hg->tree_label),hg->tree_label_text);
+	gtk_label_set_markup(GTK_LABEL(hg->tree_label),hg->tree_label_text);
       }
     }
 

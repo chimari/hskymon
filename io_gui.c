@@ -522,7 +522,7 @@ void hskymon_OpenFile(typHOE *hg, guint mode){
 		    GTK_STOCK_DIALOG_WARNING, 
 #endif
 		    POPUP_TIMEOUT*2,
-		    "Error: File cannot be opened.",
+		    "<b>Error</b>: File cannot be opened.",
 		    " ",
 		    fname,
 		    NULL);
@@ -739,7 +739,7 @@ void ReadList(typHOE *hg, gint ope_max){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_list,
 		  NULL);
@@ -839,7 +839,7 @@ void MergeList(typHOE *hg, gint ope_max){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_list,
 		  NULL);
@@ -966,7 +966,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_ope,
 		  NULL);
@@ -1177,7 +1177,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 			      GTK_STOCK_DIALOG_WARNING, 
 #endif
 			      POPUP_TIMEOUT,
-			      "Warning: Object Number exceeds the limit.",
+			      "<b>Warning</b>: Object Number exceeds the limit.",
 			      NULL);
 		escape=TRUE;
 	      }
@@ -1359,7 +1359,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 			  GTK_STOCK_DIALOG_WARNING, 
 #endif
 			  POPUP_TIMEOUT*2,
-			  "Warning: PRM File cannot be opened.",
+			  "<b>Warning</b>: PRM File cannot be opened.",
 			  " ",
 			  prmname,
 			  NULL);
@@ -1417,7 +1417,7 @@ void MergeListPRM(typHOE *hg){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_prm,
 		  NULL);
@@ -1582,7 +1582,7 @@ void MergeListPRM(typHOE *hg){
 			    GTK_STOCK_DIALOG_WARNING, 
 #endif
 			    POPUP_TIMEOUT,
-			    "Warning: Object Number exceeds the limit.",
+			    "<b>Warning</b>: Object Number exceeds the limit.",
 			    NULL);
 	      escape=TRUE;
 	    }
@@ -1631,7 +1631,7 @@ void MergeListPRM2(typHOE *hg){
 		  GTK_STOCK_DIALOG_WARNING, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Warning: PRM File cannot be opened.",
+		  "<b>Warning</b> PRM File cannot be opened.",
 		  " ",
 		  hg->filename_prm,
 		  NULL);
@@ -1802,7 +1802,7 @@ void MergeListPRM2(typHOE *hg){
 				GTK_STOCK_DIALOG_WARNING, 
 #endif
 				POPUP_TIMEOUT,
-				"Warning: Object Number exceeds the limit.",
+				"<b>Warning</b> Object Number exceeds the limit.",
 				NULL);
 		  escape=TRUE;
 		}
@@ -1850,7 +1850,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_ope,
 		  NULL);
@@ -2040,7 +2040,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 			      GTK_STOCK_DIALOG_WARNING, 
 #endif
 			      POPUP_TIMEOUT,
-			      "Warning: Object Number exceeds the limit.",
+			      "<b>Warning</b> Object Number exceeds the limit.",
 			      NULL);
 		escape=TRUE;
 	      }
@@ -2226,7 +2226,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 			  GTK_STOCK_DIALOG_WARNING, 
 #endif
 			  POPUP_TIMEOUT*2,
-			  "Warning: PRM File cannot be opened.",
+			  "<b>Warning</b> PRM File cannot be opened.",
 			  " ",
 			  prmname,
 			  NULL);
@@ -2291,7 +2291,7 @@ void MergeNST(typHOE *hg, gint ope_max){
 		  GTK_STOCK_DIALOG_WARNING, 
 #endif
 		  POPUP_TIMEOUT,
-		  "Warning: Object Number exceeds the limit.",
+		  "<b>Warning</b> Object Number exceeds the limit.",
 		  NULL);
     return;
   }
@@ -2305,7 +2305,7 @@ void MergeNST(typHOE *hg, gint ope_max){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_nst,
 		  NULL);
@@ -2329,7 +2329,7 @@ void MergeNST(typHOE *hg, gint ope_max){
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT*2,
-		    "Error: TSC File format might be incorrect.",
+		    "<b>Error</b>: TSC File format might be incorrect.",
 		    " ",
 		    hg->filename_nst,
 		    NULL);
@@ -2362,7 +2362,7 @@ void MergeNST(typHOE *hg, gint ope_max){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: TSC File format might be incorrect.",
+		  "<b>Error</b>: TSC File format might be incorrect.",
 		  " ",
 		  hg->filename_nst,
 		  NULL);
@@ -2472,7 +2472,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 		  GTK_STOCK_DIALOG_WARNING, 
 #endif
 		  POPUP_TIMEOUT,
-		  "Warning: Object Number exceeds the limit.",
+		  "<b>Warning</b> Object Number exceeds the limit.",
 		  NULL);
     return;
   }
@@ -2486,7 +2486,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
@@ -2541,7 +2541,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 			GTK_STOCK_DIALOG_ERROR, 
 #endif
 			POPUP_TIMEOUT*2,
-			"Error: Invalid HORIZONS File.",
+			"<b>Error</b>: Invalid HORIZONS File.",
 			"Center-site must be \"GEOCENTRIC\".",
 			" ",
 			hg->filename_jpl,
@@ -2565,7 +2565,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
@@ -2582,7 +2582,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: Invalid HORIZONS File.",
+		  "<b>Error</b>: Invalid HORIZONS File.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
@@ -2604,7 +2604,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT*2,
-		    "Error: Invalid HORIZONS File.",
+		    "<b>Error</b>: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
 		    NULL);
@@ -2661,7 +2661,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT*2,
-		    "Error: Invalid HORIZONS File.",
+		    "<b>Error</b>: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
 		    NULL);
@@ -2678,7 +2678,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT*2,
-		    "Error: Invalid HORIZONS File.",
+		    "<b>Error</b>: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
 		    NULL);
@@ -2854,7 +2854,7 @@ void ConvJPL(typHOE *hg){
 		  GTK_STOCK_DIALOG_WARNING, 
 #endif
 		  POPUP_TIMEOUT,
-		  "Warning: Object Number exceeds the limit.",
+		  "<b>Warning</b> Object Number exceeds the limit.",
 		  NULL);
     return;
   }
@@ -2868,7 +2868,7 @@ void ConvJPL(typHOE *hg){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
@@ -2884,7 +2884,7 @@ void ConvJPL(typHOE *hg){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
@@ -2935,7 +2935,7 @@ void ConvJPL(typHOE *hg){
 			GTK_STOCK_DIALOG_ERROR, 
 #endif
 			POPUP_TIMEOUT*2,
-			"Error: Invalid HORIZONS File.",
+			"<b>Error</b>: Invalid HORIZONS File.",
 			"Center-site must be \"GEOCENTRIC\".",
 			" ",
 			hg->filename_jpl,
@@ -2959,7 +2959,7 @@ void ConvJPL(typHOE *hg){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
@@ -2976,7 +2976,7 @@ void ConvJPL(typHOE *hg){
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: Invalid HORIZONS File.",
+		  "<b>Error</b>: Invalid HORIZONS File.",
 		  " ",
 		  hg->filename_jpl,
 		  NULL);
@@ -2994,7 +2994,7 @@ void ConvJPL(typHOE *hg){
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT*2,
-		    "Error: Invalid HORIZONS File.",
+		    "<b>Error</b>: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
 		    NULL);
@@ -3051,7 +3051,7 @@ void ConvJPL(typHOE *hg){
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT*2,
-		    "Error: Invalid HORIZONS File.",
+		    "<b>Error</b>: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
 		    NULL);
@@ -3084,7 +3084,7 @@ void ConvJPL(typHOE *hg){
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT*2,
-		    "Error: Invalid HORIZONS File.",
+		    "<b>Error</b>: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
 		    NULL);
@@ -3511,7 +3511,7 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
 			GTK_STOCK_DIALOG_WARNING,
 #endif
 			POPUP_TIMEOUT,
-			"Warning: No CSV files have been saved.",
+			"<b>Warning</b> No CSV files have been saved.",
 			NULL);
 	}
       }
@@ -3571,7 +3571,7 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
 			GTK_STOCK_DIALOG_WARNING,
 #endif
 			POPUP_TIMEOUT,
-			"Error: File cannot be opened.",
+			"<b>Error</b>: File cannot be opened.",
 			" ",
 			fname,
 		      NULL);

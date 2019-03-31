@@ -1820,7 +1820,7 @@ int http_c_fc_ssl(typHOE *hg){
 
   struct addrinfo hints, *res;
   struct in_addr addr;
-  int err;
+  int err, ret;
   const char *cause=NULL;
 
   gboolean chunked_flag=FALSE;
@@ -1876,8 +1876,15 @@ int http_c_fc_ssl(typHOE *hg){
   ctx = SSL_CTX_new(SSLv23_client_method());
   ssl = SSL_new(ctx);
   err = SSL_set_fd(ssl, command_socket);
-  if( SSL_connect(ssl) !=1) {
-    fprintf(stderr, "SSL connection failed.\n");
+  while((ret=SSL_connect(ssl))!=1){
+    err=SSL_get_error(ssl, ret);
+    if( (err==SSL_ERROR_WANT_READ)||(err==SSL_ERROR_WANT_WRITE) ){
+      g_usleep(100000);
+      g_warning("SSL_connect(): try again\n");
+      continue;
+    }
+    g_warning("SSL_connect() failed with error %d, ret=%d (%s)\n",
+	      err, ret, ERR_error_string(ERR_get_error(), NULL));
 #ifdef USE_WIN32
     gtk_main_quit();
     _endthreadex(0);
@@ -2278,8 +2285,15 @@ int http_c_fc_ssl(typHOE *hg){
     ctx = SSL_CTX_new(SSLv23_client_method());
     ssl = SSL_new(ctx);
     err = SSL_set_fd(ssl, command_socket);
-    if( SSL_connect(ssl) !=1) {
-      fprintf(stderr, "SSL connection failed.\n");
+    while((ret=SSL_connect(ssl))!=1){
+      err=SSL_get_error(ssl, ret);
+      if( (err==SSL_ERROR_WANT_READ)||(err==SSL_ERROR_WANT_WRITE) ){
+	g_usleep(100000);
+	g_warning("SSL_connect(): try again\n");
+	continue;
+      }
+      g_warning("SSL_connect() failed with error %d, ret=%d (%s)\n",
+		err, ret, ERR_error_string(ERR_get_error(), NULL));
 #ifdef USE_WIN32
       gtk_main_quit();
       _endthreadex(0);
@@ -4821,7 +4835,7 @@ int http_c_fcdb(typHOE *hg){
   check_msg_from_parent();
 
   if(chunked_flag) unchunk(hg->fcdb_file);
-  // This is a bug fix for SDSS DR14 VOTable output
+  // This is a bug fix for SDSS DR15 VOTable output
   if(hg->fcdb_type==FCDB_TYPE_SDSS){ 
     str_replace(hg->fcdb_file, 
 		"encoding=\"utf-16\"",
@@ -4865,7 +4879,7 @@ int http_c_fcdb_ssl(typHOE *hg){
 
   struct addrinfo hints, *res;
   struct in_addr addr;
-  int err;
+  int err, ret;
 
   gboolean chunked_flag=FALSE;
   gchar *cp;
@@ -4930,8 +4944,15 @@ int http_c_fcdb_ssl(typHOE *hg){
   ctx = SSL_CTX_new(SSLv23_client_method());
   ssl = SSL_new(ctx);
   err = SSL_set_fd(ssl, command_socket);
-  if( SSL_connect(ssl) !=1) {
-    fprintf(stderr, "SSL connection failed.\n");
+  while((ret=SSL_connect(ssl))!=1){
+    err=SSL_get_error(ssl, ret);
+    if( (err==SSL_ERROR_WANT_READ)||(err==SSL_ERROR_WANT_WRITE) ){
+      g_usleep(100000);
+      g_warning("SSL_connect(): try again\n");
+      continue;
+    }
+    g_warning("SSL_connect() failed with error %d, ret=%d (%s)\n",
+	      err, ret, ERR_error_string(ERR_get_error(), NULL));
 #ifdef USE_WIN32
     gtk_main_quit();
     _endthreadex(0);
@@ -5014,7 +5035,7 @@ int http_c_fcdb_ssl(typHOE *hg){
   check_msg_from_parent();
 
   if(chunked_flag) unchunk(hg->fcdb_file);
-  // This is a bug fix for SDSS DR14 VOTable output
+  // This is a bug fix for SDSS DR15 VOTable output
   if(hg->fcdb_type==FCDB_TYPE_SDSS){ 
     str_replace(hg->fcdb_file, 
 		"encoding=\"utf-16\"",

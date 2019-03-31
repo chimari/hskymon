@@ -2802,7 +2802,7 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->fcdb_file,
 		  NULL);
@@ -2819,7 +2819,7 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT*2,
-		    "Error: File cannot be read.",
+		    "<b>Error</b>: File cannot be read.",
 		    " ",
 		    hg->fcdb_file,
 		    NULL);
@@ -2846,7 +2846,7 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be read.",
+		  "<b>Error</b>: File cannot be read.",
 		  " ",
 		  hg->fcdb_file,
 		  NULL);
@@ -2954,7 +2954,7 @@ void fcdb_smoka_txt_parse(typHOE *hg) {
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT*2,
-		    "Error: File cannot be read.",
+		    "<b>Error</b>: File cannot be read.",
 		    " ",
 		    hg->fcdb_file,
 		    NULL);
@@ -3116,7 +3116,7 @@ void trdb_smoka_txt_parse(typHOE *hg) {
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->fcdb_file,
 		  NULL);
@@ -3135,7 +3135,7 @@ void trdb_smoka_txt_parse(typHOE *hg) {
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT*2,
-		    "Error: File cannot be read.",
+		    "<b>Error</b>: File cannot be read.",
 		    " ",
 		    hg->fcdb_file,
 		    NULL);
@@ -3162,7 +3162,7 @@ void trdb_smoka_txt_parse(typHOE *hg) {
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be read.",
+		  "<b>Error</b>: File cannot be read.",
 		  " ",
 		  hg->fcdb_file,
 		  NULL);
@@ -3273,7 +3273,7 @@ void trdb_smoka_txt_parse(typHOE *hg) {
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
 		    POPUP_TIMEOUT*2,
-		    "Error: File cannot be read.",
+		    "<b>Error</b>: File cannot be read.",
 		    " ",
 		    hg->fcdb_file,
 		    NULL);

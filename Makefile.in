@@ -105,8 +105,8 @@ CONFIG_CLEAN_FILES = version.h hskymon_res.rc
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_hskymon_OBJECTS = main.$(OBJEXT) calcpa.$(OBJEXT) fc.$(OBJEXT) \
-	fc_output.$(OBJEXT) adc.$(OBJEXT) lunar.$(OBJEXT) \
+am_hskymon_OBJECTS = main.$(OBJEXT) gtkut.$(OBJEXT) calcpa.$(OBJEXT) \
+	fc.$(OBJEXT) fc_output.$(OBJEXT) adc.$(OBJEXT) lunar.$(OBJEXT) \
 	solar.$(OBJEXT) earth.$(OBJEXT) mercury.$(OBJEXT) \
 	venus.$(OBJEXT) mars.$(OBJEXT) jupiter.$(OBJEXT) \
 	saturn.$(OBJEXT) uranus.$(OBJEXT) neptune.$(OBJEXT) \
@@ -442,7 +442,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = . libnova std_data debian sample icons
 hskymon_SOURCES = \
-	 main.c calcpa.c fc.c fc_output.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c json_parse.c io_gui.c lgs.c resources.c votable.h remoteObjects.h configfile.h esostd.h ssl.h gen2.h post.h post_sdss.h post_lamost.h post_kepler.h post_smoka.h post_hst.h post_eso.h get_gemini.h io_gui.h lgs.h resources.h
+	 main.c gtkut.c calcpa.c fc.c fc_output.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h gtkut.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c json_parse.c io_gui.c lgs.c resources.c votable.h remoteObjects.h configfile.h esostd.h ssl.h gen2.h post.h post_sdss.h post_lamost.h post_kepler.h post_smoka.h post_hst.h post_eso.h get_gemini.h io_gui.h lgs.h resources.h
 
 CLEANFILES = *~ libnova/*~ std_data/*~ debian/*~ sample/*~ icons/*~ \
 	$(BUILT_SOURCES)
@@ -595,6 +595,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earth.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fc_output.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkut.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http-client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/io_gui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/json_parse.Po@am__quote@

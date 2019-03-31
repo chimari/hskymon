@@ -23,7 +23,7 @@ gboolean ReadLGSPAM(typHOE *hg){
 		  GTK_STOCK_DIALOG_WARNING,
 #endif
 		  POPUP_TIMEOUT*2,
-		  "Error: File cannot be opened.",
+		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_lgs_pam,
 		  NULL);
@@ -184,7 +184,7 @@ gboolean ReadLGSPAM(typHOE *hg){
 			  GTK_STOCK_DIALOG_WARNING,
 #endif
 			  POPUP_TIMEOUT,
-			  "Warning: Too many collisions in this target.",
+			  "<b>Warning</b>: Too many collisions in this target.",
 			  NULL);
 	    break;;
 	  }
@@ -219,7 +219,7 @@ gboolean ReadLGSPAM(typHOE *hg){
 			GTK_STOCK_DIALOG_WARNING,
 #endif
 			POPUP_TIMEOUT,
-			"Warning: Too many objects in this LGS collision file.",
+			"<b>Warning</b>: Too many objects in this LGS collision file.",
 			NULL);
 	  fclose(fp);
 	  if(hg->pam_name) g_free(hg->pam_name);
@@ -381,12 +381,12 @@ void create_pam_dialog(typHOE *hg)
   gtk_box_pack_start(GTK_BOX(vbox),label,FALSE,FALSE,0);
   g_free(tmp);
 
-  tmp=g_strdup_printf("    Date : %02d-%02d-%4d (%s)",
+  tmp=g_strdup_printf("    Date (in evening) : <b>%02d-%02d-%4d</b> (%s)",
 		      hg->pam_zonedate.months,
 		      hg->pam_zonedate.days,
 		      hg->pam_zonedate.years,
 		      hg->obs_tzname);
-  label = gtk_label_new (tmp);
+  label = gtkut_label_new (tmp);
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -860,13 +860,13 @@ void pam_update_label(typHOE *hg){
   ln_deg_to_hms(ra_to_deg(hg->obj[hg->plot_i].ra), &hms);
   ln_deg_to_dms(dec_to_deg(hg->obj[hg->plot_i].dec), &dms);
   
-  tmp=g_strdup_printf("    Target-#%d \"%s\" : RA=%02d:%02d:%05.2lf Dec=%s%02d:%02d:%05.2lf",
+  tmp=g_strdup_printf("    Target-#%d \"<b>%s</b>\" : RA=%02d:%02d:%05.2lf Dec=%s%02d:%02d:%05.2lf",
 		      hg->plot_i+1,
 		      hg->obj[hg->plot_i].name,
 		      hms.hours, hms.minutes, hms.seconds,
 		      (dms.neg) ? "-" : "+",
 		      dms.degrees, dms.minutes, dms.seconds);
-  gtk_label_set_text(GTK_LABEL(hg->pam_label_obj),tmp);
+  gtk_label_set_markup(GTK_LABEL(hg->pam_label_obj),tmp);
   g_free(tmp);
   
   if(hg->obj[hg->plot_i].pam >= 0){
@@ -879,11 +879,11 @@ void pam_update_label(typHOE *hg){
 			(dms.neg) ? "-" : "+",
 			dms.degrees, dms.minutes, dms.seconds,
 			hg->lgs_pam[hg->obj[hg->plot_i].pam].line);
-    gtk_label_set_text(GTK_LABEL(hg->pam_label_pam),tmp);
+    gtk_label_set_markup(GTK_LABEL(hg->pam_label_pam),tmp);
     g_free(tmp);
   }
   else{
-    gtk_label_set_text(GTK_LABEL(hg->pam_label_pam), "    !!! NO COLLISION DATA IS FOUND FOR THIS TARGET !!!");
+    gtk_label_set_markup(GTK_LABEL(hg->pam_label_pam), "<span color=\"#FF0000\">    !!! NO COLLISION DATA IS FOUND FOR THIS TARGET !!!</span>");
   }
 
   hg->pam_obj_i=hg->plot_i;
