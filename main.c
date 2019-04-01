@@ -3325,7 +3325,7 @@ static void show_help (GtkWidget *widget, GtkWidget *parent)
   gtkut_table_attach (table, label, 0, 1, 10, 11,
 		      GTK_SHRINK,GTK_SHRINK,0,0);
   
-  label = gtk_label_new ("  Select the object");
+  label = gtk_label_new ("  Select the nearest object from the cursor");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -7036,7 +7036,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 #endif
   gtkut_table_attach(table, label, 1, 2, 5, 6,
 		     GTK_FILL,GTK_SHRINK,0,0);
-  label = gtk_label_new ("19.5 - 27.9 &#xB5;m");
+  label = gtkut_label_new ("19.5 - 27.9 &#xB5;m");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_CENTER);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -10037,8 +10037,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
     for(i_fc=0;i_fc<NUM_FC;i_fc++){
       gtk_list_store_append(store, &iter);
-      if(FC_name[i_fc]){
-	gtk_list_store_set(store, &iter, 0, FC_name[i_fc],
+      if(FC_markup[i_fc]){
+	gtk_list_store_set(store, &iter, 0, FC_markup[i_fc],
 			   1, i_fc, 2, TRUE, -1);
 	if(hg->fc_mode_def==i_fc) iter_set=iter;
       }
@@ -10055,7 +10055,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 	
     renderer = gtk_cell_renderer_text_new();
     gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
-    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "markup",0,NULL);
 	
     gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (combo), 
 					  is_separator, NULL, NULL);	
@@ -10066,7 +10066,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		       &tmp_fc_mode_def);
   }
 
-  frame1 = gtkut_frame_new ("SkyView RGB Composite");
+  frame1 = gtkut_frame_new (FC_markup[FC_SKYVIEW_RGB]);
   gtk_container_set_border_width (GTK_CONTAINER (frame1), 5);
 #ifdef USE_GTK3
   gtk_widget_set_hexpand(frame1,TRUE);
@@ -10077,7 +10077,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   table2 = gtkut_table_new(3, 3, FALSE, 5, 5, 5);
   gtk_container_add (GTK_CONTAINER (frame1), table2);
 
-  label = gtkut_label_new ("<span color=\"#FF0000\">Red</span>");
+  label = gtkut_label_new ("<span color=\"#FF7F7F\">Red</span>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -10087,7 +10087,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtkut_table_attach(table2, label, 0, 1, 0, 1,
 		     GTK_FILL,GTK_SHRINK,0,0);
 
-  label = gtkut_label_new ("<span color=\"#00FF00\">Green</span>");
+  label = gtkut_label_new ("<span color=\"#7FFF7F\">Green</span>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -10097,7 +10097,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtkut_table_attach(table2, label, 0, 1, 1, 2,
 		     GTK_FILL,GTK_SHRINK,0,0);
 
-  label = gtkut_label_new ("<span color=\"#0000FF\">Blue</span>");
+  label = gtkut_label_new ("<span color=\"#7F7FFF\">Blue</span>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -10113,137 +10113,30 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       GtkListStore *store;
       GtkTreeIter iter, iter_set;	  
       GtkCellRenderer *renderer;
+      gint i_fc;
       
       store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
 
       if(i==1){
 	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, "(Average of Red & Blue)",
+	gtk_list_store_set(store, &iter, 0, "(Average of Red &amp; Blue)",
 			   1, -1, 2, TRUE, -1);
 	if(hg->fc_mode_RGB[i]==-1) iter_set=iter;
       
       }
     
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: GALEX (Far UV)",
-			 1, FC_SKYVIEW_GALEXF, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_GALEXF) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: GALEX (Near UV)",
-			 1, FC_SKYVIEW_GALEXN, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_GALEXN) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: DSS1 (Red)",
-			 1, FC_SKYVIEW_DSS1R, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_DSS1R) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: DSS1 (Blue)",
-			 1, FC_SKYVIEW_DSS1B, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_DSS1B) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: DSS2 (Red)",
-			 1, FC_SKYVIEW_DSS2R, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_DSS2R) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: DSS2 (Blue)",
-			 1, FC_SKYVIEW_DSS2B, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_DSS2B) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: DSS2 (IR)",
-			 1, FC_SKYVIEW_DSS2IR, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_DSS2IR) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (u)",
-			 1, FC_SKYVIEW_SDSSU, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_SDSSU) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (g)",
-			 1, FC_SKYVIEW_SDSSG, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_SDSSG) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (r)",
-			 1, FC_SKYVIEW_SDSSR, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_SDSSR) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (i)",
-			 1, FC_SKYVIEW_SDSSI, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_SDSSI) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: SDSS (z)",
-			 1, FC_SKYVIEW_SDSSZ, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_SDSSZ) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (J)",
-			 1, FC_SKYVIEW_2MASSJ, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_2MASSJ) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (H)",
-			 1, FC_SKYVIEW_2MASSH, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_2MASSH) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: 2MASS (K)",
-			 1, FC_SKYVIEW_2MASSK, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_2MASSK) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: WISE (3.4um)",
-			 1, FC_SKYVIEW_WISE34, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_WISE34) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: WISE (4.6um)",
-			 1, FC_SKYVIEW_WISE46, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_WISE46) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: WISE (12um)",
-			 1, FC_SKYVIEW_WISE12, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_WISE12) iter_set=iter;
-      
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: WISE (22um)",
-			 1, FC_SKYVIEW_WISE22, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_WISE22) iter_set=iter;
-
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: AKARI N60",
-			 1, FC_SKYVIEW_AKARIN60, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_AKARIN60) iter_set=iter;
-
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: AKARI WIDE-S",
-			 1, FC_SKYVIEW_AKARIWS, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_AKARIWS) iter_set=iter;
-
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: AKARI WIDE-L",
-			 1, FC_SKYVIEW_AKARIWL, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_AKARIWL) iter_set=iter;
-
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: AKARI N160",
-			 1, FC_SKYVIEW_AKARIN160, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_AKARIN160) iter_set=iter;
-
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "SkyView: NVSS (1.4GHz)",
-			 1, FC_SKYVIEW_NVSS, 2, TRUE, -1);
-      if(hg->fc_mode_RGB[i]==FC_SKYVIEW_NVSS) iter_set=iter;
-    
+      for(i_fc=FC_SKYVIEW_GALEXF;i_fc<FC_SKYVIEW_RGB;i_fc++){
+	gtk_list_store_append(store, &iter);
+	if(FC_markup[i_fc]){
+	  gtk_list_store_set(store, &iter, 0, FC_markup[i_fc],
+			     1, i_fc, 2, TRUE, -1);
+	  if(hg->fc_mode_RGB[i]==i_fc) iter_set=iter;
+	}
+	else{
+	  gtk_list_store_set(store, &iter, 0, NULL,
+			     1, i_fc, 2, FALSE, -1);
+	}
+      }
 	
       combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
       gtkut_table_attach(table2, combo, 1, 2, i, i+1,
@@ -10252,7 +10145,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 	
       renderer = gtk_cell_renderer_text_new();
       gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
-      gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+      gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "markup",0,NULL);
 	
       gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
       gtk_widget_show(combo);

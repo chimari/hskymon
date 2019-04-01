@@ -944,8 +944,8 @@ void create_fc_dialog(typHOE *hg)
     
     for(i_fc=0;i_fc<NUM_FC;i_fc++){
       gtk_list_store_append(store, &iter);
-      if(FC_name[i_fc]){
-	gtk_list_store_set(store, &iter, 0, FC_name[i_fc],
+      if(FC_markup[i_fc]){
+	gtk_list_store_set(store, &iter, 0, FC_markup[i_fc],
 			   1, i_fc, 2, TRUE, -1);
 	if(hg->fc_mode==i_fc) iter_set=iter;
       }
@@ -966,7 +966,7 @@ void create_fc_dialog(typHOE *hg)
 	
     renderer = gtk_cell_renderer_text_new();
     gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
-    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "markup",0,NULL);
 	
     gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (combo), 
 					  is_separator, NULL, NULL);	
