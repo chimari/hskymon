@@ -3957,7 +3957,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 
 
   // delta_RA
-  label = gtkut_label_new ("&#x394;RA [deg]");
+  label = gtkut_label_new ("&#x394;RA [&#xB5;]");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -3982,7 +3982,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 		     &tmp_dra);
 
   // delta_Dec
-  label = gtkut_label_new ("        &#x394;Dec [deg]");
+  label = gtkut_label_new ("        &#x394;Dec [&#xB5;]");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -9485,7 +9485,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   hbox = gtkut_hbox_new(FALSE,2);
   gtkut_table_attach_defaults(table2, hbox, 1, 2, 1, 2);
 
-  label = gtk_label_new ("Rotation Angle [deg]");
+  label = gtk_label_new ("Rotation Angle [&#xB5;]");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
