@@ -3957,7 +3957,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 
 
   // delta_RA
-  label = gtkut_label_new ("&#x394;RA [&#xB0;]");
+  label = gtkut_label_new ("&#x394;RA [ &#xB0; ]");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -3982,7 +3982,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 		     &tmp_dra);
 
   // delta_Dec
-  label = gtkut_label_new ("        &#x394;Dec [&#xB0;]");
+  label = gtkut_label_new ("        &#x394;Dec [ &#xB0; ]");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -4393,7 +4393,7 @@ void create_std_para_dialog (GtkWidget *widget, gpointer gdata)
 		     &tmp_iras12);
 
   // IRAS 25um
-  label = gtk_label_new ("     F(25&#xB5;m) [Jy]  >");
+  label = gtkut_label_new ("     F(25&#xB5;m) [Jy]  >");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -9021,7 +9021,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_obs_tzname);
 
 
-  frame = gtkut_frame_new ("<b>Telescope Velocity</b> [&#xB0;/sec]");
+  frame = gtkut_frame_new ("<b>Telescope Velocity</b> [ &#xB0; /sec]");
   gtk_box_pack_start(GTK_BOX(note_vbox),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
@@ -9485,7 +9485,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   hbox = gtkut_hbox_new(FALSE,2);
   gtkut_table_attach_defaults(table2, hbox, 1, 2, 1, 2);
 
-  label = gtk_label_new ("Rotation Angle [&#xB0;]");
+  label = gtkut_label_new ("Rotation Angle [ &#xB0; ]");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
