@@ -1,3 +1,9 @@
+hskymon (3.8.2ubuntu) bionic; urgency=medium
+
+  * Small bug fixes for Gtk+3 ver.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Mon, 01 Apr 2019 18:29:03 -1000
+
 hskymon (3.8.1ubuntu) bionic; urgency=medium
 
   * Markup text style is applied.

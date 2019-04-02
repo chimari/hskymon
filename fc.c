@@ -652,8 +652,6 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			    TRUE);
 #ifdef USE_GTK3      
   gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
@@ -681,8 +679,6 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			    TRUE);
 #ifdef USE_GTK3      
   gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
@@ -718,8 +714,6 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 1.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			    TRUE);
 #ifdef USE_GTK3      
   gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
@@ -747,8 +741,6 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			    TRUE);
 #ifdef USE_GTK3      
   gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
@@ -775,8 +767,6 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			    TRUE);
 #ifdef USE_GTK3      
   gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
@@ -812,8 +802,6 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			    TRUE);
 #ifdef USE_GTK3      
   gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
@@ -841,8 +829,6 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 					    1.0, 10.0, 0.0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			    TRUE);
 #ifdef USE_GTK3      
   gtk_widget_set_halign(spinner,GTK_ALIGN_CENTER);
   gtk_widget_set_valign(spinner,GTK_ALIGN_CENTER);
@@ -990,8 +976,6 @@ void create_fc_dialog(typHOE *hg)
    			    1.0, 1.0, 0);
   spinner =  gtk_spin_button_new (hg->fc_adj_dss_arcmin, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox2),spinner,FALSE,FALSE,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
   my_signal_connect (hg->fc_adj_dss_arcmin, "value_changed",
@@ -1220,8 +1204,6 @@ void create_fc_dialog(typHOE *hg)
 						       1.0, 1.0, 0);
   spinner =  gtk_spin_button_new (hg->fc_adj_dss_pa, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox2),spinner,FALSE,FALSE,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),4);
   my_signal_connect (hg->fc_adj_dss_pa, "value_changed",

@@ -395,8 +395,6 @@ void create_skymon_dialog(typHOE *hg)
   spinner =  gtk_spin_button_new (hg->skymon_adj_min, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 TRUE);
   gtk_box_pack_start(GTK_BOX(hbox1),spinner,FALSE,FALSE,0);
   my_entry_set_width_chars(GTK_ENTRY(GTK_SPIN_BUTTON(spinner)),5);
   my_signal_connect (hg->skymon_adj_min, "value-changed",
@@ -596,8 +594,6 @@ void create_skymon_dialog(typHOE *hg)
 					  1.0, 1.0, 0);
   spinner =  gtk_spin_button_new (hg->skymon_adj_objsz, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtk_editable_set_editable(GTK_EDITABLE(&GTK_SPIN_BUTTON(spinner)->entry),
-			 FALSE);
   gtk_box_pack_start(GTK_BOX(hbox1),spinner,FALSE,FALSE,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
   my_signal_connect (hg->skymon_adj_objsz, "value_changed",

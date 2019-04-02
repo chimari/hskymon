@@ -970,7 +970,7 @@ enum{
 #ifdef USE_WIN32
 #define SKYMON_FONT "arial 10"
 #else
-#define SKYMON_FONT "Suns 10"
+#define SKYMON_FONT "Sans 10"
 #endif
 
 #define DEF_SIZE_EDGE 4
