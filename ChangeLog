@@ -1,8 +1,9 @@
-2019.04.02 ver3.8.2 - Bug fix for Gtk+3 ver.
+2019.04.09 ver3.8.2 - Bug fix for Gtk+3 ver.
                       removed editable=FALSE for spin_button.
                       Fixed inappropriate default font name.
                     - Changed xml tags for NED following server's side changes.
                     - Changed USNO-B1.0 catalog server to VizieR.
+	            - Added proper motions in addobj_dialog.
 
 2019.03.31 ver3.8.1 - Database updated SDSS DR14 --> DR15 .
 	            - Markup text style is applied to label and

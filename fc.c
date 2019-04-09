@@ -4063,37 +4063,45 @@ void addobj_dl(typHOE *hg)
     gtk_entry_set_text(GTK_ENTRY(hg->addobj_entry_dec),tmp);
     g_free(tmp);
 
+    tmp=g_strdup_printf("%+.2lf",hg->addobj_pm_ra);
+    gtk_entry_set_text(GTK_ENTRY(hg->addobj_entry_pm_ra),tmp);
+    g_free(tmp);
+
+    tmp=g_strdup_printf("%+.2lf",hg->addobj_pm_dec);
+    gtk_entry_set_text(GTK_ENTRY(hg->addobj_entry_pm_dec),tmp);
+    g_free(tmp);
+
     switch(hg->addobj_type){
     case FCDB_TYPE_SIMBAD:
-      tmp=g_strdup_printf("Your input \"%s\" is identified with \"%s\" (%s) in SIMBAD",
+      tmp=g_strdup_printf("Your input \"%s\" is identified with <b>\"%s\" (%s)</b> in SIMBAD",
 			  hg->addobj_name, 
 			  hg->addobj_voname, 
 			  hg->addobj_votype);
       break;
 
     case FCDB_TYPE_NED:
-      tmp=g_strdup_printf("Your input \"%s\" is identified with \"%s\" (%s) in NED",
+      tmp=g_strdup_printf("Your input \"%s\" is identified with <b>\"%s\" (%s)</b> in NED",
 			  hg->addobj_name, 
 			  hg->addobj_voname, 
 			  hg->addobj_votype);
       break;
     }
-    gtk_label_set_text(GTK_LABEL(hg->addobj_label),tmp);
+    gtk_label_set_markup(GTK_LABEL(hg->addobj_label),tmp);
     g_free(tmp);
   }
   else{
     switch(hg->addobj_type){
     case FCDB_TYPE_SIMBAD:
-      tmp=g_strdup_printf("Your input \"%s\" is not found in SIMBAD",
+      tmp=g_strdup_printf("<span color=\"#FF0000\">Your input \"%s\" is not found in SIMBAD</span>",
 			  hg->addobj_name); 
       break;
 
     case FCDB_TYPE_NED:
-      tmp=g_strdup_printf("Your input \"%s\" is not found in NED",
+      tmp=g_strdup_printf("span color=\"#FF0000\">Your input \"%s\" is not found in NED</span>",
 			  hg->addobj_name); 
       break;
     }
-    gtk_label_set_text(GTK_LABEL(hg->addobj_label),tmp);
+    gtk_label_set_markup(GTK_LABEL(hg->addobj_label),tmp);
     g_free(tmp);
   }
   

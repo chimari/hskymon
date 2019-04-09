@@ -1406,11 +1406,13 @@ trdb_create_items_model (typHOE *hg)
 
 
 
-static void add_item (typHOE *hg)
+static void add_item (typHOE *hg, gboolean pm_flag)
 {
   GtkTreeIter iter;
   GtkTreeModel *model;
   gint i,i_list, i_band;
+  gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
+  gchar *mag_str, *pm_str;
 
   if(hg->i_max>=MAX_OBJECT) return;
 
@@ -1422,13 +1424,47 @@ static void add_item (typHOE *hg)
   hg->obj[i].def=make_tgt(hg->addobj_name, "TGT_");
   if(hg->obj[i].name) g_free(hg->obj[i].name);
   hg->obj[i].name=g_strdup(hg->addobj_name);
-  
-  hg->obj[i].ra=hg->addobj_ra;
-  hg->obj[i].dec=hg->addobj_dec;
+
+  if(pm_flag){ // Proper Motion
+    yrs=current_yrs(hg);
+    new_d_ra=ra_to_deg(hg->addobj_ra)+
+      hg->addobj_pm_ra/1000/60/60*yrs;
+    new_d_dec=dec_to_deg(hg->addobj_dec)+
+      hg->addobj_pm_dec/1000/60/60*yrs;
+
+    new_ra=deg_to_ra(new_d_ra);
+    new_dec=deg_to_dec(new_d_dec);
+    
+    hg->obj[i].ra=new_ra;
+    hg->obj[i].dec=new_dec;
+    hg->obj[i].equinox=2000.0;
+  }
+  else{  // No Proper Motion
+    hg->obj[i].ra=hg->addobj_ra;
+    hg->obj[i].dec=hg->addobj_dec;
+  }
   hg->obj[i].equinox=2000.0;
 
   if(hg->obj[i].note) g_free(hg->obj[i].note);
-  hg->obj[i].note=g_strdup("added via dialog");
+  if(pm_flag){
+    pm_str=g_strdup_printf(", applied PM dRA=%+.2lf dDec=%+.2lf",
+			   hg->addobj_pm_ra,hg->addobj_pm_dec);
+  }
+  else{
+    pm_str=g_strdup(" ");
+  }
+  if(hg->addobj_votype){
+    if(hg->addobj_magsp)
+      mag_str=g_strdup_printf(", %s, %s",hg->addobj_votype,hg->addobj_magsp);
+    else
+      mag_str=g_strdup_printf(", %s, mag=unknown",hg->addobj_votype);
+  }
+  else{
+      mag_str=g_strdup(" ");
+  }
+  hg->obj[i].note=g_strdup_printf("(added via dialog)%s%s", mag_str, pm_str);
+  g_free(pm_str);
+  g_free(mag_str);
 
   hg->obj[i].ope=ADDTYPE_OBJ;
   hg->obj[i].ope_i=hg->add_max;
@@ -8073,12 +8109,11 @@ static void addobj_ned_query (GtkWidget *widget, gpointer gdata)
 
 void addobj_dialog (GtkWidget *widget, gpointer gdata)
 {
-  GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
+  GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox, *check,
     *spinner, *table, *entry, *bar;
   GtkAdjustment *adj;
   typHOE *hg;
-  GSList *fcdb_group=NULL; 
-  gboolean rebuild_flag=FALSE;
+  gboolean pm_flag=FALSE;
 
   if(flagChildDialog){
     return;
@@ -8090,6 +8125,12 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
   hg->addobj_ra=0;
   hg->addobj_dec=0;
+  hg->addobj_pm_ra=0;
+  hg->addobj_pm_dec=0;
+  if(hg->addobj_votype) g_free(hg->addobj_votype);
+  hg->addobj_votype=NULL;
+  if(hg->addobj_magsp) g_free(hg->addobj_magsp);
+  hg->addobj_magsp=NULL;
 
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
@@ -8146,7 +8187,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 		     hbox,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
-  hg->addobj_label = gtk_label_new ("Input Object Name to be added & resolve its coordinate in the database.");
+  hg->addobj_label = gtkut_label_new ("<i>Input Object Name to be added &amp; resolve its coordinate in the database.</i>");
 #ifdef USE_GTK3
   gtk_widget_set_halign (hg->addobj_label, GTK_ALIGN_CENTER);
   gtk_widget_set_valign (hg->addobj_label, GTK_ALIGN_CENTER);
@@ -8203,6 +8244,53 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   my_signal_connect (hg->addobj_entry_dec, "changed", 
 		     cc_get_entry_double, &hg->addobj_dec);
   
+#ifdef USE_GTK3
+  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+#else
+  bar = gtk_hseparator_new();
+#endif
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     bar,FALSE, FALSE, 0);
+  
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     hbox,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+
+  label = gtk_label_new ("              Proper Motion (mas/yr) : RA");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox),label,FALSE, FALSE, 0);
+
+  hg->addobj_entry_pm_ra = gtk_entry_new ();
+  gtk_box_pack_start(GTK_BOX(hbox),hg->addobj_entry_pm_ra,FALSE, FALSE, 0);
+  gtk_entry_set_text(GTK_ENTRY(hg->addobj_entry_pm_ra), "0.00");
+  gtk_editable_set_editable(GTK_EDITABLE(hg->addobj_entry_pm_ra),TRUE);
+  my_entry_set_width_chars(GTK_ENTRY(hg->addobj_entry_pm_ra),10);
+  my_signal_connect (hg->addobj_entry_pm_ra, "changed", 
+		     cc_get_entry_double, &hg->addobj_pm_ra);
+  
+  label = gtk_label_new ("    Dec");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox),label,FALSE, FALSE, 0);
+
+  hg->addobj_entry_pm_dec = gtk_entry_new ();
+  gtk_box_pack_start(GTK_BOX(hbox),hg->addobj_entry_pm_dec,FALSE, FALSE, 0);
+  gtk_entry_set_text(GTK_ENTRY(hg->addobj_entry_pm_dec), "0.00");
+  gtk_editable_set_editable(GTK_EDITABLE(hg->addobj_entry_pm_dec),TRUE);
+  my_entry_set_width_chars(GTK_ENTRY(hg->addobj_entry_pm_dec),10);
+  my_signal_connect (hg->addobj_entry_pm_dec, "changed", 
+		     cc_get_entry_double, &hg->addobj_pm_dec);
+  
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Cancel","window-close");
@@ -8218,10 +8306,32 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 #endif
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_OK);
 
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     hbox,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+  
+  label = gtk_label_new ("              ");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox),label,FALSE, FALSE, 0);
+
+  check = gtk_check_button_new_with_label("Apply Proper Motion to the Coordinate");
+  gtk_box_pack_start(GTK_BOX(hbox),check,FALSE, FALSE, 0);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &pm_flag);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       pm_flag);
+  
   gtk_widget_show_all(dialog);
 
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
-    add_item(hg);
+    add_item(hg, pm_flag);
   }
 
   if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);

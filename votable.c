@@ -4107,6 +4107,8 @@ void addobj_vo_parse(typHOE *hg) {
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
   gdouble tmp_d_ra, tmp_d_dec;
+  gdouble simbad_mag;
+  gchar *simbad_sp=NULL;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -4126,6 +4128,12 @@ void addobj_vo_parse(typHOE *hg) {
 	columns[2] = vfield_move->position;
       else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"OTYPE_S") == 0) 
 	columns[3] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"FLUX_V") == 0) 
+	columns[5] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"PMRA") == 0) 
+	columns[6] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"PMDEC") == 0) 
+	columns[7] = vfield_move->position;
     }
   }
   else if (hg->addobj_type==FCDB_TYPE_NED){
@@ -4138,35 +4146,94 @@ void addobj_vo_parse(typHOE *hg) {
 	columns[2] = vfield_move->position;
       else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Type") == 0) 
 	columns[3] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Magnitude and Filter") == 0) 
+	columns[4] = vfield_move->position;
     }
   }
-
-
- Extract_VO_TableData(reader,&votable, nbFields, columns);
- for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
-   if (vtabledata_move->colomn == columns[0]){
-     if(hg->addobj_voname) g_free(hg->addobj_voname);
-     hg->addobj_voname=g_strdup((const char*)vtabledata_move->value);
-     break;
-   }
-   else if (vtabledata_move->colomn == columns[1]){
-     tmp_d_ra=atof((const char*)vtabledata_move->value);
-     hg->addobj_ra=deg_to_ra(tmp_d_ra);
-   }
-   else if (vtabledata_move->colomn == columns[2]){
-     tmp_d_dec=atof((const char*)vtabledata_move->value);
-     hg->addobj_dec=deg_to_dec(tmp_d_dec);
-   }
-   else if (vtabledata_move->colomn == columns[3]){
-     if(hg->addobj_votype) g_free(hg->addobj_votype);
-     hg->addobj_votype=g_strdup((const char*)vtabledata_move->value);
-   }
+  
+  
+  Extract_VO_TableData(reader,&votable, nbFields, columns);
+  for(vtabledata_move=votable.tabledata;vtabledata_move!=NULL;vtabledata_move=vtabledata_move->next) {  
+    if (vtabledata_move->colomn == columns[0]){
+      if(hg->addobj_voname) g_free(hg->addobj_voname);
+      hg->addobj_voname=g_strdup((const char*)vtabledata_move->value);
+      break;
+    }
+    else if (vtabledata_move->colomn == columns[1]){
+      tmp_d_ra=atof((const char*)vtabledata_move->value);
+      hg->addobj_ra=deg_to_ra(tmp_d_ra);
+    }
+    else if (vtabledata_move->colomn == columns[2]){
+      tmp_d_dec=atof((const char*)vtabledata_move->value);
+      hg->addobj_dec=deg_to_dec(tmp_d_dec);
+    }
+    else if (vtabledata_move->colomn == columns[3]){
+      if(hg->addobj_votype) g_free(hg->addobj_votype);
+      hg->addobj_votype=g_strdup((const char*)vtabledata_move->value);
+    }
+    else{
+      if(hg->addobj_type==FCDB_TYPE_SIMBAD){
+	if (vtabledata_move->colomn == columns[4]){
+	  simbad_sp=g_strdup((const char*)vtabledata_move->value);
+	}
+	else if (vtabledata_move->colomn == columns[5]){
+	  if(vtabledata_move->value){
+	    simbad_mag=atof((const char*)vtabledata_move->value);
+	  }
+	  else{
+	    simbad_mag=+100;
+	  }
+	}
+	else if (vtabledata_move->colomn == columns[6]){
+	  if(vtabledata_move->value){
+	    hg->addobj_pm_ra=atof((const char*)vtabledata_move->value);
+	  }
+	  else{
+	    hg->addobj_pm_ra=0.0;
+	  }
+	}
+	else if (vtabledata_move->colomn == columns[7]){
+	  if(vtabledata_move->value){
+	    hg->addobj_pm_dec=atof((const char*)vtabledata_move->value);
+	  }
+	  else{
+	    hg->addobj_pm_dec=0.0;
+	  }
+	}
+      }
+      else if(hg->addobj_type==FCDB_TYPE_NED){
+	if (vtabledata_move->colomn == columns[4]){
+	  if(hg->addobj_magsp) g_free(hg->addobj_magsp);
+	  hg->addobj_magsp=g_strdup((const char*)vtabledata_move->value);
+	}
+      }
+    }
   }
-
+  
   if (Free_VO_Parser(reader,&votable,&columns) == 1)
     fprintf(stderr,"memory problem\n");
 
-  if(!hg->addobj_votype) hg->addobj_votype=g_strdup("(None)");
+  if(!hg->addobj_votype) hg->addobj_votype=g_strdup("(type unknown)");
+  
+  if(hg->addobj_type==FCDB_TYPE_SIMBAD){
+    if(hg->addobj_magsp) g_free(hg->addobj_magsp);
+    if(simbad_mag<99){
+      if(simbad_sp)
+	hg->addobj_magsp=g_strdup_printf("V=%.2lf %s",simbad_mag,simbad_sp);
+      else
+	hg->addobj_magsp=g_strdup_printf("V=%.2lf",simbad_mag);
+    }
+    else{
+      if(simbad_sp)
+	hg->addobj_magsp=g_strdup_printf("V=unknown %s",simbad_sp);
+      else
+	hg->addobj_magsp=g_strdup("V=unknown");
+    }
+    if(simbad_sp) g_free(simbad_sp);
+  }
+  else if(hg->addobj_type==FCDB_TYPE_NED){
+    if(!hg->addobj_magsp) hg->addobj_magsp=g_strdup("mag=unknown");
+  }
 }
 
 

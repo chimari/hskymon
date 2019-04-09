@@ -2220,9 +2220,14 @@ struct _typHOE{
   gchar *addobj_votype;
   gdouble addobj_ra;
   gdouble addobj_dec;
+  gdouble addobj_pm_ra;
+  gdouble addobj_pm_dec;
+  gchar *addobj_magsp;
   GtkWidget *addobj_label;
   GtkWidget *addobj_entry_ra;
   GtkWidget *addobj_entry_dec;
+  GtkWidget *addobj_entry_pm_ra;
+  GtkWidget *addobj_entry_pm_dec;
 
   GtkWidget *adc_main;
   GtkWidget *adc_dw;
