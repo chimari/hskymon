@@ -4878,7 +4878,7 @@ void fcdb_item2 (typHOE *hg)
 				  hg->fcdb_d_dec0,
 				  (hg->dss_arcmin < hg->fcdb_usno_diam) ?
 				  (hg->dss_arcmin*30) : 
-				  (hg->fcdb_gaia_diam*30),
+				  (hg->fcdb_usno_diam*30),
 				  (hg->dss_arcmin < hg->fcdb_usno_diam) ?
 				  (hg->dss_arcmin*30) : 
 				  (hg->fcdb_usno_diam*30),
