@@ -5181,11 +5181,11 @@ fcdb_add_columns (typHOE *hg,
       gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_J);
       gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
       
-      /* I2 */
+      /* I */
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_H));
-      column=gtk_tree_view_column_new_with_attributes ("I2",
+      column=gtk_tree_view_column_new_with_attributes ("I",
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_H,
@@ -5636,11 +5636,12 @@ fcdb_add_columns (typHOE *hg,
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_U));
-      column=gtk_tree_view_column_new_with_attributes ("3.4um",
+      column=gtk_tree_view_column_new_with_attributes (NULL,
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_U,
 						       NULL);
+      gtkut_tree_view_column_set_markup(column, "3.4&#xB5;m");
       gtk_tree_view_column_set_cell_data_func(column, renderer,
 					      fcdb_double_cell_data_func,
 					      GUINT_TO_POINTER(COLUMN_FCDB_U),
@@ -5652,11 +5653,12 @@ fcdb_add_columns (typHOE *hg,
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_B));
-      column=gtk_tree_view_column_new_with_attributes ("4.6um",
+      column=gtk_tree_view_column_new_with_attributes (NULL,
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_B,
 						       NULL);
+      gtkut_tree_view_column_set_markup(column, "4.6&#xB5;m");
       gtk_tree_view_column_set_cell_data_func(column, renderer,
 					      fcdb_double_cell_data_func,
 					      GUINT_TO_POINTER(COLUMN_FCDB_B),
@@ -5668,11 +5670,12 @@ fcdb_add_columns (typHOE *hg,
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_V));
-      column=gtk_tree_view_column_new_with_attributes ("12um",
+      column=gtk_tree_view_column_new_with_attributes (NULL,
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_V,
 						       NULL);
+      gtkut_tree_view_column_set_markup(column, "12&#xB5;m");
       gtk_tree_view_column_set_cell_data_func(column, renderer,
 					    fcdb_double_cell_data_func,
 					      GUINT_TO_POINTER(COLUMN_FCDB_V),
@@ -5684,11 +5687,12 @@ fcdb_add_columns (typHOE *hg,
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_R));
-      column=gtk_tree_view_column_new_with_attributes ("22um",
+      column=gtk_tree_view_column_new_with_attributes (NULL,
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_R,
 						       NULL);
+      gtkut_tree_view_column_set_markup(column, "22&#xB5;m");
       gtk_tree_view_column_set_cell_data_func(column, renderer,
 					      fcdb_double_cell_data_func,
 					      GUINT_TO_POINTER(COLUMN_FCDB_R),

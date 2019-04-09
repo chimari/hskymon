@@ -6578,7 +6578,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 		     GTK_SHRINK,GTK_SHRINK,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
 
-  label = gtk_label_new ("R < ");
+  label = gtk_label_new ("R2 < ");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -11152,7 +11152,7 @@ void param_init(typHOE *hg){
   hg->dss_tmp=g_strconcat(hg->temp_dir,
 			  G_DIR_SEPARATOR_S,
 			  FC_FILE_HTML,NULL);
-  hg->dss_scale            =FC_SCALE_LINEAR;
+  hg->dss_scale            =FC_SCALE_HISTEQ;
   hg->dss_invert           =FALSE;
   hg->dss_file=g_strconcat(hg->temp_dir,
 			   G_DIR_SEPARATOR_S,

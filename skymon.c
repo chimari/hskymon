@@ -462,7 +462,7 @@ void create_skymon_dialog(typHOE *hg)
 		    (gpointer)hg);
 #ifdef __GTK_TOOLTIP_H__
   gtk_widget_set_tooltip_text(button,
-			      "Hideg Objects and Characters");
+			      "Hide Objects and Characters");
 #endif
 
 #ifdef USE_XMLRPC

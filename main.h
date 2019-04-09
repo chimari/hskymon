@@ -223,8 +223,11 @@
 #define FCDB_HOST_SDSS "skyserver.sdss.org"
 #define FCDB_SDSS_PATH "/dr15/en/tools/search/x_results.aspx"
 
-#define FCDB_HOST_USNO "www.nofs.navy.mil"
-#define FCDB_USNO_PATH "/cgi-bin/vo_cone.cgi?CAT=USNO-B1&RA=%lf&DEC=%+lf&SR=%lf%sVERB=1"
+//#define FCDB_HOST_USNO "www.nofs.navy.mil"
+//#define FCDB_USNO_PATH "/cgi-bin/vo_cone.cgi?CAT=USNO-B1&RA=%lf&DEC=%+lf&SR=%lf%sVERB=1"
+#define FCDB_HOST_USNO "vizier.u-strasbg.fr"
+#define FCDB_USNO_PATH "/viz-bin/votable?-source=USNO-B1&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=5000%s-out.form=VOTable"
+
 
 #define FCDB_HOST_VIZIER_STRASBG "vizier.u-strasbg.fr"
 #define FCDB_HOST_VIZIER_NAOJ "vizier.nao.ac.jp"

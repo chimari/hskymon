@@ -1143,9 +1143,9 @@ void fcdb_ned_vo_parse(typHOE *hg) {
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
     if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Object Name") == 0) 
       columns[0] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RA(deg)") == 0)
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RA") == 0)
       columns[1] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"DEC(deg)") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"DEC") == 0) 
       columns[2] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Type") == 0) 
       columns[3] = vfield_move->position;
@@ -1696,25 +1696,25 @@ void fcdb_usno_vo_parse(typHOE *hg) {
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
-    if(xmlStrcmp(vfield_move->name,(const xmlChar *)"id") == 0) 
+    if(xmlStrcmp(vfield_move->name,(const xmlChar *)"USNO-B1.0") == 0) 
       columns[0] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RA") == 0)
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RAJ2000") == 0)
       columns[1] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"DEC") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"DEJ2000") == 0) 
       columns[2] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"B1") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"B1mag") == 0) 
       columns[3] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"R1") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"R1mag") == 0) 
       columns[4] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"B2") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"B2mag") == 0) 
       columns[5] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"R2") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"R2mag") == 0) 
       columns[6] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"I2") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Imag") == 0) 
       columns[7] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"MuRA") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"pmRA") == 0) 
       columns[8] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"MuDEC") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"pmDEC") == 0) 
       columns[9] = vfield_move->position;
  }
 
