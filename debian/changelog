@@ -1,3 +1,9 @@
+hskymon (3.8.3ubuntu) bionic; urgency=medium
+
+  * Revised for Non-sidereal targets (Autoload, FC etc.).
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Tue, 05 Nov 2019 13:15:35 -1000
+
 hskymon (3.8.2ubuntu) bionic; urgency=medium
 
   * Small bug fixes for Gtk+3 ver.

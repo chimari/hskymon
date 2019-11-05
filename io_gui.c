@@ -274,6 +274,7 @@ void hskymon_OpenFile(typHOE *hg, guint mode){
     my_file_chooser_add_filter(fdialog,"TSC Tracking File", 
 			       "*." NST1_EXTENSION,
 			       "*." NST2_EXTENSION,
+			       "*." NST3_EXTENSION,
 			       NULL);
     break;
 
@@ -373,7 +374,7 @@ void hskymon_OpenFile(typHOE *hg, guint mode){
 	
       case OPEN_FILE_READ_NST:
 	i_base=hg->i_max;
-	MergeNST(hg, hg->ope_max);
+	MergeNST(hg, hg->ope_max, FALSE);
 	break;
 
       case OPEN_FILE_READ_JPL:
@@ -1041,7 +1042,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  do{
 	    init_obj(&hg->obj[i_list], hg);
 	    
-	    if(NULL != (cp = strstr(cpp, "OBJECT="))){
+	    if(NULL != (cp = strcasestr(cpp, "OBJECT="))){
 	      cpp=cp+strlen("OBJECT=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1082,7 +1083,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  if(ok_obj){
 	    cpp=BUF;
 	    do{
-	      if(NULL != (cp = strstr(cpp, "RA="))){
+	      if(NULL != (cp = strcasestr(cpp, "RA="))){
 		cpp=cp+strlen("RA=");
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1103,7 +1104,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  if(ok_obj&&ok_ra){
 	    cpp=BUF;
 	    do{
-	      if(NULL != (cp = strstr(cpp, "DEC="))){
+	      if(NULL != (cp = strcasestr(cpp, "DEC="))){
 		cpp=cp+strlen("DEC=");
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1124,7 +1125,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  if(ok_obj&&ok_ra&&ok_dec){
 	    cpp=BUF;
 	    do{
-	      if(NULL != (cp = strstr(cpp, "EQUINOX="))){
+	      if(NULL != (cp = strcasestr(cpp, "EQUINOX="))){
 		cpp=cp+strlen("EQUINOX=");
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1375,6 +1376,11 @@ void ReadListOPE(typHOE *hg, gint ope_max){
   fclose(fp);
   hg->ope_max++;
 
+
+  // Non-Sidereal
+  AutoLoadNST(hg);
+  
+  
   if(hg->window_title) g_free(hg->window_title);
   hg->window_title=g_path_get_basename(hg->filename_ope);
 
@@ -1449,7 +1455,7 @@ void MergeListPRM(typHOE *hg){
 	cpp=BUF;
 	
 	do{
-	  if(NULL != (cp = strstr(cpp, "OBJECT="))){
+	  if(NULL != (cp = strcasestr(cpp, "OBJECT="))){
 	    cpp=cp+strlen("OBJECT=");
 	    cp--;
 	    if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1477,7 +1483,7 @@ void MergeListPRM(typHOE *hg){
 	if(ok_obj){
 	  cpp=BUF;
 	  do{
-	    if(NULL != (cp = strstr(cpp, "RA="))){
+	    if(NULL != (cp = strcasestr(cpp, "RA="))){
 	      cpp=cp+strlen("RA=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1498,7 +1504,7 @@ void MergeListPRM(typHOE *hg){
 	if(ok_obj&&ok_ra){
 	  cpp=BUF;
 	  do{
-	    if(NULL != (cp = strstr(cpp, "DEC="))){
+	    if(NULL != (cp = strcasestr(cpp, "DEC="))){
 	      cpp=cp+strlen("DEC=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1519,7 +1525,7 @@ void MergeListPRM(typHOE *hg){
 	if(ok_obj&&ok_ra&&ok_dec){
 	  cpp=BUF;
 	  do{
-	    if(NULL != (cp = strstr(cpp, "EQUINOX="))){
+	    if(NULL != (cp = strcasestr(cpp, "EQUINOX="))){
 	      cpp=cp+strlen("EQUINOX=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1662,7 +1668,7 @@ void MergeListPRM2(typHOE *hg){
 	cpp=BUF;
 	
 	do{
-	  if(NULL != (cp = strstr(cpp, "OBJECT="))){
+	  if(NULL != (cp = strcasestr(cpp, "OBJECT="))){
 	    cpp=cp+strlen("OBJECT=");
 	    cp--;
 	    if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1690,7 +1696,7 @@ void MergeListPRM2(typHOE *hg){
 	if(ok_obj){
 	  cpp=BUF;
 	  do{
-	    if(NULL != (cp = strstr(cpp, "RA="))){
+	    if(NULL != (cp = strcasestr(cpp, "RA="))){
 	      cpp=cp+strlen("RA=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1711,7 +1717,7 @@ void MergeListPRM2(typHOE *hg){
 	if(ok_obj&&ok_ra){
 	  cpp=BUF;
 	  do{
-	    if(NULL != (cp = strstr(cpp, "DEC="))){
+	    if(NULL != (cp = strcasestr(cpp, "DEC="))){
 	      cpp=cp+strlen("DEC=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1732,7 +1738,7 @@ void MergeListPRM2(typHOE *hg){
 	if(ok_obj&&ok_ra&&ok_dec){
 	  cpp=BUF;
 	  do{
-	    if(NULL != (cp = strstr(cpp, "EQUINOX="))){
+	    if(NULL != (cp = strcasestr(cpp, "EQUINOX="))){
 	      cpp=cp+strlen("EQUINOX=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1923,7 +1929,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  do{
 	    init_obj(&hg->obj[i_list]);
 	    
-	    if(NULL != (cp = strstr(cpp, "OBJECT="))){
+	    if(NULL != (cp = strcasestr(cpp, "OBJECT="))){
 	      cpp=cp+strlen("OBJECT=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1950,7 +1956,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  if(ok_obj){
 	    cpp=BUF;
 	    do{
-	      if(NULL != (cp = strstr(cpp, "RA="))){
+	      if(NULL != (cp = strcasestr(cpp, "RA="))){
 		cpp=cp+strlen("RA=");
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1972,7 +1978,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  if(ok_obj&&ok_ra){
 	    cpp=BUF;
 	    do{
-	      if(NULL != (cp = strstr(cpp, "DEC="))){
+	      if(NULL != (cp = strcasestr(cpp, "DEC="))){
 		cpp=cp+strlen("DEC=");
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1993,7 +1999,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  if(ok_obj&&ok_ra&&ok_dec){
 	    cpp=BUF;
 	    do{
-	      if(NULL != (cp = strstr(cpp, "EQUINOX="))){
+	      if(NULL != (cp = strcasestr(cpp, "EQUINOX="))){
 		cpp=cp+strlen("EQUINOX=");
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -2242,6 +2248,11 @@ void MergeListOPE(typHOE *hg, gint ope_max){
   fclose(fp);
   if(hg->ope_max<MAX_ROPE-1) hg->ope_max++;
 
+
+  // Non-Sidereal
+  AutoLoadNST(hg);
+
+  
   {
     gchar *tmp_char=NULL;
 
@@ -2274,7 +2285,100 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 }
 
 
-void MergeNST(typHOE *hg, gint ope_max){
+void AutoLoadNST(typHOE *hg){
+  gint i_nst;
+  gboolean ret;
+  gchar *basename=NULL, *dirname=NULL;
+  
+  // Non-Sidereal
+  for(i_nst=0; i_nst<hg->i_nst_found; i_nst++){
+    //printf("New Non-Sidereal file \"%s\" is detected in OPE\n",
+    //	   hg->nst_found[i_nst]);
+    
+    if(hg->filename_nst) g_free(hg->filename_nst);
+    hg->filename_nst=g_strdup(hg->nst_found[i_nst]);
+    ret=MergeNST(hg, hg->ope_max, TRUE);
+
+    if(!ret){
+      dirname=g_path_get_dirname(hg->filename_ope);
+      basename=g_path_get_basename(hg->filename_nst);
+      if(hg->filename_nst) g_free(hg->filename_nst);
+      hg->filename_nst=g_strconcat(to_utf8(dirname),
+				   G_DIR_SEPARATOR_S,
+				   to_utf8(basename),
+				   NULL);
+      /*
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-information", 
+#else
+		    GTK_STOCK_DIALOG_INFO,
+#endif
+		    POPUP_TIMEOUT*1,
+		    "Retrying to Load",
+		    " ",
+		    hg->filename_nst,
+		    NULL);
+      */
+      ret=MergeNST(hg, hg->ope_max, TRUE);
+      if(dirname) g_free(dirname);
+      if(basename) g_free(basename);
+    }
+    
+    for(i_nst=0; i_nst<hg->i_nst_found; i_nst++){
+      if(hg->nst_found[i_nst]) g_free(hg->nst_found[i_nst]);
+      hg->nst_found[i_nst]=NULL;
+    }
+    hg->i_nst_found=0;
+
+    if(ret){
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "emblem-default", 
+#else
+		    GTK_STOCK_OK, 
+#endif
+		    POPUP_TIMEOUT*1,
+		    "Succeeded to Load Non-Sidereal Tracking File",
+		    " ",
+		    hg->filename_nst,
+		    NULL);
+    }
+    else{
+      popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		    "dialog-warning", 
+#else
+		    GTK_STOCK_DIALOG_WARNING, 
+#endif
+		    -1,
+		    "Failed to load a Non-Sidereal Tracking File",
+		    " ",
+		    hg->filename_nst,
+		    " ",
+		    "described in the OPE file",
+		    " ",
+		    hg->filename_ope,
+		    " ",
+		    "Please put the tracking file into the same directory where the OPE file is stored.",
+		    NULL);
+      return;
+    }
+    
+  }
+  
+  if(hg->skymon_mode==SKYMON_SET){
+    calcpa2_skymon(hg);
+  }
+  else{
+    calcpa2_main(hg);
+  }
+  update_c_label(hg);
+ 
+}
+
+
+gboolean MergeNST(typHOE *hg, gint ope_max, gboolean ope_flag){
   FILE *fp;
   gint i,i_list=0,i_base;
   gchar *buf=NULL;
@@ -2284,33 +2388,37 @@ void MergeNST(typHOE *hg, gint ope_max){
   struct ln_zonedate zonedate, zonedate1;
   
   if(hg->i_max>=MAX_OBJECT){
-    popup_message(hg->skymon_main, 
+    if(!ope_flag){
+      popup_message(hg->skymon_main, 
 #ifdef USE_GTK3
-		  "dialog-warning", 
+		    "dialog-warning", 
 #else
-		  GTK_STOCK_DIALOG_WARNING, 
+		    GTK_STOCK_DIALOG_WARNING, 
 #endif
-		  POPUP_TIMEOUT,
-		  "<b>Warning</b> Object Number exceeds the limit.",
-		  NULL);
-    return;
+		    POPUP_TIMEOUT,
+		    "<b>Warning</b> Object Number exceeds the limit.",
+		    NULL);
+    }
+    return(FALSE);
   }
   
 
   if((fp=fopen(hg->filename_nst,"rb"))==NULL){
-    popup_message(hg->skymon_main, 
+    if(!ope_flag){
+      popup_message(hg->skymon_main, 
 #ifdef USE_GTK3
-		  "dialog-error", 
+		    "dialog-error", 
 #else
-		  GTK_STOCK_DIALOG_ERROR, 
+		    GTK_STOCK_DIALOG_ERROR, 
 #endif
-		  POPUP_TIMEOUT*2,
-		  "<b>Error</b>: File cannot be opened.",
-		  " ",
-		  hg->filename_nst,
-		  NULL);
+		    POPUP_TIMEOUT,
+		    "<b>Error</b>: File cannot be opened.",
+		    " ",
+		    hg->filename_nst,
+		    NULL);
+    }
     printf_log(hg,"[MergeNST] File Read Error  \"%s\".", hg->filename_nst);
-    return;
+    return(FALSE);
   }
 
   printf_log(hg,"[MergeNST] Opening %s.",hg->filename_nst);
@@ -2326,15 +2434,15 @@ void MergeNST(typHOE *hg, gint ope_max){
 #ifdef USE_GTK3
 		    "dialog-error", 
 #else
-		    GTK_STOCK_DIALOG_ERROR, 
+		      GTK_STOCK_DIALOG_ERROR, 
 #endif
-		    POPUP_TIMEOUT*2,
+		    POPUP_TIMEOUT,
 		    "<b>Error</b>: TSC File format might be incorrect.",
 		    " ",
 		    hg->filename_nst,
 		    NULL);
       fclose(fp);
-      return;
+      return(FALSE);
     }
     else{
       if(i==0){
@@ -2361,13 +2469,13 @@ void MergeNST(typHOE *hg, gint ope_max){
 #else
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
-		  POPUP_TIMEOUT*2,
+		  POPUP_TIMEOUT,
 		  "<b>Error</b>: TSC File format might be incorrect.",
 		  " ",
 		  hg->filename_nst,
 		  NULL);
     fclose(fp);
-    return;
+    return(FALSE);
   }
 
   if(hg->nst[hg->nst_max].eph) g_free(hg->nst[hg->nst_max].eph);
@@ -2440,6 +2548,12 @@ void MergeNST(typHOE *hg, gint ope_max){
 					 zonedate1.minutes,
 					 hg->obs_tzname);
 
+    if(hg->nst[hg->nst_max].filename) g_free(hg->nst[hg->nst_max].filename);
+    hg->nst[hg->nst_max].filename=g_path_get_basename(hg->filename_nst);
+
+    if(hg->obj[i_list].def) g_free(hg->obj[i_list].def);
+    hg->obj[i_list].def=g_strdup("(Non-Sidereal)");
+    
     hg->obj[i_list].ope=hg->ope_max;
     hg->obj[i_list].ope_i=0;
     hg->obj[i_list].i_nst=hg->nst_max;
@@ -2448,6 +2562,8 @@ void MergeNST(typHOE *hg, gint ope_max){
     if(hg->ope_max<MAX_ROPE-1) hg->ope_max++;
     hg->nst_max++;
   }
+  
+  return(TRUE);
 }
 
 
@@ -2485,7 +2601,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 #else
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
-		  POPUP_TIMEOUT*2,
+		  POPUP_TIMEOUT,
 		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
@@ -2540,7 +2656,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 #else
 			GTK_STOCK_DIALOG_ERROR, 
 #endif
-			POPUP_TIMEOUT*2,
+			POPUP_TIMEOUT,
 			"<b>Error</b>: Invalid HORIZONS File.",
 			"Center-site must be \"GEOCENTRIC\".",
 			" ",
@@ -2564,7 +2680,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 #else
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
-		  POPUP_TIMEOUT*2,
+		  POPUP_TIMEOUT,
 		  "<b>Error</b>: File cannot be opened.",
 		  " ",
 		  hg->filename_jpl,
@@ -2581,7 +2697,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 #else
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
-		  POPUP_TIMEOUT*2,
+		  POPUP_TIMEOUT,
 		  "<b>Error</b>: Invalid HORIZONS File.",
 		  " ",
 		  hg->filename_jpl,
@@ -2603,7 +2719,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
 #else
 		    GTK_STOCK_DIALOG_ERROR, 
 #endif
-		    POPUP_TIMEOUT*2,
+		    POPUP_TIMEOUT,
 		    "<b>Error</b>: Invalid HORIZONS File.",
 		    " ",
 		    hg->filename_jpl,
@@ -2620,7 +2736,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
   if(ref){
     cpp1=g_strdup(ref);
     l_all=(gint)strlen(cpp1);
-    if(NULL != (cp = strstr(cpp1, "Date"))){
+    if(NULL != (cp = strcasestr(cpp1, "Date"))){
       p_date=l_all-(gint)strlen(cp);
       tmp=(gchar *)strtok(cp," ");
       l_date=(gint)strlen(tmp);
@@ -2628,7 +2744,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
     g_free(cpp1);
 
     cpp1=g_strdup(ref);
-    if(NULL != (cp = strstr(cpp1, "R.A."))){
+    if(NULL != (cp = strcasestr(cpp1, "R.A."))){
       p_pos=l_all-(gint)strlen(cp);
       tmp=(gchar *)strtok(cp," ");
       l_pos=(gint)strlen(tmp);
@@ -2636,7 +2752,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
     g_free(cpp1);
 
     cpp1=g_strdup(ref);
-    if(NULL != (cp = strstr(cpp1, "delta"))){
+    if(NULL != (cp = strcasestr(cpp1, "delta"))){
       p_delt=l_all-(gint)strlen(cp);
     }
     g_free(cpp1);
@@ -2823,6 +2939,9 @@ void MergeJPL(typHOE *hg, gint ope_max){
 				       zonedate1.minutes,
 				       hg->obs_tzname);
 
+  if(hg->nst[hg->nst_max].filename) g_free(hg->nst[hg->nst_max].filename);
+  hg->nst[hg->nst_max].filename=g_path_get_basename(hg->filename_jpl);
+  
   hg->obj[i_list].ope=hg->ope_max;
   hg->obj[i_list].ope_i=0;
   hg->obj[i_list].i_nst=hg->nst_max;
@@ -3010,7 +3129,7 @@ void ConvJPL(typHOE *hg){
   if(ref){
     cpp1=g_strdup(ref);
     l_all=(gint)strlen(cpp1);
-    if(NULL != (cp = strstr(cpp1, "Date"))){
+    if(NULL != (cp = strcasestr(cpp1, "Date"))){
       p_date=l_all-(gint)strlen(cp);
       tmp=(gchar *)strtok(cp," ");
       l_date=(gint)strlen(tmp);
@@ -3018,7 +3137,7 @@ void ConvJPL(typHOE *hg){
     g_free(cpp1);
 
     cpp1=g_strdup(ref);
-    if(NULL != (cp = strstr(cpp1, "R.A."))){
+    if(NULL != (cp = strcasestr(cpp1, "R.A."))){
       p_pos=l_all-(gint)strlen(cp);
       tmp=(gchar *)strtok(cp," ");
       l_pos=(gint)strlen(tmp);
@@ -3026,7 +3145,7 @@ void ConvJPL(typHOE *hg){
     g_free(cpp1);
 
     cpp1=g_strdup(ref);
-    if(NULL != (cp = strstr(cpp1, "delta"))){
+    if(NULL != (cp = strcasestr(cpp1, "delta"))){
       p_delt=l_all-(gint)strlen(cp);
     }
     g_free(cpp1);

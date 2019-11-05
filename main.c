@@ -22,7 +22,6 @@
 
 #include<locale.h>
 
-
 #ifndef USE_WIN32
 void ChildTerm();
 #endif // USE_WIN32
@@ -111,83 +110,14 @@ void get_font_family_size();
 void Export_OpeDef();
 
 #ifdef USE_GTK3
-GdkRGBA init_col [MAX_ROPE]
-= {
-  {0.250, 0.375, 0.1250, 1.00}, 
-  {0.1875,0.250, 0.50,   1.00}, 
-  {0.4375, 0.1875, 0.5625, 1.00}, 
-  {0.4375, 0.4375, 0.1250, 1.00}, 
-  {0.5625, 0.1875, 0.1875, 1.00}, 
-  {0.3750, 0.5625, 0.1250, 1.00}, 
-  {0.8125, 0.3750, 0.5625, 1.00}, 
-  {0.3750, 0.3750, 0.3750, 1.00},
-  {0.250, 0.375, 0.1250, 1.00}, 
-  {0.1875,0.250, 0.50,   1.00}, 
-  {0.4375, 0.1875, 0.5625, 1.00}, 
-  {0.4375, 0.4375, 0.1250, 1.00}, 
-  {0.5625, 0.1875, 0.1875, 1.00}, 
-  {0.3750, 0.5625, 0.1250, 1.00}, 
-  {0.8125, 0.3750, 0.5625, 1.00}, 
-  {0.3750, 0.3750, 0.3750, 1.00},
-  {0.250, 0.375, 0.1250, 1.00}, 
-  {0.1875,0.250, 0.50,   1.00}, 
-  {0.4375, 0.1875, 0.5625, 1.00}, 
-  {0.4375, 0.4375, 0.1250, 1.00}, 
-  {0.5625, 0.1875, 0.1875, 1.00}, 
-  {0.3750, 0.5625, 0.1250, 1.00}, 
-  {0.8125, 0.3750, 0.5625, 1.00}, 
-  {0.3750, 0.3750, 0.3750, 1.00},
-  {0.250, 0.375, 0.1250, 1.00}, 
-  {0.1875,0.250, 0.50,   1.00}, 
-  {0.4375, 0.1875, 0.5625, 1.00}, 
-  {0.4375, 0.4375, 0.1250, 1.00}, 
-  {0.5625, 0.1875, 0.1875, 1.00}, 
-  {0.3750, 0.5625, 0.1250, 1.00}, 
-  {0.8125, 0.3750, 0.5625, 1.00}, 
-  {0.3750, 0.3750, 0.3750, 1.00}
-};
-
+GdkRGBA init_col [MAX_ROPE];
 GdkRGBA init_col_edge={1.0, 1.0, 1.0, 0.73};
 #else
-GdkColor init_col [MAX_ROPE]
-= {
-  {0, 0x4000, 0x6000, 0x2000}, 
-  {0, 0x300, 0x4000, 0x8000}, 
-  {0, 0x7000, 0x3000, 0x9000}, 
-  {0, 0x7000, 0x7000, 0x2000}, 
-  {0, 0x9000, 0x3000, 0x3000}, 
-  {0, 0x6000, 0x9000, 0x2000}, 
-  {0, 0xD000, 0x6000, 0x5000}, 
-  {0, 0x6000, 0x6000, 0x6000},
-  {0, 0x4000, 0x6000, 0x2000}, 
-  {0, 0x300, 0x4000, 0x8000}, 
-  {0, 0x7000, 0x3000, 0x9000}, 
-  {0, 0x7000, 0x7000, 0x2000}, 
-  {0, 0x9000, 0x3000, 0x3000}, 
-  {0, 0x6000, 0x9000, 0x2000}, 
-  {0, 0xD000, 0x6000, 0x5000}, 
-  {0, 0x6000, 0x6000, 0x6000},
-  {0, 0x4000, 0x6000, 0x2000}, 
-  {0, 0x300, 0x4000, 0x8000}, 
-  {0, 0x7000, 0x3000, 0x9000}, 
-  {0, 0x7000, 0x7000, 0x2000}, 
-  {0, 0x9000, 0x3000, 0x3000}, 
-  {0, 0x6000, 0x9000, 0x2000}, 
-  {0, 0xD000, 0x6000, 0x5000}, 
-  {0, 0x6000, 0x6000, 0x6000},
-  {0, 0x4000, 0x6000, 0x2000}, 
-  {0, 0x300, 0x4000, 0x8000}, 
-  {0, 0x7000, 0x3000, 0x9000}, 
-  {0, 0x7000, 0x7000, 0x2000}, 
-  {0, 0x9000, 0x3000, 0x3000}, 
-  {0, 0x6000, 0x9000, 0x2000}, 
-  {0, 0xD000, 0x6000, 0x5000}, 
-  {0, 0x6000, 0x6000, 0x6000}
-};
-
+GdkColor init_col [MAX_ROPE];
 GdkColor init_col_edge={0,0xFFFF,0xFFFF,0xFFFF};
 gint init_alpha_edge=0xBB00;
 #endif
+
 
 // CSS for Gtk+3
 #ifdef USE_GTK3
@@ -221,6 +151,159 @@ void css_change_pbar_height(GtkWidget *widget, gint height){
   g_object_unref (provider);
 }
 #endif
+
+
+void next_hue(gdouble *cur_hue, gdouble *hue_d){
+  gdouble h;
+
+  h= (gdouble)((gint)*cur_hue % 360);
+  *cur_hue += *hue_d;
+  if(*cur_hue>=360){
+    *hue_d /= 2.0;
+    *cur_hue = *hue_d/2.0;
+  }
+}
+
+
+#ifdef USE_GTK3
+GdkRGBA hsv2rgb(gdouble h, gdouble s, gdouble v)
+{
+  GdkRGBA out;
+  double      hh, p, q, t, ff;
+  long        i;
+
+  out.alpha=1.0;
+
+  while(h>=360.0){
+    h-=360.0;
+  }
+  while(h<0.0){
+    h+=360.0;
+  }
+
+  if(s <= 0.0) {       // < is bogus, just shuts up warnings
+    out.red   = v;
+    out.green = v;
+    out.blue  = v;
+    return out;
+  }
+
+  hh = h;
+  if(hh >= 360.0) hh = 0.0;
+  hh /= 60.0;
+  i = (long)hh;
+  ff = hh - i;
+  p = v * (1.0 - s);
+  q = v * (1.0 - (s * ff));
+  t = v * (1.0 - (s * (1.0 - ff)));
+  
+  switch(i) {
+  case 0:
+    out.red   = v;
+    out.green = t;
+    out.blue  = p;
+    break;
+  case 1:
+    out.red   = q;
+    out.green = v;
+    out.blue  = p;
+    break;
+  case 2:
+    out.red   = p;
+    out.green = v;
+    out.blue  = t;
+    break;
+
+  case 3:
+    out.red   = p;
+    out.green = q;
+    out.blue  = v;
+    break;
+  case 4:
+    out.red   = t;
+    out.green = p;
+    out.blue  = v;
+        break;
+  case 5:
+  default:
+    out.red   = v;
+    out.green = p;
+    out.blue  = q;
+    break;
+  }
+  return out;     
+}
+#else
+GdkColor hsv2rgb(gdouble h, gdouble s, gdouble v)
+{
+  GdkColor out;
+  double      hh, p, q, t, ff;
+  long        i;
+
+  out.pixel=0;
+
+  while(h>=360.0){
+    h-=360.0;
+  }
+  while(h<0.0){
+    h+=360.0;
+  }
+
+  if(s <= 0.0) {       // < is bogus, just shuts up warnings
+    out.red   = (gint)(v*(gdouble)0xFFFF);
+    out.green = (gint)(v*(gdouble)0xFFFF);
+    out.blue  = (gint)(v*(gdouble)0xFFFF);
+    return out;
+  }
+
+  hh = h;
+  if(hh >= 360.0) hh = 0.0;
+  hh /= 60.0;
+  i = (long)hh;
+  ff = hh - i;
+  p = v * (1.0 - s);
+  q = v * (1.0 - (s * ff));
+  t = v * (1.0 - (s * (1.0 - ff)));
+  
+  switch(i) {
+  case 0:
+    out.red   = (gint)(v*(gdouble)0xFFFF);
+    out.green = (gint)(t*(gdouble)0xFFFF);
+    out.blue  = (gint)(p*(gdouble)0xFFFF);
+    break;
+  case 1:
+    out.red   = (gint)(q*(gdouble)0xFFFF);
+    out.green = (gint)(v*(gdouble)0xFFFF);
+    out.blue  = (gint)(p*(gdouble)0xFFFF);
+    break;
+  case 2:
+    out.red   = (gint)(p*(gdouble)0xFFFF);
+    out.green = (gint)(v*(gdouble)0xFFFF);
+    out.blue  = (gint)(t*(gdouble)0xFFFF);
+    break;
+
+  case 3:
+    out.red   = (gint)(p*(gdouble)0xFFFF);
+    out.green = (gint)(q*(gdouble)0xFFFF);
+    out.blue  = (gint)(v*(gdouble)0xFFFF);
+    break;
+  case 4:
+    out.red   = (gint)(t*(gdouble)0xFFFF);
+    out.green = (gint)(p*(gdouble)0xFFFF);
+    out.blue  = (gint)(v*(gdouble)0xFFFF);
+        break;
+  case 5:
+  default:
+    out.red   = (gint)(v*(gdouble)0xFFFF);
+    out.green = (gint)(p*(gdouble)0xFFFF);
+    out.blue  = (gint)(q*(gdouble)0xFFFF);
+    break;
+  }
+  return out;     
+}
+#endif
+
+
 
 
 gchar* fgets_new(FILE *fp){
@@ -396,7 +479,7 @@ GtkWidget *make_menu(typHOE *hg){
     my_signal_connect (popup_button, "activate",do_open_ope,(gpointer)hg);
     
 #ifdef USE_GTK3
-    image=gtk_image_new_from_icon_name ("insert-object", GTK_ICON_SIZE_MENU);
+    image=gtk_image_new_from_icon_name ("list-add", GTK_ICON_SIZE_MENU);
     popup_button =gtkut_image_menu_item_new_with_label (image, "Merge");
 #else
     image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
@@ -435,7 +518,7 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_widget_show (new_menu);
     
 #ifdef USE_GTK3
-    image=gtk_image_new_from_icon_name ("insert-object", GTK_ICON_SIZE_MENU);
+    image=gtk_image_new_from_icon_name ("list-add", GTK_ICON_SIZE_MENU);
     popup_button =gtkut_image_menu_item_new_with_label (image, "Merge");
 #else
     image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
@@ -476,7 +559,7 @@ GtkWidget *make_menu(typHOE *hg){
     
     //File/Merge List
 #ifdef USE_GTK3
-    image=gtk_image_new_from_icon_name ("insert-object", GTK_ICON_SIZE_MENU);
+    image=gtk_image_new_from_icon_name ("list-add", GTK_ICON_SIZE_MENU);
     popup_button =gtkut_image_menu_item_new_with_label (image, "Merge");
 #else
     image=gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
@@ -10965,9 +11048,17 @@ void global_init(){
 void param_init(typHOE *hg){
   time_t t;
   struct tm *tmpt;
-  int i, i_band;
+  int i, i_band, i_col, i_nst;
+  gdouble cur_hue=0.0;
+  gdouble hue_d=720.0;
+
 
   global_init();
+
+  for(i_col=0;i_col<MAX_ROPE;i_col++){
+    init_col [i_col] = hsv2rgb(cur_hue+120, 1.0, 0.3);
+    next_hue(&cur_hue, &hue_d);
+  }
 
   hg->i_max=0;
   hg->ope_max=0;
@@ -11000,6 +11091,8 @@ void param_init(typHOE *hg){
   hg->home_dir=g_strdup(g_get_home_dir());
 #endif
 
+  hg->orbit_flag=TRUE;
+  
   InitDefCol(hg);
   ReadConf(hg);
 
@@ -11330,6 +11423,10 @@ void param_init(typHOE *hg){
   hg->dirname_pamout=NULL;
   hg->pam_name=NULL;
   
+  for(i_nst=0;i_nst<MAX_ROPE;i_nst++){
+    hg->nst_found[i_nst]=NULL;
+  }
+  hg->i_nst_found=0;
   
   calc_moon(hg);
 }
@@ -11588,6 +11685,48 @@ gint check_tgt_ngs(typHOE *hg, gchar *def){
   return(-1);
 }
 
+void CheckNST_in_OPE(typHOE *hg, gchar *cpp){
+  gchar *cp;
+  gint i_list;
+  gchar *arg=NULL;
+  gboolean new_flag=TRUE;
+  
+  if(NULL != (cp = strcasestr(cpp, "COORD=FILE"))){
+    if(NULL != (cp = strcasestr(cpp, "TARGET=\"08 "))){
+      cp+=strlen("TARGET=\"08 ");
+      
+      if(arg) g_free(arg);
+      arg=g_strndup(cp,strcspn(cp," \"\r\n"));
+      
+      // Check in this OPE
+      for(i_list=0; i_list<hg->i_nst_found; i_list++){
+	if(strcmp(hg->nst_found[i_list], arg)==0){
+	  new_flag=FALSE;
+	  break;
+	}
+      }
+      
+      // Check already loaded
+      if(new_flag){
+	for(i_list=0;i_list<hg->nst_max;i_list++){
+	  if(strcmp(hg->nst[i_list].filename, arg)==0){
+	    new_flag=FALSE;
+	    break;
+	  }
+	}
+      }
+
+      if(new_flag){
+	hg->nst_found[hg->i_nst_found]=g_strdup(arg);
+	hg->i_nst_found++;
+      }
+      
+    }
+  }
+
+  if(arg) g_free(arg);
+}
+
 void CheckTargetDefOPE(typHOE *hg, gint i0){
   FILE *fp;
   int i_list=0, i_ret=-1;
@@ -11597,6 +11736,8 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
   gboolean escape=FALSE;
   gchar *cp=NULL, *cp2=NULL, *cp3=NULL, *cpp=NULL;
   gchar *arg=NULL;
+  gboolean new_flag;
+  gboolean new_fmt_flag=FALSE;
   
   if((fp=fopen(hg->filename_ope,"rb"))==NULL){
     popup_message(hg->skymon_main, 
@@ -11615,23 +11756,23 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
   }
   printf_log(hg,"[ReadOPE_Def] Opening %s.",hg->filename_ope);
 
-  
   while(!feof(fp)){
     
     if((buf=fgets_new(fp))==NULL){
       break;
     }
     else{
-      if(g_ascii_strncasecmp(buf,"<COMMAND>",
-			     strlen("<COMMAND>"))==0){
+      if(g_ascii_strncasecmp(buf,"<PARAMETER_LIST>",
+			     strlen("<PARAMETER_LIST>"))==0){
 	escape=TRUE;
       }
-      else if(g_ascii_strncasecmp(buf,":COMMAND",
-			     strlen(":COMMAND"))==0){
+      else if(g_ascii_strncasecmp(buf,":PARAMETER",
+			     strlen(":PARAMETER"))==0){
 	escape=TRUE;
+	new_fmt_flag=TRUE;
       }
+      g_free(buf);
     }
-    if(buf) g_free(buf);
     
     if(escape){
       escape=FALSE;
@@ -11639,8 +11780,58 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
     }
   }
 
+  
   while(!feof(fp)){
-    
+    if((buf=fgets_new(fp))==NULL){
+      break;
+    }
+    else{
+      if((!new_fmt_flag)
+	 && (g_ascii_strncasecmp(buf,"</PARAMETER_LIST>",
+				 strlen("</PARAMETER_LIST>"))==0)){
+	escape=TRUE;
+      }
+      else if((new_fmt_flag)
+	      &&(g_ascii_strncasecmp(buf,":COMMAND",
+				     strlen(":COMMAND"))==0)){
+	escape=TRUE;
+      }
+      else{
+	if((buf[0]!='#')){
+	  // Non-Sidereal check
+	  cpp=buf;
+	  CheckNST_in_OPE(hg, cpp);
+	}
+      }
+    }
+
+    if(escape){
+      escape=FALSE;
+      break;
+    }
+  }
+  
+  if(!new_fmt_flag){
+     while(!feof(fp)){
+       if((buf=fgets_new(fp))==NULL){
+	 break;
+       }
+       else{
+	 if((!new_fmt_flag)
+	    && (g_ascii_strncasecmp(buf,"<COMMAND>",
+				    strlen("<COMMAND>"))==0)){
+	   escape=TRUE;
+	 }
+       }
+       
+       if(escape){
+	 escape=FALSE;
+	 break;
+       }
+     }
+  }
+
+  while(!feof(fp)){
     if((buf=fgets_new(fp))==NULL){
       break;
     }
@@ -11659,7 +11850,7 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
 	  cpp=BUF+strlen("GETOBJECT");
 
 	  do{
-	    if(NULL != (cp = strstr(cpp, " $"))){
+	    if(NULL != (cp = strcasestr(cpp, " $"))){
 	      cpp=cp+strlen(" $");
 	      cp+=strlen(" $");
 
@@ -11735,6 +11926,11 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
 	      }
 	    }
 	  }while(cp);
+
+
+	  // Non-Sidereal check
+	  cpp=buf+strlen("SETUPFIELD");
+	  CheckNST_in_OPE(hg, cpp);
 	}   
 	else if(g_ascii_strncasecmp(BUF,"AO188_OFFSET_RADEC",
 				    strlen("AO188_OFFSET_RADEC"))==0){
@@ -11770,6 +11966,7 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
   }
 
   fclose(fp);
+  if(arg) g_free(arg);
 }
 
 
@@ -11837,7 +12034,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 	if(BUF) g_free(BUF);
 	BUF=g_ascii_strup(buf,-1);
 
-	if(NULL != (buf0 = strstr(BUF, "GETOBJECT"))){
+	if(NULL != (buf0 = strcasestr(BUF, "GETOBJECT"))){
 
 	  cpp=buf0+strlen("GETOBJECT");
 
@@ -11858,7 +12055,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 	    }
 	  }while(cp);
 	}
-	else if(NULL != (buf0 = strstr(BUF, "GETSTANDARD"))){
+	else if(NULL != (buf0 = strcasestr(BUF, "GETSTANDARD"))){
 
 	  cpp=buf0+strlen("GETSTANDARD");
 
@@ -11879,7 +12076,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 	    }
 	  }while(cp);
 	}
-	else if(NULL != (buf0 = strstr(BUF, "SETUPFIELD"))){
+	else if(NULL != (buf0 = strcasestr(BUF, "SETUPFIELD"))){
 
 	  cpp=buf0+strlen("SETUPFILED");
 
@@ -11899,7 +12096,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 	    }
 	  }while(cp);
 	}
-	else if(NULL != (buf0 = strstr(BUF, "SET_FIELD"))){
+	else if(NULL != (buf0 = strcasestr(BUF, "SET_FIELD"))){
 
 	  cpp=buf0+strlen("SET_FILED");
 
@@ -12606,53 +12803,55 @@ void ReadConf(typHOE *hg)
     else
       hg->ro_use_default_auth =ro_useDefaultAuth;
 #endif
-    
-    for(i_col=0;i_col<MAX_ROPE;i_col++){
+
+    if((major_ver>=3) && (minor_ver>=8) && (micro_ver>=3)){
+      for(i_col=0;i_col<MAX_ROPE;i_col++){
 #ifdef USE_GTK3
-      tmp=g_strdup_printf("ope%d_r",i_col);
-      if(xmms_cfg_read_double(cfgfile, "RGBA", tmp, &f_buf)) 
-     	hg->col[i_col]->red =f_buf;
-      else
-	hg->col[i_col]->red =init_col[i_col].red;
-      g_free(tmp);
-
-      tmp=g_strdup_printf("ope%d_g",i_col);
-      if(xmms_cfg_read_double(cfgfile, "RGBA", tmp, &f_buf)) 
-     	hg->col[i_col]->green =f_buf;
-      else
-	hg->col[i_col]->green =init_col[i_col].green;
-      g_free(tmp);
-
-      tmp=g_strdup_printf("ope%d_b",i_col);
-      if(xmms_cfg_read_double(cfgfile, "RGBA", tmp, &f_buf)) 
-     	hg->col[i_col]->blue =f_buf;
-      else
-     	hg->col[i_col]->blue =init_col[i_col].blue;
-      g_free(tmp);
-
-      hg->col[i_col]->alpha=1.0;
+	tmp=g_strdup_printf("ope%d_r",i_col);
+	if(xmms_cfg_read_double(cfgfile, "RGBA", tmp, &f_buf)) 
+	  hg->col[i_col]->red =f_buf;
+	else
+	  hg->col[i_col]->red =init_col[i_col].red;
+	g_free(tmp);
+	
+	tmp=g_strdup_printf("ope%d_g",i_col);
+	if(xmms_cfg_read_double(cfgfile, "RGBA", tmp, &f_buf)) 
+	  hg->col[i_col]->green =f_buf;
+	else
+	  hg->col[i_col]->green =init_col[i_col].green;
+	g_free(tmp);
+	
+	tmp=g_strdup_printf("ope%d_b",i_col);
+	if(xmms_cfg_read_double(cfgfile, "RGBA", tmp, &f_buf)) 
+	  hg->col[i_col]->blue =f_buf;
+	else
+	  hg->col[i_col]->blue =init_col[i_col].blue;
+	g_free(tmp);
+	
+	hg->col[i_col]->alpha=1.0;
 #else
-      tmp=g_strdup_printf("ope%d_r",i_col);
-      if(xmms_cfg_read_int(cfgfile, "Color", tmp, &i_buf)) 
-     	hg->col[i_col]->red =(guint)i_buf;
-      else
-	hg->col[i_col]->red =init_col[i_col].red;
-      g_free(tmp);
-
-      tmp=g_strdup_printf("ope%d_g",i_col);
-      if(xmms_cfg_read_int(cfgfile, "Color", tmp, &i_buf)) 
-     	hg->col[i_col]->green =(guint)i_buf;
-      else
-	hg->col[i_col]->green =init_col[i_col].green;
-      g_free(tmp);
-
-      tmp=g_strdup_printf("ope%d_b",i_col);
-      if(xmms_cfg_read_int(cfgfile, "Color", tmp, &i_buf)) 
-     	hg->col[i_col]->blue =(guint)i_buf;
-      else
-     	hg->col[i_col]->blue =init_col[i_col].blue;
-      g_free(tmp);
+	tmp=g_strdup_printf("ope%d_r",i_col);
+	if(xmms_cfg_read_int(cfgfile, "Color", tmp, &i_buf)) 
+	  hg->col[i_col]->red =(guint)i_buf;
+	else
+	  hg->col[i_col]->red =init_col[i_col].red;
+	g_free(tmp);
+	
+	tmp=g_strdup_printf("ope%d_g",i_col);
+	if(xmms_cfg_read_int(cfgfile, "Color", tmp, &i_buf)) 
+	  hg->col[i_col]->green =(guint)i_buf;
+	else
+	  hg->col[i_col]->green =init_col[i_col].green;
+	g_free(tmp);
+	
+	tmp=g_strdup_printf("ope%d_b",i_col);
+	if(xmms_cfg_read_int(cfgfile, "Color", tmp, &i_buf)) 
+	  hg->col[i_col]->blue =(guint)i_buf;
+	else
+	  hg->col[i_col]->blue =init_col[i_col].blue;
+	g_free(tmp);
 #endif
+      }
     }
 
 #ifdef USE_GTK3

@@ -845,6 +845,46 @@ void tree_update_azel_item(typHOE *hg,
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
 		       COLUMN_OBJ_DEC, hg->obj[i_list].dec, -1);
   }
+  
+  if(hg->obj[i_list].i_nst>=0){
+    switch(hg->skymon_mode){
+    case SKYMON_SET:
+      if(hg->nst[hg->obj[i_list].i_nst].s_fl!=0){
+	gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+			    COLUMN_OBJ_RA_COL,&color_pink,
+			    COLUMN_OBJ_DEC_COL,&color_pink,
+			    -1);
+      }
+      else{
+	gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+			    COLUMN_OBJ_RA_COL,&color_pale,
+			    COLUMN_OBJ_DEC_COL,&color_pale,
+			    -1);
+      }
+      break;
+
+    default:
+      if(hg->nst[hg->obj[i_list].i_nst].c_fl!=0){
+	gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+			    COLUMN_OBJ_RA_COL,&color_pink,
+			    COLUMN_OBJ_DEC_COL,&color_pink,
+			    -1);
+      }
+      else{
+	gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+			    COLUMN_OBJ_RA_COL,&color_pale,
+			    COLUMN_OBJ_DEC_COL,&color_pale,
+			    -1);
+      }
+      break;
+    }
+  }
+  else{
+    gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+			COLUMN_OBJ_RA_COL,NULL,
+			COLUMN_OBJ_DEC_COL,NULL,
+			-1);
+  }
 
   // EQUINOX
   if(hg->show_equinox){
@@ -1282,7 +1322,17 @@ create_items_model (typHOE *hg)
                               G_TYPE_DOUBLE,  // HDS PA w/o ImR
                               G_TYPE_DOUBLE,  // Moon
                               G_TYPE_DOUBLE,  // ra
+#ifdef USE_GTK3
+			      GDK_TYPE_RGBA,    //color
+#else
+			      GDK_TYPE_COLOR,   //color
+#endif
 			      G_TYPE_DOUBLE,  // dec
+#ifdef USE_GTK3
+			      GDK_TYPE_RGBA,    //color
+#else
+			      GDK_TYPE_COLOR,   //color
+#endif	      
                               G_TYPE_DOUBLE,  // equinox
 			      G_TYPE_INT,     // PAM
 			      G_TYPE_STRING);  // NOTE
@@ -4063,6 +4113,12 @@ add_columns (typHOE *hg,
 						     renderer,
 						     "text",
 						     COLUMN_OBJ_RA,
+#ifdef USE_GTK3
+						     "foreground-rgba", 
+#else
+						     "foreground-gdk", 
+#endif
+						     COLUMN_OBJ_RA_COL,
 						     NULL);
     gtk_tree_view_column_set_cell_data_func(column, renderer,
 					    obj_cell_data_func,
@@ -4092,6 +4148,12 @@ add_columns (typHOE *hg,
 						     renderer,
 						     "text",
 						     COLUMN_OBJ_DEC,
+#ifdef USE_GTK3
+						     "foreground-rgba", 
+#else
+						     "foreground-gdk", 
+#endif
+						     COLUMN_OBJ_DEC_COL,
 						     NULL);
     gtk_tree_view_column_set_cell_data_func(column, renderer,
 					    obj_cell_data_func,

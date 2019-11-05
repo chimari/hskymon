@@ -47,7 +47,8 @@ void ReadListOPE();
 void MergeListPRM();
 void MergeListPRM2();
 void MergeListOPE();
-void MergeNST();
+void AutoLoadNST();
+gboolean MergeNST();
 void MergeJPL();
 void ConvJPL();
 

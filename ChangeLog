@@ -1,3 +1,10 @@
+2019.11.04 ver3.8.3 - Revised Non-sidereal orbit plot in FC.
+ 	            - Automatic loading of Non-Sidereal tracking files
+	              included in OPE files. NST files must be presented in
+	              the same directory where OPE files are stored.
+	            - Added text colors for RA & Dec of Non-sidereal targets
+	              in Object List.
+
 2019.04.09 ver3.8.2 - Bug fix for Gtk+3 ver.
                       removed editable=FALSE for spin_button.
                       Fixed inappropriate default font name.

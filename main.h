@@ -12,6 +12,8 @@
 #undef SKYMON_DEBUG
 //#undef HTTP_DEBUG
 
+#define _GNU_SOURCE
+
 #include<glib.h>
 #include<gtk/gtk.h>
 
@@ -757,7 +759,9 @@ enum
   COLUMN_OBJ_HPA,
   COLUMN_OBJ_MOON,
   COLUMN_OBJ_RA,
+  COLUMN_OBJ_RA_COL,
   COLUMN_OBJ_DEC,
+  COLUMN_OBJ_DEC_COL,
   COLUMN_OBJ_EQUINOX,
   COLUMN_OBJ_PAM,
   //COLUMN_OBJ_SETUP
@@ -2384,6 +2388,9 @@ struct _typHOE{
   gint pam_obj_i;
   gint pam_x[MAX_LGS_PAM_TIME];
   gint pam_y[MAX_LGS_PAM_TIME];
+
+  gchar *nst_found[MAX_ROPE];
+  gchar i_nst_found;
 };
 
 
