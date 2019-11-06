@@ -12,8 +12,6 @@
 #undef SKYMON_DEBUG
 //#undef HTTP_DEBUG
 
-#define _GNU_SOURCE
-
 #include<glib.h>
 #include<gtk/gtk.h>
 
@@ -2486,6 +2484,7 @@ gchar* make_head();
 gchar *make_filehead();
 void update_c_label();
 gboolean ObjOverlap();
+char *my_strcasestr();
 void CheckTargetDefOPE();
 gint CheckTargetDefOPE2();
 gchar *trdb_csv_name();

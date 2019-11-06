@@ -11685,14 +11685,33 @@ gint check_tgt_ngs(typHOE *hg, gchar *def){
   return(-1);
 }
 
+char *my_strcasestr(const char *str, const char *pattern) {
+    size_t i;
+
+    if (!*pattern)
+        return (char*)str;
+
+    for (; *str; str++) {
+        if (toupper(*str) == toupper(*pattern)) {
+            for (i = 1;; i++) {
+                if (!pattern[i])
+                    return (char*)str;
+                if (toupper(str[i]) != toupper(pattern[i]))
+                    break;
+            }
+        }
+    }
+    return NULL;
+}
+
 void CheckNST_in_OPE(typHOE *hg, gchar *cpp){
   gchar *cp;
   gint i_list;
   gchar *arg=NULL;
   gboolean new_flag=TRUE;
   
-  if(NULL != (cp = strcasestr(cpp, "COORD=FILE"))){
-    if(NULL != (cp = strcasestr(cpp, "TARGET=\"08 "))){
+  if(NULL != (cp = my_strcasestr(cpp, "COORD=FILE"))){
+    if(NULL != (cp = my_strcasestr(cpp, "TARGET=\"08 "))){
       cp+=strlen("TARGET=\"08 ");
       
       if(arg) g_free(arg);
@@ -11850,7 +11869,7 @@ void CheckTargetDefOPE(typHOE *hg, gint i0){
 	  cpp=BUF+strlen("GETOBJECT");
 
 	  do{
-	    if(NULL != (cp = strcasestr(cpp, " $"))){
+	    if(NULL != (cp = my_strcasestr(cpp, " $"))){
 	      cpp=cp+strlen(" $");
 	      cp+=strlen(" $");
 
@@ -12034,7 +12053,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 	if(BUF) g_free(BUF);
 	BUF=g_ascii_strup(buf,-1);
 
-	if(NULL != (buf0 = strcasestr(BUF, "GETOBJECT"))){
+	if(NULL != (buf0 = my_strcasestr(BUF, "GETOBJECT"))){
 
 	  cpp=buf0+strlen("GETOBJECT");
 
@@ -12055,7 +12074,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 	    }
 	  }while(cp);
 	}
-	else if(NULL != (buf0 = strcasestr(BUF, "GETSTANDARD"))){
+	else if(NULL != (buf0 = my_strcasestr(BUF, "GETSTANDARD"))){
 
 	  cpp=buf0+strlen("GETSTANDARD");
 
@@ -12076,7 +12095,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 	    }
 	  }while(cp);
 	}
-	else if(NULL != (buf0 = strcasestr(BUF, "SETUPFIELD"))){
+	else if(NULL != (buf0 = my_strcasestr(BUF, "SETUPFIELD"))){
 
 	  cpp=buf0+strlen("SETUPFILED");
 
@@ -12096,7 +12115,7 @@ gint CheckTargetDefOPE2(typHOE *hg, gchar *def){
 	    }
 	  }while(cp);
 	}
-	else if(NULL != (buf0 = strcasestr(BUF, "SET_FIELD"))){
+	else if(NULL != (buf0 = my_strcasestr(BUF, "SET_FIELD"))){
 
 	  cpp=buf0+strlen("SET_FILED");
 

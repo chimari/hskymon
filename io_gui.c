@@ -1042,7 +1042,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  do{
 	    init_obj(&hg->obj[i_list], hg);
 	    
-	    if(NULL != (cp = strcasestr(cpp, "OBJECT="))){
+	    if(NULL != (cp = my_strcasestr(cpp, "OBJECT="))){
 	      cpp=cp+strlen("OBJECT=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1083,7 +1083,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  if(ok_obj){
 	    cpp=BUF;
 	    do{
-	      if(NULL != (cp = strcasestr(cpp, "RA="))){
+	      if(NULL != (cp = my_strcasestr(cpp, "RA="))){
 		cpp=cp+strlen("RA=");
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1104,7 +1104,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  if(ok_obj&&ok_ra){
 	    cpp=BUF;
 	    do{
-	      if(NULL != (cp = strcasestr(cpp, "DEC="))){
+	      if(NULL != (cp = my_strcasestr(cpp, "DEC="))){
 		cpp=cp+strlen("DEC=");
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1125,7 +1125,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  if(ok_obj&&ok_ra&&ok_dec){
 	    cpp=BUF;
 	    do{
-	      if(NULL != (cp = strcasestr(cpp, "EQUINOX="))){
+	      if(NULL != (cp = my_strcasestr(cpp, "EQUINOX="))){
 		cpp=cp+strlen("EQUINOX=");
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1455,7 +1455,7 @@ void MergeListPRM(typHOE *hg){
 	cpp=BUF;
 	
 	do{
-	  if(NULL != (cp = strcasestr(cpp, "OBJECT="))){
+	  if(NULL != (cp = my_strcasestr(cpp, "OBJECT="))){
 	    cpp=cp+strlen("OBJECT=");
 	    cp--;
 	    if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1483,7 +1483,7 @@ void MergeListPRM(typHOE *hg){
 	if(ok_obj){
 	  cpp=BUF;
 	  do{
-	    if(NULL != (cp = strcasestr(cpp, "RA="))){
+	    if(NULL != (cp = my_strcasestr(cpp, "RA="))){
 	      cpp=cp+strlen("RA=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1504,7 +1504,7 @@ void MergeListPRM(typHOE *hg){
 	if(ok_obj&&ok_ra){
 	  cpp=BUF;
 	  do{
-	    if(NULL != (cp = strcasestr(cpp, "DEC="))){
+	    if(NULL != (cp = my_strcasestr(cpp, "DEC="))){
 	      cpp=cp+strlen("DEC=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1525,7 +1525,7 @@ void MergeListPRM(typHOE *hg){
 	if(ok_obj&&ok_ra&&ok_dec){
 	  cpp=BUF;
 	  do{
-	    if(NULL != (cp = strcasestr(cpp, "EQUINOX="))){
+	    if(NULL != (cp = my_strcasestr(cpp, "EQUINOX="))){
 	      cpp=cp+strlen("EQUINOX=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1668,7 +1668,7 @@ void MergeListPRM2(typHOE *hg){
 	cpp=BUF;
 	
 	do{
-	  if(NULL != (cp = strcasestr(cpp, "OBJECT="))){
+	  if(NULL != (cp = my_strcasestr(cpp, "OBJECT="))){
 	    cpp=cp+strlen("OBJECT=");
 	    cp--;
 	    if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1696,7 +1696,7 @@ void MergeListPRM2(typHOE *hg){
 	if(ok_obj){
 	  cpp=BUF;
 	  do{
-	    if(NULL != (cp = strcasestr(cpp, "RA="))){
+	    if(NULL != (cp = my_strcasestr(cpp, "RA="))){
 	      cpp=cp+strlen("RA=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1717,7 +1717,7 @@ void MergeListPRM2(typHOE *hg){
 	if(ok_obj&&ok_ra){
 	  cpp=BUF;
 	  do{
-	    if(NULL != (cp = strcasestr(cpp, "DEC="))){
+	    if(NULL != (cp = my_strcasestr(cpp, "DEC="))){
 	      cpp=cp+strlen("DEC=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1738,7 +1738,7 @@ void MergeListPRM2(typHOE *hg){
 	if(ok_obj&&ok_ra&&ok_dec){
 	  cpp=BUF;
 	  do{
-	    if(NULL != (cp = strcasestr(cpp, "EQUINOX="))){
+	    if(NULL != (cp = my_strcasestr(cpp, "EQUINOX="))){
 	      cpp=cp+strlen("EQUINOX=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1929,7 +1929,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  do{
 	    init_obj(&hg->obj[i_list]);
 	    
-	    if(NULL != (cp = strcasestr(cpp, "OBJECT="))){
+	    if(NULL != (cp = my_strcasestr(cpp, "OBJECT="))){
 	      cpp=cp+strlen("OBJECT=");
 	      cp--;
 	      if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1956,7 +1956,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  if(ok_obj){
 	    cpp=BUF;
 	    do{
-	      if(NULL != (cp = strcasestr(cpp, "RA="))){
+	      if(NULL != (cp = my_strcasestr(cpp, "RA="))){
 		cpp=cp+strlen("RA=");
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1978,7 +1978,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  if(ok_obj&&ok_ra){
 	    cpp=BUF;
 	    do{
-	      if(NULL != (cp = strcasestr(cpp, "DEC="))){
+	      if(NULL != (cp = my_strcasestr(cpp, "DEC="))){
 		cpp=cp+strlen("DEC=");
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -1999,7 +1999,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	  if(ok_obj&&ok_ra&&ok_dec){
 	    cpp=BUF;
 	    do{
-	      if(NULL != (cp = strcasestr(cpp, "EQUINOX="))){
+	      if(NULL != (cp = my_strcasestr(cpp, "EQUINOX="))){
 		cpp=cp+strlen("EQUINOX=");
 		cp--;
 		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
@@ -2736,7 +2736,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
   if(ref){
     cpp1=g_strdup(ref);
     l_all=(gint)strlen(cpp1);
-    if(NULL != (cp = strcasestr(cpp1, "Date"))){
+    if(NULL != (cp = my_strcasestr(cpp1, "Date"))){
       p_date=l_all-(gint)strlen(cp);
       tmp=(gchar *)strtok(cp," ");
       l_date=(gint)strlen(tmp);
@@ -2744,7 +2744,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
     g_free(cpp1);
 
     cpp1=g_strdup(ref);
-    if(NULL != (cp = strcasestr(cpp1, "R.A."))){
+    if(NULL != (cp = my_strcasestr(cpp1, "R.A."))){
       p_pos=l_all-(gint)strlen(cp);
       tmp=(gchar *)strtok(cp," ");
       l_pos=(gint)strlen(tmp);
@@ -2752,7 +2752,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
     g_free(cpp1);
 
     cpp1=g_strdup(ref);
-    if(NULL != (cp = strcasestr(cpp1, "delta"))){
+    if(NULL != (cp = my_strcasestr(cpp1, "delta"))){
       p_delt=l_all-(gint)strlen(cp);
     }
     g_free(cpp1);
@@ -3129,7 +3129,7 @@ void ConvJPL(typHOE *hg){
   if(ref){
     cpp1=g_strdup(ref);
     l_all=(gint)strlen(cpp1);
-    if(NULL != (cp = strcasestr(cpp1, "Date"))){
+    if(NULL != (cp = my_strcasestr(cpp1, "Date"))){
       p_date=l_all-(gint)strlen(cp);
       tmp=(gchar *)strtok(cp," ");
       l_date=(gint)strlen(tmp);
@@ -3137,7 +3137,7 @@ void ConvJPL(typHOE *hg){
     g_free(cpp1);
 
     cpp1=g_strdup(ref);
-    if(NULL != (cp = strcasestr(cpp1, "R.A."))){
+    if(NULL != (cp = my_strcasestr(cpp1, "R.A."))){
       p_pos=l_all-(gint)strlen(cp);
       tmp=(gchar *)strtok(cp," ");
       l_pos=(gint)strlen(tmp);
@@ -3145,7 +3145,7 @@ void ConvJPL(typHOE *hg){
     g_free(cpp1);
 
     cpp1=g_strdup(ref);
-    if(NULL != (cp = strcasestr(cpp1, "delta"))){
+    if(NULL != (cp = my_strcasestr(cpp1, "delta"))){
       p_delt=l_all-(gint)strlen(cp);
     }
     g_free(cpp1);

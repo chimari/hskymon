@@ -1507,7 +1507,7 @@ int http_c_fc(typHOE *hg){
       if(debug_flg){
 	fprintf(stderr,"--> Header: %s", buf);
       }
-      if(NULL != (cp = strcasestr(buf, "Transfer-Encoding: chunked"))){
+      if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
 	chunked_flag=TRUE;
       }
     }
@@ -1538,10 +1538,10 @@ int http_c_fc(typHOE *hg){
       while(!feof(fp_read)){
 	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
 	  cpp=cbuf;
-	  if(NULL != (cp = strcasestr(cpp, "<A HREF="))){
+	  if(NULL != (cp = my_strcasestr(cpp, "<A HREF="))){
 	    cpp=cp+strlen("<A HREF=");
 	    
-	    if(NULL != (cp2 = strcasestr(cp, ">"))){
+	    if(NULL != (cp2 = my_strcasestr(cp, ">"))){
 	      cp3=g_strndup(cpp,strlen(cpp)-strlen(cp2));
 	    }
 	    
@@ -1580,7 +1580,7 @@ int http_c_fc(typHOE *hg){
 	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
 	  cpp=cbuf;
 	  
-	  if(NULL != (cp = strcasestr(cpp, "x['_output']='../.."))){
+	  if(NULL != (cp = my_strcasestr(cpp, "x['_output']='../.."))){
 	    cpp=cp+strlen("x['_output']='../..");
 	    
 	    if(NULL != (cp2 = strstr(cp, "'"))){
@@ -1604,10 +1604,10 @@ int http_c_fc(typHOE *hg){
 	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
 	  cpp=cbuf;
 	  
-	  if(NULL != (cp = strcasestr(cpp, "<img src=\"//" FC_HOST_PANCOL))){
+	  if(NULL != (cp = my_strcasestr(cpp, "<img src=\"//" FC_HOST_PANCOL))){
 	    cpp=cp+strlen("<img src=\"//" FC_HOST_PANCOL);
 	    
-	    if(NULL != (cp2 = strcasestr(cp, "\" width="))){
+	    if(NULL != (cp2 = my_strcasestr(cp, "\" width="))){
 	      cp3=g_strndup(cpp,strlen(cpp)-strlen(cp2));
 	    }
 	    
@@ -1714,7 +1714,7 @@ int http_c_fc(typHOE *hg){
 	if(debug_flg){
 	  fprintf(stderr,"--> Header: %s", buf);
 	}
-	if(NULL != (cp = strcasestr(buf, "Transfer-Encoding: chunked"))){
+	if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
 	  chunked_flag=TRUE;
 	}
       }
@@ -1747,7 +1747,7 @@ int http_c_fc(typHOE *hg){
       if(debug_flg){
 	fprintf(stderr,"--> Header: %s", buf);
       }
-      if(NULL != (cp = strcasestr(buf, "Transfer-Encoding: chunked"))){
+      if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
 	chunked_flag=TRUE;
       }
     }
@@ -2136,7 +2136,7 @@ int http_c_fc_ssl(typHOE *hg){
       if(debug_flg){
 	fprintf(stderr,"[SSL] --> Header: %s", buf);
       }
-      if(NULL != (cp = strcasestr(buf, "Transfer-Encoding: chunked"))){
+      if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
 	chunked_flag=TRUE;
       }
     }
@@ -2168,10 +2168,10 @@ int http_c_fc_ssl(typHOE *hg){
       while(!feof(fp_read)){
 	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
 	  cpp=cbuf;
-	  if(NULL != (cp = strcasestr(cpp, "<A HREF="))){
+	  if(NULL != (cp = my_strcasestr(cpp, "<A HREF="))){
 	    cpp=cp+strlen("<A HREF=");
 	    
-	    if(NULL != (cp2 = strcasestr(cp, ">"))){
+	    if(NULL != (cp2 = my_strcasestr(cp, ">"))){
 	      cp3=g_strndup(cpp,strlen(cpp)-strlen(cp2));
 	    }
 	    
@@ -2210,7 +2210,7 @@ int http_c_fc_ssl(typHOE *hg){
 	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
 	  cpp=cbuf;
 	  
-	  if(NULL != (cp = strcasestr(cpp, "x['_output']='../.."))){
+	  if(NULL != (cp = my_strcasestr(cpp, "x['_output']='../.."))){
 	    cpp=cp+strlen("x['_output']='../..");
 	    
 	    if(NULL != (cp2 = strstr(cp, "'"))){
@@ -2234,10 +2234,10 @@ int http_c_fc_ssl(typHOE *hg){
 	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
 	  cpp=cbuf;
 	  
-	  if(NULL != (cp = strcasestr(cpp, "<img src=\"//" FC_HOST_PANCOL))){
+	  if(NULL != (cp = my_strcasestr(cpp, "<img src=\"//" FC_HOST_PANCOL))){
 	    cpp=cp+strlen("<img src=\"//" FC_HOST_PANCOL);
 	    
-	    if(NULL != (cp2 = strcasestr(cp, "\" width="))){
+	    if(NULL != (cp2 = my_strcasestr(cp, "\" width="))){
 	      cp3=g_strndup(cpp,strlen(cpp)-strlen(cp2));
 	    }
 	    
@@ -2374,7 +2374,7 @@ int http_c_fc_ssl(typHOE *hg){
 	if(debug_flg){
 	  fprintf(stderr,"[SSL] --> Header: %s", buf);
 	}
-	if(NULL != (cp = strcasestr(buf, "Transfer-Encoding: chunked"))){
+	if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
 	  chunked_flag=TRUE;
 	}
       }
@@ -2406,7 +2406,7 @@ int http_c_fc_ssl(typHOE *hg){
       if(debug_flg){
 	fprintf(stderr,"--> Header: %s", buf);
       }
-      if(NULL != (cp = strcasestr(buf, "Transfer-Encoding: chunked"))){
+      if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
 	chunked_flag=TRUE;
       }
     }
@@ -2578,7 +2578,7 @@ int http_c_std(typHOE *hg){
     if(debug_flg){
       fprintf(stderr,"--> Header: %s", buf);
     }
-    if(NULL != (cp = strcasestr(buf, "Transfer-Encoding: chunked"))){
+    if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
       chunked_flag=TRUE;
     }
   }
@@ -4821,7 +4821,7 @@ int http_c_fcdb(typHOE *hg){
     if(debug_flg){
       fprintf(stderr,"--> Header: %s", buf);
     }
-    if(NULL != (cp = strcasestr(buf, "Transfer-Encoding: chunked"))){
+    if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
       chunked_flag=TRUE;
     }
   }
@@ -5021,7 +5021,7 @@ int http_c_fcdb_ssl(typHOE *hg){
     if(debug_flg){
       fprintf(stderr,"[SSL] --> Header: %s", buf);
     }
-    if(NULL != (cp = strcasestr(buf, "Transfer-Encoding: chunked"))){
+    if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
       chunked_flag=TRUE;
       }
   }
