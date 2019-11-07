@@ -2993,7 +2993,8 @@ gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
 
 #ifdef USE_XMLRPC
   g_snprintf(buf, sizeof(buf),
-	     "Default Tel-Stat server = " DEFAULT_RO_NAMSERVER); 
+	     "Tel-Stat server = %s",
+	     hg->ro_ns_host); 
   label = gtk_label_new (buf);
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_CENTER);
@@ -8398,7 +8399,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     tmp_show_ra,tmp_show_dec,tmp_show_equinox,tmp_show_pam,tmp_show_note;
 #ifdef USE_XMLRPC
   gboolean tmp_show_rt;
-  gchar *tmp_ro_ns_host;
   gint tmp_ro_ns_port;
   gboolean tmp_ro_use_default_auth;
 #endif
@@ -8493,7 +8493,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   tmp_show_note    =hg->show_note;
 
 #ifdef USE_XMLRPC
-  tmp_ro_ns_host   =g_strdup(hg->ro_ns_host);
   tmp_ro_ns_port   =hg->ro_ns_port;
   tmp_ro_use_default_auth =hg->ro_use_default_auth;
 #endif
@@ -9897,18 +9896,14 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtkut_table_attach(table1, label, 0, 1, 0, 1,
 		     GTK_FILL,GTK_SHRINK,0,0);
   
-
+  
   entry = gtk_entry_new ();
   gtkut_table_attach(table1, entry, 1, 4, 0, 1,
 		     GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(entry),
 		     hg->ro_ns_host);
-  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),FALSE);
   my_entry_set_width_chars(GTK_ENTRY(entry),40);
-  my_signal_connect (entry,
-		     "changed",
-		     cc_get_entry,
-		     &tmp_ro_ns_host);
 
   label = gtk_label_new ("Port");
 #ifdef USE_GTK3
@@ -10691,8 +10686,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     // Stop Telstat due to setup changes
     if(hg->stat_initflag) close_telstat(hg);
 
-    if(hg->ro_ns_host) g_free(hg->ro_ns_host);
-    hg->ro_ns_host = g_strdup(tmp_ro_ns_host);
     hg->ro_ns_port = tmp_ro_ns_port;
     hg->ro_use_default_auth = tmp_ro_use_default_auth;
 
@@ -10829,8 +10822,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 #ifdef USE_XMLRPC
     if(hg->stat_initflag) close_telstat(hg);
 
-    if(hg->ro_ns_host) g_free(hg->ro_ns_host);
-    hg->ro_ns_host=g_strdup(DEFAULT_RO_NAMSERVER);
     hg->ro_ns_port =ro_nameServicePort;
     hg->ro_use_default_auth =ro_useDefaultAuth;
 
@@ -10901,9 +10892,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   g_free(tmp_allsky_path);
   g_free(tmp_allsky_file);
   g_free(tmp_allsky_last_file00);
-#ifdef USE_XMLRPC
-  g_free(tmp_ro_ns_host);
-#endif
   g_free(tmp_fontname);
   g_free(tmp_fontname_all);
 
@@ -12176,7 +12164,10 @@ void get_option(int argc, char **argv, typHOE *hg)
   int i_opt, i;
   int valid=1;
   gchar *cwdname=NULL;
-
+#ifdef USE_XMLRPC
+  gboolean server_flag=FALSE;
+#endif
+  
   debug_flg = 0;      /* -d オプションを付けると turn on する */
   
   hg->filename_ope=NULL;
@@ -12231,6 +12222,7 @@ void get_option(int argc, char **argv, typHOE *hg)
 	  if(hg->ro_ns_host) g_free(hg->ro_ns_host);
 	  hg->ro_ns_host=g_strdup(argv[i_opt]);
 	  i_opt++;
+	  server_flag=TRUE;
 	}
 	else{
 	  valid = 0;
@@ -12269,6 +12261,13 @@ void get_option(int argc, char **argv, typHOE *hg)
       
     }
     
+#ifdef USE_XMLRPC
+  if(!server_flag){
+    if(hg->ro_ns_host) g_free(hg->ro_ns_host);
+    hg->ro_ns_host=g_strdup(getenv(ENV_FOR_RO_NAMSERVER));
+    if(!hg->ro_ns_host) hg->ro_ns_host=g_strdup(DEFAULT_RO_NAMSERVER);
+  }
+#endif
 }
 
 
@@ -12378,9 +12377,9 @@ void WriteConf(typHOE *hg){
 
 #ifdef USE_XMLRPC
   //RemoteObject
-  if(hg->ro_ns_host) 
-    xmms_cfg_write_string(cfgfile, "RemoteObject", "nameserver", 
-			  hg->ro_ns_host);
+  //if(hg->ro_ns_host) 
+  //  xmms_cfg_write_string(cfgfile, "RemoteObject", "nameserver", 
+  //			  hg->ro_ns_host);
   xmms_cfg_write_int(cfgfile, "RemoteObject", "namesvc_port", 
 		     hg->ro_ns_port);
   xmms_cfg_write_boolean(cfgfile, "RemoteObject", "use_default_auth",
@@ -12809,10 +12808,10 @@ void ReadConf(typHOE *hg)
       hg->show_note =TRUE;
 
 #ifdef USE_XMLRPC
-    if(xmms_cfg_read_string(cfgfile, "RemoteObject", "nameserver", &c_buf)) 
-      hg->ro_ns_host =c_buf;
-    else
-      hg->ro_ns_host=g_strdup(DEFAULT_RO_NAMSERVER);
+    //if(xmms_cfg_read_string(cfgfile, "RemoteObject", "nameserver", &c_buf)) 
+    //  hg->ro_ns_host =c_buf;
+    //else
+    hg->ro_ns_host=g_strdup(DEFAULT_RO_NAMSERVER);
     if(xmms_cfg_read_int  (cfgfile, "RemoteObject", "namesvc_port",   &i_buf))
       hg->ro_ns_port =i_buf;
     else
