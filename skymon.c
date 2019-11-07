@@ -3919,13 +3919,13 @@ static void skymon_set_telstat (GtkWidget *w,   gpointer gdata)
 #else
 		  GTK_STOCK_DIALOG_ERROR, 
 #endif
-		  POPUP_TIMEOUT*2,
+		  -1,
 		  "<b>Error</b>: Gen2 Status Server Address has not been set.",
 		  " ",
 		  "    Please set address by",
-		  "      [1] Command line option \"-s\"",
+		  "        [1] Command line option \"-s\"",
 		  "               or",
-		  "      [2] Environment variable \"GEN2_RO_SERVER\"",
+		  "        [2] Environment variable \"GEN2_RO_SERVER\"",
 		  "     ([1] ovverrides [2].)",
 		  NULL);
     return;
