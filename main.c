@@ -12269,6 +12269,7 @@ void get_option(int argc, char **argv, typHOE *hg)
       hg->ro_ns_host=g_strdup(DEFAULT_RO_NAMSERVER);
       hg->telstat_flag=FALSE;
       printf_log(hg,"[TelStat] failed to get the server address. Aborted the TelStat mode.");
+    }
   }
 #endif
 }
