@@ -5,6 +5,6 @@
 //                                           2017.06.15  A.Tajitsu
 
 #ifdef USE_XMLRPC
-#define DEFAULT_RO_NAMSERVER "(Please appoint the address for Gen2 status server w \"-s\" option.)"
+#define DEFAULT_RO_NAMSERVER "(Please set the address for the Gen2 status server w/\"-s\" option.)"
 #define ENV_FOR_RO_NAMSERVER "GEN2_RO_SERVER"
 #endif

@@ -9906,7 +9906,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 #else
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
 #endif
-  gtkut_table_attach(table1, label, 0, 4, 0, 1,
+  gtkut_table_attach(table1, label, 1, 4, 0, 1,
 		     GTK_FILL,GTK_SHRINK,0,0);
 
   label = gtk_label_new ("Port");
