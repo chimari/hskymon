@@ -1,3 +1,10 @@
+2019.11.06 ver3.8.4 - Added Non-Sidereal Check in HSC style OPE files.
+                    - Revised to get Gen2 status server address from
+                        [1] command line option "-s"
+	                [2] environment variable "GEN2_RO_NAMSERVER"
+                       (priority [1] > [2])
+                    - Reomoved the status server address setup in "~/.hskymon".
+
 2019.11.04 ver3.8.3 - Revised Non-sidereal orbit plot in FC.
  	            - Automatic loading of Non-Sidereal tracking files
 	              included in OPE files. NST files must be presented in

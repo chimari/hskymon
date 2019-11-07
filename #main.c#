@@ -11743,7 +11743,7 @@ void CheckNST_in_OPE(typHOE *hg, gchar *cpp){
 	break;
       }
     }
-      
+    
     // Check already loaded
     if(new_flag){
       for(i_list=0;i_list<hg->nst_max;i_list++){
@@ -12197,7 +12197,7 @@ void get_option(int argc, char **argv, typHOE *hg)
   gboolean server_flag=FALSE;
 #endif
   
-  debug_flg = 0;      /* -d ¥ª¥×¥·¥ç¥ó¤òÉÕ¤±¤ë¤È turn on ¤¹¤ë */
+  debug_flg = 0;      /* -d ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã‚’ä»˜ã‘ã‚‹ã¨ turn on ã™ã‚‹ */
   
   hg->filename_ope=NULL;
   hg->filename_list=NULL;
