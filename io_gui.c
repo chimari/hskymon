@@ -751,6 +751,7 @@ void ReadList(typHOE *hg, gint ope_max){
   printf_log(hg,"[ReadList] Opening %s.",hg->filename_list);
   hg->ope_max=ope_max;
   if(ope_max==0){
+    hg->i_max=0;
     hg->nst_max=0;
   }
 
@@ -853,6 +854,7 @@ void MergeList(typHOE *hg, gint ope_max){
   i_base=hg->i_max;
   hg->ope_max=ope_max;
   if(ope_max==0){
+    hg->i_max=0;
     hg->nst_max=0;
   }
 
@@ -978,6 +980,7 @@ void ReadListOPE(typHOE *hg, gint ope_max){
   printf_log(hg,"[ReadOPE] Opening %s.",hg->filename_ope);
   hg->ope_max=ope_max;
   if(ope_max==0){
+    hg->i_max=0;
     hg->nst_max=0;
   }
 
@@ -1870,6 +1873,7 @@ void MergeListOPE(typHOE *hg, gint ope_max){
   i_list=hg->i_max;
   hg->ope_max=ope_max;
   if(ope_max==0){
+    hg->i_max=0;
     hg->nst_max=0;
   }
 
@@ -2425,6 +2429,7 @@ gboolean MergeNST(typHOE *hg, gint ope_max, gboolean ope_flag){
   i_list=hg->i_max;
   hg->ope_max=ope_max;
   if(ope_max==0){
+    hg->i_max=0;
     hg->nst_max=0;
   }
 
@@ -2614,6 +2619,7 @@ void MergeJPL(typHOE *hg, gint ope_max){
   i_list=hg->i_max;
   hg->ope_max=ope_max;
   if(ope_max==0){
+    hg->i_max=0;
     hg->nst_max=0;
   }
 
