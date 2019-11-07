@@ -2660,7 +2660,7 @@ void ver_txt_parse(typHOE *hg) {
 
     tmp=g_strdup_printf("The latest version  : ver. <b>%d.%d.%d</b>",
 			major,minor,micro);
-    label = gtk_label_new (tmp);
+    label = gtkut_label_new (tmp);
 #ifdef USE_GTK3
     gtk_widget_set_halign (label, GTK_ALIGN_CENTER);
     gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -9896,14 +9896,17 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtkut_table_attach(table1, label, 0, 1, 0, 1,
 		     GTK_FILL,GTK_SHRINK,0,0);
   
-  
-  entry = gtk_entry_new ();
-  gtkut_table_attach(table1, entry, 1, 4, 0, 1,
+  tmp = g_strdup_printf("  <b>%s</b>",hg->ro_ns_host),
+  label = gtkut_label_new (tmp);
+  g_free(tmp);
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtkut_table_attach(table1, label, 0, 4, 0, 1,
 		     GTK_FILL,GTK_SHRINK,0,0);
-  gtk_entry_set_text(GTK_ENTRY(entry),
-		     hg->ro_ns_host);
-  gtk_editable_set_editable(GTK_EDITABLE(entry),FALSE);
-  my_entry_set_width_chars(GTK_ENTRY(entry),40);
 
   label = gtk_label_new ("Port");
 #ifdef USE_GTK3

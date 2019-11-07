@@ -6,5 +6,5 @@
 
 #ifdef USE_XMLRPC
 #define DEFAULT_RO_NAMSERVER "please.input,address.for.gen2.status.server"
-#define ENV_FOR_RO_NAMSERVER "GEN2_RO_NAMSERVER"
+#define ENV_FOR_RO_NAMSERVER "GEN2_RO_SERVER"
 #endif
