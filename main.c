@@ -13639,9 +13639,9 @@ void popup_message(GtkWidget *parent, gchar* stock_id,gint delay, ...){
 					 GTK_WINDOW(parent),
 					 GTK_DIALOG_MODAL,
 #ifdef USE_GTK3
-					 "_Yes",GTK_RESPONSE_YES,
+					 "_OK",GTK_RESPONSE_OK,
 #else
-					 GTK_STOCK_YES,GTK_RESPONSE_YES,
+					 GTK_STOCK_OK,GTK_RESPONSE_OK,
 #endif
 					 NULL);
   }
