@@ -1164,7 +1164,8 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  hg->obj[i_list].ope_i=i_list;
 	  hg->obj[i_list].i_nst=-1;
 
-	  if((fabs(tmp_ra)<0.01) && (fabs(tmp_dec)<0.01)){
+	  if((fabs(hg->obj[i_list].ra)<0.01)
+	     && (fabs(hg->obj[i_list].dec)<0.01)){
 	    ok_ra=FALSE;
 	    ok_dec=FALSE;
 	  }
