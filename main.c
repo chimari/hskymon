@@ -8357,6 +8357,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   struct utsname utsbuf;
 #endif
   gchar buf[1024];
+  gchar *tmp;
   typHOE *hg;
   gchar *tmp_www_com;
   gint tmp_obs_timezone;

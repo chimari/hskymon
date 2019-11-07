@@ -91,7 +91,7 @@ In this case, you should set the address of Gen2 status server
  [1] by a commandline option "-s" (or "--server")
        % hskymon -s status.server.address.foo.bar
 or
- [2] by an environment variable  "GEN2_RO_NAMSERVER"
+ [2] by an environment variable  "GEN2_RO_SERVER"
 . The environment variable [2] yields to the command line option [1].
 If either [1] or [2] is found in the start up, hskymon aborts to communicate
 with the status server.
