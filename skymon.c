@@ -3910,6 +3910,26 @@ static void skymon_set_telstat (GtkWidget *w,   gpointer gdata)
   typHOE *hg;
 
   hg=(typHOE *)gdata;
+
+  if(strcmp(hg->ro_ns_host, DEFAULT_RO_NAMSERVER)==0){
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), FALSE);
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  POPUP_TIMEOUT*2,
+		  "<b>Error</b>: Gen2 Status Server Address has not been set.",
+		  " ",
+		  "    Please set address by",
+		  "      [1] Command line option \"-s\"",
+		  "               or",
+		  "      [2] Environment variable \"GEN2_RO_SERVER\"",
+		  "     ([1] ovverrides [2].)",
+		  NULL);
+    return;
+  }
   
   hg->telstat_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
   hg->telstat_error=FALSE;
