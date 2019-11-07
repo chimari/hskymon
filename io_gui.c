@@ -1016,16 +1016,21 @@ void ReadListOPE(typHOE *hg, gint ope_max){
       break;
     }
     else{
+      //if((!new_fmt_flag)
+      //	 && (g_ascii_strncasecmp(buf,"</PARAMETER_LIST>",
+      //				 strlen("</PARAMETER_LIST>"))==0)){
+      //	escape=TRUE;
+      //}
       if((!new_fmt_flag)
-	 && (g_ascii_strncasecmp(buf,"</PARAMETER_LIST>",
-				 strlen("</PARAMETER_LIST>"))==0)){
+	 && (g_ascii_strncasecmp(buf,"</COMMAND>",
+				 strlen("</COMMAND>"))==0)){
 	escape=TRUE;
       }
-      else if((new_fmt_flag)
-	      &&(g_ascii_strncasecmp(buf,":COMMAND",
-				     strlen(":COMMAND"))==0)){
-	escape=TRUE;
-      }
+      //else if((new_fmt_flag)
+      //	      &&(g_ascii_strncasecmp(buf,":COMMAND",
+      //				     strlen(":COMMAND"))==0)){
+      //	escape=TRUE;
+      //}
       else{
 	if((buf[0]!='#')){
 
@@ -1159,6 +1164,11 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	  hg->obj[i_list].ope_i=i_list;
 	  hg->obj[i_list].i_nst=-1;
 
+	  if((fabs(tmp_ra)<0.01) && (fabs(tmp_dec)<0.01)){
+	    ok_ra=FALSE;
+	    ok_dec=FALSE;
+	  }
+	  
 	  if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	    if(!ObjOverlap(hg,i_list)){
 	      if(hg->obj[i_list].note) g_free(hg->obj[i_list].note);
@@ -1213,11 +1223,11 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 				 strlen("</COMMAND>"))==0)){
 	escape=TRUE;
       }
-      else if((new_fmt_flag)
-	      &&(g_ascii_strncasecmp(buf,":COMMAND",
-				     strlen(":COMMAND"))==0)){
-	escape=TRUE;
-      }
+      //else if((new_fmt_flag)
+      //	      &&(g_ascii_strncasecmp(buf,":COMMAND",
+      //				     strlen(":COMMAND"))==0)){
+      //	escape=TRUE;
+      //}
       else if(g_ascii_strncasecmp(buf,"*LOAD",
 				  strlen("*LOAD"))==0){
 	cpp=buf+strlen("*LOAD");
@@ -1543,6 +1553,11 @@ void MergeListPRM(typHOE *hg){
 	      }
 	    }
 	  }while((cp)&&(!feof(fp)));
+	}
+
+	if((fabs(tmp_ra)<0.01) && (fabs(tmp_dec)<0.01)){
+	  ok_ra=FALSE;
+	  ok_dec=FALSE;
 	}
 	
 	if(ok_obj && ok_ra && ok_dec && ok_equinox){
