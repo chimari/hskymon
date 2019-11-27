@@ -196,9 +196,10 @@
 
 #define FCDB_ARCMIN_MAX 100
 #define FCDB_PS1_MIN_NDET 10
-#define FCDB_PS1_MAX_DIAM 60
+#define FCDB_PS1_MAX_DIAM 30
 enum
 {
+  FCDB_PS1_OLD,
   FCDB_PS1_DR_1,
   FCDB_PS1_DR_2,
   FCDB_PS1_DR_NUM
@@ -228,12 +229,11 @@ enum
 #define FCDB_NED_PATH "/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=%.2lf&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY%sout_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=0&img_stamp=YES&of=xml_main"
 
 #define FCDB_HOST_GSC "gsss.stsci.edu"
-#define FCDB_GSC_PATH "/webservices/vo/ConeSearch.aspx?RA=%lf&DEC=%+lf&SR=%lf%sMAX_OBJ=5000&FORMAT=VOTABLE&CAT=GSC23"
+#define FCDB_GSC_PATH "/webservices/vo/ConeSearch.aspx?RA=%lf&DEC=%+lf&SR=%lf%sMAX_OBJ=5000&FORMAT=VOTABLE&CAT=GSC241"
 
-//#define FCDB_HOST_PS1 "gsss.stsci.edu"
-//#define FCDB_PS1_PATH  "/webservices/vo/CatalogSearch.aspx?CAT=PS1V3OBJECTS&RA=%lf&DEC=%+lf&SR=%lf&MINDET=%d%sMAXOBJ=5000"
+#define FCDB_HOST_PS1OLD "gsss.stsci.edu"
+#define FCDB_PS1OLD_PATH  "/webservices/vo/CatalogSearch.aspx?CAT=PS1V3OBJECTS&RA=%lf&DEC=%+lf&SR=%lf&MINDET=%d%sMAXOBJ=5000"
 #define FCDB_HOST_PS1 "catalogs.mast.stsci.edu"
-//#define FCDB_PS1_PATH  "/api/v0.1/panstarrs/dr2/stack?ra=%lf&dec=%+lf&radius=%lf&nDetections.gte=%d%spagesize=5000&format=votable"
 #define FCDB_PS1_PATH  "/api/v0.1/panstarrs/%s/%s?ra=%lf&dec=%+lf&radius=%lf&nDetections.gte=%d%spagesize=5000&format=votable"
 
 #define FCDB_HOST_SDSS "skyserver.sdss.org"
@@ -896,7 +896,7 @@ enum
 static const gchar* db_name[]={  
   "SIMBAD",         //FCDB_TYPE_SIMBAD,
   "NED",            //FCDB_TYPE_NED,
-  "GSC 2.3",        //FCDB_TYPE_GSC,
+  "GSC 2.4.1",      //FCDB_TYPE_GSC,
   "PanSTARRS1",     //FCDB_TYPE_PS1,
   "SDSS DR15",      //FCDB_TYPE_SDSS,
   "LAMOST DR4",     //FCDB_TYPE_LAMOST,

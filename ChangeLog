@@ -1,3 +1,7 @@
+2019.11.27 ver3.8.6 - Re-Added old PanSTARRS server in StSci (as default).
+                      (MAST server is slow and unstable with large FOVs).
+                    - Updated GSC catalog v2.3 --> v2.4.1 (for JWST)
+
 2019.11.26 ver3.8.5 - Added UCAC4 for FCDB and MagDB.
                     - Updated PanSTARRS-1 server to the latest MAST server.
 

@@ -1264,11 +1264,11 @@ void fcdb_gsc_vo_parse(typHOE *hg) {
       columns[6] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"IMag") == 0) 
       columns[7] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"JMag") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"tmassJMag") == 0) 
       columns[8] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"HMag") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"tmassHMag") == 0) 
       columns[9] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"KMag") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"tmassKsMag") == 0) 
       columns[10] = vfield_move->position;
  }
 
@@ -1391,7 +1391,29 @@ void fcdb_ps1_vo_parse(typHOE *hg) {
 
   Extract_VO_Fields(reader,&votable,&nbFields,&columns);
   for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
-    if(hg->fcdb_ps1_mode==FCDB_PS1_MODE_MEAN){
+    if(hg->fcdb_ps1_dr==FCDB_PS1_OLD){
+      if(xmlStrcmp(vfield_move->name,(const xmlChar *)"objName") == 0) 
+	columns[0] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RAmean") == 0)
+	columns[1] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"DECmean") == 0) 
+	columns[2] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"nDetections") == 0) 
+	columns[3] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"gMeanPSFMag") == 0) 
+	columns[4] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"rMeanPSFMag") == 0) 
+	columns[5] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"iMeanPSFMag") == 0) 
+	columns[6] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"zMeanPSFMag") == 0) 
+	columns[7] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"yMeanPSFMag") == 0) 
+	columns[8] = vfield_move->position;
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"rMeanApMag") == 0) 
+	columns[9] = vfield_move->position;
+    }
+    else if(hg->fcdb_ps1_mode==FCDB_PS1_MODE_MEAN){
       if(xmlStrcmp(vfield_move->name,(const xmlChar *)"objName") == 0) 
 	columns[0] = vfield_move->position;
       else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"raMean") == 0)

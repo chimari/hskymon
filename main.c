@@ -6329,7 +6329,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 
 
   vbox = gtkut_vbox_new (FALSE, 0);
-  label = gtk_label_new ("GSC 2.3");
+  label = gtk_label_new ("GSC 2.4.1");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
   table = gtkut_table_new(2, 2, FALSE, 10, 5, 5);
@@ -6489,12 +6489,17 @@ void create_fcdb_para_dialog (typHOE *hg)
     store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
     
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PS1 DR1",
+    gtk_list_store_set(store, &iter, 0, "DR1 (Old, Mean only)",
+		       1, FCDB_PS1_OLD, -1);
+    if(hg->fcdb_ps1_dr==FCDB_PS1_OLD) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "DR1 (MAST)",
 		       1, FCDB_PS1_DR_1, -1);
     if(hg->fcdb_ps1_dr==FCDB_PS1_DR_1) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PS1 DR2",
+    gtk_list_store_set(store, &iter, 0, "DR2 (MAST)",
 		       1, FCDB_PS1_DR_2, -1);
     if(hg->fcdb_ps1_dr==FCDB_PS1_DR_2) iter_set=iter;
 
@@ -8087,7 +8092,7 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_ps1_mag = 19;
       hg->fcdb_ps1_mindet = FCDB_PS1_MIN_NDET;
       hg->fcdb_ps1_mode = FCDB_PS1_MODE_MEAN;
-      hg->fcdb_ps1_dr = FCDB_PS1_DR_2;
+      hg->fcdb_ps1_dr = FCDB_PS1_OLD;
       hg->fcdb_sdss_search = FCDB_SDSS_SEARCH_IMAG;
       for(i=0;i<NUM_SDSS_BAND;i++){
 	hg->fcdb_sdss_fil[i] = TRUE;
@@ -11483,7 +11488,7 @@ void param_init(typHOE *hg){
   hg->fcdb_ps1_mag=19;
   hg->fcdb_ps1_mindet=FCDB_PS1_MIN_NDET;
   hg->fcdb_ps1_mode=FCDB_PS1_MODE_MEAN;
-  hg->fcdb_ps1_dr=FCDB_PS1_DR_2;
+  hg->fcdb_ps1_dr=FCDB_PS1_OLD;
   hg->fcdb_sdss_search = FCDB_SDSS_SEARCH_IMAG;
   for(i=0;i<NUM_SDSS_BAND;i++){
     hg->fcdb_sdss_fil[i]=TRUE;

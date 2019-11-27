@@ -3656,7 +3656,7 @@ void fcdb_dl(typHOE *hg)
     break;
 
   case FCDB_TYPE_GSC:
-    label=gtk_label_new("Searching objects in GSC 2.3 ...");
+    label=gtk_label_new("Searching objects in GSC 2.4.1 ...");
     break;
 
   case FCDB_TYPE_PS1:
@@ -3773,7 +3773,7 @@ void fcdb_dl(typHOE *hg)
     break;
 
   case FCDB_TYPE_GSC:
-    hg->plabel=gtk_label_new("Searching objects in GSC 2.3 ...");
+    hg->plabel=gtk_label_new("Searching objects in GSC 2.4.1 ...");
     break;
 
   case FCDB_TYPE_PS1:
@@ -4785,34 +4785,52 @@ void fcdb_item2 (typHOE *hg)
   case FCDB_TYPE_PS1:
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     if(hg->fcdb_host) g_free(hg->fcdb_host);
-    hg->fcdb_host=g_strdup(FCDB_HOST_PS1);
     if(hg->fcdb_path) g_free(hg->fcdb_path);
 
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
     if(hg->fcdb_ps1_fil){
-      url_param=g_strdup_printf((hg->fcdb_ps1_mode==FCDB_PS1_MODE_MEAN) ?
-				"&rMeanPSFMag.lte=%d&"
-				: "&rPSFMag.lte=%d&",
-				hg->fcdb_ps1_mag);
+      if(hg->fcdb_ps1_dr==FCDB_PS1_OLD){
+	url_param=g_strdup_printf("&MAGRANGE=0,%d&",hg->fcdb_ps1_mag);
+      }
+      else{
+	url_param=g_strdup_printf((hg->fcdb_ps1_mode==FCDB_PS1_MODE_MEAN) ?
+				  "&rMeanPSFMag.lte=%d&"
+				  : "&rPSFMag.lte=%d&",
+				  hg->fcdb_ps1_mag);
+      }
     }
     else{
       url_param=g_strdup("&");
     }
     
-    hg->fcdb_path=g_strdup_printf(FCDB_PS1_PATH,
-				  (hg->fcdb_ps1_dr==FCDB_PS1_DR_2) ?
-				  "dr2" : "dr1",
-				  (hg->fcdb_ps1_mode==FCDB_PS1_MODE_MEAN) ?
-				  "mean" : "stack",
-				  hg->fcdb_d_ra0,
-				  hg->fcdb_d_dec0,
-				  (hg->dss_arcmin > FCDB_PS1_MAX_DIAM) ?
-				  (double)FCDB_PS1_MAX_DIAM / 2. /60.:
-				  (double)hg->dss_arcmin/2./60.,
-				  hg->fcdb_ps1_mindet,
-				  url_param);
+    if(hg->fcdb_ps1_dr==FCDB_PS1_OLD){
+      hg->fcdb_host=g_strdup(FCDB_HOST_PS1OLD);
+      hg->fcdb_path=g_strdup_printf(FCDB_PS1OLD_PATH,
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (hg->dss_arcmin > FCDB_PS1_MAX_DIAM) ?
+				    (double)FCDB_PS1_MAX_DIAM / 2. /60.:
+				    (double)hg->dss_arcmin/2./60.,
+				    hg->fcdb_ps1_mindet,
+				    url_param);
+    }
+    else{  
+      hg->fcdb_host=g_strdup(FCDB_HOST_PS1);
+      hg->fcdb_path=g_strdup_printf(FCDB_PS1_PATH,
+				    (hg->fcdb_ps1_dr==FCDB_PS1_DR_2) ?
+				    "dr2" : "dr1",
+				    (hg->fcdb_ps1_mode==FCDB_PS1_MODE_MEAN) ?
+				    "mean" : "stack",
+				    hg->fcdb_d_ra0,
+				    hg->fcdb_d_dec0,
+				    (hg->dss_arcmin > FCDB_PS1_MAX_DIAM) ?
+				    (double)FCDB_PS1_MAX_DIAM / 2. /60.:
+				    (double)hg->dss_arcmin/2./60.,
+				    hg->fcdb_ps1_mindet,
+				    url_param);
+    }
 
     if(url_param) g_free(url_param);
     if(hg->fcdb_file) g_free(hg->fcdb_file);

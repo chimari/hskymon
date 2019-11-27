@@ -4919,7 +4919,7 @@ fcdb_add_columns (typHOE *hg,
       renderer = gtk_cell_renderer_text_new ();
       g_object_set_data (G_OBJECT (renderer), "column", 
 			 GINT_TO_POINTER (COLUMN_FCDB_K));
-      column=gtk_tree_view_column_new_with_attributes ("K",
+      column=gtk_tree_view_column_new_with_attributes ("Ks",
 						       renderer,
 						       "text",
 						       COLUMN_FCDB_K,
