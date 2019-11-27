@@ -195,8 +195,21 @@
 #define DSS_PIX 1500
 
 #define FCDB_ARCMIN_MAX 100
-#define FCDB_PS1_ARCMIN_MAX 60
-#define FCDB_USNO_ARCMIN_MAX 24
+#define FCDB_PS1_MIN_NDET 10
+#define FCDB_PS1_MAX_DIAM 60
+enum
+{
+  FCDB_PS1_DR_1,
+  FCDB_PS1_DR_2,
+  FCDB_PS1_DR_NUM
+};
+
+enum
+{
+  FCDB_PS1_MODE_MEAN,
+  FCDB_PS1_MODE_STACK,
+  FCDB_PS1_MODE_NUM
+};
 
 #define STDDB_PATH_SSLOC "/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&output.max=%d&OutputMode=LIST&output.format=VOTABLE"
 #define STDDB_PATH_RAPID "/simbad/sim-sam?Criteria=%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26rot.vsini>%d%%26Vmag<%d%%26sptype<%s&submit=submit%%20query&output.max=%d&OutputMode=LIST&output.format=VOTABLE"
@@ -217,36 +230,41 @@
 #define FCDB_HOST_GSC "gsss.stsci.edu"
 #define FCDB_GSC_PATH "/webservices/vo/ConeSearch.aspx?RA=%lf&DEC=%+lf&SR=%lf%sMAX_OBJ=5000&FORMAT=VOTABLE&CAT=GSC23"
 
-#define FCDB_HOST_PS1 "gsss.stsci.edu"
-#define FCDB_PS1_PATH  "/webservices/vo/CatalogSearch.aspx?CAT=PS1V3OBJECTS&RA=%lf&DEC=%+lf&SR=%lf&MINDET=%d%sMAXOBJ=5000"
+//#define FCDB_HOST_PS1 "gsss.stsci.edu"
+//#define FCDB_PS1_PATH  "/webservices/vo/CatalogSearch.aspx?CAT=PS1V3OBJECTS&RA=%lf&DEC=%+lf&SR=%lf&MINDET=%d%sMAXOBJ=5000"
+#define FCDB_HOST_PS1 "catalogs.mast.stsci.edu"
+//#define FCDB_PS1_PATH  "/api/v0.1/panstarrs/dr2/stack?ra=%lf&dec=%+lf&radius=%lf&nDetections.gte=%d%spagesize=5000&format=votable"
+#define FCDB_PS1_PATH  "/api/v0.1/panstarrs/%s/%s?ra=%lf&dec=%+lf&radius=%lf&nDetections.gte=%d%spagesize=5000&format=votable"
 
 #define FCDB_HOST_SDSS "skyserver.sdss.org"
 #define FCDB_SDSS_PATH "/dr15/en/tools/search/x_results.aspx"
-
-//#define FCDB_HOST_USNO "www.nofs.navy.mil"
-//#define FCDB_USNO_PATH "/cgi-bin/vo_cone.cgi?CAT=USNO-B1&RA=%lf&DEC=%+lf&SR=%lf%sVERB=1"
-#define FCDB_HOST_USNO "vizier.u-strasbg.fr"
-#define FCDB_USNO_PATH "/viz-bin/votable?-source=USNO-B1&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=5000%s-out.form=VOTable"
-
 
 #define FCDB_HOST_VIZIER_STRASBG "vizier.u-strasbg.fr"
 #define FCDB_HOST_VIZIER_NAOJ "vizier.nao.ac.jp"
 #define FCDB_HOST_VIZIER_HARVARD "vizier.cfa.harvard.edu"
 
+#define FCDB_HOST_USNO "vizier.u-strasbg.fr"
+#define FCDB_USNO_PATH_B "/viz-bin/votable?-source=USNO-B1&-c=%lf%%20%+lf&-c.u=arcsec&-c.bs=%dx%d&-c.geom=b&-out.max=5000%s-out.form=VOTable"
+
+#define FCDB_HOST_UCAC "vizier.u-strasbg.fr"
+#define FCDB_UCAC_PATH_B "/viz-bin/votable?-source=UCAC4&-c=%lf%%20%+lf&-c.u=arcsec&-c.bs=%dx%d&-c.geom=b&-out.max=5000%s-out.form=VOTable&-out=UCAC4&-out=RAJ2000&-out=DEJ2000&-out=ePos&-out=f.mag&-out=of&-out=db&-out=pmRA&-out=pmDE&-out=Jmag&-out=Hmag&-out=Kmag&-out=Bmag&-out=Vmag&-out=gmag&-out=rmag&-out=imag"
+#define FCDB_UCAC_PATH_R "/viz-bin/votable?-source=UCAC4&-c=%lf%%20%+lf&-c.u=arcsec&-c.r=%d&-c.geom=r&-out.max=5000%s-out.form=VOTable&-out=UCAC4&-out=RAJ2000&-out=DEJ2000&-out=ePos&-out=f.mag&-out=of&-out=db&-out=pmRA&-out=pmDE&-out=Jmag&-out=Hmag&-out=Kmag&-out=Bmag&-out=Vmag&-out=gmag&-out=rmag&-out=imag"
+
 #define FCDB_HOST_GAIA "vizier.u-strasbg.fr"
-#define FCDB_GAIA_PATH "/viz-bin/votable?-source=I/345/gaia2&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=5000%s-out.form=VOTable"
+#define FCDB_GAIA_PATH_R "/viz-bin/votable?-source=I/345/gaia2&-c=%lf%%20%+lf&-c.u=arcsec&-c.r=%d&-c.geom=r&-out.max=5000%s-out.form=VOTable"
+#define FCDB_GAIA_PATH_B "/viz-bin/votable?-source=I/345/gaia2&-c=%lf%%20%+lf&-c.u=arcsec&-c.bs=%dx%d&-c.geom=b&-out.max=5000%s-out.form=VOTable"
 
 #define FCDB_HOST_2MASS "gsss.stsci.edu"
 #define FCDB_2MASS_PATH "/webservices/vo/CatalogSearch.aspx?CAT=2MASS&RA=%lf&DEC=%+lf&SR=%lf%sMAXOBJ=5000"
 
 #define FCDB_HOST_WISE "vizier.u-strasbg.fr"
-#define FCDB_WISE_PATH "/viz-bin/votable?-source=II/311/wise&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=5000%s-out.form=VOTable"
+#define FCDB_WISE_PATH_B "/viz-bin/votable?-source=II/311/wise&-c=%lf%%20%+lf&-c.u=arcsec&-c.bs=%dx%d&-c.geom=b&-out.max=5000%s-out.form=VOTable"
 
 #define FCDB_HOST_IRC "vizier.u-strasbg.fr"
-#define FCDB_IRC_PATH "/viz-bin/votable?-source=II/297/irc&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=5000&-out.form=VOTable"
+#define FCDB_IRC_PATH_B "/viz-bin/votable?-source=II/297/irc&-c=%lf%%20%+lf&-c.u=arcsec&-c.bs=%dx%d&-c.geom=b&-out.max=5000&-out.form=VOTable"
 
 #define FCDB_HOST_FIS "vizier.u-strasbg.fr"
-#define FCDB_FIS_PATH "/viz-bin/votable?-source=II/298/fis&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=r&-out.max=5000&-out.form=VOTable"
+#define FCDB_FIS_PATH_B "/viz-bin/votable?-source=II/298/fis&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=b&-out.max=5000&-out.form=VOTable"
 
 #define FCDB_HOST_LAMOST "dr4.lamost.org"
 #define FCDB_LAMOST_PATH "/q"
@@ -848,6 +866,7 @@ enum
   FCDB_TYPE_SDSS,
   FCDB_TYPE_LAMOST,
   FCDB_TYPE_USNO,
+  FCDB_TYPE_UCAC,
   FCDB_TYPE_GAIA,
   FCDB_TYPE_KEPLER,
   FCDB_TYPE_2MASS,
@@ -882,6 +901,7 @@ static const gchar* db_name[]={
   "SDSS DR15",      //FCDB_TYPE_SDSS,
   "LAMOST DR4",     //FCDB_TYPE_LAMOST,
   "USNO",           //FCDB_TYPE_USNO,
+  "UCAC4",          //FCDB_TYPE_UCAC,
   "GAIA DR2",       //FCDB_TYPE_GAIA, 
   "Kepler",         //FCDB_TYPE_KEPLER,
   "2MASS",          //FCDB_TYPE_2MASS,
@@ -2109,18 +2129,19 @@ struct _typHOE{
   gint fcdb_gsc_diam;
   gboolean fcdb_ps1_fil;
   gint fcdb_ps1_mag;
-  gint fcdb_ps1_diam;
   gint fcdb_ps1_mindet;
+  gint fcdb_ps1_mode;
+  gint fcdb_ps1_dr;
   gint fcdb_sdss_search;
   gint fcdb_sdss_magmin[NUM_SDSS_BAND];
   gint fcdb_sdss_magmax[NUM_SDSS_BAND];
   gboolean fcdb_sdss_fil[NUM_SDSS_BAND];
   gint fcdb_sdss_diam;
   gint fcdb_usno_mag;
-  gint fcdb_usno_diam;
   gboolean fcdb_usno_fil;
+  gint fcdb_ucac_mag;
+  gboolean fcdb_ucac_fil;
   gint fcdb_gaia_mag;
-  gint fcdb_gaia_diam;
   gboolean fcdb_gaia_fil;
   gboolean fcdb_gaia_sat;
   gint fcdb_kepler_mag;
@@ -2129,7 +2150,6 @@ struct _typHOE{
   gint fcdb_2mass_diam;
   gboolean fcdb_2mass_fil;
   gint fcdb_wise_mag;
-  gint fcdb_wise_diam;
   gboolean fcdb_wise_fil;
   gboolean fcdb_smoka_shot;
   gboolean fcdb_smoka_subaru[NUM_SMOKA_SUBARU];
@@ -2603,6 +2623,7 @@ void fcdb_gsc_vo_parse();
 void fcdb_ps1_vo_parse();
 void fcdb_sdss_vo_parse();
 void fcdb_usno_vo_parse();
+void fcdb_ucac_vo_parse();
 void fcdb_gaia_vo_parse();
 void fcdb_kepler_vo_parse();
 void fcdb_2mass_vo_parse();

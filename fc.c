@@ -3675,6 +3675,10 @@ void fcdb_dl(typHOE *hg)
     label=gtk_label_new("Searching objects in USNO-B ...");
     break;
 
+  case FCDB_TYPE_UCAC:
+    label=gtk_label_new("Searching objects in UCAC4 ...");
+    break;
+
   case FCDB_TYPE_GAIA:
     label=gtk_label_new("Searching objects in GAIA DR2 ...");
     break;
@@ -3782,6 +3786,10 @@ void fcdb_dl(typHOE *hg)
 
   case FCDB_TYPE_USNO:
     hg->plabel=gtk_label_new("Searching objects in USNO-B ...");
+    break;
+
+  case FCDB_TYPE_UCAC:
+    hg->plabel=gtk_label_new("Searching objects in UCAC4 ...");
     break;
 
   case FCDB_TYPE_LAMOST:
@@ -4784,18 +4792,25 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_dec0=object_prec.dec;
     
     if(hg->fcdb_ps1_fil){
-      url_param=g_strdup_printf("&MAGRANGE=0,%d&",hg->fcdb_ps1_mag);
+      url_param=g_strdup_printf((hg->fcdb_ps1_mode==FCDB_PS1_MODE_MEAN) ?
+				"&rMeanPSFMag.lte=%d&"
+				: "&rPSFMag.lte=%d&",
+				hg->fcdb_ps1_mag);
     }
     else{
       url_param=g_strdup("&");
     }
     
     hg->fcdb_path=g_strdup_printf(FCDB_PS1_PATH,
+				  (hg->fcdb_ps1_dr==FCDB_PS1_DR_2) ?
+				  "dr2" : "dr1",
+				  (hg->fcdb_ps1_mode==FCDB_PS1_MODE_MEAN) ?
+				  "mean" : "stack",
 				  hg->fcdb_d_ra0,
 				  hg->fcdb_d_dec0,
-				  (hg->dss_arcmin < hg->fcdb_ps1_diam) ?
-				  ((double)hg->dss_arcmin/2./60.) :
-				  ((double)hg->fcdb_ps1_diam/2./60.),
+				  (hg->dss_arcmin > FCDB_PS1_MAX_DIAM) ?
+				  (double)FCDB_PS1_MAX_DIAM / 2. /60.:
+				  (double)hg->dss_arcmin/2./60.,
 				  hg->fcdb_ps1_mindet,
 				  url_param);
 
@@ -4881,15 +4896,11 @@ void fcdb_item2 (typHOE *hg)
       url_param=g_strdup("&");
     }
     
-    hg->fcdb_path=g_strdup_printf(FCDB_USNO_PATH,
+    hg->fcdb_path=g_strdup_printf(FCDB_USNO_PATH_B,
 				  hg->fcdb_d_ra0,
 				  hg->fcdb_d_dec0,
-				  (hg->dss_arcmin < hg->fcdb_usno_diam) ?
-				  (hg->dss_arcmin*30) : 
-				  (hg->fcdb_usno_diam*30),
-				  (hg->dss_arcmin < hg->fcdb_usno_diam) ?
-				  (hg->dss_arcmin*30) : 
-				  (hg->fcdb_usno_diam*30),
+				  hg->dss_arcmin*60,
+				  hg->dss_arcmin*60,
 				  url_param);
     
     if(url_param) g_free(url_param);
@@ -4901,6 +4912,51 @@ void fcdb_item2 (typHOE *hg)
     fcdb_dl(hg);
 
     fcdb_usno_vo_parse(hg);
+
+    break;
+
+  case FCDB_TYPE_UCAC:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    switch(hg->fcdb_vizier){
+    case FCDB_VIZIER_STRASBG:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_STRASBG);
+      break;
+    case FCDB_VIZIER_NAOJ:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_NAOJ);
+      break;
+    default:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_HARVARD);
+      break;
+    }
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+
+    if(hg->fcdb_ucac_fil){
+      url_param=g_strdup_printf("&rmag=%%3C%d&",hg->fcdb_ucac_mag);
+    }
+    else{
+      url_param=g_strdup("&");
+    }
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_UCAC_PATH_B,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  hg->dss_arcmin*60,
+				  hg->dss_arcmin*60,
+				  url_param);
+    
+    if(url_param) g_free(url_param);
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+
+    fcdb_dl(hg);
+
+    fcdb_ucac_vo_parse(hg, FALSE);
 
     break;
 
@@ -4930,15 +4986,11 @@ void fcdb_item2 (typHOE *hg)
       url_param=g_strdup("&");
     }
     
-    hg->fcdb_path=g_strdup_printf(FCDB_GAIA_PATH,
+    hg->fcdb_path=g_strdup_printf(FCDB_GAIA_PATH_B,
 				  hg->fcdb_d_ra0,
 				  hg->fcdb_d_dec0,
-				  (hg->dss_arcmin < hg->fcdb_gaia_diam) ?
-				  (hg->dss_arcmin*30) : 
-				  (hg->fcdb_gaia_diam*30),
-				  (hg->dss_arcmin < hg->fcdb_gaia_diam) ?
-				  (hg->dss_arcmin*30) : 
-				  (hg->fcdb_gaia_diam*30),
+				  hg->dss_arcmin*60,
+				  hg->dss_arcmin*60,
 				  url_param);
 
     if(url_param) g_free(url_param);
@@ -5037,15 +5089,11 @@ void fcdb_item2 (typHOE *hg)
       url_param=g_strdup("&");
     }
     
-    hg->fcdb_path=g_strdup_printf(FCDB_WISE_PATH,
+    hg->fcdb_path=g_strdup_printf(FCDB_WISE_PATH_B,
 				  hg->fcdb_d_ra0,
 				  hg->fcdb_d_dec0,
-				  (hg->fcdb_wise_diam > hg->dss_arcmin) ?
-				  (hg->dss_arcmin*30) :
-				  (hg->fcdb_wise_diam*30),
-				  (hg->fcdb_wise_diam > hg->dss_arcmin) ?
-				  (hg->dss_arcmin*30) :
-				  (hg->fcdb_wise_diam*30),
+				  hg->dss_arcmin*60,
+				  hg->dss_arcmin*60,
 				  url_param);
 
     if(url_param) g_free(url_param);
@@ -5079,11 +5127,11 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
-    hg->fcdb_path=g_strdup_printf(FCDB_IRC_PATH,
+    hg->fcdb_path=g_strdup_printf(FCDB_IRC_PATH_B,
 				  hg->fcdb_d_ra0,
 				  hg->fcdb_d_dec0,
-				  hg->dss_arcmin*30,
-				  hg->dss_arcmin*30);
+				  hg->dss_arcmin*60,
+				  hg->dss_arcmin*60);
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
@@ -5115,11 +5163,11 @@ void fcdb_item2 (typHOE *hg)
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
     
-    hg->fcdb_path=g_strdup_printf(FCDB_FIS_PATH,
+    hg->fcdb_path=g_strdup_printf(FCDB_FIS_PATH_B,
 				  hg->fcdb_d_ra0,
 				  hg->fcdb_d_dec0,
-				  hg->dss_arcmin*30,
-				  hg->dss_arcmin*30);
+				  hg->dss_arcmin*60,
+				  hg->dss_arcmin*60);
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
@@ -5353,6 +5401,7 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       COLUMN_FCDB_I, hg->fcdb[i_list].i, 
 		       COLUMN_FCDB_J, hg->fcdb[i_list].j,  // z
 		       COLUMN_FCDB_H, hg->fcdb[i_list].h,  // y
+		       COLUMN_FCDB_U, hg->fcdb[i_list].u,  // Ap-PSF
 		       COLUMN_FCDB_REF, hg->fcdb[i_list].ref,
 		       -1);
   }
@@ -5387,6 +5436,19 @@ void fcdb_tree_update_azel_item(typHOE *hg,
 		       COLUMN_FCDB_I, hg->fcdb[i_list].i,  // B2
 		       COLUMN_FCDB_J, hg->fcdb[i_list].j,  // R2
 		       COLUMN_FCDB_H, hg->fcdb[i_list].h,  // I1
+		       -1);
+  }
+  else if(hg->fcdb_type==FCDB_TYPE_UCAC){
+    // B g V r i J H K
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+		       COLUMN_FCDB_B, hg->fcdb[i_list].b,  // B
+		       COLUMN_FCDB_U, hg->fcdb[i_list].u,  // g
+		       COLUMN_FCDB_V, hg->fcdb[i_list].v,  // V
+		       COLUMN_FCDB_R, hg->fcdb[i_list].r,  // r
+		       COLUMN_FCDB_I, hg->fcdb[i_list].i,  // i
+		       COLUMN_FCDB_J, hg->fcdb[i_list].j,  // J
+		       COLUMN_FCDB_H, hg->fcdb[i_list].h,  // H
+		       COLUMN_FCDB_K, hg->fcdb[i_list].h,  // K
 		       -1);
   }
   else if(hg->fcdb_type==FCDB_TYPE_GAIA){
@@ -5613,6 +5675,9 @@ void fcdb_make_tree(GtkWidget *widget, gpointer gdata){
     break;
   case FCDB_TYPE_USNO:
     db_name=g_strdup("USNO-B");
+    break;
+  case FCDB_TYPE_UCAC:
+    db_name=g_strdup("UCAC4");
     break;
   case FCDB_TYPE_GAIA:
     db_name=g_strdup("GAIA");

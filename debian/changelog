@@ -1,6 +1,13 @@
+hskymon (3.8.5ubuntu) bionic; urgency=medium
+
+  * Added UCAC4 for FCDB and MagDB.
+  * Updated PanSTARRS-1 server to the latest MAST server.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Tue, 26 Nov 2019 17:07:35 -1000
+
 hskymon (3.8.4ubuntu) bionic; urgency=medium
 
-  * 
+  * Revised Non-sidereal plot on FC.
 
  -- Akito Tajitsu <tajitsu@naoj.org>  Wed, 06 Nov 2019 19:50:18 -1000
 

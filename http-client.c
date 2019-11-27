@@ -5173,6 +5173,7 @@ int get_fcdb(typHOE *hg){
 #ifdef USE_SSL
   switch(hg->fcdb_type){
   case (-1):    
+  case FCDB_TYPE_PS1:
   case FCDB_TYPE_SMOKA:
   case TRDB_TYPE_SMOKA:
   case TRDB_TYPE_FCDB_SMOKA:
@@ -5222,6 +5223,7 @@ int get_fcdb(typHOE *hg){
 #ifdef USE_SSL
     switch(hg->fcdb_type){
     case (-1):    
+    case FCDB_TYPE_PS1:
     case FCDB_TYPE_SMOKA:
     case TRDB_TYPE_SMOKA:
     case TRDB_TYPE_FCDB_SMOKA:

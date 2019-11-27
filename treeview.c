@@ -1562,6 +1562,7 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   case FCDB_TYPE_PS1:
   case FCDB_TYPE_SDSS:
   case FCDB_TYPE_USNO:
+  case FCDB_TYPE_UCAC:
     hg->obj[i].def=make_tgt(hg->obj[hg->fcdb_i].name, "TTGS_");
     hg->obj[i].name=g_strconcat(hg->obj[hg->fcdb_i].name," TTGS",NULL);
     hg->obj[i].note=g_strconcat("added via FC (",hg->obj[hg->fcdb_i].name,")",NULL);
@@ -4531,6 +4532,7 @@ fcdb_add_columns (typHOE *hg,
   case FCDB_TYPE_SDSS:
   case FCDB_TYPE_LAMOST:
   case FCDB_TYPE_USNO:
+  case FCDB_TYPE_UCAC:
   case FCDB_TYPE_GAIA:
   case FCDB_TYPE_KEPLER:
   case FCDB_TYPE_2MASS:
@@ -5024,6 +5026,22 @@ fcdb_add_columns (typHOE *hg,
 					      NULL);
       gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_H);
       gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+      /* Ap-PSF */
+      renderer = gtk_cell_renderer_text_new ();
+      g_object_set_data (G_OBJECT (renderer), "column", 
+			 GINT_TO_POINTER (COLUMN_FCDB_U));
+      column=gtk_tree_view_column_new_with_attributes ("Ap-PSF (r)",
+						       renderer,
+						       "text",
+						       COLUMN_FCDB_U,
+						       NULL);
+      gtk_tree_view_column_set_cell_data_func(column, renderer,
+					      fcdb_double_cell_data_func,
+					      GUINT_TO_POINTER(COLUMN_FCDB_U),
+					      NULL);
+      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_U);
+      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
     }
     else if(hg->fcdb_type==FCDB_TYPE_SDSS){
       /* u */
@@ -5295,6 +5313,135 @@ fcdb_add_columns (typHOE *hg,
       gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_H);
       gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
     }
+    else if(hg->fcdb_type==FCDB_TYPE_UCAC){
+      /* B */
+      renderer = gtk_cell_renderer_text_new ();
+      g_object_set_data (G_OBJECT (renderer), "column", 
+			 GINT_TO_POINTER (COLUMN_FCDB_B));
+      column=gtk_tree_view_column_new_with_attributes ("B",
+						       renderer,
+						       "text",
+						       COLUMN_FCDB_B,
+						       NULL);
+      gtk_tree_view_column_set_cell_data_func(column, renderer,
+					      fcdb_double_cell_data_func,
+					      GUINT_TO_POINTER(COLUMN_FCDB_B),
+					      NULL);
+      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_B);
+      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+      /* g */
+      renderer = gtk_cell_renderer_text_new ();
+      g_object_set_data (G_OBJECT (renderer), "column", 
+			 GINT_TO_POINTER (COLUMN_FCDB_U));
+      column=gtk_tree_view_column_new_with_attributes ("g",
+						       renderer,
+						       "text",
+						       COLUMN_FCDB_U,
+						       NULL);
+      gtk_tree_view_column_set_cell_data_func(column, renderer,
+					      fcdb_double_cell_data_func,
+					      GUINT_TO_POINTER(COLUMN_FCDB_U),
+					      NULL);
+      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_U);
+      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+      
+      /* V */
+      renderer = gtk_cell_renderer_text_new ();
+      g_object_set_data (G_OBJECT (renderer), "column", 
+			 GINT_TO_POINTER (COLUMN_FCDB_V));
+      column=gtk_tree_view_column_new_with_attributes ("V",
+						       renderer,
+						       "text",
+						       COLUMN_FCDB_V,
+						       NULL);
+      gtk_tree_view_column_set_cell_data_func(column, renderer,
+					      fcdb_double_cell_data_func,
+					      GUINT_TO_POINTER(COLUMN_FCDB_V),
+					      NULL);
+      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_V);
+      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+      
+      /* R1 */
+      renderer = gtk_cell_renderer_text_new ();
+      g_object_set_data (G_OBJECT (renderer), "column", 
+			 GINT_TO_POINTER (COLUMN_FCDB_R));
+      column=gtk_tree_view_column_new_with_attributes ("r",
+						       renderer,
+						       "text",
+						       COLUMN_FCDB_R,
+						       NULL);
+      gtk_tree_view_column_set_cell_data_func(column, renderer,
+					      fcdb_double_cell_data_func,
+					      GUINT_TO_POINTER(COLUMN_FCDB_R),
+					      NULL);
+      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_R);
+      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+      
+      /* i */
+      renderer = gtk_cell_renderer_text_new ();
+      g_object_set_data (G_OBJECT (renderer), "column", 
+			 GINT_TO_POINTER (COLUMN_FCDB_I));
+      column=gtk_tree_view_column_new_with_attributes ("i",
+						       renderer,
+						       "text",
+						       COLUMN_FCDB_I,
+						       NULL);
+      gtk_tree_view_column_set_cell_data_func(column, renderer,
+					      fcdb_double_cell_data_func,
+					      GUINT_TO_POINTER(COLUMN_FCDB_I),
+					      NULL);
+      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_I);
+      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+      
+      /* J */
+      renderer = gtk_cell_renderer_text_new ();
+      g_object_set_data (G_OBJECT (renderer), "column", 
+			 GINT_TO_POINTER (COLUMN_FCDB_J));
+      column=gtk_tree_view_column_new_with_attributes ("J",
+						       renderer,
+						       "text",
+						       COLUMN_FCDB_J,
+						       NULL);
+      gtk_tree_view_column_set_cell_data_func(column, renderer,
+					      fcdb_double_cell_data_func,
+					      GUINT_TO_POINTER(COLUMN_FCDB_J),
+					      NULL);
+      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_J);
+      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+      
+      /* H */
+      renderer = gtk_cell_renderer_text_new ();
+      g_object_set_data (G_OBJECT (renderer), "column", 
+			 GINT_TO_POINTER (COLUMN_FCDB_H));
+      column=gtk_tree_view_column_new_with_attributes ("H",
+						       renderer,
+						       "text",
+						       COLUMN_FCDB_H,
+						       NULL);
+      gtk_tree_view_column_set_cell_data_func(column, renderer,
+					      fcdb_double_cell_data_func,
+					      GUINT_TO_POINTER(COLUMN_FCDB_H),
+					      NULL);
+      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_H);
+      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+
+      /* K */
+      renderer = gtk_cell_renderer_text_new ();
+      g_object_set_data (G_OBJECT (renderer), "column", 
+			 GINT_TO_POINTER (COLUMN_FCDB_K));
+      column=gtk_tree_view_column_new_with_attributes ("K",
+						       renderer,
+						       "text",
+						       COLUMN_FCDB_K,
+						       NULL);
+      gtk_tree_view_column_set_cell_data_func(column, renderer,
+					      fcdb_double_cell_data_func,
+					      GUINT_TO_POINTER(COLUMN_FCDB_K),
+					      NULL);
+      gtk_tree_view_column_set_sort_column_id(column,COLUMN_FCDB_K);
+      gtk_tree_view_append_column(GTK_TREE_VIEW (treeview),column);
+}
     else if(hg->fcdb_type==FCDB_TYPE_GAIA){
       /* G */
       renderer = gtk_cell_renderer_text_new ();
@@ -7595,6 +7742,7 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
     case FCDB_TYPE_PS1:
     case FCDB_TYPE_SDSS:
     case FCDB_TYPE_USNO:
+    case FCDB_TYPE_UCAC:
       tgt=make_tgt(hg->obj[hg->fcdb_i].name, "TTGS_");
       break;
 
@@ -7629,6 +7777,7 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
       case FCDB_TYPE_PS1:
       case FCDB_TYPE_SDSS:
       case FCDB_TYPE_USNO:
+      case FCDB_TYPE_UCAC:
 	tmp=g_strdup_printf("PM%s=OBJECT=\"%s TTGS\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
 			    tgt,hg->obj[hg->fcdb_i].name,
 			    new_ra,new_dec,2000.00);
@@ -7658,6 +7807,7 @@ void make_fcdb_tgt(GtkWidget *w, gpointer gdata){
       case FCDB_TYPE_PS1:
       case FCDB_TYPE_SDSS:
       case FCDB_TYPE_USNO:
+      case FCDB_TYPE_UCAC:
 	tmp=g_strdup_printf("%s=OBJECT=\"%s TTGS\" RA=%09.2lf DEC=%+010.2lf EQUINOX=%7.2lf",
 			    tgt,hg->obj[hg->fcdb_i].name,
 			    hg->fcdb[hg->fcdb_tree_focus].ra,
