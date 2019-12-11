@@ -1,3 +1,9 @@
+hskymon (3.9.0ubuntu) bionic; urgency=medium
+
+  * Added Proper Motion search frm Object List Window.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Wed, 11 Dec 2019 11:44:50 -1000
+
 hskymon (3.8.6ubuntu) bionic; urgency=medium
 
   * Re-Added old PanSTARRS server in StSci (as default).

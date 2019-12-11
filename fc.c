@@ -59,11 +59,8 @@ static void fcdb_para_item();
 static void fcdb_item();
 //void fcdb_dl();
 #ifndef USE_WIN32
-void fcdb_signal();
 void trdb_signal();
 #endif
-static void delete_fcdb();
-static void cancel_fcdb();
 static void delete_trdb();
 static void cancel_trdb();
 //void fcdb_make_tree();
@@ -3402,12 +3399,12 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 }
 
-static void delete_fcdb(GtkWidget *w, GdkEvent *event, gpointer gdata)
+void delete_fcdb(GtkWidget *w, GdkEvent *event, gpointer gdata)
 {
   cancel_fcdb(w,gdata);
 }
 
-static void cancel_fcdb(GtkWidget *w, gpointer gdata)
+void cancel_fcdb(GtkWidget *w, gpointer gdata)
 {
   typHOE *hg;
   pid_t child_pid=0;
@@ -4115,6 +4112,271 @@ void addobj_dl(typHOE *hg)
   
 }
 
+void pm_dl(typHOE *hg)
+{
+  struct lnh_equ_posn hobject;
+  struct ln_equ_posn object;
+  struct ln_equ_posn object_prec;
+  struct lnh_equ_posn hobject_prec;
+  GtkTreeIter iter;
+  GtkWidget *dialog, *vbox, *label, *button, *bar;
+#ifndef USE_WIN32
+  static struct sigaction act;
+#endif
+  gint timer=-1;
+  gchar *tmp;
+  gchar *url_param, *mag_str, *otype_str;
+  
+  if(flag_getFCDB) return;
+  flag_getFCDB=TRUE;
+
+  if(access(hg->fcdb_file, F_OK)==0) unlink(hg->fcdb_file);
+
+  hg->fcdb_i=hg->pm_i;
+
+  object.ra=ra_to_deg(hg->obj[hg->pm_i].ra);
+  object.dec=dec_to_deg(hg->obj[hg->pm_i].dec);
+  
+  ln_get_equ_prec2 (&object, 
+		    get_julian_day_of_equinox(hg->obj[hg->pm_i].equinox),
+		    JD2000, &object_prec);
+  
+  switch(hg->pm_type){
+  case FCDB_TYPE_SIMBAD:
+    mag_str=g_strdup("%0D%0A");
+    otype_str=g_strdup("%0D%0A");
+    
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    if(hg->fcdb_simbad==FCDB_SIMBAD_HARVARD){
+      hg->fcdb_host=g_strdup(FCDB_HOST_SIMBAD_HARVARD);
+    }
+    else{
+      hg->fcdb_host=g_strdup(FCDB_HOST_SIMBAD_STRASBG);
+    }
+
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+    hg->fcdb_path=g_strdup_printf(FCDB_SIMBAD_PATH_R,
+				  hg->fcdb_d_ra0,
+				  (hg->fcdb_d_dec0>0) ? "%2B" : "%2D",
+				  fabs(hg->fcdb_d_dec0),
+				  (gdouble)10./60.,
+				  mag_str,otype_str,
+				  MAX_FCDB);
+    g_free(mag_str);
+    g_free(otype_str);
+    break;
+
+  case FCDB_TYPE_GAIA:
+    ln_equ_to_hequ (&object_prec, &hobject_prec);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    switch(hg->fcdb_vizier){
+    case FCDB_VIZIER_STRASBG:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_STRASBG);
+      break;
+    case FCDB_VIZIER_NAOJ:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_NAOJ);
+      break;
+    default:
+      hg->fcdb_host=g_strdup(FCDB_HOST_VIZIER_HARVARD);
+      break;
+    }
+    hg->fcdb_host=g_strdup(FCDB_HOST_GAIA);
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+    
+    hg->fcdb_d_ra0=object_prec.ra;
+    hg->fcdb_d_dec0=object_prec.dec;
+    
+    url_param=g_strdup_printf("&Gmag=%%3C%d&",hg->fcdb_gaia_mag);
+    
+    hg->fcdb_path=g_strdup_printf(FCDB_GAIA_PATH_R,
+				  hg->fcdb_d_ra0,
+				  hg->fcdb_d_dec0,
+				  10,
+				  url_param);
+    
+    if(url_param) g_free(url_param);
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
+    break;
+  }
+
+  if(hg->fcdb_file) g_free(hg->fcdb_file);
+  hg->fcdb_file=g_strconcat(hg->temp_dir,
+			    G_DIR_SEPARATOR_S,
+			    FCDB_FILE_XML,NULL);
+
+  dialog = gtk_dialog_new();
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
+  
+  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
+  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
+  gtk_window_set_title(GTK_WINDOW(dialog),"HOE : Query to the database");
+  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
+  my_signal_connect(dialog,"delete-event", delete_fcdb, (gpointer)hg);
+  
+#if !GTK_CHECK_VERSION(2,21,8)
+  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
+#endif
+  
+  switch(hg->pm_type){
+  case FCDB_TYPE_SIMBAD:
+    label=gtk_label_new("Searching objects in SIMBAD ...");
+    break;
+    
+  case FCDB_TYPE_GAIA:
+    label=gtk_label_new("Searching objects in GAIA DR2 ...");
+    break;
+  }
+
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     label,TRUE,TRUE,0);
+  gtk_widget_show(label);
+  
+  hg->pbar=gtk_progress_bar_new();
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     hg->pbar,TRUE,TRUE,0);
+  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
+#ifdef USE_GTK3
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
+				  GTK_ORIENTATION_HORIZONTAL);
+  css_change_pbar_height(hg->pbar,15);
+#else
+  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
+				    GTK_PROGRESS_RIGHT_TO_LEFT);
+#endif
+  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
+  gtk_widget_show(hg->pbar);
+  
+  switch(hg->pm_type){
+  case FCDB_TYPE_SIMBAD:
+    hg->plabel=gtk_label_new("Searching objects in SIMBAD ...");
+    break;
+
+  case FCDB_TYPE_GAIA:
+    hg->plabel=gtk_label_new("Searching objects in GAIA DR2 ...");
+    break;
+  }
+#ifdef USE_GTK3
+  gtk_widget_set_halign (hg->plabel, GTK_ALIGN_END);
+  gtk_widget_set_valign (hg->plabel, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
+#endif
+
+#ifdef USE_GTK3
+  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+#else
+  bar = gtk_hseparator_new();
+#endif
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     bar,FALSE, FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     hg->plabel,FALSE,FALSE,0);
+
+#ifdef USE_GTK3
+  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+#else
+  bar = gtk_hseparator_new();
+#endif
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     bar,FALSE, FALSE, 0);
+
+  
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Cancel","process-stop");
+#else
+  button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
+#endif
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
+  my_signal_connect(button,"pressed",
+		    cancel_fcdb, 
+		    (gpointer)hg);
+  
+  gtk_widget_show_all(dialog);
+  
+  timer=g_timeout_add(100, 
+		      (GSourceFunc)progress_timeout,
+		      (gpointer)hg);
+  
+#ifndef USE_WIN32
+  act.sa_handler=fcdb_signal;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags=0;
+  if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
+    fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
+#endif
+  
+  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
+
+  get_fcdb(hg);
+  gtk_main();
+
+  gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
+  if(timer!=-1) g_source_remove(timer);
+  gtk_widget_destroy(dialog);
+
+  flag_getFCDB=FALSE;
+
+  switch(hg->pm_type){
+  case FCDB_TYPE_SIMBAD:
+    fcdb_simbad_vo_parse(hg, TRUE);
+
+    if(hg->obj[hg->pm_i].simbad_name){
+      tmp=g_strdup_printf("%+.2lf",hg->obj[hg->pm_i].pm_ra);
+      gtk_entry_set_text(GTK_ENTRY(hg->pm_entry_pm_ra),tmp);
+      g_free(tmp);
+      
+      tmp=g_strdup_printf("%+.2lf",hg->obj[hg->pm_i].pm_dec);
+      gtk_entry_set_text(GTK_ENTRY(hg->pm_entry_pm_dec),tmp);
+      g_free(tmp);
+
+      tmp=g_strdup_printf("Your input coordinate matches with \"<b>%s</b>\" (<i>%s</i>) in SIMBAD.",
+			  hg->obj[hg->pm_i].simbad_name, 
+			  hg->obj[hg->pm_i].simbad_type);
+    }
+    else{
+      tmp=g_strdup_printf("<span color=\"#FF0000\">Your input does not match any objects in SIMBAD.</span>");
+    }
+    break;
+
+  case FCDB_TYPE_GAIA:
+    fcdb_gaia_vo_parse(hg, TRUE);
+    
+    if(hg->obj[hg->pm_i].gaia_g<99){
+      tmp=g_strdup_printf("%+.2lf",hg->obj[hg->pm_i].pm_ra);
+      gtk_entry_set_text(GTK_ENTRY(hg->pm_entry_pm_ra),tmp);
+      g_free(tmp);
+      
+      tmp=g_strdup_printf("%+.2lf",hg->obj[hg->pm_i].pm_dec);
+      gtk_entry_set_text(GTK_ENTRY(hg->pm_entry_pm_dec),tmp);
+      g_free(tmp);
+
+      tmp=g_strdup_printf("Your input coordinate matches with a <i>G=%.2lf mag</i> star in GAIA DR2.",
+			  hg->obj[hg->pm_i].gaia_g); 
+    }
+    else{
+      tmp=g_strdup_printf("<span color=\"#FF0000\">Your input does not match any objects in GAIA.</span>");
+    }
+    break;
+  }
+  gtk_label_set_markup(GTK_LABEL(hg->pm_label),tmp);
+  g_free(tmp);
+}
+
+
 gboolean check_trdb (gpointer gdata){
   if(flag_trdb_finish){
     flag_trdb_finish=FALSE;
@@ -4641,22 +4903,13 @@ void fcdb_item2 (typHOE *hg)
     }
     if(hg->fcdb_path) g_free(hg->fcdb_path);
 
-    if(hg->fcdb_d_dec0>0){
-      hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,
-				    "%2B",hg->fcdb_d_dec0,
-				    (gdouble)hg->dss_arcmin,
-				    (gdouble)hg->dss_arcmin,
-				    mag_str,otype_str,
-				    MAX_FCDB);
-    }
-    else{
-      hg->fcdb_path=g_strdup_printf(FCDB_PATH,hg->fcdb_d_ra0,
-				    "%2D",-hg->fcdb_d_dec0,
-				    (gdouble)hg->dss_arcmin,
-				    (gdouble)hg->dss_arcmin,
-				    mag_str,otype_str,
-				    MAX_FCDB);
-    }
+    hg->fcdb_path=g_strdup_printf(FCDB_SIMBAD_PATH_B,hg->fcdb_d_ra0,
+				  (hg->fcdb_d_dec0>0) ? "%2B" : "%2D",
+				  fabs(hg->fcdb_d_dec0),
+				  (gdouble)hg->dss_arcmin,
+				  (gdouble)hg->dss_arcmin,
+				  mag_str,otype_str,
+				  MAX_FCDB);
     g_free(mag_str);
     g_free(otype_str);
     
@@ -4667,7 +4920,7 @@ void fcdb_item2 (typHOE *hg)
     
     fcdb_dl(hg);
 
-    fcdb_vo_parse(hg);
+    fcdb_simbad_vo_parse(hg, FALSE);
     break;
     
   case FCDB_TYPE_NED:
@@ -5019,7 +5272,7 @@ void fcdb_item2 (typHOE *hg)
 
     fcdb_dl(hg);
 
-    fcdb_gaia_vo_parse(hg);
+    fcdb_gaia_vo_parse(hg, FALSE);
 
     break;
 

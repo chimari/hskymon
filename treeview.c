@@ -33,6 +33,15 @@ static void trdb_search_item ();
 static void fcdb_item ();
 static void adc_item ();
 void pam_objtree_item();
+
+void pm_simbad_query();
+void pm_gaia_query();
+gchar* pm_get_new_radec();
+void cc_get_entry_pm_ra();
+void cc_get_entry_pm_dec();
+void pm_dialog();
+void pm_objtree_item();
+
 void stddb_dl();
 void stddb_signal();
 static void delete_stddb();
@@ -880,10 +889,19 @@ void tree_update_azel_item(typHOE *hg,
     }
   }
   else{
-    gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-			COLUMN_OBJ_RA_COL,NULL,
-			COLUMN_OBJ_DEC_COL,NULL,
-			-1);
+    if((fabs(hg->obj[i_list].pm_ra)>100)
+       ||(fabs(hg->obj[i_list].pm_dec)>100)){
+      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+			  COLUMN_OBJ_RA_COL,&color_green,
+			  COLUMN_OBJ_DEC_COL,&color_green,
+			  -1);
+    }
+    else{
+      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+			  COLUMN_OBJ_RA_COL,NULL,
+			  COLUMN_OBJ_DEC_COL,NULL,
+			  -1);
+    }
   }
 
   // EQUINOX
@@ -1470,11 +1488,10 @@ static void add_item (typHOE *hg, gboolean pm_flag)
 
   init_obj(&hg->obj[i]);
   
-  if(hg->obj[i].def) g_free(hg->obj[i].def);
-  hg->obj[i].def=make_tgt(hg->addobj_name, "TGT_");
   if(hg->obj[i].name) g_free(hg->obj[i].name);
   hg->obj[i].name=g_strdup(hg->addobj_name);
-
+  if(hg->obj[i].def) g_free(hg->obj[i].def);
+      
   if(pm_flag){ // Proper Motion
     yrs=current_yrs(hg);
     new_d_ra=ra_to_deg(hg->addobj_ra)+
@@ -1488,10 +1505,22 @@ static void add_item (typHOE *hg, gboolean pm_flag)
     hg->obj[i].ra=new_ra;
     hg->obj[i].dec=new_dec;
     hg->obj[i].equinox=2000.0;
+    hg->obj[i].pm_ra=0.0;
+    hg->obj[i].pm_dec=0.0;
+    hg->obj[i].def=make_tgt(hg->addobj_name, "TGT_");
   }
-  else{  // No Proper Motion
+  else{  // just add Proper Motion as arguments
     hg->obj[i].ra=hg->addobj_ra;
     hg->obj[i].dec=hg->addobj_dec;
+    hg->obj[i].pm_ra=hg->addobj_pm_ra;
+    hg->obj[i].pm_dec=hg->addobj_pm_dec;
+    if((fabs(hg->obj[hg->pm_i].pm_ra)>100)
+       ||(fabs(hg->obj[hg->pm_i].pm_dec)>100)){
+      hg->obj[i].def=make_tgt(hg->addobj_name, "PMTGT_");
+    }
+    else{
+      hg->obj[i].def=make_tgt(hg->addobj_name, "TGT_");
+    }
   }
   hg->obj[i].equinox=2000.0;
 
@@ -1540,6 +1569,64 @@ static void add_item (typHOE *hg, gboolean pm_flag)
   //trdb_make_tree(hg);
 }
 
+void move_focus_item(typHOE *hg, gint i_set){
+  gint i, i_list;
+  
+  if(flagTree){
+    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+    GtkTreePath *path;
+    GtkTreeIter  iter;
+    
+    path=gtk_tree_path_new_first();
+    
+    for(i=0;i<hg->i_max;i++){
+      gtk_tree_model_get_iter (model, &iter, path);
+      gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i_list, -1);
+      i_list--;
+      
+      if(i_list==i_set){
+	gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->tree), path, NULL, FALSE);
+	raise_tree();
+	break;
+      }
+      else{
+	gtk_tree_path_next(path);
+      }
+    }
+    gtk_tree_path_free(path);
+  }
+}
+
+
+void move_trdb_focus_item(typHOE *hg, gint i_sel){
+  gint i, i_list;
+  
+  if(flagTree){
+    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+    GtkTreePath *path;
+    GtkTreeIter  iter;
+    
+    path=gtk_tree_path_new_first();
+    
+    for(i=0;i<hg->i_max;i++){
+      gtk_tree_model_get_iter (model, &iter, path);
+      gtk_tree_model_get (model, &iter, COLUMN_TRDB_NUMBER, &i_list, -1);
+      i_list--;
+      
+      if(i_list==i_sel){
+	gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->trdb_tree), path, NULL, FALSE);
+	raise_tree();
+	break;
+      }
+      else{
+	gtk_tree_path_next(path);
+      }
+    }
+    
+    gtk_tree_path_free(path);
+  }
+}
+
 void add_item_fcdb(GtkWidget *w, gpointer gdata){
   typHOE *hg;
   gdouble new_d_ra, new_d_dec, new_ra, new_dec, yrs;
@@ -1563,8 +1650,11 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   case FCDB_TYPE_SDSS:
   case FCDB_TYPE_USNO:
   case FCDB_TYPE_UCAC:
+    if(hg->obj[i].def) g_free(hg->obj[i].def);
     hg->obj[i].def=make_tgt(hg->obj[hg->fcdb_i].name, "TTGS_");
+    if(hg->obj[i].name) g_free(hg->obj[i].name);
     hg->obj[i].name=g_strconcat(hg->obj[hg->fcdb_i].name," TTGS",NULL);
+    if(hg->obj[i].note) g_free(hg->obj[i].note);
     hg->obj[i].note=g_strconcat("added via FC (",hg->obj[hg->fcdb_i].name,")",NULL);
     hg->obj[i].type=OBJTYPE_TTGS;
     hg->obj[i].ope=ADDTYPE_TTGS;
@@ -1582,14 +1672,18 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   case FCDB_TYPE_ESO:
   case FCDB_TYPE_GEMINI:
   default:
+    if(hg->obj[i].def) g_free(hg->obj[i].def);
     hg->obj[i].def=make_tgt(hg->fcdb[hg->fcdb_tree_focus].name, "TGT_");
+    if(hg->obj[i].name) g_free(hg->obj[i].name);
     hg->obj[i].name=g_strdup(hg->fcdb[hg->fcdb_tree_focus].name);
+    if(hg->obj[i].note) g_free(hg->obj[i].note);
     hg->obj[i].note=g_strconcat("added via FC (",hg->obj[hg->fcdb_i].name,")",NULL);
     hg->obj[i].type=OBJTYPE_OBJ;
     hg->obj[i].ope=ADDTYPE_OBJ;
     break;
   }
-  
+
+  /*
   if(hg->fcdb[hg->fcdb_tree_focus].pm){ // Proper Motion
     yrs=current_yrs(hg);
     new_d_ra=hg->fcdb[hg->fcdb_tree_focus].d_ra+
@@ -1609,6 +1703,12 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
     hg->obj[i].dec=hg->fcdb[hg->fcdb_tree_focus].dec;
     hg->obj[i].equinox=hg->fcdb[hg->fcdb_tree_focus].equinox;
   }
+  */
+  hg->obj[i].ra=hg->fcdb[hg->fcdb_tree_focus].ra;
+  hg->obj[i].dec=hg->fcdb[hg->fcdb_tree_focus].dec;
+  hg->obj[i].equinox=hg->fcdb[hg->fcdb_tree_focus].equinox;
+  hg->obj[i].pm_ra=hg->fcdb[hg->fcdb_tree_focus].pmra;
+  hg->obj[i].pm_dec=hg->fcdb[hg->fcdb_tree_focus].pmdec;
 
   for(i_list=0;i_list<hg->i_max;i_list++){
     hg->obj[i_list].check_sm=FALSE;
@@ -1625,6 +1725,14 @@ void add_item_fcdb(GtkWidget *w, gpointer gdata){
   gtk_list_store_append (GTK_LIST_STORE (model), &iter);
   tree_update_azel_item(hg, model, iter, i);
   
+  model= gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+  gtk_list_store_append (GTK_LIST_STORE(model), &iter);
+  trdb_tree_update_azel_item(hg, model, iter, i);
+
+  move_focus_item(hg, hg->i_max-1);
+  gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
+  gtk_widget_grab_focus (hg->tree);
+
   //remake_tree(hg);
   //trdb_make_tree(hg);
 }
@@ -1646,8 +1754,11 @@ void add_item_std(GtkWidget *w, gpointer gdata){
 
   init_obj(&hg->obj[i]);
 
+  if(hg->obj[i].def) g_free(hg->obj[i].def);
   hg->obj[i].def=make_tgt(hg->std[hg->stddb_tree_focus].name, "TGT_");
+  if(hg->obj[i].name) g_free(hg->obj[i].name);
   hg->obj[i].name=g_strdup(hg->std[hg->stddb_tree_focus].name);
+  if(hg->obj[i].note) g_free(hg->obj[i].note);
   hg->obj[i].note=g_strdup("standard");
   hg->obj[i].type=OBJTYPE_STD;
   
@@ -1687,6 +1798,13 @@ void add_item_std(GtkWidget *w, gpointer gdata){
   gtk_list_store_append (GTK_LIST_STORE (model), &iter);
   tree_update_azel_item(hg, model, iter, i);
   
+  model= gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
+  gtk_list_store_append (GTK_LIST_STORE(model), &iter);
+  trdb_tree_update_azel_item(hg, model, iter, i);
+
+  move_focus_item(hg, hg->i_max-1);
+  gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
+  gtk_widget_grab_focus (hg->tree);
   //remake_tree(hg);
   //trdb_make_tree(hg);
 }
@@ -3251,33 +3369,7 @@ static void search_item (GtkWidget *widget, gpointer data)
       label_text=g_strdup_printf("%d/%d   ",
 				 hg->tree_search_i+1,
 				 hg->tree_search_imax);
-
-      {
-	gint i_list;
-	GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
-	GtkTreePath *path;
-	GtkTreeIter  iter;
-
-	path=gtk_tree_path_new_first();
-	
-	for(i=0;i<hg->i_max;i++){
-	  gtk_tree_model_get_iter (model, &iter, path);
-	  gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i_list, -1);
-	  i_list--;
-
-	  if(i_list==hg->tree_search_iobj[hg->tree_search_i]){
-	    gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
-	    gtk_widget_grab_focus (hg->tree);
-	    gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->tree), path, NULL, FALSE);
-	    raise_tree();
-	    break;
-	  }
-	  else{
-	    gtk_tree_path_next(path);
-	  }
-	}
-	gtk_tree_path_free(path);
-      }
+      move_focus_item(hg, hg->tree_search_iobj[hg->tree_search_i]);
     }
     else{
       label_text=g_strdup_printf("%d/%d   ",
@@ -3345,30 +3437,9 @@ static void trdb_search_item (GtkWidget *widget, gpointer data)
 				 hg->trdb_search_imax);
 
       {
-	gint i_list;
-	GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
-	GtkTreePath *path;
-	GtkTreeIter  iter;
-
-	path=gtk_tree_path_new_first();
-	
-	for(i=0;i<hg->i_max;i++){
-	  gtk_tree_model_get_iter (model, &iter, path);
-	  gtk_tree_model_get (model, &iter, COLUMN_TRDB_NUMBER, &i_list, -1);
-	  i_list--;
-
-	  if(i_list==hg->trdb_search_iobj[hg->trdb_search_i]){
-	    gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
-	    gtk_widget_grab_focus (hg->trdb_tree);
-	    gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->trdb_tree), path, NULL, FALSE);
-	    raise_tree();
-	    break;
-	  }
-	  else{
-	    gtk_tree_path_next(path);
-	  }
-	}
-	gtk_tree_path_free(path);
+	move_trdb_focus_item(hg, hg->trdb_search_iobj[hg->trdb_search_i]);
+	gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),3);
+	gtk_widget_grab_focus (hg->trdb_tree);
       }
     }
     else{
@@ -3501,25 +3572,8 @@ focus_item (GtkWidget *widget, gpointer data)
     gtk_tree_path_free (path);
 
     if(hg->tree_focus!=hg->trdb_tree_focus){
-      model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->trdb_tree));
-      path=gtk_tree_path_new_first();
-    
-      for(i=0;i<hg->i_max;i++){
-	gtk_tree_model_get_iter (model, &iter, path);
-	gtk_tree_model_get (model, &iter, COLUMN_TRDB_NUMBER, &i_list, -1);
-	i_list--;
-	
-	if(i_list==hg->tree_focus){
-	  gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->trdb_tree), 
-	  			   path, NULL, FALSE);
-	  break;
-	}
-	else{
-	  gtk_tree_path_next(path);
-	}
-      }
+      move_trdb_focus_item(hg, hg->tree_focus);
       hg->trdb_tree_focus=hg->tree_focus;
-      gtk_tree_path_free (path);
     }
   }
 
@@ -3619,24 +3673,7 @@ static void trdb_focus_item (GtkWidget *widget, gpointer data)
   }
 
   if(hg->tree_focus!=hg->trdb_tree_focus){
-    model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
-    path=gtk_tree_path_new_first();
-  
-    for(i=0;i<hg->i_max;i++){
-      gtk_tree_model_get_iter (model, &iter, path);
-      gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i_list, -1);
-      i_list--;
-    
-      if(i_list==hg->trdb_tree_focus){
-	gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->tree), path, NULL, FALSE);
-	hg->plot_i=i_list;
-	break;
-      }
-      else{
-	gtk_tree_path_next(path);
-      }
-    }
-    gtk_tree_path_free (path);
+    move_focus_item(hg, hg->trdb_tree_focus);
 
     hg->tree_focus=hg->trdb_tree_focus;
     hg->obj[hg->tree_focus].check_sm=FALSE;
@@ -6858,6 +6895,17 @@ do_editable_cells (typHOE *hg)
 				"Display LGS Collision Infor (PAM)");
 #endif
     
+    icon = gdk_pixbuf_new_from_resource ("/icons/pm_icon.png", NULL);
+    button=gtkut_button_new_from_pixbuf("PM", icon);
+    g_object_unref(icon);
+    gtk_box_pack_start(GTK_BOX(hbox),button,FALSE, FALSE, 0);
+    my_signal_connect (button, "clicked",
+		       G_CALLBACK (pm_objtree_item), (gpointer)hg);
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(button,
+				"Check Proper Motion via SIMBAD");
+#endif
+  
     
     label = gtk_label_new ("   ");
     gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,FALSE,0);
@@ -8301,6 +8349,455 @@ void pam_objtree_item (GtkWidget *widget, gpointer data)
 }
 
 
+void pm_simbad_query (GtkWidget *widget, gpointer gdata)
+{
+  typHOE *hg;
+  hg=(typHOE *)gdata;
+
+  hg->pm_type=FCDB_TYPE_SIMBAD;
+  pm_dl(hg);
+}
+
+void pm_gaia_query (GtkWidget *widget, gpointer gdata)
+{
+  typHOE *hg;
+  hg=(typHOE *)gdata;
+
+  hg->pm_type=FCDB_TYPE_GAIA;
+  pm_dl(hg);
+}
+
+gchar*  pm_get_new_radec(typHOE *hg){
+  gchar *tmp=NULL;
+  gdouble new_ra, new_dec, new_d_ra, new_d_dec, yrs;
+  
+  yrs=current_yrs(hg);
+  new_d_ra=ra_to_deg(hg->obj[hg->pm_i].ra)+
+    hg->obj[hg->pm_i].pm_ra/1000/60/60*yrs;
+  new_d_dec=dec_to_deg(hg->obj[hg->pm_i].dec)+
+    hg->obj[hg->pm_i].pm_dec/1000/60/60*yrs;
+  
+  new_ra=deg_to_ra(new_d_ra);
+  new_dec=deg_to_dec(new_d_dec);
+  
+  if((fabs(hg->obj[hg->pm_i].pm_ra)>100)
+     ||(fabs(hg->obj[hg->pm_i].pm_dec)>100)){
+    tmp=g_strdup_printf("  <b>Current :</b>  <span color=\"#FF0000\">RA = %09.2lf   Dec = %+010.2lf</span>  (%.2lf)",
+			new_ra,
+			new_dec,
+			2000.0);
+  }
+  else{
+    tmp=g_strdup_printf("  <b>Current :</b>  RA = %09.2lf   Dec = %+010.2lf  (%.2lf)",
+			new_ra,
+			new_dec,
+			2000.0);
+  }
+
+  return(tmp);
+}
+
+
+void cc_get_entry_pm_ra (GtkWidget *widget, gdouble *gdata)
+{
+  typHOE *hg=(typHOE *)gdata;
+  gchar *tmp;
+  
+  hg->obj[hg->pm_i].pm_ra
+    =(gdouble)g_strtod(gtk_entry_get_text(GTK_ENTRY(widget)),NULL);
+
+  tmp=pm_get_new_radec(hg);
+  gtk_label_set_markup(GTK_LABEL(hg->pm_label_radec), tmp);
+  g_free(tmp);
+}
+
+void cc_get_entry_pm_dec (GtkWidget *widget, gdouble *gdata)
+{
+  typHOE *hg=(typHOE *)gdata;
+  gchar *tmp;
+  
+  hg->obj[hg->pm_i].pm_dec
+    =(gdouble)g_strtod(gtk_entry_get_text(GTK_ENTRY(widget)),NULL);
+
+  tmp=pm_get_new_radec(hg);
+  gtk_label_set_markup(GTK_LABEL(hg->pm_label_radec), tmp);
+  g_free(tmp);
+}
+
+
+void pm_dialog (typHOE *hg)
+{
+  GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
+    *spinner, *table, *entry, *bar, *check;
+  GtkAdjustment *adj;
+  gchar *tmp=NULL;
+  GSList *fcdb_group=NULL; 
+  gdouble tmp_ra, tmp_dec;
+  gboolean rebuild_flag=FALSE;
+  GtkWidget *label_pm_radec;
+  gboolean pm_flag=FALSE;
+  gdouble new_ra, new_dec, new_d_ra, new_d_dec, yrs;
+
+  tmp_ra=hg->obj[hg->pm_i].pm_ra;
+  tmp_dec=hg->obj[hg->pm_i].pm_dec;
+ 
+  dialog = gtk_dialog_new_with_buttons("HOE : Edit Proper Motion",
+				       GTK_WINDOW(hg->skymon_main),
+				       GTK_DIALOG_MODAL,
+#ifdef USE_GTK3
+				       "_Cancel",GTK_RESPONSE_CANCEL,
+				       "_Clear",GTK_RESPONSE_APPLY,
+				       "_OK",GTK_RESPONSE_OK,
+#else
+				       GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+				       GTK_STOCK_CLEAR,GTK_RESPONSE_APPLY,
+				       GTK_STOCK_OK,GTK_RESPONSE_OK,
+#endif
+				       NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL); 
+  gtk_widget_grab_focus(gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog),
+							   GTK_RESPONSE_CANCEL));
+  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
+  //my_signal_connect(dialog,"delete-event", delete_main_quit, NULL);
+
+  tmp=g_strdup_printf("Object-%d = \"<b>%s</b>\"",
+		      hg->pm_i+1,
+		      hg->obj[hg->pm_i].name);
+  label = gtkut_label_new (tmp);
+  g_free(tmp);
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     label,FALSE, FALSE, 5);
+
+  tmp=g_strdup_printf("  <b>Input :</b>  RA = %09.2lf   Dec = %+010.2lf  (%.2lf)",
+		      hg->obj[hg->pm_i].ra,
+		      hg->obj[hg->pm_i].dec,
+		      hg->obj[hg->pm_i].equinox);
+  label = gtkut_label_new (tmp);
+  g_free(tmp);
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     label,FALSE, FALSE, 5);
+
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     hbox,FALSE, FALSE, 5);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+
+  label = gtk_label_new ("Proper Motion (mas/yr) :  RA ");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox),label,FALSE, FALSE, 0);
+
+  hg->pm_entry_pm_ra = gtk_entry_new ();
+  gtk_box_pack_start(GTK_BOX(hbox),hg->pm_entry_pm_ra,FALSE, FALSE, 0);
+  tmp=g_strdup_printf("%.2lf", hg->obj[hg->pm_i].pm_ra);
+  gtk_entry_set_text(GTK_ENTRY(hg->pm_entry_pm_ra), tmp);
+  g_free(tmp);
+  gtk_editable_set_editable(GTK_EDITABLE(hg->pm_entry_pm_ra),TRUE);
+  my_entry_set_width_chars(GTK_ENTRY(hg->pm_entry_pm_ra),10);
+  my_signal_connect (hg->pm_entry_pm_ra, "changed", cc_get_entry_pm_ra, 
+		     (gpointer)hg);
+
+
+  label = gtk_label_new ("    Dec ");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox),label,FALSE, FALSE, 0);
+
+  hg->pm_entry_pm_dec = gtk_entry_new ();
+  gtk_box_pack_start(GTK_BOX(hbox),hg->pm_entry_pm_dec,FALSE, FALSE, 0);
+  tmp=g_strdup_printf("%.2lf", hg->obj[hg->pm_i].pm_dec);
+  gtk_entry_set_text(GTK_ENTRY(hg->pm_entry_pm_dec), tmp);
+  g_free(tmp);
+  gtk_editable_set_editable(GTK_EDITABLE(hg->pm_entry_pm_dec),TRUE);
+  my_entry_set_width_chars(GTK_ENTRY(hg->pm_entry_pm_dec),10);
+  my_signal_connect (hg->pm_entry_pm_dec, "changed", cc_get_entry_pm_dec, 
+		     (gpointer)hg);
+
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("SIMBAD", "edit-find");
+#else
+  button=gtkut_button_new_from_stock("SIMBAD", GTK_STOCK_FIND);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed", pm_simbad_query, (gpointer)hg);
+
+  /*  
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("GAIA", "edit-find");
+#else
+  button=gtkut_button_new_from_stock("GAIA", GTK_STOCK_FIND);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed", pm_gaia_query, (gpointer)hg);
+  */
+  
+#ifdef USE_GTK3
+  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+#else
+  bar = gtk_hseparator_new();
+#endif
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     bar,FALSE, FALSE, 0);
+
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     hbox,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+
+  hg->pm_label = gtkut_label_new ("Check the proper motion using input coordinate via SIMBAD.");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (hg->pm_label, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (hg->pm_label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (hg->pm_label), 0.5, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox),hg->pm_label,FALSE, FALSE, 0);
+
+
+#ifdef USE_GTK3
+  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+#else
+  bar = gtk_hseparator_new();
+#endif
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     bar,FALSE, FALSE, 0);
+
+  tmp=pm_get_new_radec(hg);
+  hg->pm_label_radec = gtkut_label_new (tmp);
+  g_free(tmp);
+#ifdef USE_GTK3
+  gtk_widget_set_halign (hg->pm_label_radec, GTK_ALIGN_START);
+  gtk_widget_set_valign (hg->pm_label_radec, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (hg->pm_label_radec), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     hg->pm_label_radec,FALSE, FALSE, 5);
+
+  check = gtk_check_button_new_with_label("Overwrite the Coordinate applying this Proper Motion");
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     check,FALSE, FALSE, 5);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &pm_flag);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+			       pm_flag);
+
+  gtk_widget_show_all(dialog);
+
+  switch (gtk_dialog_run(GTK_DIALOG(dialog))){
+  case GTK_RESPONSE_OK:
+    if(pm_flag){
+      yrs=current_yrs(hg);
+      new_d_ra=ra_to_deg(hg->obj[hg->pm_i].ra)+
+	hg->obj[hg->pm_i].pm_ra/1000/60/60*yrs;
+      new_d_dec=dec_to_deg(hg->obj[hg->pm_i].dec)+
+	hg->obj[hg->pm_i].pm_dec/1000/60/60*yrs;
+      
+      new_ra=deg_to_ra(new_d_ra);
+      new_dec=deg_to_dec(new_d_dec);
+      
+      hg->obj[hg->pm_i].ra=new_ra;
+      hg->obj[hg->pm_i].dec=new_dec;
+      hg->obj[hg->pm_i].pm_ra=0.0;
+      hg->obj[hg->pm_i].pm_dec=0.0;
+
+      hg->fcdb_d_ra0=new_d_ra;
+      hg->fcdb_d_dec0=new_d_dec;
+    }
+    else{
+    }
+    break;
+
+  case GTK_RESPONSE_APPLY:
+    // Clear
+    hg->obj[hg->pm_i].pm_ra=0.0;
+    hg->obj[hg->pm_i].pm_dec=0.0;
+    break;
+
+  default:
+    hg->obj[hg->pm_i].pm_ra=tmp_ra;
+    hg->obj[hg->pm_i].pm_dec=tmp_dec;
+    
+    break;
+  }
+
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+}
+
+/*
+void pm_dialog (typHOE *hg)
+{
+  GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox,
+    *spinner, *table, *entry, *bar;
+  GtkAdjustment *adj;
+  gchar *tmp=NULL;
+  GSList *fcdb_group=NULL; 
+  gdouble tmp_ra, tmp_dec;
+  gboolean rebuild_flag=FALSE;
+
+  tmp_ra=hg->obj[hg->pm_i].pm_ra;
+  tmp_dec=hg->obj[hg->pm_i].pm_dec;
+ 
+  dialog = gtk_dialog_new_with_buttons("SkyMonitor : Edit Proper Motion",
+				       GTK_WINDOW(hg->tree),
+				       GTK_DIALOG_MODAL,
+#ifdef USE_GTK3
+				       "_Cancel",GTK_RESPONSE_CANCEL,
+				       "_Clear",GTK_RESPONSE_APPLY,
+				       "_OK",GTK_RESPONSE_OK,
+#else
+				       GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+				       GTK_STOCK_CLEAR,GTK_RESPONSE_APPLY,
+				       GTK_STOCK_OK,GTK_RESPONSE_OK,
+#endif
+				       NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL); 
+  gtk_widget_grab_focus(gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog),
+							   GTK_RESPONSE_CANCEL));
+  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
+  //my_signal_connect(dialog,"delete-event", delete_main_quit, NULL);
+
+  tmp=g_strdup_printf("Object-%d = \"<b>%s</b>\"",
+		      hg->pm_i+1,
+		      hg->obj[hg->pm_i].name);
+  label = gtkut_label_new (tmp);
+  g_free(tmp);
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     label,FALSE, FALSE, 5);
+
+  tmp=g_strdup_printf("  RA = %09.2lf   Dec = %+010.2lf  (%.2lf)",
+		      hg->obj[hg->pm_i].ra,
+		      hg->obj[hg->pm_i].dec,
+		      hg->obj[hg->pm_i].equinox);
+  label = gtk_label_new (tmp);
+  g_free(tmp);
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     label,FALSE, FALSE, 5);
+
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		     hbox,FALSE, FALSE, 5);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+
+  label = gtk_label_new ("Proper Motion (mas/yr) :  RA ");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox),label,FALSE, FALSE, 0);
+
+  entry = gtk_entry_new ();
+  gtk_box_pack_start(GTK_BOX(hbox),entry,FALSE, FALSE, 0);
+  my_signal_connect (entry, "changed", cc_get_entry_double, 
+		     &tmp_ra);
+  tmp=g_strdup_printf("%.2lf", hg->obj[hg->pm_i].pm_ra);
+  gtk_entry_set_text(GTK_ENTRY(entry), tmp);
+  g_free(tmp);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
+  my_entry_set_width_chars(GTK_ENTRY(entry),10);
+
+
+  label = gtk_label_new ("    Dec ");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox),label,FALSE, FALSE, 0);
+
+  entry = gtk_entry_new ();
+  gtk_box_pack_start(GTK_BOX(hbox),entry,FALSE, FALSE, 0);
+  my_signal_connect (entry, "changed", cc_get_entry_double, 
+		     &tmp_dec);
+  tmp=g_strdup_printf("%.2lf", hg->obj[hg->pm_i].pm_dec);
+  gtk_entry_set_text(GTK_ENTRY(entry), tmp);
+  g_free(tmp);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
+  my_entry_set_width_chars(GTK_ENTRY(entry),10);
+
+
+  gtk_widget_show_all(dialog);
+
+  switch (gtk_dialog_run(GTK_DIALOG(dialog))){
+  case GTK_RESPONSE_OK:
+    hg->obj[hg->pm_i].pm_ra=tmp_ra;
+    hg->obj[hg->pm_i].pm_dec=tmp_dec;
+    break;
+
+  case GTK_RESPONSE_APPLY:
+    hg->obj[hg->pm_i].pm_ra=0.0;
+    hg->obj[hg->pm_i].pm_dec=0.0;
+    break;
+
+  default:
+    break;
+  }
+
+  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+}
+*/
+
+void pm_objtree_item (GtkWidget *widget, gpointer data)
+{
+  GtkTreeIter iter;
+  typHOE *hg = (typHOE *)data;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(hg->tree));
+
+  if (gtk_tree_selection_get_selected (selection, NULL, &iter)){
+    gint i, i_list;
+    GtkTreePath *path;
+    
+    path = gtk_tree_model_get_path (model, &iter);
+    gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i, -1);
+    i--;
+
+    hg->pm_i=i;
+
+    pm_dialog(hg);
+
+    gtk_tree_path_free (path);
+
+    tree_update_azel_item(hg, model, iter, i);
+  }
+}
+
 static void addobj_simbad_query (GtkWidget *widget, gpointer gdata)
 {
   typHOE *hg;
@@ -8532,7 +9029,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 #endif
   gtk_box_pack_start(GTK_BOX(hbox),label,FALSE, FALSE, 0);
 
-  check = gtk_check_button_new_with_label("Apply Proper Motion to the Coordinate");
+  check = gtk_check_button_new_with_label("Overwrite the Coordinate applying its Proper Motion");
   gtk_box_pack_start(GTK_BOX(hbox),check,FALSE, FALSE, 0);
   my_signal_connect (check, "toggled",
 		     cc_get_toggle,

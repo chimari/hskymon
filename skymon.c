@@ -4265,31 +4265,7 @@ static gint button_signal(GtkWidget *widget,
 	  make_tree(hg->skymon_main,hg);
 	}
 	//if(GTK_WIDGET_REALIZED(hg->tree)){
-	if(flagTree){
-	  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(hg->tree));
-	  GtkTreePath *path;
-	  GtkTreeIter  iter;
-
-	  path=gtk_tree_path_new_first();
-
-	  for(i=0;i<hg->i_max;i++){
-	    gtk_tree_model_get_iter (model, &iter, path);
-	    gtk_tree_model_get (model, &iter, COLUMN_OBJ_NUMBER, &i_list, -1);
-	    i_list--;
-
-	    if(i_list==i_sel){
-	      gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
-	      gtk_widget_grab_focus (hg->tree);
-	      gtk_tree_view_set_cursor(GTK_TREE_VIEW(hg->tree), path, NULL, FALSE);
-	      raise_tree();
-	      break;
-	    }
-	    else{
-	      gtk_tree_path_next(path);
-	    }
-	  }
-	  gtk_tree_path_free(path);
-	}
+	move_focus_item(hg, i_sel);
 
 	skymon_debug_print(" Object %d is selected\n",i_sel+1);
 

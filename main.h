@@ -219,7 +219,8 @@ enum
 
 #define FCDB_HOST_SIMBAD_STRASBG "simbad.u-strasbg.fr"
 #define FCDB_HOST_SIMBAD_HARVARD "simbad.harvard.edu"
-#define FCDB_PATH "/simbad/sim-sam?Criteria=region%%28box%%2C%lf%s%lf%%2C%+lfm%+lfm%%29%s%s&submit=submit+query&OutputMode=LIST&maxObject=%d&CriteriaFile=&output.format=VOTABLE"
+#define FCDB_SIMBAD_PATH_B "/simbad/sim-sam?Criteria=region%%28box%%2C%lf%s%lf%%2C%+lfm%+lfm%%29%s%s&submit=submit+query&OutputMode=LIST&maxObject=%d&CriteriaFile=&output.format=VOTABLE"
+#define FCDB_SIMBAD_PATH_R "/simbad/sim-sam?Criteria=region%%28circle%%2C%lf%s%lf%%2C%+lfm%%29%s%s&submit=submit+query&OutputMode=LIST&maxObject=%d&CriteriaFile=&output.format=VOTABLE"
 #define FCDB_FILE_XML "database_fc.xml"
 #define FCDB_FILE_TXT "database_fc.txt"
 #define FCDB_FILE_HTML "database_fc.html"
@@ -944,6 +945,9 @@ enum
   NUM_FCDB_BAND
 };
 
+static char* simbad_band[NUM_FCDB_BAND]=
+  {"(Nop.)", "U", "B", "V", "R", "I", "J", "H", "K"};
+
 enum
 {
   FCDB_OTYPE_ALL,
@@ -1608,6 +1612,8 @@ struct _OBJpara{
   gchar *def;
   gdouble ra;
   gdouble dec;
+  gdouble pm_ra;
+  gdouble pm_dec;
   gdouble equinox;
   gint pam;
 
@@ -1667,6 +1673,10 @@ struct _OBJpara{
   gdouble trdb_exp[MAX_TRDB_BAND];
   gint trdb_shot[MAX_TRDB_BAND];
   gint trdb_band_max;
+
+  gchar *simbad_name;
+  gchar *simbad_type;
+  gdouble gaia_g;
 };
 
 typedef struct _STDpara STDpara;
@@ -1862,6 +1872,8 @@ struct _typHOE{
 #ifdef USE_XMLRPC
   gint telstat_timer;
 #endif
+
+  gint pm_i;
 
   gchar *filename_list;
   gchar *filename_ope;
@@ -2251,6 +2263,12 @@ struct _typHOE{
   GtkWidget *addobj_entry_pm_ra;
   GtkWidget *addobj_entry_pm_dec;
 
+  gint pm_type;
+  GtkWidget *pm_label;
+  GtkWidget *pm_label_radec;
+  GtkWidget *pm_entry_pm_ra;
+  GtkWidget *pm_entry_pm_dec;
+
   GtkWidget *adc_main;
   GtkWidget *adc_dw;
   GtkWidget *adc_button_flip; 
@@ -2537,6 +2555,11 @@ gdouble deg_sep();
 void ext_play();
 
 //fc.c
+void delete_fcdb();
+void cancel_fcdb();
+#ifndef USE_WIN32
+void fcdb_signal();
+#endif
 void pdf_fc ();
 void set_fc_mode();
 void fc_item2 ();
@@ -2548,6 +2571,7 @@ void fcdb_tree_update_azel_item();
 void trdb_tree_update_azel_item();
 void ver_dl();
 void addobj_dl();
+void pm_dl();
 gdouble current_yrs();
 gboolean progress_timeout();
 void make_trdb_label();
@@ -2596,6 +2620,7 @@ int get_rope();
 #endif
 
 //treeview.c
+void move_focus_item();
 void tree_update_azel_item();
 void make_tree();
 void remake_tree();
@@ -2617,7 +2642,7 @@ void ln_equ_to_hequ();
 
 //votable.c
 void make_band_str();
-void fcdb_vo_parse();
+void fcdb_simbad_vo_parse();
 void fcdb_ned_vo_parse();
 void fcdb_gsc_vo_parse();
 void fcdb_ps1_vo_parse();

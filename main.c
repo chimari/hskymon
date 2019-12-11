@@ -11316,6 +11316,9 @@ void param_init(typHOE *hg){
       hg->obj[i].trdb_exp[i_band]=0;
       hg->obj[i].trdb_shot[i_band]=0;
     }
+    
+    hg->obj[i].simbad_name=NULL;
+    hg->obj[i].simbad_type=NULL;
   }
 
   hg->trdb_i_max=0;
@@ -11825,6 +11828,8 @@ void init_obj(OBJpara *obj){
   obj->check_std=FALSE;
   obj->type=OBJTYPE_OBJ;
   obj->i_nst=-1;
+  obj->pm_ra=0.0;
+  obj->pm_dec=0.0;
 
   obj->x=-1;
   obj->y=-1;
@@ -11844,6 +11849,8 @@ void init_obj(OBJpara *obj){
     obj->trdb_exp[i_band]=0;
     obj->trdb_shot[i_band]=0;
   }
+
+  obj->gaia_g=+100.0;
 }
 
 
@@ -13609,16 +13616,22 @@ gboolean is_number(GtkWidget *parent, gchar *s, gint line, const gchar* sect){
 }
 
 gchar* to_utf8(gchar *input){
-  return(g_locale_to_utf8(input,-1,NULL,NULL,NULL));
+  gchar *ret;
+  ret=g_locale_to_utf8(input,-1,NULL,NULL,NULL);
+  if(!ret) ret=g_strdup(input);
+  return(ret);
 }
 
 gchar* to_locale(gchar *input){
+  gchar *ret;
 #ifdef USE_WIN32
+  ret=g_win32_locale_filename_from_utf8(input);
   //return(x_locale_from_utf8(input,-1,NULL,NULL,NULL,"SJIS"));
-  return(g_win32_locale_filename_from_utf8(input));
 #else
-  return(g_locale_from_utf8(input,-1,NULL,NULL,NULL));
+  ret=g_locale_from_utf8(input,-1,NULL,NULL,NULL);
 #endif
+  if(!ret) ret=g_strdup(input);
+  return(ret);
 }
 
 

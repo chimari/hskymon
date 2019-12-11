@@ -887,7 +887,7 @@ void stddb_vo_parse(typHOE *hg) {
 }
 
 
-void fcdb_vo_parse(typHOE *hg) {
+void fcdb_simbad_vo_parse(typHOE *hg, gboolean magextract) {
   xmlTextReaderPtr reader;
   list_field *vfield_move;
   list_tabledata *vtabledata_move;
@@ -896,6 +896,8 @@ void fcdb_vo_parse(typHOE *hg) {
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
   int i_list=0, i_all=0;
+  gdouble mag, sep;
+  gint i_mag;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -1121,6 +1123,102 @@ void fcdb_vo_parse(typHOE *hg) {
     hg->fcdb[i_list].equinox=2000.00;
     hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
 				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+  }
+
+
+  if(magextract){
+    mag=+100;
+    for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+      switch(hg->fcdb_band){
+      case FCDB_BAND_NOP:
+	if(hg->fcdb[i_list].v<mag){
+	  mag=hg->fcdb[i_list].v;
+	  i_mag=i_list;
+	}
+	break;
+      case FCDB_BAND_U:
+	if(hg->fcdb[i_list].u<mag){
+	  mag=hg->fcdb[i_list].u;
+	  i_mag=i_list;
+	}
+	break;
+	
+      case FCDB_BAND_B:
+	if(hg->fcdb[i_list].b<mag){
+	  mag=hg->fcdb[i_list].b;
+	  i_mag=i_list;
+	}
+	break;
+	
+      case FCDB_BAND_V:
+	if(hg->fcdb[i_list].v<mag){
+	  mag=hg->fcdb[i_list].v;
+	  i_mag=i_list;
+	}
+	break;
+	
+      case FCDB_BAND_R:
+	if(hg->fcdb[i_list].r<mag){
+	  mag=hg->fcdb[i_list].r;
+	  i_mag=i_list;
+	}
+	break;
+	
+      case FCDB_BAND_I:
+	if(hg->fcdb[i_list].i<mag){
+	  mag=hg->fcdb[i_list].i;
+	  i_mag=i_list;
+	}
+	break;
+	
+      case FCDB_BAND_J:
+	if(hg->fcdb[i_list].j<mag){
+	  mag=hg->fcdb[i_list].j;
+	  i_mag=i_list;
+	}
+	break;
+	
+      case FCDB_BAND_H:
+	if(hg->fcdb[i_list].h<mag){
+	  mag=hg->fcdb[i_list].h;
+	  i_mag=i_list;
+	}
+	break;
+	
+      case FCDB_BAND_K:
+	if(hg->fcdb[i_list].k<mag){
+	  mag=hg->fcdb[i_list].k;
+	  i_mag=i_list;
+	}
+	break;
+      }
+    }
+
+    if((hg->fcdb_band==FCDB_BAND_NOP)&&(mag>99)){
+      sep=+100;
+      for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+	if(hg->fcdb[i_list].sep<sep){
+	  sep=hg->fcdb[i_list].sep;
+	  mag=+100;
+	  i_mag=i_list;
+	}
+      }
+    }
+
+    if(hg->obj[hg->fcdb_i].simbad_name) g_free(hg->obj[hg->fcdb_i].simbad_name);
+    if(hg->obj[hg->fcdb_i].simbad_type) g_free(hg->obj[hg->fcdb_i].simbad_type);
+
+    if((mag<99)||
+       ((hg->fcdb_band==FCDB_BAND_NOP)&&(hg->fcdb_i_max!=0))){
+      hg->obj[hg->fcdb_i].simbad_name=g_strdup(hg->fcdb[i_mag].name);
+      hg->obj[hg->fcdb_i].simbad_type=g_strdup(hg->fcdb[i_mag].otype);
+      hg->obj[hg->fcdb_i].pm_ra=hg->fcdb[i_mag].pmra;
+      hg->obj[hg->fcdb_i].pm_dec=hg->fcdb[i_mag].pmdec;
+    }
+    else{
+      hg->obj[hg->fcdb_i].simbad_name=NULL;
+      hg->obj[hg->fcdb_i].simbad_type=NULL;
+    }
   }
 }
 
@@ -2066,7 +2164,7 @@ void fcdb_ucac_vo_parse(typHOE *hg) {
 }
 
 
-void fcdb_gaia_vo_parse(typHOE *hg) {
+void fcdb_gaia_vo_parse(typHOE *hg, gboolean magextract) {
   xmlTextReaderPtr reader;
   list_field *vfield_move;
   list_tabledata *vtabledata_move;
@@ -2075,6 +2173,8 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
   int *columns;
   reader = Init_VO_Parser(hg->fcdb_file,&votable);
   int i_list=0, i_all=0;
+  gdouble mag;
+  gint i_mag;
 
   printf_log(hg,"[FCDB] pursing XML.");
 
@@ -2245,6 +2345,26 @@ void fcdb_gaia_vo_parse(typHOE *hg) {
     hg->fcdb[i_list].equinox=2000.00;
     hg->fcdb[i_list].sep=deg_sep(hg->fcdb[i_list].d_ra,hg->fcdb[i_list].d_dec,
 				 hg->fcdb_d_ra0,hg->fcdb_d_dec0);
+  }
+
+
+  if(magextract){
+    mag=+100;
+    for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+      if(hg->fcdb[i_list].v<mag){
+	mag=hg->fcdb[i_list].v;
+	i_mag=i_list;
+      }
+    }
+    
+    if(mag<99){
+      hg->obj[hg->fcdb_i].gaia_g=hg->fcdb[i_mag].v;
+      hg->obj[hg->fcdb_i].pm_ra=hg->fcdb[i_mag].pmra;
+      hg->obj[hg->fcdb_i].pm_dec=hg->fcdb[i_mag].pmdec;
+    }
+    else{
+      hg->obj[hg->fcdb_i].gaia_g=100;
+    }
   }
 }
 

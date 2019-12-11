@@ -1,3 +1,7 @@
+2019.12.11 ver3.9.0 - Bug fix on target addtion from FCDB to Main Target list.
+                    - Added "PM" button in Object LIst to search proper
+	              motions of targets.
+
 2019.11.27 ver3.8.6 - Re-Added old PanSTARRS server in StSci (as default).
                       (MAST server is slow and unstable with large FOVs).
                     - Updated GSC catalog v2.3 --> v2.4.1 (for JWST)
