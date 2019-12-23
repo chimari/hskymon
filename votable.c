@@ -4506,9 +4506,9 @@ void addobj_vo_parse(typHOE *hg) {
     for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
       if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Object Name") == 0) 
 	columns[0] = vfield_move->position;
-      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RA(deg)") == 0)
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"RA") == 0)
 	columns[1] = vfield_move->position;
-      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"DEC(deg)") == 0) 
+      else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"DEC") == 0) 
 	columns[2] = vfield_move->position;
       else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Type") == 0) 
 	columns[3] = vfield_move->position;

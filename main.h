@@ -8,7 +8,7 @@
 #  include "config.h"
 #endif  
 
-#undef ALLSKY_DEBUG
+#define ALLSKY_DEBUG
 #undef SKYMON_DEBUG
 //#undef HTTP_DEBUG
 
@@ -1854,9 +1854,25 @@ struct _typHOE{
   gint sz_fc;
   gint sz_adc;
 
+  GThread   *pthread;
+  GCancellable   *pcancel;
+  GMainLoop *ploop;
+  GtkWidget *pdialog;
   GtkWidget *pbar;
-  GtkWidget *pbar2;
   GtkWidget *plabel;
+  GtkWidget *pbar2;
+  GtkWidget *plabel2;
+  GtkWidget *plabel3;
+  glong psz;
+  gboolean pabort;
+
+  GThread        *asthread;
+  GCancellable   *ascancel;
+  GMainLoop      *asloop;
+  gint           asret;
+  gboolean       asabort;
+  
+  gint fc_pid;
 
   GtkPrintContext *context;
 
@@ -2291,6 +2307,8 @@ struct _typHOE{
   gchar *allsky_date;
   gchar *allsky_date_old;
   gint allsky_timer;
+  gint allsky_get_timer;
+  gboolean allsky_get_flag;
   gchar *allsky_last_file0;
   gchar *allsky_last_file00;
   gchar *allsky_last_file[ALLSKY_LAST_MAX+1];
@@ -2470,6 +2488,8 @@ gboolean  flagADC;
 gboolean  flag_getting_allsky;
 gboolean  flagPAM;
 int debug_flg;
+gboolean flag_getDSS;
+gboolean flag_getFCDB;
 
 #ifndef USE_WIN32
 pid_t allsky_pid;
@@ -2506,7 +2526,7 @@ void popup_message(GtkWidget*, gchar*, gint , ...);
 void create_fcdb_para_dialog();
 gboolean is_separator();
 GtkWidget *make_menu();
-gint update_allsky();
+gboolean check_allsky();
 #ifdef USE_XMLRPC
 gint update_telstat();
 #endif
@@ -2555,8 +2575,8 @@ gdouble deg_sep();
 void ext_play();
 
 //fc.c
-void delete_fcdb();
-void cancel_fcdb();
+void thread_cancel_fcdb();
+gboolean delete_fcdb();
 #ifndef USE_WIN32
 void fcdb_signal();
 #endif
@@ -2573,7 +2593,6 @@ void ver_dl();
 void addobj_dl();
 void pm_dl();
 gdouble current_yrs();
-gboolean progress_timeout();
 void make_trdb_label();
 void fcdb_make_tree();
 void trdb_make_tree();
@@ -2583,11 +2602,12 @@ void Export_FCDB_CSV();
 void Export_TRDB_CSV();
 
 //http-client.c
-int get_allsky();
+int start_get_allsky();
+void cancel_allsky();
 GdkPixbuf* diff_pixbuf();
-int get_dss();
-int get_stddb();
-int get_fcdb();
+gpointer thread_get_dss();
+gpointer thread_get_stddb();
+gpointer thread_get_fcdb();
 void allsky_debug_print (const gchar *format, ...) G_GNUC_PRINTF(1, 2);
 int month_from_string_short();
 
@@ -2598,6 +2618,11 @@ void trdb_gemini_json_parse();
 //julian_day.c
 void my_get_local_date();
 int get_gmtoff_from_sys ();
+
+//progress.c
+glong get_file_size();
+void create_pdialog();
+gboolean progress_timeout();
 
 //skymon.c
 void skymon_set_time_current();

@@ -44,8 +44,8 @@ void pm_objtree_item();
 
 void stddb_dl();
 void stddb_signal();
-static void delete_stddb();
-static void cancel_stddb();
+static void thread_cancel_stddb();
+static gboolean delete_stddb();
 void clip_copy();
 static void trdb_dbtab();
 
@@ -8143,151 +8143,73 @@ void stddb_dl(typHOE *hg)
     }
   }
 
-  dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
-  
-  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
-  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
-  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog, "delete-event", delete_stddb, (gpointer)hg);
+  create_pdialog(hg,
+		 hg->skymon_main,
+		 "Sky Monitor : Searching Standard Stars",
+		 "Searching standards in SIMBAD ...",
+		 FALSE, FALSE);
 
-
-  label=gtk_label_new("Searching standards in SIMBAD ...");
-
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_START);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
-  gtk_widget_show(label);
-  
-  hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
-  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
-#ifdef USE_GTK3
-  gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
-				  GTK_ORIENTATION_HORIZONTAL);
-  css_change_pbar_height(hg->pbar,15);
-#else
-  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
-				    GTK_PROGRESS_RIGHT_TO_LEFT);
-#endif
-  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
-  gtk_widget_show(hg->pbar);
+  my_signal_connect(hg->pdialog, "delete-event", delete_stddb, (gpointer)hg);
   
   unlink(hg->std_file);
   
-#ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
+  gtk_label_set_markup(GTK_LABEL(hg->plabel),
+		       "Searching standards in SIMBAD ...");
 
-  hg->plabel=gtk_label_new("Searching standards in SIMBAD ...");
-#ifdef USE_GTK3
-  gtk_widget_set_halign (hg->plabel, GTK_ALIGN_START);
-  gtk_widget_set_valign (hg->plabel, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     hg->plabel,FALSE,FALSE,0);
-
-#ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
-  
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Cancel","window-close");
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed", cancel_stddb, (gpointer)hg);
+  gtk_dialog_add_action_widget(GTK_DIALOG(hg->pdialog),button,GTK_RESPONSE_CANCEL);
+  my_signal_connect(button,"pressed", thread_cancel_stddb, (gpointer)hg);
   
-  gtk_widget_show_all(dialog);
+  gtk_widget_show_all(hg->pdialog);
 
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
   
-#ifndef USE_WIN32
-  act.sa_handler=stddb_signal;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags=0;
-  if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
-#endif
-  
-  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
-  
-  get_stddb(hg);
-  gtk_main();
+  gtk_window_set_modal(GTK_WINDOW(hg->pdialog),TRUE);
 
-  gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
+  hg->ploop=g_main_loop_new(NULL, FALSE);
+  hg->pcancel=g_cancellable_new();
+  hg->pthread=g_thread_new("hskymon_get_stddb", thread_get_stddb, (gpointer)hg);
+  g_main_loop_run(hg->ploop);
+  //g_thread_join(hg->pthread);
+  g_main_loop_unref(hg->ploop);
+  hg->ploop=NULL;
+
+
+  gtk_window_set_modal(GTK_WINDOW(hg->pdialog),FALSE);
   if(timer!=-1) g_source_remove(timer);
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+  if(GTK_IS_WIDGET(hg->pdialog)) gtk_widget_destroy(hg->pdialog);
 
   flag_getSTD=FALSE;
 }
 
-static void delete_stddb(GtkWidget *w, GdkEvent *event, gpointer gdata)
+
+static void thread_cancel_stddb(GtkWidget *w, gpointer gdata)
 {
-  cancel_stddb(w,gdata);
+  typHOE *hg=(typHOE *)gdata;
+
+  if(GTK_IS_WIDGET(hg->pdialog)) gtk_widget_unmap(hg->pdialog);
+
+  g_cancellable_cancel(hg->pcancel);
+  g_object_unref(hg->pcancel); 
+
+  hg->pabort=TRUE;
+
+  if(hg->ploop) g_main_loop_quit(hg->ploop);
 }
 
-static void cancel_stddb(GtkWidget *w, gpointer gdata)
+
+static gboolean delete_stddb(GtkWidget *w, GdkEvent *event, gpointer gdata)
 {
-  typHOE *hg;
-  pid_t child_pid=0;
+  thread_cancel_stddb(w,gdata);
 
-  hg=(typHOE *)gdata;
-
-#ifdef USE_WIN32
-  if(hg->dwThreadID_stddb){
-    PostThreadMessage(hg->dwThreadID_stddb, WM_QUIT, 0, 0);
-    WaitForSingleObject(hg->hThread_stddb, INFINITE);
-    CloseHandle(hg->hThread_stddb);
-    gtk_main_quit();
-  }
-#else
-  if(stddb_pid){
-    kill(stddb_pid, SIGKILL);
-    gtk_main_quit();
-
-    do{
-      int child_ret;
-      child_pid=waitpid(stddb_pid, &child_ret,WNOHANG);
-    } while((child_pid>0)||(child_pid!=-1));
- 
-    stddb_pid=0;
-  }
-#endif
+  return(TRUE);
 }
-
-#ifndef USE_WIN32
-void stddb_signal(int sig){
-  pid_t child_pid=0;
-
-  gtk_main_quit();
-
-  do{
-    int child_ret;
-    child_pid=waitpid(stddb_pid, &child_ret,WNOHANG);
-  } while((child_pid>0)||(child_pid!=-1));
-}
-#endif
-
 
 void std_make_tree(GtkWidget *widget, gpointer gdata){
   typHOE *hg;
@@ -8441,7 +8363,7 @@ void pm_dialog (typHOE *hg)
   tmp_ra=hg->obj[hg->pm_i].pm_ra;
   tmp_dec=hg->obj[hg->pm_i].pm_dec;
  
-  dialog = gtk_dialog_new_with_buttons("HOE : Edit Proper Motion",
+  dialog = gtk_dialog_new_with_buttons("Sky Monitor : Edit Proper Motion",
 				       GTK_WINDOW(hg->skymon_main),
 				       GTK_DIALOG_MODAL,
 #ifdef USE_GTK3

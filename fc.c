@@ -24,8 +24,8 @@ void fc_dl ();
 void do_fc();
 void create_fc_dialog();
 static void close_fc();
-static void delete_fc();
-static void cancel_fc();
+static void thread_cancel_fc();
+static gboolean delete_fc();
 static gboolean resize_draw_fc();
 static gboolean button_draw_fc();
 void rot_pa();
@@ -43,9 +43,6 @@ static void cc_get_fc_inst();
 static void cc_get_fc_mode();
 static void do_print_fc();
 static void draw_page();
-#ifndef USE_WIN32
-void dss_signal();
-#endif
 
 glong get_file_size();
 
@@ -58,10 +55,6 @@ static void close_fc_help();
 static void fcdb_para_item();
 static void fcdb_item();
 //void fcdb_dl();
-#ifndef USE_WIN32
-void trdb_signal();
-#endif
-static void delete_trdb();
 static void cancel_trdb();
 //void fcdb_make_tree();
 //void trdb_make_tree();
@@ -100,7 +93,6 @@ void draw_pa();
 void draw_gs_hskymon();
 
 
-gboolean flag_getDSS=FALSE, flag_getFCDB=FALSE;
 gboolean flagHSCDialog=FALSE;
 gboolean flag_trdb_kill=FALSE;
 gboolean  flag_trdb_finish=FALSE;
@@ -180,27 +172,18 @@ void fc_item2 (typHOE *hg)
 	set_dss_src_RGB(hg, hg->i_RGB);
 	fc_dl(hg);
 
-#ifndef USE_WIN32
-        if(fc_pid){
-#endif
+        if(hg->fc_pid){
 	  printf_log(hg,"[FC] reading image.");
     	  pixbuf_fc_RGB[i] = gdk_pixbuf_new_from_file(hg->dss_file, NULL);
-#ifndef USE_WIN32
         }
-#endif
       }
     }
 
-#ifndef USE_WIN32
-    if(fc_pid){
-#endif
+    if(hg->fc_pid){
       if(pixbuf_fc)  g_object_unref(G_OBJECT(pixbuf_fc));
       pixbuf_fc=rgb_pixbuf(pixbuf_fc_RGB[0],pixbuf_fc_RGB[1],pixbuf_fc_RGB[2]);
-      
       do_fc(hg);
-#ifndef USE_WIN32
     }
-#endif
 	
     for(i=0;i<3;i++){
         if(pixbuf_fc_RGB[i])  g_object_unref(G_OBJECT(pixbuf_fc_RGB[i]));
@@ -213,17 +196,13 @@ void fc_item2 (typHOE *hg)
 
     hg->dss_arcmin_ip=hg->dss_arcmin;
     hg->fc_mode_get=hg->fc_mode;
-#ifndef USE_WIN32
-    if(fc_pid){
-#endif
+    if(hg->fc_pid){
       printf_log(hg,"[FC] reading image.");
       if(pixbuf_fc)  g_object_unref(G_OBJECT(pixbuf_fc));
       pixbuf_fc = gdk_pixbuf_new_from_file(hg->dss_file, NULL);
       
       do_fc(hg);
-#ifndef USE_WIN32
     }
-#endif
 
     fcdb_clear_tree(hg);
   }
@@ -234,10 +213,7 @@ void fc_item2 (typHOE *hg)
 void fc_dl (typHOE *hg)
 {
   GtkTreeIter iter;
-  GtkWidget *dialog, *vbox, *label, *button, *bar;
-#ifndef USE_WIN32
-  static struct sigaction act;
-#endif
+  GtkWidget *button;
   gint timer=-1;
   gint mode;
   gchar *tmp;
@@ -289,16 +265,15 @@ void fc_dl (typHOE *hg)
     return;
   }
 
-  dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW((flagFC) ? hg->fc_main : hg->skymon_main));
-  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
-  
-  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
-  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
-  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog,"delete-event",delete_fc,(gpointer)hg);
+  tmp=g_strdup_printf("Retrieving <b>%s</b> image from \"<b>%s</b>\" ...",
+		      FC_img[hg->fc_mode], FC_host[hg->fc_mode]);
+  create_pdialog(hg,
+		 (flagFC) ? hg->fc_main : hg->skymon_main,
+		 "Sky Monitor : Downloading Finding Chart",
+		 tmp,
+		 FALSE, FALSE);
+  g_free(tmp);
+  my_signal_connect(hg->pdialog,"delete-event", delete_fc, (gpointer)hg);
   
   if(hg->fc_mode==FC_SKYVIEW_RGB){
     mode=hg->fc_mode_RGB[hg->i_RGB];
@@ -306,165 +281,45 @@ void fc_dl (typHOE *hg)
   else{
     mode=hg->fc_mode;
   }
-
-  tmp=g_strdup_printf("Retrieving %s image from \"%s\" ...", FC_img[mode], FC_host[mode]);
-  label=gtk_label_new(tmp);
-  g_free(tmp);
-  
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_START);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
-  gtk_widget_show(label);
-  
-  hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
-  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
-#ifdef USE_GTK3
-  gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
-				  GTK_ORIENTATION_HORIZONTAL);
-  css_change_pbar_height(hg->pbar,15);
-#else
-  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
-				    GTK_PROGRESS_RIGHT_TO_LEFT);
-#endif
-  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
-  gtk_widget_show(hg->pbar);
   
   unlink(hg->dss_file);
   
-#ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
-
-  hg->plabel=gtk_label_new("Retrieving image from website ...");
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     hg->plabel,FALSE,FALSE,0);
+  tmp=g_strdup_printf("Downloading Finding Charts ...");
+  gtk_label_set_markup(GTK_LABEL(hg->plabel), tmp);
+  g_free(tmp);
 
 #ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
-  
-#ifdef USE_GTK3
-  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+  button=gtkut_button_new_from_icon_name("Cancel","process-stop");
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
+  gtk_dialog_add_action_widget(GTK_DIALOG(hg->pdialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
-		    cancel_fc, 
+		    thread_cancel_fc, 
 		    (gpointer)hg);
   
-  gtk_widget_show_all(dialog);
+  gtk_widget_show_all(hg->pdialog);
 
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
 
-#ifndef USE_WIN32
-  act.sa_handler=dss_signal;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags=0;
-  if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
-#endif
+  gtk_window_set_modal(GTK_WINDOW(hg->pdialog),TRUE);
   
-  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
-  
-  get_dss(hg);
-  gtk_main();
+  hg->ploop=g_main_loop_new(NULL, FALSE);
+  hg->pcancel=g_cancellable_new();
+  hg->pthread=g_thread_new("hskymon_get_dss", thread_get_dss, (gpointer)hg);
+  g_main_loop_run(hg->ploop);
+  //g_thread_join(hg->pthread);
+  g_main_loop_unref(hg->ploop);
+  hg->ploop=NULL;
 
-  gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
+  gtk_window_set_modal(GTK_WINDOW(hg->pdialog),FALSE);
   if(timer!=-1) g_source_remove(timer);
-  gtk_widget_destroy(dialog);
+  if(GTK_IS_WIDGET(hg->pdialog)) gtk_widget_destroy(hg->pdialog);
+
   
   flag_getDSS=FALSE;
-}
-
-gboolean progress_timeout( gpointer data ){
-  typHOE *hg=(typHOE *)data;
-  glong sz;
-  gchar *tmp;
-
-  if(gtk_widget_get_realized(hg->pbar)){
-
-    if(flag_getDSS){
-      sz=get_file_size(hg->dss_file);
-    }
-    else{
-      sz=get_file_size(hg->fcdb_file);
-    }
-    gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
-
-    if(sz>1024){
-      sz=sz/1024;
-      
-      if(sz>1024){
-	tmp=g_strdup_printf("Downloaded %.2lf MB",(gdouble)sz/1024.);
-      }
-      else{
-	tmp=g_strdup_printf("Downloaded %ld kB",sz);
-      }
-    }
-    else if (sz>0){
-      tmp=g_strdup_printf("Downloaded %ld bytes",sz);
-    }
-    else{
-#ifdef USE_SSL      
-      if(flag_getDSS){
-	if((hg->fc_mode<FC_SKYVIEW_GALEXF)||(hg->fc_mode>FC_SKYVIEW_RGB)){
-	  tmp=g_strdup_printf("Waiting for HTTP responce ...");
-	}
-	else{
-	  tmp=g_strdup_printf("Waiting for HTTPS responce ...");
-	}
-      }
-      else{
-	switch(hg->fcdb_type){
-	case FCDB_TYPE_SMOKA:
-	case TRDB_TYPE_SMOKA:
-	case TRDB_TYPE_FCDB_SMOKA:
-	case FCDB_TYPE_GEMINI:
-	case TRDB_TYPE_GEMINI:
-	case TRDB_TYPE_FCDB_GEMINI:
-	  tmp=g_strdup_printf("Waiting for HTTPS responce ...");
-	  break;
-
-	default:
-	  tmp=g_strdup_printf("Waiting for HTTP responce ...");
-	  break;
-	}
-      }
-#else
-      tmp=g_strdup_printf("Waiting for HTTP responce ...");
-#endif
-    }
-    gtk_label_set_text(GTK_LABEL(hg->plabel), tmp);
-    g_free(tmp);
-    
-    return TRUE;
-  }
-  else{
-    //return FALSE;
-    return TRUE;
-  }
 }
 
 
@@ -838,7 +693,7 @@ void set_hsc_dither (GtkWidget *widget, gpointer gdata)
 		     &hg->hsc_show_osdec);
 
 #ifdef USE_GTK3
-  button=gtkut_button_new_from_icon_name("Close","window-close");
+  button=gtkut_button_new_from_icon_name("Close","process-stop");
 #else
   button=gtkut_button_new_from_stock("Close",GTK_STOCK_CANCEL);
 #endif
@@ -1370,7 +1225,7 @@ void create_fc_dialog(typHOE *hg)
   gtk_widget_grab_focus (button);
 
 #ifdef USE_GTK3
-  button=gtkut_button_new_from_icon_name(NULL,"window-close");
+  button=gtkut_button_new_from_icon_name(NULL,"process-stop");
 #else
   button=gtkut_button_new_from_stock(NULL,GTK_STOCK_CANCEL);
 #endif
@@ -1661,63 +1516,27 @@ void close_fc(GtkWidget *w, gpointer gdata)
 }
 
 
-#ifndef USE_WIN32
-void fcdb_signal(int sig){
-  pid_t child_pid=0;
-
-  gtk_main_quit();
-
-  do{
-    int child_ret;
-    child_pid=waitpid(fcdb_pid, &child_ret,WNOHANG);
-  } while((child_pid>0)||(child_pid!=-1));
-}
-
-void trdb_signal(int sig){
-  pid_t child_pid=0;
-
-  flag_trdb_finish=TRUE;
-
-  do{
-    int child_ret;
-    child_pid=waitpid(fcdb_pid, &child_ret,WNOHANG);
-  } while((child_pid>0)||(child_pid!=-1));
-  
-}
-#endif
-
-static void delete_fc(GtkWidget *w, GdkEvent *event, gpointer gdata)
+static void thread_cancel_fc(GtkWidget *w, gpointer gdata)
 {
-  cancel_fc(w,gdata);
+  typHOE *hg=(typHOE *)gdata;
+
+  if(GTK_IS_WIDGET(hg->pdialog)) gtk_widget_unmap(hg->pdialog);
+
+  g_cancellable_cancel(hg->pcancel);
+  g_object_unref(hg->pcancel); 
+
+  hg->pabort=TRUE;
+
+  hg->fc_pid=0;
+
+  if(hg->ploop) g_main_loop_quit(hg->ploop);
 }
 
-static void cancel_fc(GtkWidget *w, gpointer gdata)
+static gboolean delete_fc(GtkWidget *w, GdkEvent *event, gpointer gdata)
 {
-  typHOE *hg;
-  pid_t child_pid=0;
+  thread_cancel_fc(w, gdata);
 
-  hg=(typHOE *)gdata;
-
-#ifdef USE_WIN32
-  if(hg->dwThreadID_dss){
-    PostThreadMessage(hg->dwThreadID_dss, WM_QUIT, 0, 0);
-    WaitForSingleObject(hg->hThread_dss, INFINITE);
-    CloseHandle(hg->hThread_dss);
-    gtk_main_quit();
-  }
-#else
-  if(fc_pid){
-    kill(fc_pid, SIGKILL);
-    gtk_main_quit();
-
-    do{
-      int child_ret;
-      child_pid=waitpid(fc_pid, &child_ret,WNOHANG);
-    } while((child_pid>0)||(child_pid!=-1));
- 
-    fc_pid=0;
-  }
-#endif
+  return(TRUE);
 }
 
 
@@ -2663,38 +2482,6 @@ static void draw_page (GtkPrintOperation *operation,
 } 
 
 
-#ifndef USE_WIN32
-void dss_signal(int sig){
-  pid_t child_pid=0;
-
-  gtk_main_quit();
-
-  do{
-    int child_ret;
-    child_pid=waitpid(fc_pid, &child_ret,WNOHANG);
-  } while((child_pid>0)||(child_pid!=-1));
-}
-#endif
-
-
-glong get_file_size(gchar *fname)
-{
-  FILE *fp;
-  long sz;
-
-  fp = fopen( fname, "rb" );
-  if( fp == NULL ){
-    return -1;
-  }
-
-  fseek( fp, 0, SEEK_END );
-  sz = ftell( fp );
-
-  fclose( fp );
-  return sz;
-}
-
-
 void set_dss_src_RGB (typHOE *hg, gint i)
 {
   
@@ -3399,84 +3186,32 @@ static void show_fc_help (GtkWidget *widget, GtkWidget *parent)
   if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
 }
 
-void delete_fcdb(GtkWidget *w, GdkEvent *event, gpointer gdata)
+void thread_cancel_fcdb(GtkWidget *w, gpointer gdata)
 {
-  cancel_fcdb(w,gdata);
+  typHOE *hg=(typHOE *)gdata;
+
+  g_cancellable_cancel(hg->pcancel);
+  g_object_unref(hg->pcancel);
+
+  hg->pabort=TRUE;
+
+  hg->fc_pid=0;
+  
+  if(hg->ploop) g_main_loop_quit(hg->ploop);
 }
 
-void cancel_fcdb(GtkWidget *w, gpointer gdata)
+gboolean delete_fcdb(GtkWidget *w, GdkEvent *event, gpointer gdata)
 {
-  typHOE *hg;
-  pid_t child_pid=0;
+  thread_cancel_fcdb(w,gdata);
 
-  hg=(typHOE *)gdata;
-
-#ifdef USE_WIN32
-  if(hg->dwThreadID_fcdb){
-    PostThreadMessage(hg->dwThreadID_fcdb, WM_QUIT, 0, 0);
-    WaitForSingleObject(hg->hThread_fcdb, INFINITE);
-    CloseHandle(hg->hThread_fcdb);
-    gtk_main_quit();
-  }
-#else
-  if(fcdb_pid){
-    kill(fcdb_pid, SIGKILL);
-    gtk_main_quit();
-
-    do{
-      int child_ret;
-      child_pid=waitpid(fcdb_pid, &child_ret,WNOHANG);
-    } while((child_pid>0)||(child_pid!=-1));
- 
-    fcdb_pid=0;
-  }
-#endif
+  return(TRUE);
 }
 
-static void delete_trdb(GtkWidget *w, GdkEvent *event, gpointer gdata)
-{
-  cancel_trdb(w,gdata);
-}
-
-static void cancel_trdb(GtkWidget *w, gpointer gdata)
-{
-  typHOE *hg;
-  pid_t child_pid=0;
-  hg=(typHOE *)gdata;
-
-  flag_trdb_kill=TRUE;
-
-#ifdef USE_WIN32
-  if(hg->dwThreadID_fcdb){
-    PostThreadMessage(hg->dwThreadID_fcdb, WM_QUIT, 0, 0);
-    WaitForSingleObject(hg->hThread_fcdb, INFINITE);
-    CloseHandle(hg->hThread_fcdb);
-    gtk_main_quit();
-  }
-#else
-  if(fcdb_pid){
-    kill(fcdb_pid, SIGKILL);
-    gtk_main_quit();
-
-    do{
-      int child_ret;
-      child_pid=waitpid(fcdb_pid, &child_ret,WNOHANG);
-    } while((child_pid>0)||(child_pid!=-1));
-    fcdb_pid=0;
-  }
-  else{
-    gtk_main_quit();
-  }
-#endif
-}
 
 void ver_dl(typHOE *hg)
 {
   GtkTreeIter iter;
-  GtkWidget *dialog, *vbox, *label, *button, *bar;
-#ifndef USE_WIN32
-  static struct sigaction act;
-#endif
+  GtkWidget *button;
   gint timer=-1;
   gint fcdb_type_tmp;
   
@@ -3495,101 +3230,46 @@ void ver_dl(typHOE *hg)
 			   G_DIR_SEPARATOR_S,
 			   FCDB_FILE_TXT,NULL);
 
-  dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
-  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
-  
-  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
-  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Message");
-  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog, "delete-event", delete_fcdb, (gpointer)hg);
 
-
-  label=gtk_label_new("Checking the latest version of hskymon ...");
-
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_START);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
-  gtk_widget_show(label);
-  
-  hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
-  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
-#ifdef USE_GTK3
-  gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
-				  GTK_ORIENTATION_HORIZONTAL);
-  css_change_pbar_height(hg->pbar,15);
-#else
-  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
-				    GTK_PROGRESS_RIGHT_TO_LEFT);
-#endif
-  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
-  gtk_widget_show(hg->pbar);
+  create_pdialog(hg,
+		 hg->skymon_main,
+		 "Sky Monitor : Message",
+		 "Checking the latest version of hskymon ...",
+		 FALSE, FALSE);
+  my_signal_connect(hg->pdialog, "delete-event", delete_fcdb, (gpointer)hg);
   
   unlink(hg->fcdb_file);
   
-#ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
-
-  hg->plabel=gtk_label_new("Checking the latest version of hskymon ...");
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_START);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 0.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     hg->plabel,FALSE,FALSE,0);
-  
-#ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
+  gtk_label_set_markup(GTK_LABEL(hg->plabel),
+		       "Checking the latest version of hskymon ...");
 
 #ifdef USE_GTK3
-  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+  button=gtkut_button_new_from_icon_name("Cancel","process-stop");
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed", cancel_fcdb, (gpointer)hg);
+  gtk_dialog_add_action_widget(GTK_DIALOG(hg->pdialog),button,GTK_RESPONSE_CANCEL);
+  my_signal_connect(button,"pressed", thread_cancel_fcdb, (gpointer)hg);
   
-  gtk_widget_show_all(dialog);
+  gtk_widget_show_all(hg->pdialog);
 
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
-  
-#ifndef USE_WIN32
-  act.sa_handler=fcdb_signal;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags=0;
-  if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
-#endif
-  
-  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
-  
-  get_fcdb(hg);
-  gtk_main();
+   
+  gtk_window_set_modal(GTK_WINDOW(hg->pdialog),TRUE);
 
-  gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
+  hg->ploop=g_main_loop_new(NULL, FALSE);
+  hg->pcancel=g_cancellable_new();
+  hg->pthread=g_thread_new("hskymon_get_fcdb", thread_get_fcdb, (gpointer)hg);
+  g_main_loop_run(hg->ploop);
+  //g_thread_join(hg->pthread);
+  g_main_loop_unref(hg->ploop);
+  hg->ploop=NULL;
+  
+  gtk_window_set_modal(GTK_WINDOW(hg->pdialog),FALSE);
   if(timer!=-1) g_source_remove(timer);
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+  if(GTK_IS_WIDGET(hg->pdialog)) gtk_widget_destroy(hg->pdialog);
 
   hg->fcdb_type=fcdb_type_tmp;
   flag_getFCDB=FALSE;
@@ -3599,26 +3279,23 @@ void ver_dl(typHOE *hg)
 void fcdb_dl(typHOE *hg)
 {
   GtkTreeIter iter;
-  GtkWidget *dialog, *vbox, *label, *button, *bar;
-#ifndef USE_WIN32
-  static struct sigaction act;
-#endif
+  GtkWidget *button;
+  gchar *tmp;
   gint timer=-1;
   
   if(flag_getFCDB) return;
   flag_getFCDB=TRUE;
 
-  dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW((flagFC) ? hg->fc_main : hg->skymon_main));
-  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
-  
-  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
-  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Query to the database");
-  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog,"delete-event", delete_fcdb, (gpointer)hg);
-  
+  tmp=g_strdup_printf("Retrieving <b>%s</b> image from \"<b>%s</b>\" ...",
+		      FC_img[hg->fc_mode], FC_host[hg->fc_mode]);
+  create_pdialog(hg,
+		 (flagFC) ? hg->fc_main : hg->skymon_main,
+		 "Sky Monitor : Query to the database",
+		 tmp,
+		 FALSE, FALSE);
+  g_free(tmp);
+  my_signal_connect(hg->pdialog,"delete-event", delete_fcdb, (gpointer)hg);
+   
   switch(hg->fcdb_type){
   case FCDB_TYPE_SDSS:
   case FCDB_TYPE_LAMOST:
@@ -3642,267 +3319,51 @@ void fcdb_dl(typHOE *hg)
     hg->fcdb_post=FALSE;
     break;
   }
-  
-  switch(hg->fcdb_type){
-  case FCDB_TYPE_SIMBAD:
-    label=gtk_label_new("Searching objects in SIMBAD ...");
-    break;
- 
-  case FCDB_TYPE_NED:
-    label=gtk_label_new("Searching objects in NED ...");
-    break;
 
-  case FCDB_TYPE_GSC:
-    label=gtk_label_new("Searching objects in GSC 2.4.1 ...");
-    break;
-
-  case FCDB_TYPE_PS1:
-    label=gtk_label_new("Searching objects in PanSTARRS1 ...");
-    break;
-
-  case FCDB_TYPE_SDSS:
-    label=gtk_label_new("Searching objects in SDSS ...");
-    break;
-
-  case FCDB_TYPE_LAMOST:
-    label=gtk_label_new("Searching objects in LAMOST DR4 ...");
-    break;
-
-  case FCDB_TYPE_USNO:
-    label=gtk_label_new("Searching objects in USNO-B ...");
-    break;
-
-  case FCDB_TYPE_UCAC:
-    label=gtk_label_new("Searching objects in UCAC4 ...");
-    break;
-
-  case FCDB_TYPE_GAIA:
-    label=gtk_label_new("Searching objects in GAIA DR2 ...");
-    break;
-
-  case FCDB_TYPE_KEPLER:
-    label=gtk_label_new("Searching objects in Kepler IC10 ...");
-    break;
-
-  case FCDB_TYPE_2MASS:
-    label=gtk_label_new("Searching objects in 2MASS ...");
-    break;
-
-  case FCDB_TYPE_WISE:
-    label=gtk_label_new("Searching objects in WISE ...");
-    break;
-
-  case FCDB_TYPE_IRC:
-    label=gtk_label_new("Searching objects in AKARI/IRC ...");
-    break;
-
-  case FCDB_TYPE_FIS:
-    label=gtk_label_new("Searching objects in AKARI/FIS ...");
-    break;
-
-  case FCDB_TYPE_SMOKA:
-  case FCDB_TYPE_WWWDB_SMOKA:
-  case TRDB_TYPE_WWWDB_SMOKA:
-  case TRDB_TYPE_FCDB_SMOKA:
-    label=gtk_label_new("Searching objects in SMOKA ...");
-    break;
-
-  case FCDB_TYPE_HST:
-  case FCDB_TYPE_WWWDB_HST:
-  case TRDB_TYPE_WWWDB_HST:
-  case TRDB_TYPE_FCDB_HST:
-    label=gtk_label_new("Searching objects in HST archive ...");
-    break;
-
-  case FCDB_TYPE_ESO:
-  case FCDB_TYPE_WWWDB_ESO:
-  case TRDB_TYPE_WWWDB_ESO:
-  case TRDB_TYPE_FCDB_ESO:
-    label=gtk_label_new("Searching objects in ESO archive ...");
-    break;
-
-  case FCDB_TYPE_GEMINI:
-  case TRDB_TYPE_FCDB_GEMINI:
-    label=gtk_label_new("Searching objects in Gemini archive ...");
-    break;
-  }
-
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_START);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
-  gtk_widget_show(label);
-  
-  hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
-  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
-#ifdef USE_GTK3
-  gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
-				  GTK_ORIENTATION_HORIZONTAL);
-  css_change_pbar_height(hg->pbar,15);
-#else
-  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
-				    GTK_PROGRESS_RIGHT_TO_LEFT);
-#endif
-  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
-  gtk_widget_show(hg->pbar);
-  
   unlink(hg->fcdb_file);
   
-#ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
-
-  switch(hg->fcdb_type){
-  case FCDB_TYPE_SIMBAD:
-    hg->plabel=gtk_label_new("Searching objects in SIMBAD ...");
-    break;
-
-  case FCDB_TYPE_NED:
-    hg->plabel=gtk_label_new("Searching objects in NED ...");
-    break;
-
-  case FCDB_TYPE_GSC:
-    hg->plabel=gtk_label_new("Searching objects in GSC 2.4.1 ...");
-    break;
-
-  case FCDB_TYPE_PS1:
-    hg->plabel=gtk_label_new("Searching objects in PanSTARRS1 ...");
-    break;
-
-  case FCDB_TYPE_SDSS:
-    hg->plabel=gtk_label_new("Searching objects in SDSS ...");
-    break;
-
-  case FCDB_TYPE_USNO:
-    hg->plabel=gtk_label_new("Searching objects in USNO-B ...");
-    break;
-
-  case FCDB_TYPE_UCAC:
-    hg->plabel=gtk_label_new("Searching objects in UCAC4 ...");
-    break;
-
-  case FCDB_TYPE_LAMOST:
-    hg->plabel=gtk_label_new("Searching objects in LAMOST DR4 ...");
-    break;
-
-  case FCDB_TYPE_GAIA:
-    hg->plabel=gtk_label_new("Searching objects in GAIA DR2 ...");
-    break;
-
-  case FCDB_TYPE_KEPLER:
-    hg->plabel=gtk_label_new("Searching objects in Kepler IC10 ...");
-    break;
-
-  case FCDB_TYPE_2MASS:
-    hg->plabel=gtk_label_new("Searching objects in 2MASS ...");
-    break;
-
-  case FCDB_TYPE_WISE:
-    hg->plabel=gtk_label_new("Searching objects in WISE ...");
-    break;
-
-  case FCDB_TYPE_IRC:
-    hg->plabel=gtk_label_new("Searching objects in AKARI/IRC ...");
-    break;
-
-  case FCDB_TYPE_FIS:
-    hg->plabel=gtk_label_new("Searching objects in AKARI/FIS ...");
-    break;
-
-  case FCDB_TYPE_SMOKA:
-  case FCDB_TYPE_WWWDB_SMOKA:
-  case TRDB_TYPE_WWWDB_SMOKA:
-  case TRDB_TYPE_FCDB_SMOKA:
-    hg->plabel=gtk_label_new("Searching objects in SMOKA ...");
-    break;
-
-  case FCDB_TYPE_HST:
-  case FCDB_TYPE_WWWDB_HST:
-  case TRDB_TYPE_WWWDB_HST:
-  case TRDB_TYPE_FCDB_HST:
-    hg->plabel=gtk_label_new("Searching objects in HST archive ...");
-    break;
-
-  case FCDB_TYPE_ESO:
-  case FCDB_TYPE_WWWDB_ESO:
-  case TRDB_TYPE_WWWDB_ESO:
-  case TRDB_TYPE_FCDB_ESO:
-    hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
-    break;
-
-  case FCDB_TYPE_GEMINI:
-  case TRDB_TYPE_FCDB_GEMINI:
-    hg->plabel=gtk_label_new("Searching objects in Gemini archive ...");
-    break;
-  }
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     hg->plabel,FALSE,FALSE,0);
-
-#ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
+  tmp=g_strdup_printf("Searching objects in %s ...",
+		      db_name[hg->fcdb_type]);
+  gtk_label_set_markup(GTK_LABEL(hg->plabel), tmp);
+  g_free(tmp);
   
 #ifdef USE_GTK3
-  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+  button=gtkut_button_new_from_icon_name("Cancel","process-stop");
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
+  gtk_dialog_add_action_widget(GTK_DIALOG(hg->pdialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
-		    cancel_fcdb, 
+		    thread_cancel_fcdb, 
 		    (gpointer)hg);
   
-  gtk_widget_show_all(dialog);
+  gtk_widget_show_all(hg->pdialog);
   
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
   
-#ifndef USE_WIN32
-  act.sa_handler=fcdb_signal;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags=0;
-  if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
-#endif
-  
-  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
+  gtk_window_set_modal(GTK_WINDOW(hg->pdialog),TRUE);
 
-  get_fcdb(hg);
-  gtk_main();
+  hg->ploop=g_main_loop_new(NULL, FALSE);
+  hg->pcancel=g_cancellable_new();
+  hg->pthread=g_thread_new("hskymon_get_fcdb", thread_get_fcdb, (gpointer)hg);
+  g_main_loop_run(hg->ploop);
+  //g_thread_join(hg->pthread);
+  g_main_loop_unref(hg->ploop);
+  hg->ploop=NULL;
 
-  gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
+  gtk_window_set_modal(GTK_WINDOW(hg->pdialog),FALSE);
   if(timer!=-1) g_source_remove(timer);
 
   flag_getFCDB=FALSE;
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+  if(GTK_IS_WIDGET(hg->pdialog)) gtk_widget_destroy(hg->pdialog);
 }
 
 void addobj_dl(typHOE *hg)
 {
   GtkTreeIter iter;
-  GtkWidget *dialog, *vbox, *label, *button, *bar;
-#ifndef USE_WIN32
-  static struct sigaction act;
-#endif
+  GtkWidget *button;
   gint timer=-1;
   gchar *tgt;
   gchar *tmp;
@@ -3939,124 +3400,67 @@ void addobj_dl(typHOE *hg)
 			    G_DIR_SEPARATOR_S,
 			    FCDB_FILE_XML,NULL);
 
-  dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
-  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
-  
-  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
-  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Query to the database");
-  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog,"delete-event", delete_fcdb, (gpointer)hg);
-  
   switch(hg->addobj_type){
   case FCDB_TYPE_SIMBAD:
-    label=gtk_label_new("Searching objects in SIMBAD ...");
+    tmp=g_strdup("Searching objects in SIMBAD ...");
     break;
 
   case FCDB_TYPE_NED:
-    label=gtk_label_new("Searching objects in NED ...");
+    tmp=g_strdup("Searching objects in NED ...");
+    break;
+  }
+  create_pdialog(hg,
+		 (flagFC) ? hg->fc_main : hg->skymon_main,
+		 "Sky Monitor : Query by name to the database",
+		 tmp,
+		 FALSE, FALSE);
+  g_free(tmp);
+  my_signal_connect(hg->pdialog,"delete-event", delete_fcdb, (gpointer)hg);
+  
+  switch(hg->addobj_type){
+  case FCDB_TYPE_SIMBAD:
+    gtk_label_set_markup(GTK_LABEL(hg->plabel),
+			 "Searching objects in SIMBAD ...");
+    break;
+
+  case FCDB_TYPE_NED:
+    gtk_label_set_markup(GTK_LABEL(hg->plabel),
+			 "Searching objects in NED ...");
     break;
   }
 
 #ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_START);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
-  gtk_widget_show(label);
-  
-  hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
-  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
-#ifdef USE_GTK3
-  gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
-				  GTK_ORIENTATION_HORIZONTAL);
-  css_change_pbar_height(hg->pbar,15);
-#else
-  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
-				    GTK_PROGRESS_RIGHT_TO_LEFT);
-#endif
-  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
-  gtk_widget_show(hg->pbar);
-  
-  unlink(hg->fcdb_file);
-  
-#ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
-
-  switch(hg->addobj_type){
-  case FCDB_TYPE_SIMBAD:
-    hg->plabel=gtk_label_new("Searching objects in SIMBAD ...");
-    break;
-
-  case FCDB_TYPE_NED:
-    hg->plabel=gtk_label_new("Searching objects in NED ...");
-    break;
-  }
-#ifdef USE_GTK3
-  gtk_widget_set_halign (hg->plabel, GTK_ALIGN_END);
-  gtk_widget_set_valign (hg->plabel, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     hg->plabel,FALSE,FALSE,0);
-
-#ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
-  
-#ifndef USE_WIN32
-#ifdef USE_GTK3
-  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+  button=gtkut_button_new_from_icon_name("Cancel","process-stop");
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
+  gtk_dialog_add_action_widget(GTK_DIALOG(hg->pdialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
-		    cancel_fcdb, 
+		    thread_cancel_fcdb, 
 		    (gpointer)hg);
-#endif
   
-  gtk_widget_show_all(dialog);
+  gtk_widget_show_all(hg->pdialog);
   
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
-  
-#ifndef USE_WIN32
-  act.sa_handler=fcdb_signal;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags=0;
-  if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
-#endif
-  
-  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
+   
+  gtk_window_set_modal(GTK_WINDOW(hg->pdialog),TRUE);
 
-  get_fcdb(hg);
-  gtk_main();
+  hg->ploop=g_main_loop_new(NULL, FALSE);
+  hg->pcancel=g_cancellable_new();
+  hg->pthread=g_thread_new("hskymon_get_fcdb", thread_get_fcdb, (gpointer)hg);
+  g_main_loop_run(hg->ploop);
+  //g_thread_join(hg->pthread);
+  g_main_loop_unref(hg->ploop);
+  hg->ploop=NULL;
 
-  gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
+  gtk_window_set_modal(GTK_WINDOW(hg->pdialog),FALSE);
   if(timer!=-1) g_source_remove(timer);
-  gtk_widget_destroy(dialog);
+  gtk_widget_destroy(hg->pdialog);
 
   flag_getFCDB=FALSE;
-
-  
+ 
   addobj_vo_parse(hg);
 
   if(hg->addobj_voname){
@@ -4119,10 +3523,7 @@ void pm_dl(typHOE *hg)
   struct ln_equ_posn object_prec;
   struct lnh_equ_posn hobject_prec;
   GtkTreeIter iter;
-  GtkWidget *dialog, *vbox, *label, *button, *bar;
-#ifndef USE_WIN32
-  static struct sigaction act;
-#endif
+  GtkWidget *button;
   gint timer=-1;
   gchar *tmp;
   gchar *url_param, *mag_str, *otype_str;
@@ -4209,124 +3610,64 @@ void pm_dl(typHOE *hg)
 			    G_DIR_SEPARATOR_S,
 			    FCDB_FILE_XML,NULL);
 
-  dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
-  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
-  
-  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
-  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"HOE : Query to the database");
-  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog,"delete-event", delete_fcdb, (gpointer)hg);
-  
-#if !GTK_CHECK_VERSION(2,21,8)
-  gtk_dialog_set_has_separator(GTK_DIALOG(dialog),TRUE);
-#endif
-  
   switch(hg->pm_type){
   case FCDB_TYPE_SIMBAD:
-    label=gtk_label_new("Searching objects in SIMBAD ...");
+    tmp=g_strdup("Searching objects in SIMBAD ...");
     break;
     
   case FCDB_TYPE_GAIA:
-    label=gtk_label_new("Searching objects in GAIA DR2 ...");
+    tmp=g_strdup("Searching objects in GAIA DR2 ...");
     break;
   }
-
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_START);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     label,TRUE,TRUE,0);
-  gtk_widget_show(label);
-  
-  hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     hg->pbar,TRUE,TRUE,0);
-  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
-#ifdef USE_GTK3
-  gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
-				  GTK_ORIENTATION_HORIZONTAL);
-  css_change_pbar_height(hg->pbar,15);
-#else
-  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
-				    GTK_PROGRESS_RIGHT_TO_LEFT);
-#endif
-  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
-  gtk_widget_show(hg->pbar);
-  
+  create_pdialog(hg,
+		 (flagFC) ? hg->fc_main : hg->skymon_main,
+		 "Sky Monitor : Query by coordinate to the database",
+		 tmp,
+		 FALSE, FALSE);
+  g_free(tmp);
+  my_signal_connect(hg->pdialog,"delete-event", delete_fcdb, (gpointer)hg);
+   
   switch(hg->pm_type){
   case FCDB_TYPE_SIMBAD:
-    hg->plabel=gtk_label_new("Searching objects in SIMBAD ...");
+    gtk_label_set_markup(GTK_LABEL(hg->plabel),
+			 "Searching objects in SIMBAD ...");
     break;
 
   case FCDB_TYPE_GAIA:
-    hg->plabel=gtk_label_new("Searching objects in GAIA DR2 ...");
+    gtk_label_set_markup(GTK_LABEL(hg->plabel),
+			 "Searching objects in GAIA DR2 ...");
     break;
   }
-#ifdef USE_GTK3
-  gtk_widget_set_halign (hg->plabel, GTK_ALIGN_END);
-  gtk_widget_set_valign (hg->plabel, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
-#endif
-
-#ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     hg->plabel,FALSE,FALSE,0);
-
-#ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
-
   
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Cancel","process-stop");
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
+  gtk_dialog_add_action_widget(GTK_DIALOG(hg->pdialog),button,GTK_RESPONSE_CANCEL);
   my_signal_connect(button,"pressed",
-		    cancel_fcdb, 
+		    thread_cancel_fcdb, 
 		    (gpointer)hg);
   
-  gtk_widget_show_all(dialog);
+  gtk_widget_show_all(hg->pdialog);
   
   timer=g_timeout_add(100, 
 		      (GSourceFunc)progress_timeout,
 		      (gpointer)hg);
   
-#ifndef USE_WIN32
-  act.sa_handler=fcdb_signal;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags=0;
-  if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
-    fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
-#endif
-  
-  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
+  gtk_window_set_modal(GTK_WINDOW(hg->pdialog),TRUE);
 
-  get_fcdb(hg);
-  gtk_main();
+  hg->ploop=g_main_loop_new(NULL, FALSE);
+  hg->pcancel=g_cancellable_new();
+  hg->pthread=g_thread_new("hskymon_get_fcdb", thread_get_fcdb, (gpointer)hg);
+  g_main_loop_run(hg->ploop);
+  //g_thread_join(hg->pthread);
+  g_main_loop_unref(hg->ploop);
+  hg->ploop=NULL;
 
-  gtk_window_set_modal(GTK_WINDOW(dialog),FALSE);
+  gtk_window_set_modal(GTK_WINDOW(hg->pdialog),FALSE);
   if(timer!=-1) g_source_remove(timer);
-  gtk_widget_destroy(dialog);
+  if(GTK_IS_WIDGET(hg->pdialog)) gtk_widget_destroy(hg->pdialog);
 
   flag_getFCDB=FALSE;
 
@@ -4378,9 +3719,15 @@ void pm_dl(typHOE *hg)
 
 
 gboolean check_trdb (gpointer gdata){
+  typHOE *hg=(typHOE *)gdata;
+  
   if(flag_trdb_finish){
     flag_trdb_finish=FALSE;
-    gtk_main_quit();
+    hg->pabort=TRUE;
+
+    hg->fc_pid=0;
+    
+    if(hg->ploop) g_main_loop_quit(hg->ploop);
   }
   return(TRUE);
 }
@@ -4394,14 +3741,10 @@ void trdb_run (typHOE *hg)
   gint i_list, i_band;
   GtkTreeModel *model;
   GtkTreeIter iter;
-  GtkWidget *dialog, *vbox, *label, *button, *sep, *time_label, *stat_label,
-    *hbox, *bar;
-#ifndef USE_WIN32
-  static struct sigaction act;
-#endif
-  gint fcdb_tree_check_timer;
+  GtkWidget *button;
+  //gint fcdb_tree_check_timer;
   gint timer=-1;
-  gchar tmp[BUFFSIZE];
+  gchar *tmp;
 #ifndef USE_GTK3
   GdkColor col_red={0,0xFFFF,0,0};
   GdkColor col_black={0,0,0,0};
@@ -4432,151 +3775,59 @@ void trdb_run (typHOE *hg)
     hg->obj[i_list].trdb_band_max=0;
   }
 
-  dialog = gtk_dialog_new();
-  gtk_window_set_transient_for(GTK_WINDOW(dialog),GTK_WINDOW(hg->skymon_main));
-  gtk_window_set_modal(GTK_WINDOW(dialog),TRUE);
 
-  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
-  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
-  gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),5);
-  gtk_window_set_title(GTK_WINDOW(dialog),"Sky Monitor : Running List Query");
-  gtk_window_set_decorated(GTK_WINDOW(dialog),TRUE);
-  my_signal_connect(dialog,"delete-event", delete_trdb, (gpointer)hg);
- 
+  tmp=g_strdup_printf("Searching objects in %s ...",
+		      db_name[hg->fcdb_type]);
+  create_pdialog(hg,
+		 (flagFC) ? hg->fc_main : hg->skymon_main,
+		 "Sky Monitor : Running Catalog Matching Service",
+		 tmp,
+		 TRUE, TRUE);
+  gtk_label_set_markup(GTK_LABEL(hg->plabel),tmp);
+  g_free(tmp);
+  my_signal_connect(hg->pdialog,"delete-event",delete_fcdb, (gpointer)hg);
+
+  tmp=g_strdup_printf("Searching [ 1 / %d ] Objects", hg->i_max);
+  gtk_progress_bar_set_text(GTK_PROGRESS_BAR(hg->pbar2),tmp);
+  g_free(tmp);
+
+  tmp=g_strdup("Estimated time left : ---");
+  gtk_label_set_markup(GTK_LABEL(hg->plabel2), tmp);
+  g_free(tmp);
+
+  tmp=g_strdup_printf("%s : hit ---", hg->obj[0].name);
+  gtk_label_set_markup(GTK_LABEL(hg->plabel3), tmp);
+  g_free(tmp);
+
   switch(hg->fcdb_type){
   case TRDB_TYPE_SMOKA:
-    hg->fcdb_post=TRUE;
-    label=gtk_label_new("Searching objects in SMOKA ...");
-    break;
-    
   case TRDB_TYPE_HST:
-    hg->fcdb_post=TRUE;
-    label=gtk_label_new("Searching objects in HST archive ...");
-    break;
-    
   case TRDB_TYPE_ESO:
     hg->fcdb_post=TRUE;
-    label=gtk_label_new("Searching objects in ESO archive ...");
     break;
 
   case TRDB_TYPE_GEMINI:
     hg->fcdb_post=FALSE;
-    label=gtk_label_new("Searching objects in Gemini archive ...");
     break;
   }
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),label,TRUE,TRUE,0);
-  gtk_widget_show(label);
 
-  hg->pbar=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar,TRUE,TRUE,0);
-  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(hg->pbar));
-#ifdef USE_GTK3
-  gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar), 
-				  GTK_ORIENTATION_HORIZONTAL);
-  css_change_pbar_height(hg->pbar,15);
-#else
-  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar), 
-				    GTK_PROGRESS_RIGHT_TO_LEFT);
-#endif
-  gtk_progress_bar_set_pulse_step(GTK_PROGRESS_BAR(hg->pbar),0.05);
-  gtk_widget_show(hg->pbar);
-
-  hg->pbar2=gtk_progress_bar_new();
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),hg->pbar2,TRUE,TRUE,0);
-#ifdef USE_GTK3
-  gtk_orientable_set_orientation (GTK_ORIENTABLE (hg->pbar2), 
-				  GTK_ORIENTATION_HORIZONTAL);
-  css_change_pbar_height(hg->pbar2,15);
-#else
-  gtk_progress_bar_set_orientation (GTK_PROGRESS_BAR (hg->pbar2), 
-				    GTK_PROGRESS_LEFT_TO_RIGHT);
-#endif
-  sprintf(tmp,"Searching [ 1 / %d ] Objects", hg->i_max);
-  gtk_progress_bar_set_text(GTK_PROGRESS_BAR(hg->pbar2),tmp);
-  gtk_widget_show(hg->pbar2);
-
-  sprintf(tmp,"Estimated time left : ---");
-  time_label=gtk_label_new(tmp);
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     time_label,TRUE,TRUE,5);
-
-#ifdef USE_GTK3
-  sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  sep = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     sep,FALSE,TRUE,5);
-
-  sprintf(tmp,"%s : hit ---", hg->obj[0].name);
-  stat_label=gtk_label_new(tmp);
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     stat_label,TRUE,TRUE,5);
-
-#ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
-
-  switch(hg->fcdb_type){
-  case TRDB_TYPE_SMOKA:
-    hg->plabel=gtk_label_new("Searching objects in SMOKA ...");
-    break;
-    
-  case TRDB_TYPE_HST:
-    hg->plabel=gtk_label_new("Searching objects in HST archive ...");
-    break;
-    
-  case TRDB_TYPE_ESO:
-    hg->plabel=gtk_label_new("Searching objects in ESO archive ...");
-    break;
-
-  case TRDB_TYPE_GEMINI:
-    hg->plabel=gtk_label_new("Searching objects in Gemini archive ...");
-    break;
-  }
-#ifdef USE_GTK3
-  gtk_widget_set_halign (hg->plabel, GTK_ALIGN_END);
-  gtk_widget_set_valign (hg->plabel, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (hg->plabel), 1.0, 0.5);
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     hg->plabel,FALSE,FALSE,0);
   
 #ifdef USE_GTK3
-  bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-  bar = gtk_hseparator_new();
-#endif
-  gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-		     bar,FALSE, FALSE, 0);
-
-#ifdef USE_GTK3
-  button=gtkut_button_new_from_icon_name("Cancel","window-close");
+  button=gtkut_button_new_from_icon_name("Cancel","process-stop");
 #else
   button=gtkut_button_new_from_stock("Cancel",GTK_STOCK_CANCEL);
 #endif
-  gtk_dialog_add_action_widget(GTK_DIALOG(dialog),button,GTK_RESPONSE_CANCEL);
-  my_signal_connect(button,"pressed",cancel_trdb,(gpointer)hg);
+  gtk_dialog_add_action_widget(GTK_DIALOG(hg->pdialog),button,GTK_RESPONSE_CANCEL);
+  my_signal_connect(button,"pressed",thread_cancel_fcdb,(gpointer)hg);
 
 
-  gtk_widget_show_all(dialog);
+  gtk_widget_show_all(hg->pdialog);
 
   start_time=time(NULL);
 
-  fcdb_tree_check_timer=g_timeout_add(1000, 
-				      (GSourceFunc)check_trdb,
-				      (gpointer)hg);
+  //fcdb_tree_check_timer=g_timeout_add(1000, 
+  //				      (GSourceFunc)check_trdb,
+  //				      (gpointer)hg);
 
   for(i_list=0;i_list<hg->i_max;i_list++){
     hg->fcdb_i=i_list;
@@ -4693,14 +3944,6 @@ void trdb_run (typHOE *hg)
       break;
     }
 
-#ifndef USE_WIN32
-    act.sa_handler=trdb_signal;
-    sigemptyset(&act.sa_mask);
-    act.sa_flags=0;
-    if(sigaction(SIGHSKYMON1, &act, NULL)==-1)
-      fprintf(stderr,"Error in sigaction (SIGHSKYMON1).\n");
-#endif
-    
     timer=g_timeout_add(100, 
 			(GSourceFunc)progress_timeout,
 			(gpointer)hg);
@@ -4709,9 +3952,17 @@ void trdb_run (typHOE *hg)
 			      "Downloading ...");
     
     unlink(hg->fcdb_file);
+
+    hg->ploop=g_main_loop_new(NULL, FALSE);
+    hg->pcancel=g_cancellable_new();
+    hg->pthread=g_thread_new("hskymon_get_fcdb", thread_get_fcdb, (gpointer)hg);
+    g_main_loop_run(hg->ploop);
+    //g_thread_join(hg->pthread);
+    g_main_loop_unref(hg->ploop);
+    hg->ploop=NULL;
     
-    get_fcdb(hg);
-    gtk_main();
+    if(hg->pabort) flag_trdb_kill=TRUE;
+    
     g_source_remove(timer);
 
     if(flag_trdb_kill){
@@ -4744,48 +3995,51 @@ void trdb_run (typHOE *hg)
       
       gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(hg->pbar2),
 				    (gdouble)(i_list+1)/(gdouble)(hg->i_max));
-      sprintf(tmp,"Finished [ %d / %d ] Objects",i_list+1, hg->i_max);
+      tmp=g_strdup_printf("Finished [ %d / %d ] Objects",i_list+1, hg->i_max);
       gtk_progress_bar_set_text(GTK_PROGRESS_BAR(hg->pbar2),tmp);
+      g_free(tmp);
 
       if(hg->obj[i_list].trdb_band_max>0){
 #ifdef USE_GTK3
-	css_change_col(stat_label,"red");
+	css_change_col(hg->plabel3,"red");
 #else
-	gtk_widget_modify_fg(stat_label,GTK_STATE_NORMAL,&col_red);
+	gtk_widget_modify_fg(hg->plabel3,GTK_STATE_NORMAL,&col_red);
 #endif
       }
       else{
 #ifdef USE_GTK3
-	css_change_col(stat_label,"black");
+	css_change_col(hg->plabel3,"black");
 #else
-	gtk_widget_modify_fg(stat_label,GTK_STATE_NORMAL,&col_black);
+	gtk_widget_modify_fg(hg->plabel3,GTK_STATE_NORMAL,&col_black);
 #endif
       }
-      sprintf(tmp,"%s : hit %d-bands", hg->obj[i_list].name, 
+      tmp=g_strdup_printf("%s : hit %d-bands", hg->obj[i_list].name, 
 	      hg->obj[i_list].trdb_band_max);
-      gtk_label_set_text(GTK_LABEL(stat_label),tmp);
+      gtk_label_set_text(GTK_LABEL(hg->plabel3),tmp);
+      g_free(tmp);
 
       if(remaining_sec>3600){
-	sprintf(tmp,"Estimated time left : %dhrs and %dmin", 
-		(int)(remaining_sec)/3600,
-		((int)remaining_sec%3600)/60);
+	tmp=g_strdup_printf("Estimated time left : %dhrs and %dmin", 
+			    (int)(remaining_sec)/3600,
+			    ((int)remaining_sec%3600)/60);
       }
       else if(remaining_sec>60){
-	sprintf(tmp,"Estimated time left : %dmin and %dsec", 
-		(int)(remaining_sec)/60,(int)remaining_sec%60);
+	tmp=g_strdup_printf("Estimated time left : %dmin and %dsec", 
+			    (int)(remaining_sec)/60,(int)remaining_sec%60);
       }
       else{
-	sprintf(tmp,"Estimated time left : %.0lfsec", 
-		remaining_sec);
+	tmp=g_strdup_printf("Estimated time left : %.0lfsec", 
+			    remaining_sec);
       }
-      gtk_label_set_text(GTK_LABEL(time_label),tmp);
+      gtk_label_set_text(GTK_LABEL(hg->plabel2),tmp);
+      g_free(tmp);
       
       flag_trdb_finish=FALSE;
     }
   }
 
-  g_source_remove(fcdb_tree_check_timer);
-  if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
+  //g_source_remove(fcdb_tree_check_timer);
+  if(GTK_IS_WIDGET(hg->pdialog)) gtk_widget_destroy(hg->pdialog);
 
   make_trdb_label(hg);
   if(flagTree){
@@ -4802,6 +4056,7 @@ void trdb_run (typHOE *hg)
     draw_skymon_cairo(hg->skymon_dw,hg, TRUE);
 
   flag_getFCDB=FALSE;
+
 }
 
 void fcdb_item2 (typHOE *hg)

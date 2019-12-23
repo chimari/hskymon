@@ -10941,7 +10941,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     WriteConf(hg);
 
     allsky_bufclear(hg);
+    cancel_allsky(hg);
     if(hg->allsky_flag){
+      /*
       if(hg->allsky_timer!=-1){
 	if(hg->allsky_check_timer!=-1)
 	  g_source_remove(hg->allsky_check_timer);
@@ -10950,10 +10952,10 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       }
       hg->allsky_timer=-1;
 
-      get_allsky(hg);
-      hg->allsky_timer=g_timeout_add(hg->allsky_interval*1000, 
-				     (GSourceFunc)update_allsky,
+      hg->allsky_timer=g_timeout_add(1000, 
+				     (GSourceFunc)check_allsky,
 				     (gpointer)hg);
+      */
     }
 
     if(hg->skymon_mode==SKYMON_SET){
@@ -11057,7 +11059,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     WriteConf(hg);
 
     allsky_bufclear(hg);
+    cancel_allsky(hg);
     if(hg->allsky_flag){
+      /*
       if(hg->allsky_timer!=-1){
 	if(hg->allsky_check_timer!=-1)
 	  g_source_remove(hg->allsky_check_timer);
@@ -11066,10 +11070,10 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       }
       hg->allsky_timer=-1;
 
-      get_allsky(hg);
-      hg->allsky_timer=g_timeout_add(hg->allsky_interval*1000, 
-				     (GSourceFunc)update_allsky,
+      hg->allsky_timer=g_timeout_add(1000, 
+				     (GSourceFunc)check_allsky,
 				     (gpointer)hg);
+      */
     }
 
     if(hg->skymon_mode==SKYMON_SET){
@@ -11230,6 +11234,8 @@ void global_init(){
   flagFC=FALSE;
   flagADC=FALSE;
   flag_getting_allsky=FALSE;
+  flag_getDSS=FALSE;
+  flag_getFCDB=FALSE;
   
 #ifndef USE_WIN32
   allsky_pid=0;
@@ -11286,6 +11292,9 @@ void param_init(typHOE *hg){
 #endif
 
   hg->orbit_flag=TRUE;
+
+  hg->ploop=NULL;
+  hg->asloop=NULL;
   
   InitDefCol(hg);
   ReadConf(hg);
@@ -11388,6 +11397,8 @@ void param_init(typHOE *hg){
   hg->allsky_diff_dpix = 1;
 #endif
   hg->allsky_timer=-1;
+  hg->allsky_get_timer=-1;
+  hg->allsky_get_flag=FALSE;
   hg->allsky_date=g_strdup("(Update time)");
   hg->allsky_date_old=g_strdup("(Update time)");
   hg->allsky_sat=1.0;
@@ -11730,11 +11741,32 @@ gboolean update_allsky (gpointer gdata){
   hg=(typHOE *)gdata;
 
   if(hg->allsky_flag){
-    get_allsky(hg);
+    //start_get_allsky(hg);
   }
 
   return(TRUE);
+}
 
+gboolean check_allsky (gpointer gdata){
+  typHOE *hg=(typHOE *)gdata;
+
+  if(hg->allsky_flag){
+    if(!hg->allsky_get_flag){ // First time
+      hg->allsky_get_timer=g_timeout_add(1000, 
+					 (GSourceFunc)start_get_allsky,
+					 (gpointer)hg);
+      hg->allsky_get_flag=TRUE;
+      printf("start first time\n");
+    }
+    else if (hg->allsky_get_timer<0){
+      hg->allsky_get_timer=g_timeout_add(hg->allsky_interval*1000, 
+					 (GSourceFunc)start_get_allsky,
+					 (gpointer)hg);
+      printf("running get_allsky\n");
+    }
+  }
+
+  return(TRUE);
 }
 
 
@@ -14356,14 +14388,14 @@ int main(int argc, char* argv[]){
   }
 #endif
 
-  if(hg->allsky_flag){
-    get_allsky(hg);
-
-    hg->allsky_timer=g_timeout_add(hg->allsky_interval*1000, 
-				   (GSourceFunc)update_allsky,
-				   (gpointer)hg);
-  }
-
+  // All Sky Checking TimeOut
+  //   Leave it running
+  //   This function automatically check the current flags/statuses
+  //   Then Start the getting command automatically
+  hg->allsky_timer=g_timeout_add(1000, 
+				 (GSourceFunc)check_allsky,
+				 (gpointer)hg);
+  
   hg->timer=g_timeout_add(AZEL_INTERVAL, 
 			  (GSourceFunc)update_azel_auto,
 			  (gpointer)hg);

@@ -3861,19 +3861,17 @@ static void skymon_set_allsky (GtkWidget *w,   gpointer gdata)
   hg=(typHOE *)gdata;
   
   hg->allsky_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
-  
+
+  cancel_allsky(hg);
+
+  /*  
   if(hg->allsky_flag){
-    if(hg->allsky_timer!=-1)
-      g_source_remove(hg->allsky_timer);
-    hg->allsky_timer=-1;
-
-    get_allsky(hg);
-
-    hg->allsky_timer=g_timeout_add(hg->allsky_interval*1000, 
-				 (GSourceFunc)update_allsky,
-				 (gpointer)hg);
+    hg->allsky_timer=g_timeout_add(1000, 
+    				 (GSourceFunc)check_allsky,
+    				 (gpointer)hg);
   }
   else{
+    
     if(hg->allsky_timer!=-1){
       g_source_remove(hg->allsky_timer);
       hg->allsky_timer=-1;
@@ -3899,7 +3897,7 @@ static void skymon_set_allsky (GtkWidget *w,   gpointer gdata)
      }
     }
   }
-
+*/
   draw_skymon(hg->skymon_dw,hg,FALSE);
 
 }
