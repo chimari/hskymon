@@ -620,24 +620,20 @@ int allsky_read_data(typHOE *hg){
 
 int get_allsky(typHOE *hg){
   int status = 0;
-  static int pid;
   char buf[BUFFSIZE];
-  static struct sigaction act;
 
   printf_log(hg, "[AllSky] fetching AllSky image from %s.",
 	     hg->allsky_host);
 
-  if(allsky_pid ==0) {   
-    hg->allsky_http_status=http_c(hg);
-    if(hg->allsky_http_status==0){
-      hg->allsky_data_status=allsky_read_data(hg);
-      if(hg->allsky_data_status>=0){
-	if(hg->skymon_mode==SKYMON_CUR){
-	  draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
-	}
-      }
-    }
-  }
+ hg->allsky_http_status=http_c(hg);
+ if(hg->allsky_http_status==0){
+   hg->allsky_data_status=allsky_read_data(hg);
+   if(hg->allsky_data_status>=0){
+     if(hg->skymon_mode==SKYMON_CUR){
+       draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
+     }
+   }
+ }
 
   return 0;
 }
@@ -4742,7 +4738,6 @@ int http_c_fcdb_ssl(typHOE *hg){
 
 gpointer thread_get_dss(gpointer gdata){
   typHOE *hg=(typHOE *)gdata;
-  //waitpid(fc_pid,0,WNOHANG);
 
   hg->psz=0;
   hg->pabort=FALSE;
