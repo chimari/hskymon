@@ -418,17 +418,17 @@ void create_skymon_dialog(typHOE *hg)
   hbox1 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox1);
   icon = gdk_pixbuf_new_from_resource ("/icons/feed_icon.png", NULL);
-  button=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
+  hg->allsky_button=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
   g_object_unref(icon);
-  gtk_container_set_border_width (GTK_CONTAINER (button), 0);
-  gtk_box_pack_start(GTK_BOX(hbox1),button,FALSE,FALSE,0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),hg->allsky_flag);
-  my_signal_connect(button,"toggled",
+  gtk_container_set_border_width (GTK_CONTAINER (hg->allsky_button), 0);
+  gtk_box_pack_start(GTK_BOX(hbox1),hg->allsky_button,FALSE,FALSE,0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_button),hg->allsky_flag);
+  my_signal_connect(hg->allsky_button,"toggled",
 		    skymon_set_allsky, 
 		    (gpointer)hg);
 
 #ifdef __GTK_TOOLTIP_H__
-  gtk_widget_set_tooltip_text(button,
+  gtk_widget_set_tooltip_text(hg->allsky_button,
 			      "All Sky Camera");
 #endif
 
@@ -1780,7 +1780,11 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 	    cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
 	  }
 	  
-	  if((hg->allsky_diff_flag)&&(hg->allsky_last_i>1)){
+	  if(hg->allsky_data_status<0){
+	    cairo_set_source_rgba(cr, 1.0, 0.2, 0.2, 1.0);
+	    tmp=g_strdup("Data Read Error");
+	  }
+	  else if((hg->allsky_diff_flag)&&(hg->allsky_last_i>1)){
 	    gint ago0=(t0-hg->allsky_last_t[hg->allsky_last_i-2])/60
 	      	    +(sys_gmtoff+hg->obs_timezone);
 	    tmp=g_strdup_printf("[%dmin ago] - [%dmin ago]",ago,ago0);
@@ -3864,40 +3868,6 @@ static void skymon_set_allsky (GtkWidget *w,   gpointer gdata)
 
   cancel_allsky(hg);
 
-  /*  
-  if(hg->allsky_flag){
-    hg->allsky_timer=g_timeout_add(1000, 
-    				 (GSourceFunc)check_allsky,
-    				 (gpointer)hg);
-  }
-  else{
-    
-    if(hg->allsky_timer!=-1){
-      g_source_remove(hg->allsky_timer);
-      hg->allsky_timer=-1;
-
-      if(flag_getting_allsky){
-
-#ifndef USE_WIN32
-	kill(allsky_pid, SIGKILL);
-	do{
-	  int child_ret;
-	  child_pid=waitpid(allsky_pid, &child_ret,WNOHANG);
-	} while((child_pid>0)||(child_pid!=-1));
-	
-	allsky_pid=0;
-#endif
-	flag_getting_allsky=FALSE;
-	allsky_debug_print("Parent: killed child process\n");
-      }
-      if(hg->allsky_check_timer!=-1){
-	g_source_remove(hg->allsky_check_timer); 
-	hg->allsky_check_timer=-1;
-	allsky_debug_print("Parent: terminated checking timeout\n");
-     }
-    }
-  }
-*/
   draw_skymon(hg->skymon_dw,hg,FALSE);
 
 }

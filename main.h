@@ -8,7 +8,7 @@
 #  include "config.h"
 #endif  
 
-#define ALLSKY_DEBUG
+#undef ALLSKY_DEBUG
 #undef SKYMON_DEBUG
 //#undef HTTP_DEBUG
 
@@ -1016,10 +1016,10 @@ enum{
 
 
 //#define VERSION "0.8.0"
+#define ALLSKY_MONITOR_INTERVAL 1000
 #define AZEL_INTERVAL 60*1000
 #define TELSTAT_INTERVAL 3*1000
 #define SKYCHECK_INTERVAL 500
-#define CHECK_ALLSKY_INTERVAL 3*1000
 
 
 #define SKYMON_INTERVAL 200
@@ -1345,6 +1345,8 @@ ALLSKY_GAO,
 ALLSKY_AAT
 } AllSkyCamera;
 
+
+
 #define ALLSKY_DEF_SHORT "All-Sky Camera"
 
 #define ALLSKY_UH_NAME "MaunaKea: UH 2.2m All-Sky Camera"
@@ -1538,6 +1540,17 @@ ALLSKY_AAT
 #define ALLSKY_AAT_CENTERX 415
 #define ALLSKY_AAT_CENTERY 330
 
+#define ALLSKY_MSO_NAME "Australia: Mount Stromlo (Visual)"
+#define ALLSKY_MSO_SHORT "Mt. Stromlo [Visual]"
+#define ALLSKY_MSO_HOST "www.mso.anu.edu.au"
+#define ALLSKY_MSO_PATH "/msoallsky/msoskycam.jpg"
+#define ALLSKY_MSO_FILE "allsky.jpg"
+#define ALLSKY_MSO_LAST_FILE "allsky-%ld.jpg"
+#define ALLSKY_MSO_ANGLE 0.0
+#define ALLSKY_MSO_DIAMETER 750
+#define ALLSKY_MSO_CENTERX 415
+#define ALLSKY_MSO_CENTERY 330
+
 
 #define ALLSKY_INTERVAL 120
 
@@ -1566,9 +1579,7 @@ ALLSKY_AAT
 #define HSKYMON_HTTP_ERROR_SOCKET   -2
 #define HSKYMON_HTTP_ERROR_CONNECT  -3
 #define HSKYMON_HTTP_ERROR_TEMPFILE -4
-#ifdef USE_SSL
 #define HSKYMON_HTTP_ERROR_SSL -5
-#endif
 
 // Plot Mode
 enum{ PLOT_EL, PLOT_AZ, PLOT_AD, PLOT_ADPAEL, PLOT_MOONSEP,  PLOT_HDSPA} PlotMode;
@@ -2306,7 +2317,6 @@ struct _typHOE{
   //  gchar *allsky_date_path;
   gchar *allsky_date;
   gchar *allsky_date_old;
-  gint allsky_timer;
   gint allsky_get_timer;
   gboolean allsky_get_flag;
   gchar *allsky_last_file0;
@@ -2351,6 +2361,10 @@ struct _typHOE{
   guint allsky_diff_dpix;
   gboolean allsky_limit;
   gboolean allsky_flip;
+  gint allsky_repeat;
+  GtkWidget *allsky_button;
+  gint allsky_data_status;
+  gint allsky_http_status;
 
   gboolean allsky_pixbuf_flag;
   gboolean allsky_pixbuf_flag0;
@@ -2485,7 +2499,6 @@ gboolean  flagTree;
 gboolean  flagPlot;
 gboolean  flagFC;
 gboolean  flagADC;
-gboolean  flag_getting_allsky;
 gboolean  flagPAM;
 int debug_flg;
 gboolean flag_getDSS;
@@ -2604,6 +2617,7 @@ void Export_TRDB_CSV();
 //http-client.c
 int start_get_allsky();
 void cancel_allsky();
+void terminate_allsky();
 GdkPixbuf* diff_pixbuf();
 gpointer thread_get_dss();
 gpointer thread_get_stddb();

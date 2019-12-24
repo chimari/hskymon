@@ -195,7 +195,6 @@ gboolean progress_timeout(gpointer data ){
 	tmp=g_strdup_printf("Downloaded %ld bytes",sz);
       }
       else{
-#ifdef USE_SSL      
 	if(flag_getDSS){
 	  if((hg->fc_mode<FC_SEP2)||(hg->fc_mode>FC_SEP3)){
 	    tmp=g_strdup_printf("Waiting for HTTP response ...");
@@ -220,9 +219,6 @@ gboolean progress_timeout(gpointer data ){
 	    break;
 	  }
 	}
-#else
-	tmp=g_strdup_printf("Waiting for HTTP response ...");
-#endif
       }
     }
     gtk_label_set_text(GTK_LABEL(hg->plabel), tmp);

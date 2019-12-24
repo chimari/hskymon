@@ -2956,11 +2956,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
 #else
 	     "OFF",
 #endif
-#ifdef USE_SSL
 	     "ON",
-#else
-             "OFF",
-#endif
 #ifdef USE_GTKMACINTEGRATION
 	     "ON"
 #else
@@ -2975,11 +2971,7 @@ void show_version (GtkWidget *widget, gpointer gdata)
 #else
 	     "OFF",
 #endif
-#ifdef USE_SSL
 	     "ON"
-#else
-             "OFF"
-#endif
 	     );
 #endif
   label = gtk_label_new (buf);
@@ -11233,7 +11225,6 @@ void global_init(){
   flagPlot=FALSE;
   flagFC=FALSE;
   flagADC=FALSE;
-  flag_getting_allsky=FALSE;
   flag_getDSS=FALSE;
   flag_getFCDB=FALSE;
   
@@ -11396,7 +11387,6 @@ void param_init(typHOE *hg){
 #else
   hg->allsky_diff_dpix = 1;
 #endif
-  hg->allsky_timer=-1;
   hg->allsky_get_timer=-1;
   hg->allsky_get_flag=FALSE;
   hg->allsky_date=g_strdup("(Update time)");
@@ -11756,13 +11746,38 @@ gboolean check_allsky (gpointer gdata){
 					 (GSourceFunc)start_get_allsky,
 					 (gpointer)hg);
       hg->allsky_get_flag=TRUE;
-      printf("start first time\n");
+      printf_log(hg,"[AllSky] starting to get All Sky image from %s",
+		 hg->allsky_host);
+      hg->allsky_repeat=0;
     }
-    else if (hg->allsky_get_timer<0){
+    else if (hg->allsky_get_timer<0){  // 2nd time
+      if(hg->allsky_http_status<0){
+	terminate_allsky(hg);
+      }
+      else if(hg->allsky_data_status<0){
+	popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		      "dialog-error", 
+#else
+		      GTK_STOCK_DIALOG_ERROR, 
+#endif
+		      POPUP_TIMEOUT*2,
+		      "<b>Error</b>: Failed to read an All Sky image.",
+		      NULL);
+      }	
+    
       hg->allsky_get_timer=g_timeout_add(hg->allsky_interval*1000, 
 					 (GSourceFunc)start_get_allsky,
 					 (gpointer)hg);
-      printf("running get_allsky\n");
+      printf_log(hg,"[AllSky] Set a Timeout process (%d sec)",
+		 hg->allsky_interval);
+      hg->allsky_repeat=0;
+    }
+    else{
+      hg->allsky_repeat++;
+      if(hg->allsky_repeat>hg->allsky_interval*2){
+	terminate_allsky(hg);
+      }
     }
   }
 
@@ -14392,9 +14407,9 @@ int main(int argc, char* argv[]){
   //   Leave it running
   //   This function automatically check the current flags/statuses
   //   Then Start the getting command automatically
-  hg->allsky_timer=g_timeout_add(1000, 
-				 (GSourceFunc)check_allsky,
-				 (gpointer)hg);
+  g_timeout_add(ALLSKY_MONITOR_INTERVAL, 
+		(GSourceFunc)check_allsky,
+		(gpointer)hg);
   
   hg->timer=g_timeout_add(AZEL_INTERVAL, 
 			  (GSourceFunc)update_azel_auto,

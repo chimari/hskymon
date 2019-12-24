@@ -21,39 +21,22 @@
 
 #include <time.h>
 
-#include <signal.h>
-
 #include <libxml/HTMLparser.h>
 
-#ifdef USE_SSL
 #include <fcntl.h>
 #include "ssl.h"
-#endif
 
 
 // From libghttp-1.0.9
 time_t http_date_to_time(const char *a_date);
 time_t ghttp_parse_date(char *a_date);
 void copy_file();
-#ifndef USE_WIN32
-void allsky_signal();
-#endif
 
-void allsky_read_data();
+int allsky_read_data();
 
-#ifdef USE_WIN32
-unsigned __stdcall http_c();
-unsigned __stdcall http_c_fc();
-#ifdef USE_SSL
-unsigned __stdcall http_c_fc_ssl();
-#endif
-#else
 int http_c();
 int http_c_fc();
-#ifdef USE_SSL
 int http_c_fc_ssl();
-#endif
-#endif
 
 int post_body();
 int post_body_ssl();
@@ -64,28 +47,13 @@ void thread_cancel_allsky();
 
 void unchunk();
 
-#ifdef USE_SSL
 gint ssl_read();
 gint ssl_peek();
 gint ssl_gets();
 gint ssl_write();
-#endif
 
 
-gboolean flag_allsky_finish=FALSE;
-#ifndef USE_WIN32
-gint allsky_repeat=0;
-#endif
-
-#ifdef USE_WIN32
 #define BUF_LEN 65535             /* Buffer size */
-#else
-#define BUF_LEN 65535             /* Buffer size */
-#endif
-
-#ifndef USE_WIN32
-int allsky_fd[2];
-#endif
 
 void check_msg_from_parent(typHOE *hg){
   if(hg->pabort){
@@ -265,7 +233,6 @@ void write_to_server(int socket, char *p){
   fd_write(socket, p, strlen(p));
 }
 
-#ifdef USE_SSL
 void write_to_SSLserver(SSL *ssl, char *p){
   if ( debug_flg ){
     fprintf(stderr, "[SSL] <-- %s", p);fflush(stderr);
@@ -273,7 +240,6 @@ void write_to_SSLserver(SSL *ssl, char *p){
   
   ssl_write(ssl, p, strlen(p));
 }
-#endif
 
 int http_c(typHOE *hg){
   int command_socket;           /* コマンド用ソケット */
@@ -389,267 +355,267 @@ int http_c(typHOE *hg){
 }
 
 
-void allsky_read_data(typHOE *hg){
+int allsky_read_data(typHOE *hg){
   GdkPixbuf *tmp_pixbuf=NULL;
-  {
-    time_t t,t0;
-    struct tm *tmpt;
-    gchar *tmp_file=NULL;
-    
-    t=ghttp_parse_date(hg->allsky_date);
-    
-    if(!hg->allsky_pixbuf_flag){
-      tmp_file=g_strdup_printf(hg->allsky_last_file0,t);
-    }
-    
-    
-    if(hg->allsky_pixbuf_flag){
-      if(hg->allsky_last_i==0){
-	if(hg->allsky_limit){
-	  tmp_pixbuf
-	    = gdk_pixbuf_new_from_file_at_size(hg->allsky_file,
-					       ALLSKY_LIMIT,
-					       ALLSKY_LIMIT,
-					       NULL);
-	}
-	else{
-	  tmp_pixbuf
-	    = gdk_pixbuf_new_from_file(hg->allsky_file, NULL);
-	}
-	
-	if(GDK_IS_PIXBUF(tmp_pixbuf)){
-	  if(hg->allsky_flip){
-	    GdkPixbuf *pixbuf_flip=NULL;
-
-	    pixbuf_flip=gdk_pixbuf_flip(tmp_pixbuf,TRUE);
-	    g_object_unref(G_OBJECT(tmp_pixbuf));
-	    tmp_pixbuf= gdk_pixbuf_copy(pixbuf_flip);
-	    g_object_unref(G_OBJECT(pixbuf_flip));
-	  }
-	  
-	  if(hg->allsky_last_date[0])
-	    g_free(hg->allsky_last_date[0]);
-	  hg->allsky_last_date[0]=g_strdup(hg->allsky_date);
-	  hg->allsky_last_t[0] = t + hg->obs_timezone*60;
-	  
-	  if(hg->allsky_last_pixbuf[0])  
-	    g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[0]));
-	  hg->allsky_last_pixbuf[0]
-	    = gdk_pixbuf_copy(tmp_pixbuf);
-	  g_object_unref(G_OBJECT(tmp_pixbuf));
-
-	  if(hg->allsky_diff_pixbuf[0])
-	    g_free(hg->allsky_diff_pixbuf[0]);
-	  hg->allsky_diff_pixbuf[0]
-	    = diff_pixbuf(hg->allsky_last_pixbuf[0],hg->allsky_last_pixbuf[0],
-			  hg->allsky_diff_mag,hg->allsky_diff_base,
-			  hg->allsky_diff_dpix,
-			  hg->allsky_centerx,hg->allsky_centery,
-			  hg->allsky_diameter, hg->allsky_cloud_thresh,
-			  &hg->allsky_cloud_abs[0],
-			  &hg->allsky_cloud_se[0],
-			  &hg->allsky_cloud_area[0],
-			  hg->allsky_cloud_emp,
-			  hg->allsky_diff_zero,
-			  0);
-
-	  if(hg->allsky_diff_pixbuf[0]){
-	    hg->allsky_last_i++;
-	  }
-	  else{
-	    printf_log(hg,"[AllSky] error in pixbuf, skipping to create diff image");
-	  }
-	}
-	else{
-	  printf_log(hg,"[AllSky] Error in reading image.");
-	}
-
-	hg->allsky_last_time=0;
-	
-      }
-      else if( strcmp(hg->allsky_date,hg->allsky_last_date[hg->allsky_last_i-1])!=0 ){
-	if(hg->allsky_limit){
-	  tmp_pixbuf
-	    = gdk_pixbuf_new_from_file_at_size(hg->allsky_file,
-					       ALLSKY_LIMIT,
-					       ALLSKY_LIMIT,
-					       NULL);
-	}
-	else{
-	  tmp_pixbuf
-	    = gdk_pixbuf_new_from_file(hg->allsky_file, NULL);
-	}
-	
-	if(GDK_IS_PIXBUF(tmp_pixbuf)){
-	  if(hg->allsky_last_date[hg->allsky_last_i])
-	    g_free(hg->allsky_last_date[hg->allsky_last_i]);
-	  hg->allsky_last_date[hg->allsky_last_i]=g_strdup(hg->allsky_date);
-	  hg->allsky_last_t[hg->allsky_last_i] = t + hg->obs_timezone*60;
-	  
-	  if(hg->allsky_last_pixbuf[hg->allsky_last_i])  
-	    g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[hg->allsky_last_i]));
-	  hg->allsky_last_pixbuf[hg->allsky_last_i]
-	    = gdk_pixbuf_copy(tmp_pixbuf);
-	  g_object_unref(G_OBJECT(tmp_pixbuf));
-
-	  // Differential Image
-	  if(hg->allsky_diff_pixbuf[hg->allsky_last_i])
-	    g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[hg->allsky_last_i]));
-	  hg->allsky_diff_pixbuf[hg->allsky_last_i]
-	    = diff_pixbuf(hg->allsky_last_pixbuf[hg->allsky_last_i-1],
-			  hg->allsky_last_pixbuf[hg->allsky_last_i],
-			  hg->allsky_diff_mag,hg->allsky_diff_base,
-			  hg->allsky_diff_dpix,
-			  hg->allsky_centerx,hg->allsky_centery,
-			  hg->allsky_diameter, hg->allsky_cloud_thresh,
-			  &hg->allsky_cloud_abs[hg->allsky_last_i],
-			  &hg->allsky_cloud_se[hg->allsky_last_i],
-			  &hg->allsky_cloud_area[hg->allsky_last_i],
-			  hg->allsky_cloud_emp,
-			  hg->allsky_diff_zero,
-			  hg->allsky_last_i);
-	  
-	  
-	  if(hg->allsky_diff_pixbuf[hg->allsky_last_i]){
-	    if(hg->allsky_last_i==ALLSKY_LAST_MAX){
-	      gint i;
-	      
-	      for(i=0;i<ALLSKY_LAST_MAX;i++){
-		if(hg->allsky_last_date[i]) g_free(hg->allsky_last_date[i]);
-		hg->allsky_last_date[i]=g_strdup(hg->allsky_last_date[i+1]);
-		hg->allsky_last_t[i] = hg->allsky_last_t[i+1];
-		
-		if(hg->allsky_last_pixbuf[i])  
-		  g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[i]));
-		if(hg->allsky_last_pixbuf[i+1]){
-		  hg->allsky_last_pixbuf[i]=
-		    gdk_pixbuf_copy(hg->allsky_last_pixbuf[i+1]);
-		}
-		else{
-		  hg->allsky_last_pixbuf[i]=NULL;
-		}
-	      }
-	      
-	      // Differential Image
-	      for(i=0;i<ALLSKY_LAST_MAX;i++){
-		if(hg->allsky_diff_pixbuf[i])  
-		  g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[i]));
-		if(hg->allsky_diff_pixbuf[i+1]){
-		  hg->allsky_diff_pixbuf[i]=
-		    gdk_pixbuf_copy(hg->allsky_diff_pixbuf[i+1]);
-		}
-		else{
-		  hg->allsky_diff_pixbuf[i]=NULL;
-		}
-		hg->allsky_cloud_abs[i]=hg->allsky_cloud_abs[i+1];
-		hg->allsky_cloud_se[i]=hg->allsky_cloud_se[i+1];
-		hg->allsky_cloud_area[i]=hg->allsky_cloud_area[i+1];
-	      }
-	      
-	      if(hg->allsky_last_pixbuf[ALLSKY_LAST_MAX]){
-		g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[ALLSKY_LAST_MAX]));
-		hg->allsky_last_pixbuf[ALLSKY_LAST_MAX]=NULL;
-	      }
-	      if(hg->allsky_diff_pixbuf[ALLSKY_LAST_MAX]){
-		g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[ALLSKY_LAST_MAX]));
-		hg->allsky_diff_pixbuf[ALLSKY_LAST_MAX]=NULL;
-	      }
-	    }
-	    else{
-	      hg->allsky_last_i++;
-	    }
-	  }
-	  else{
-	    printf_log(hg,"[AllSky] error in pixbuf, skipping to create diff image");
-	  }
-
-	  t0=ghttp_parse_date(hg->allsky_last_date[0]);
-	  hg->allsky_last_time=(t-t0)/60;
-	
-	}
-	else{
-	  printf_log(hg,"[AllSky] Error in reading image.");
-	}
+  time_t t,t0;
+  struct tm *tmpt;
+  gchar *tmp_file=NULL;
+  gint ret=0;
+  
+  t=ghttp_parse_date(hg->allsky_date);
+  
+  if(!hg->allsky_pixbuf_flag){
+    tmp_file=g_strdup_printf(hg->allsky_last_file0,t);
+  }
+  
+  
+  if(hg->allsky_pixbuf_flag){
+    if(hg->allsky_last_i==0){
+      if(hg->allsky_limit){
+	tmp_pixbuf
+	  = gdk_pixbuf_new_from_file_at_size(hg->allsky_file,
+					     ALLSKY_LIMIT,
+					     ALLSKY_LIMIT,
+					     NULL);
       }
       else{
-	  printf_log(hg,"[AllSky] Time stamp is not changed. Skip image.");
+	tmp_pixbuf
+	  = gdk_pixbuf_new_from_file(hg->allsky_file, NULL);
       }
-    }
-    else{         //  Make temp file
-      if(hg->allsky_last_i==0){
+      
+      if(GDK_IS_PIXBUF(tmp_pixbuf)){
+	if(hg->allsky_flip){
+	  GdkPixbuf *pixbuf_flip=NULL;
+	  
+	  pixbuf_flip=gdk_pixbuf_flip(tmp_pixbuf,TRUE);
+	  g_object_unref(G_OBJECT(tmp_pixbuf));
+	  tmp_pixbuf= gdk_pixbuf_copy(pixbuf_flip);
+	  g_object_unref(G_OBJECT(pixbuf_flip));
+	}
+	
 	if(hg->allsky_last_date[0])
 	  g_free(hg->allsky_last_date[0]);
 	hg->allsky_last_date[0]=g_strdup(hg->allsky_date);
 	hg->allsky_last_t[0] = t + hg->obs_timezone*60;
 	
-	if(hg->allsky_last_file[0])
-	  g_free(hg->allsky_last_file[0]);
-	hg->allsky_last_file[0]=g_strdup(tmp_file);
+	if(hg->allsky_last_pixbuf[0])  
+	  g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[0]));
+	hg->allsky_last_pixbuf[0]
+	  = gdk_pixbuf_copy(tmp_pixbuf);
+	g_object_unref(G_OBJECT(tmp_pixbuf));
 	
-	if(access(tmp_file,F_OK)==0) unlink(tmp_file);
-	copy_file(hg->allsky_file,hg->allsky_last_file[0]);
+	if(hg->allsky_diff_pixbuf[0])
+	  g_free(hg->allsky_diff_pixbuf[0]);
+	hg->allsky_diff_pixbuf[0]
+	  = diff_pixbuf(hg->allsky_last_pixbuf[0],hg->allsky_last_pixbuf[0],
+			hg->allsky_diff_mag,hg->allsky_diff_base,
+			hg->allsky_diff_dpix,
+			hg->allsky_centerx,hg->allsky_centery,
+			hg->allsky_diameter, hg->allsky_cloud_thresh,
+			&hg->allsky_cloud_abs[0],
+			&hg->allsky_cloud_se[0],
+			&hg->allsky_cloud_area[0],
+			hg->allsky_cloud_emp,
+			hg->allsky_diff_zero,
+			0);
 	
-	hg->allsky_last_time=0;
-	
-	hg->allsky_last_i++;
-	
+	if(hg->allsky_diff_pixbuf[0]){
+	  hg->allsky_last_i++;
+	}
+	else{
+	  printf_log(hg,"[AllSky] error in pixbuf, skipping to create diff image");
+	  ret=-1;
+	}
       }
-      else if( strcmp(tmp_file,hg->allsky_last_file[hg->allsky_last_i-1])!=0 ) {
+      else{
+	printf_log(hg,"[AllSky] Error in reading image.");
+	ret=-2;
+      }
+      
+      hg->allsky_last_time=0;
+      
+    }
+    else if( strcmp(hg->allsky_date,hg->allsky_last_date[hg->allsky_last_i-1])!=0 ){
+      if(hg->allsky_limit){
+	tmp_pixbuf
+	  = gdk_pixbuf_new_from_file_at_size(hg->allsky_file,
+					     ALLSKY_LIMIT,
+					     ALLSKY_LIMIT,
+					     NULL);
+      }
+      else{
+	tmp_pixbuf
+	  = gdk_pixbuf_new_from_file(hg->allsky_file, NULL);
+      }
+      
+      if(GDK_IS_PIXBUF(tmp_pixbuf)){
 	if(hg->allsky_last_date[hg->allsky_last_i])
 	  g_free(hg->allsky_last_date[hg->allsky_last_i]);
 	hg->allsky_last_date[hg->allsky_last_i]=g_strdup(hg->allsky_date);
 	hg->allsky_last_t[hg->allsky_last_i] = t + hg->obs_timezone*60;
-	
-	if(hg->allsky_last_file[hg->allsky_last_i])
-	  g_free(hg->allsky_last_file[hg->allsky_last_i]);
-	hg->allsky_last_file[hg->allsky_last_i]=g_strdup(tmp_file);
-	
-	if(access(tmp_file,F_OK)==0) unlink(tmp_file);
-	copy_file(hg->allsky_file,hg->allsky_last_file[hg->allsky_last_i]);
-	
-	if(hg->allsky_last_i==ALLSKY_LAST_MAX){
-	  gint i;
-	  gchar *del_file;
 	  
-	  del_file=g_strdup(hg->allsky_last_file[0]);
-	  
-	  for(i=0;i<ALLSKY_LAST_MAX;i++){
-	    if(hg->allsky_last_date[i]) g_free(hg->allsky_last_date[i]);
-	    hg->allsky_last_date[i]=g_strdup(hg->allsky_last_date[i+1]);
-	    hg->allsky_last_t[i] = hg->allsky_last_t[i+1];
+	if(hg->allsky_last_pixbuf[hg->allsky_last_i])  
+	  g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[hg->allsky_last_i]));
+	hg->allsky_last_pixbuf[hg->allsky_last_i]
+	  = gdk_pixbuf_copy(tmp_pixbuf);
+	g_object_unref(G_OBJECT(tmp_pixbuf));
+	
+	// Differential Image
+	if(hg->allsky_diff_pixbuf[hg->allsky_last_i])
+	  g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[hg->allsky_last_i]));
+	hg->allsky_diff_pixbuf[hg->allsky_last_i]
+	  = diff_pixbuf(hg->allsky_last_pixbuf[hg->allsky_last_i-1],
+			hg->allsky_last_pixbuf[hg->allsky_last_i],
+			hg->allsky_diff_mag,hg->allsky_diff_base,
+			hg->allsky_diff_dpix,
+			hg->allsky_centerx,hg->allsky_centery,
+			hg->allsky_diameter, hg->allsky_cloud_thresh,
+			&hg->allsky_cloud_abs[hg->allsky_last_i],
+			&hg->allsky_cloud_se[hg->allsky_last_i],
+			&hg->allsky_cloud_area[hg->allsky_last_i],
+			hg->allsky_cloud_emp,
+			hg->allsky_diff_zero,
+			hg->allsky_last_i);
+	
+	
+	if(hg->allsky_diff_pixbuf[hg->allsky_last_i]){
+	  if(hg->allsky_last_i==ALLSKY_LAST_MAX){
+	    gint i;
 	    
-	    if(hg->allsky_last_file[i]) g_free(hg->allsky_last_file[i]);
-	    hg->allsky_last_file[i]=g_strdup(hg->allsky_last_file[i+1]);
+	    for(i=0;i<ALLSKY_LAST_MAX;i++){
+	      if(hg->allsky_last_date[i]) g_free(hg->allsky_last_date[i]);
+	      hg->allsky_last_date[i]=g_strdup(hg->allsky_last_date[i+1]);
+	      hg->allsky_last_t[i] = hg->allsky_last_t[i+1];
+	      
+	      if(hg->allsky_last_pixbuf[i])  
+		g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[i]));
+	      if(hg->allsky_last_pixbuf[i+1]){
+		hg->allsky_last_pixbuf[i]=
+		  gdk_pixbuf_copy(hg->allsky_last_pixbuf[i+1]);
+	      }
+	      else{
+		hg->allsky_last_pixbuf[i]=NULL;
+	      }
+	    }
+	    
+	    // Differential Image
+	    for(i=0;i<ALLSKY_LAST_MAX;i++){
+	      if(hg->allsky_diff_pixbuf[i])  
+		g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[i]));
+	      if(hg->allsky_diff_pixbuf[i+1]){
+		hg->allsky_diff_pixbuf[i]=
+		  gdk_pixbuf_copy(hg->allsky_diff_pixbuf[i+1]);
+	      }
+	      else{
+		hg->allsky_diff_pixbuf[i]=NULL;
+	      }
+	      hg->allsky_cloud_abs[i]=hg->allsky_cloud_abs[i+1];
+	      hg->allsky_cloud_se[i]=hg->allsky_cloud_se[i+1];
+	      hg->allsky_cloud_area[i]=hg->allsky_cloud_area[i+1];
+	      }
+	    
+	    if(hg->allsky_last_pixbuf[ALLSKY_LAST_MAX]){
+	      g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[ALLSKY_LAST_MAX]));
+	      hg->allsky_last_pixbuf[ALLSKY_LAST_MAX]=NULL;
+	    }
+	    if(hg->allsky_diff_pixbuf[ALLSKY_LAST_MAX]){
+	      g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[ALLSKY_LAST_MAX]));
+	      hg->allsky_diff_pixbuf[ALLSKY_LAST_MAX]=NULL;
+	    }
+	    }
+	  else{
+	    hg->allsky_last_i++;
 	  }
-
-	  if(hg->allsky_last_file[ALLSKY_LAST_MAX]) 
-	    g_free(hg->allsky_last_file[ALLSKY_LAST_MAX]);
-	  hg->allsky_last_file[ALLSKY_LAST_MAX]=NULL;
-	    
-	  if(access(del_file,F_OK)==0)
-	    unlink(del_file);
-	  if(del_file) g_free(del_file);
 	}
 	else{
-	  hg->allsky_last_i++;
+	  printf_log(hg,"[AllSky] error in pixbuf, skipping to create diff image");
+	  ret=-1;
 	}
 	
 	t0=ghttp_parse_date(hg->allsky_last_date[0]);
 	hg->allsky_last_time=(t-t0)/60;
-	  
+	
       }
+	else{
+	  printf_log(hg,"[AllSky] Error in reading image.");
+	  ret=-2;
+	}
+    }
+    else{
+      printf_log(hg,"[AllSky] Time stamp is not changed. Skip image.");
+      ret=1;
+    }
+  }
+  else{         //  Make temp file
+    if(hg->allsky_last_i==0){
+      if(hg->allsky_last_date[0])
+	g_free(hg->allsky_last_date[0]);
+      hg->allsky_last_date[0]=g_strdup(hg->allsky_date);
+      hg->allsky_last_t[0] = t + hg->obs_timezone*60;
+      
+      if(hg->allsky_last_file[0])
+	g_free(hg->allsky_last_file[0]);
+      hg->allsky_last_file[0]=g_strdup(tmp_file);
+      
+      if(access(tmp_file,F_OK)==0) unlink(tmp_file);
+      copy_file(hg->allsky_file,hg->allsky_last_file[0]);
+      
+      hg->allsky_last_time=0;
+      
+      hg->allsky_last_i++;
+      
+    }
+    else if( strcmp(tmp_file,hg->allsky_last_file[hg->allsky_last_i-1])!=0 ) {
+      if(hg->allsky_last_date[hg->allsky_last_i])
+	g_free(hg->allsky_last_date[hg->allsky_last_i]);
+      hg->allsky_last_date[hg->allsky_last_i]=g_strdup(hg->allsky_date);
+      hg->allsky_last_t[hg->allsky_last_i] = t + hg->obs_timezone*60;
+      
+      if(hg->allsky_last_file[hg->allsky_last_i])
+	g_free(hg->allsky_last_file[hg->allsky_last_i]);
+      hg->allsky_last_file[hg->allsky_last_i]=g_strdup(tmp_file);
+      
+      if(access(tmp_file,F_OK)==0) unlink(tmp_file);
+      copy_file(hg->allsky_file,hg->allsky_last_file[hg->allsky_last_i]);
+      
+      if(hg->allsky_last_i==ALLSKY_LAST_MAX){
+	gint i;
+	gchar *del_file;
+	
+	del_file=g_strdup(hg->allsky_last_file[0]);
+	
+	for(i=0;i<ALLSKY_LAST_MAX;i++){
+	  if(hg->allsky_last_date[i]) g_free(hg->allsky_last_date[i]);
+	  hg->allsky_last_date[i]=g_strdup(hg->allsky_last_date[i+1]);
+	  hg->allsky_last_t[i] = hg->allsky_last_t[i+1];
+	  
+	  if(hg->allsky_last_file[i]) g_free(hg->allsky_last_file[i]);
+	  hg->allsky_last_file[i]=g_strdup(hg->allsky_last_file[i+1]);
+	}
+	
+	if(hg->allsky_last_file[ALLSKY_LAST_MAX]) 
+	  g_free(hg->allsky_last_file[ALLSKY_LAST_MAX]);
+	hg->allsky_last_file[ALLSKY_LAST_MAX]=NULL;
+	
+	if(access(del_file,F_OK)==0)
+	  unlink(del_file);
+	if(del_file) g_free(del_file);
+      }
+      else{
+	hg->allsky_last_i++;
+      }
+      
+      t0=ghttp_parse_date(hg->allsky_last_date[0]);
+      hg->allsky_last_time=(t-t0)/60;
       
     }
       
-    if(tmp_file)
-      g_free(tmp_file);
   }
+      
+  if(tmp_file)
+    g_free(tmp_file);
 
-#ifdef USE_WIN32
-  //draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
-#else
-  flag_allsky_finish=FALSE;
-#endif
+  return(ret);
 }
 
 int get_allsky(typHOE *hg){
@@ -657,26 +623,21 @@ int get_allsky(typHOE *hg){
   static int pid;
   char buf[BUFFSIZE];
   static struct sigaction act;
-  int ret=0;
 
-  if(flag_getting_allsky) return(-1);
-  flag_getting_allsky=TRUE;
-
-  allsky_debug_print("Parent: start to fork child process\n");
   printf_log(hg, "[AllSky] fetching AllSky image from %s.",
 	     hg->allsky_host);
 
   if(allsky_pid ==0) {   
-    ret=http_c(hg);
-    if(ret==0){
-      allsky_read_data(hg);
-      if(hg->skymon_mode==SKYMON_CUR){
-	draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
+    hg->allsky_http_status=http_c(hg);
+    if(hg->allsky_http_status==0){
+      hg->allsky_data_status=allsky_read_data(hg);
+      if(hg->allsky_data_status>=0){
+	if(hg->skymon_mode==SKYMON_CUR){
+	  draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
+	}
       }
     }
-    allsky_debug_print("Child: child end\n");
   }
-  flag_getting_allsky=FALSE;
 
   return 0;
 }
@@ -697,9 +658,6 @@ void thread_cancel_allsky(typHOE *hg)
 
   hg->asabort=TRUE;
 
-  hg->allsky_get_timer=-1;
-  hg->allsky_get_flag=FALSE;
-  
   if(hg->asloop){
     g_cancellable_cancel(hg->ascancel);
     g_object_unref(hg->ascancel); 
@@ -717,7 +675,7 @@ gboolean start_get_allsky(gpointer gdata){
   g_main_loop_run(hg->asloop);
   g_main_loop_unref(hg->asloop);
   hg->asloop=NULL;
-  
+
   hg->allsky_get_timer=-1;
   return(FALSE);
 }
@@ -1242,6 +1200,8 @@ int http_c_fc(typHOE *hg){
 
   }
 
+  hg->psz=0;
+
   sprintf(send_mesg, "GET %s HTTP/1.1\r\n", tmp);
   write_to_server(command_socket, send_mesg);
   if(tmp) g_free(tmp);
@@ -1309,6 +1269,10 @@ int http_c_fc(typHOE *hg){
       }
       if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
 	chunked_flag=TRUE;
+      }
+      if(strncmp(buf,"Content-Length: ",strlen("Content-Length: "))==0){
+	cp = buf + strlen("Content-Length: ");
+	hg->psz=atol(cp);
       }
     }
     do { // data read
@@ -1441,6 +1405,7 @@ int http_c_fc(typHOE *hg){
     // AddrInfoの解放
     freeaddrinfo(res);
 
+    hg->psz=0;
     if(cp3){
       switch(hg->fc_mode){
       case FC_ESO_DSS1R:
@@ -1515,6 +1480,10 @@ int http_c_fc(typHOE *hg){
 	if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
 	  chunked_flag=TRUE;
 	}
+	if(strncmp(buf,"Content-Length: ",strlen("Content-Length: "))==0){
+	  cp = buf + strlen("Content-Length: ");
+	  hg->psz=atol(cp);
+	}
       }
       do { // data read
 	size = recv(command_socket, buf, BUF_LEN, 0);
@@ -1548,6 +1517,10 @@ int http_c_fc(typHOE *hg){
       if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
 	chunked_flag=TRUE;
       }
+      if(strncmp(buf,"Content-Length: ",strlen("Content-Length: "))==0){
+	cp = buf + strlen("Content-Length: ");
+	hg->psz=atol(cp);
+      }
     }
     do { // data read
       size = recv(command_socket, buf, BUF_LEN, 0);
@@ -1579,7 +1552,6 @@ int http_c_fc(typHOE *hg){
 }
 
 
-#ifdef USE_SSL
 int http_c_fc_ssl(typHOE *hg){
   int command_socket;           /* コマンド用ソケット */
   int size;
@@ -1611,6 +1583,8 @@ int http_c_fc_ssl(typHOE *hg){
 
   SSL *ssl;
   SSL_CTX *ctx;
+
+  hg->psz=0;
 
   check_msg_from_parent(hg);
    
@@ -1837,6 +1811,7 @@ int http_c_fc_ssl(typHOE *hg){
 
   }
 
+  hg->psz=0;
   sprintf(send_mesg, "GET %s HTTP/1.1\r\n", tmp);
   write_to_SSLserver(ssl, send_mesg);
   if(tmp) g_free(tmp);
@@ -1906,6 +1881,10 @@ int http_c_fc_ssl(typHOE *hg){
       }
       if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
 	chunked_flag=TRUE;
+      }
+      if(strncmp(buf,"Content-Length: ",strlen("Content-Length: "))==0){
+	cp = buf + strlen("Content-Length: ");
+	hg->psz=atol(cp);
       }
     }
     do{ // data read
@@ -2065,6 +2044,7 @@ int http_c_fc_ssl(typHOE *hg){
     
     check_msg_from_parent(hg);
 
+    hg->psz=0;
     if(cp3){
       switch(hg->fc_mode){
       case FC_ESO_DSS1R:
@@ -2139,6 +2119,10 @@ int http_c_fc_ssl(typHOE *hg){
 	if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
 	  chunked_flag=TRUE;
 	}
+	if(strncmp(buf,"Content-Length: ",strlen("Content-Length: "))==0){
+	  cp = buf + strlen("Content-Length: ");
+	  hg->psz=atol(cp);
+	}
       }
       do{ // data read
 	size = SSL_read(ssl, buf, BUF_LEN);
@@ -2170,6 +2154,10 @@ int http_c_fc_ssl(typHOE *hg){
       }
       if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
 	chunked_flag=TRUE;
+      }
+      if(strncmp(buf,"Content-Length: ",strlen("Content-Length: "))==0){
+	cp = buf + strlen("Content-Length: ");
+	hg->psz=atol(cp);
       }
     }
     do{ // data read
@@ -2204,7 +2192,6 @@ int http_c_fc_ssl(typHOE *hg){
 
   return 0;
 }
-#endif  //USE_SSL
 
 char* getLine(int fd)
 {
@@ -2286,6 +2273,7 @@ int http_c_std(typHOE *hg){
   freeaddrinfo(res);
 
   // HTTP/1.1 ではchunked対策が必要
+  hg->psz=0;
   sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->std_path);
   write_to_server(command_socket, send_mesg);
 
@@ -2316,6 +2304,10 @@ int http_c_std(typHOE *hg){
     }
     if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
       chunked_flag=TRUE;
+    }
+    if(strncmp(buf,"Content-Length: ",strlen("Content-Length: "))==0){
+      cp = buf + strlen("Content-Length: ");
+      hg->psz=atol(cp);
     }
   }
   do{  // data read
@@ -4460,6 +4452,7 @@ int http_c_fcdb(typHOE *hg){
   freeaddrinfo(res);
 
   // HTTP/1.1 ではchunked対策が必要
+  hg->psz=0;
   if(hg->fcdb_post){
     sprintf(send_mesg, "POST %s HTTP/1.1\r\n", hg->fcdb_path);
   }
@@ -4534,6 +4527,10 @@ int http_c_fcdb(typHOE *hg){
     if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
       chunked_flag=TRUE;
     }
+    if(strncmp(buf,"Content-Length: ",strlen("Content-Length: "))==0){
+      cp = buf + strlen("Content-Length: ");
+      hg->psz=atol(cp);
+    }
   }
   do{ // data read
     size = recv(command_socket,buf,BUF_LEN, 0);
@@ -4562,7 +4559,6 @@ int http_c_fcdb(typHOE *hg){
   return 0;
 }
 
-#ifdef USE_SSL
 int http_c_fcdb_ssl(typHOE *hg){
   int command_socket;           /* コマンド用ソケット */
   int size;
@@ -4646,6 +4642,7 @@ int http_c_fcdb_ssl(typHOE *hg){
   freeaddrinfo(res);
 
   // HTTP/1.1 ではchunked対策が必要
+  hg->psz=0;
   if(hg->fcdb_post){
     sprintf(send_mesg, "POST %s HTTP/1.1\r\n", hg->fcdb_path);
   }
@@ -4703,7 +4700,11 @@ int http_c_fcdb_ssl(typHOE *hg){
     }
     if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
       chunked_flag=TRUE;
-      }
+    }
+    if(strncmp(buf,"Content-Length: ",strlen("Content-Length: "))==0){
+      cp = buf + strlen("Content-Length: ");
+      hg->psz=atol(cp);
+    }
   }
   do{ // data read
     size = SSL_read(ssl, buf, BUF_LEN);
@@ -4736,7 +4737,6 @@ int http_c_fcdb_ssl(typHOE *hg){
 
   return 0;
 }
-#endif  //USE_SSL
 
 
 
@@ -4747,16 +4747,12 @@ gpointer thread_get_dss(gpointer gdata){
   hg->psz=0;
   hg->pabort=FALSE;
   
-#ifdef USE_SSL
   if((hg->fc_mode<FC_SEP2)||(hg->fc_mode>FC_SEP3)){
     http_c_fc(hg);
   }
   else{
     http_c_fc_ssl(hg);
   }
-#else
-  http_c_fc(hg);
-#endif
 
   hg->fc_pid=1;
   if(hg->ploop) g_main_loop_quit(hg->ploop);
@@ -4781,7 +4777,6 @@ gpointer thread_get_fcdb(gpointer gdata){
   hg->psz=0;
   hg->pabort=FALSE;
 
-#ifdef USE_SSL
   switch(hg->fcdb_type){
   case (-1):    
   case FCDB_TYPE_PS1:
@@ -4799,9 +4794,6 @@ gpointer thread_get_fcdb(gpointer gdata){
     http_c_fcdb(hg);
     break;
   }
-#else
-  http_c_fcdb(hg);
-#endif
  
   if(hg->ploop) g_main_loop_quit(hg->ploop);
 }
@@ -4827,32 +4819,37 @@ void cancel_allsky(typHOE *hg)
   // If there is a Running thread
   thread_cancel_allsky(hg);
   // Stop start_get timeout
-  if(hg->allsky_get_timer!=-1) g_source_remove(hg->allsky_get_timer);
-
-  /*  
-  pid_t child_pid=0;
-  
-
-#ifdef USE_WIN32
-  if(hg->dwThreadID_allsky){
-    PostThreadMessage(hg->dwThreadID_allsky, WM_QUIT, 0, 0);
-    WaitForSingleObject(hg->hThread_allsky, INFINITE);
-    CloseHandle(hg->hThread_allsky);
+  if(hg->allsky_get_timer!=-1){
+    g_source_remove(hg->allsky_get_timer);
+    hg->allsky_get_timer=-1;
   }
-#else
-  if(allsky_pid){
-    kill(allsky_pid, SIGKILL);
-
-    do{
-      int child_ret;
-      child_pid=waitpid(allsky_pid, &child_ret,WNOHANG);
-    } while((child_pid>0)||(child_pid!=-1));
+  hg->allsky_get_flag=FALSE;
+  printf_log(hg,"[AllSky] Cancelled process");
  
-    allsky_pid=0;
-  }
-#endif
-  */
 }
+
+void terminate_allsky(typHOE *hg){
+  gchar *tmp;
+  tmp=g_strdup_printf("    http://%s%s",
+		      hg->allsky_host,
+		      hg->allsky_path);
+  popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		"dialog-error", 
+#else
+		GTK_STOCK_DIALOG_ERROR, 
+#endif
+		-1,
+		"<b>Error : </b>Failed to get an all sky image from",
+		" ",
+		tmp,
+		" ",
+		"Cancelling the fetching process...",
+		NULL);
+  g_free(tmp);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_button),FALSE);
+}
+
 
 GdkPixbuf* diff_pixbuf(GdkPixbuf *pixbuf1, GdkPixbuf* pixbuf2, 
 		       gint mag, gint base, guint dpix,
@@ -5216,7 +5213,6 @@ void unchunk(gchar *dss_tmp){
 }
 
 
-#ifdef USE_SSL
  gint ssl_gets(SSL *ssl, gchar *buf, gint len)
 {
   gchar *newline, *bp = buf;
@@ -5239,10 +5235,8 @@ void unchunk(gchar *dss_tmp){
   *bp = '\0';
   return bp - buf;
 }
-#endif
 
-#ifdef USE_SSL
- gint ssl_read(SSL *ssl, gchar *buf, gint len)
+gint ssl_read(SSL *ssl, gchar *buf, gint len)
 {
 	gint err, ret;
 
@@ -5269,10 +5263,8 @@ void unchunk(gchar *dss_tmp){
 		return -1;
 	}
 }
-#endif
 
 /* peek at the socket data without actually reading it */
-#ifdef USE_SSL
 gint ssl_peek(SSL *ssl, gchar *buf, gint len)
 {
 	gint err, ret;
@@ -5304,9 +5296,7 @@ gint ssl_peek(SSL *ssl, gchar *buf, gint len)
 		return -1;
 	}
 }
-#endif
 
-#ifdef USE_SSL
 gint ssl_write(SSL *ssl, const gchar *buf, gint len)
 {
 	gint ret;
@@ -5324,5 +5314,4 @@ gint ssl_write(SSL *ssl, const gchar *buf, gint len)
 		return -1;
 	}
 }
-#endif
 
