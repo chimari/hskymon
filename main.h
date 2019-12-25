@@ -1673,11 +1673,7 @@ static const AllSkypara allsky_param[]={
 
 #define ALLSKY_INTERVAL 120
 
-#ifdef ALLSKY_DEBUG
-#define ALLSKY_LAST_MAX 30
-#else
-#define ALLSKY_LAST_MAX 30
-#endif
+#define ALLSKY_LAST_MAX 25
 
 #define ALLSKY_DIFF_BASE 64
 #define ALLSKY_DIFF_MAG 12
