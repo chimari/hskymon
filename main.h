@@ -77,14 +77,6 @@
 
 #define AU_IN_KM 149597870.700
 
-#ifdef SIGRTMIN
-#define SIGHSKYMON1 SIGRTMIN
-#define SIGHSKYMON2 SIGRTMIN+1
-#else
-#define SIGHSKYMON1 SIGUSR1
-#define SIGHSKYMON2 SIGUSR2
-#endif
-
 #define WWW_BROWSER "firefox"
 
 #define DEFAULT_URL "https://www.naoj.org/Observing/tools/hskymon/"
@@ -1159,169 +1151,205 @@ OBS_OAO,
 OBS_NHAO,
 OBS_KISO,
 OBS_GAO,
-OBS_AAT
+OBS_AAT,
+NUM_OBS
 } ObsPos;
 
-#define OBS_SUBARU_NAME "MaunaKea: Subaru Telescope, NAOJ"
-#define OBS_SUBARU_LONGITUDE -155.4760278 //[deg] 155 28 33.7
-#define OBS_SUBARU_LATITUDE 19.8255    //[deg] 19 49 31.8
-#define OBS_SUBARU_ALTITUDE 4163    //[m]
-#define OBS_SUBARU_TIMEZONE -600
-#define OBS_SUBARU_TZNAME "HST"
+typedef struct _OBSpara OBSpara;
+struct _OBSpara{
+  gchar *name;
+  gdouble lng;
+  gdouble lat;
+  gdouble alt;
+  gint tz;
+  gchar *tzname;
+};
 
-#define OBS_PALOMAR_NAME "USA/CA: Palomar Observatory"
-#define OBS_PALOMAR_LONGITUDE -116.864944
-#define OBS_PALOMAR_LATITUDE 33.356278
-#define OBS_PALOMAR_ALTITUDE 1706
-#define OBS_PALOMAR_TIMEZONE -480
-#define OBS_PALOMAR_TZNAME "PST"
+static const OBSpara obs_param[]={
+  // OBS_SUBARU
+  {"MaunaKea: Subaru Telescope, NAOJ",
+   -155.4760278, //[deg] 155 28 33.7
+   19.8255,      //[deg] 19 49 31.8
+   4163,    //[m]
+   -600,
+   "HST"},
 
-#define OBS_LICK_NAME "USA/CA: Lick Observatory"
-#define OBS_LICK_LONGITUDE -121.637256
-#define OBS_LICK_LATITUDE 37.343022
-#define OBS_LICK_ALTITUDE 1290
-#define OBS_LICK_TIMEZONE -480
-#define OBS_LICK_TZNAME "PST"
+  // OBS_PALOMAR
+  {"USA/CA: Palomar Observatory",
+   -116.864944,
+   33.356278,
+   1706,
+   -480,
+   "PST"},
 
-#define OBS_KPNO_NAME "USA/AZ: Kitt Peak National Observatory"
-#define OBS_KPNO_LONGITUDE -111.599997 //[deg] 111 36.0
-#define OBS_KPNO_LATITUDE 31.964133    //[deg] 31 57.8
-#define OBS_KPNO_ALTITUDE 2120    //[m]
-#define OBS_KPNO_TIMEZONE -420
-#define OBS_KPNO_TZNAME "MST"
+  // OBS_LICK
+  {"USA/CA: Lick Observatory",
+   -121.637256,
+   37.343022,
+   1290,
+   -480,
+   "PST"},
 
-#define OBS_MMT_NAME "USA/AZ: Mt. Hopkins (MMT)"
-#define OBS_MMT_LONGITUDE -110.885156
-#define OBS_MMT_LATITUDE 31.688889
-#define OBS_MMT_ALTITUDE 2606    //[m]
-#define OBS_MMT_TIMEZONE -420
-#define OBS_MMT_TZNAME "MST"
+  // OBS_KPNO
+  {"USA/AZ: Kitt Peak National Observatory",
+   -111.599997, //[deg] 111 36.0
+   31.964133,    //[deg] 31 57.8
+   2120,    //[m]
+   -420,
+   "MST"},
 
-#define OBS_LBT_NAME "USA/AZ: Mt. Graham (LBT)"
-#define OBS_LBT_LONGITUDE -109.88906
-#define OBS_LBT_LATITUDE 32.70131
-#define OBS_LBT_ALTITUDE 3221    //[m]
-#define OBS_LBT_TIMEZONE -420
-#define OBS_LBT_TZNAME "MST"
+  // OBS_MMT
+  {"USA/AZ: Mt. Hopkins (MMT)",
+   -110.885156,
+   31.688889,
+   2606,    //[m]
+   -420,
+   "MST"},
 
-#define OBS_APACHE_NAME "USA/NM: Apache Point Observatory (SDSS)"
-#define OBS_APACHE_LONGITUDE -105.82
-#define OBS_APACHE_LATITUDE 32.78
-#define OBS_APACHE_ALTITUDE 2798    //[m]
-#define OBS_APACHE_TIMEZONE -420
-#define OBS_APACHE_TZNAME "MST"
+  // OBS_LBT
+  {"USA/AZ: Mt. Graham (LBT)",
+   -109.88906,
+   32.70131,
+   3221,    //[m]
+   -420,
+   "MST"},
 
-#define OBS_HET_NAME "USA/TX: McDonald Observatory (HET)"
-#define OBS_HET_LONGITUDE -104.01472
-#define OBS_HET_LATITUDE 30.68144
-#define OBS_HET_ALTITUDE 2026
-#define OBS_HET_TIMEZONE -360
-#define OBS_HET_TZNAME "CST"
+  // OBS_APACHE
+  {"USA/NM: Apache Point Observatory (SDSS)",
+   -105.82,
+   32.78,
+   2798,    //[m]
+   -420,
+   "MST"},
 
-#define OBS_CTIO_NAME "Chile: Cerro Tololo Interamerican Observatory"
-#define OBS_CTIO_LONGITUDE -70.806525
-#define OBS_CTIO_LATITUDE -30.169661
-#define OBS_CTIO_ALTITUDE 2241
-#define OBS_CTIO_TIMEZONE -240
-#define OBS_CTIO_TZNAME "PRT"
+  // OBS_HET
+  {"USA/TX: McDonald Observatory (HET)",
+   -104.01472,
+   30.68144,
+   2026,
+   -360,
+   "CST"},
 
-#define OBS_GEMINIS_NAME "Chile: Cerro Pachon (Gemini South)"
-#define OBS_GEMINIS_LONGITUDE -70.736683
-#define OBS_GEMINIS_LATITUDE -30.240742
-#define OBS_GEMINIS_ALTITUDE 2750
-#define OBS_GEMINIS_TIMEZONE -240
-#define OBS_GEMINIS_TZNAME "PRT"
+  // OBS_CTIO
+  {"Chile: Cerro Tololo Interamerican Observatory",
+   -70.806525,
+   -30.169661,
+   2241,
+   -240,
+   "PRT"},
 
-#define OBS_LASILLA_NAME "Chile: La Silla (NTT)"
-#define OBS_LASILLA_LONGITUDE -70.7317
-#define OBS_LASILLA_LATITUDE -29.261211
-#define OBS_LASILLA_ALTITUDE 2375
-#define OBS_LASILLA_TIMEZONE -240
-#define OBS_LASILLA_TZNAME "PRT"
+  // OBS_GEMINIS
+  {"Chile: Cerro Pachon (Gemini South)",
+   -70.736683,
+   -30.240742,
+   2750,
+   -240,
+   "PRT"},
 
-#define OBS_MAGELLAN_NAME "Chile: Las Campanus (Magellan)"
-#define OBS_MAGELLAN_LONGITUDE -70.69239
-#define OBS_MAGELLAN_LATITUDE -29.01418
-#define OBS_MAGELLAN_ALTITUDE 2282
-#define OBS_MAGELLAN_TIMEZONE -240
-#define OBS_MAGELLAN_TZNAME "PRT"
+  // OBS_LASILLA
+  {"Chile: La Silla (NTT)",
+   -70.7317,
+   -29.261211,
+   2375,
+   -240,
+   "PRT"},
 
-#define OBS_PARANAL_NAME "Chile: Cerro Paranal (VLT)"
-#define OBS_PARANAL_LONGITUDE -70.404267
-#define OBS_PARANAL_LATITUDE -24.627328
-#define OBS_PARANAL_ALTITUDE 2635
-#define OBS_PARANAL_TIMEZONE -240
-#define OBS_PARANAL_TZNAME "PRT"
+  // OBS_MAGELLAN
+  {"Chile: Las Campanus (Magellan)",
+   -70.69239,
+   -29.01418,
+   2282,
+   -240,
+   "PRT"},
 
-#define OBS_GTC_NAME "Canary: La Palma (GTC)"
-#define OBS_GTC_LONGITUDE -17.8917
-#define OBS_GTC_LATITUDE 28.7564
-#define OBS_GTC_ALTITUDE 2267
-#define OBS_GTC_TIMEZONE 0
-#define OBS_GTC_TZNAME "GMT"
+  // OBS_PARANAL
+  {"Chile: Cerro Paranal (VLT)",
+   -70.404267,
+   -24.627328,
+   2635,
+   -240,
+   "PRT"},
 
-#define OBS_CAO_NAME "Spain: Calar Alto Observatory"
-#define OBS_CAO_LONGITUDE -2.54625
-#define OBS_CAO_LATITUDE 37.2236
-#define OBS_CAO_ALTITUDE 2168
-#define OBS_CAO_TIMEZONE 60
-#define OBS_CAO_TZNAME "ECT"
+  // OBS_GTC
+  {"Canary: La Palma (GTC)",
+   -17.8917,
+   28.7564,
+   2267,
+   0,
+   "GMT"},
 
-#define OBS_SALT_NAME "South Africa: SAAO (SALT)"
-#define OBS_SALT_LONGITUDE 20.8107
-#define OBS_SALT_LATITUDE -32.3760
-#define OBS_SALT_ALTITUDE 1798
-#define OBS_SALT_TIMEZONE 120
-#define OBS_SALT_TZNAME "EET"
+  // OBS_CAO
+  {"Spain: Calar Alto Observatory",
+   -2.54625,
+   37.2236,
+   2168,
+   60,
+   "ECT"},
 
-#define OBS_LAMOST_NAME "China: Xinglong (LAMOST)"
-#define OBS_LAMOST_LONGITUDE 117.489433
-#define OBS_LAMOST_LATITUDE 40.389094
-#define OBS_LAMOST_ALTITUDE 656
-#define OBS_LAMOST_TIMEZONE 480
-#define OBS_LAMOST_TZNAME "CST"
+  // OBS_SALT
+  {"South Africa: SAAO (SALT)",
+   20.8107,
+   -32.3760,
+   1798,
+   120,
+   "EET"},
 
-#define OBS_KANATA_NAME "Japan: Higashi-Hiroshima (Kanata)"
-#define OBS_KANATA_LONGITUDE 132.7767
-#define OBS_KANATA_LATITUDE 34.3775
-#define OBS_KANATA_ALTITUDE 511
-#define OBS_KANATA_TIMEZONE 540
-#define OBS_KANATA_TZNAME "JST"
+  // OBS_LAMOST
+  {"China: Xinglong (LAMOST)",
+   117.489433,
+   40.389094,
+   656,
+   480,
+   "CST"},
 
-#define OBS_OAO_NAME "Japan: Okayama Astrophysical Observatory"
-#define OBS_OAO_LONGITUDE 133.5940
-#define OBS_OAO_LATITUDE 34.5771
-#define OBS_OAO_ALTITUDE 370
-#define OBS_OAO_TIMEZONE 540
-#define OBS_OAO_TZNAME "JST"
+  // OBS_KANATA
+  {"Japan: Higashi-Hiroshima (Kanata)",
+   132.7767,
+   34.3775,
+   511,
+   540,
+   "JST"},
 
-#define OBS_NHAO_NAME "Japan: Nishi-Harima (Nayuta)"
-#define OBS_NHAO_LONGITUDE 134.33556
-#define OBS_NHAO_LATITUDE 35.025272
-#define OBS_NHAO_ALTITUDE 418
-#define OBS_NHAO_TIMEZONE 540
-#define OBS_NHAO_TZNAME "JST"
+  // OBS_OAO
+  {"Japan: Okayama Astrophysical Observatory",
+   133.5940,
+   34.5771,
+   370,
+   540,
+   "JST"},
 
-#define OBS_KISO_NAME "Japan: Kiso Observatory (Univ. of Tokyo)"
-#define OBS_KISO_LONGITUDE 137.625352
-#define OBS_KISO_LATITUDE 35.797290
-#define OBS_KISO_ALTITUDE 1130
-#define OBS_KISO_TIMEZONE 540
-#define OBS_KISO_TZNAME "JST"
+  // OBS_NHAO
+  {"Japan: Nishi-Harima (Nayuta)",
+   134.33556,
+   35.025272,
+   418,
+   540,
+   "JST"},
 
-#define OBS_GAO_NAME "Japan: Gunma Astronomical Observatory"
-#define OBS_GAO_LONGITUDE 138.972917
-#define OBS_GAO_LATITUDE 36.596806
-#define OBS_GAO_ALTITUDE 885
-#define OBS_GAO_TIMEZONE 540
-#define OBS_GAO_TZNAME "JST"
+  // OBS_KISO
+  {"Japan: Kiso Observatory (Univ. of Tokyo)",
+   137.625352,
+   35.797290,
+   1130,
+   540,
+   "JST"},
 
-#define OBS_AAT_NAME "Australia: Anglo-Australian Observatory"
-#define OBS_AAT_LONGITUDE 149.067222
-#define OBS_AAT_LATITUDE -31.275558
-#define OBS_AAT_ALTITUDE 1164
-#define OBS_AAT_TIMEZONE 600
-#define OBS_AAT_TZNAME "AEST"
+  // OBS_GAO
+  {"Japan: Gunma Astronomical Observatory",
+   138.972917,
+   36.596806,
+   885,
+   540,
+   "JST"},
+
+  // OBS_AAT_NAME
+  {"Australia: Anglo-Australian Observatory",
+   149.067222,
+   -31.275558,
+   1164,
+   600,
+   "AEST"}
+};
 
 
 // All-Sky Camera
@@ -1342,226 +1370,313 @@ ALLSKY_KANATA,
 ALLSKY_OAO,
 ALLSKY_NHAO,
 ALLSKY_GAO,
-ALLSKY_AAT
+ALLSKY_AAT,
+ALLSKY_MSO,
+NUM_ALLSKY
 } AllSkyCamera;
-
 
 
 #define ALLSKY_DEF_SHORT "All-Sky Camera"
 
-#define ALLSKY_UH_NAME "MaunaKea: UH 2.2m All-Sky Camera"
-#define ALLSKY_UH_SHORT "UH88 All-Sky Camera"
-#define ALLSKY_UH_HOST "kree.ifa.hawaii.edu"
-#define ALLSKY_UH_PATH "/allsky/allsky_last_eq.png"
-#define ALLSKY_UH_FILE "allsky.png"
-#define ALLSKY_UH_LAST_FILE "allsky-%ld.png"
-//#define ALLSKY_ANGLE 34.5
-#define ALLSKY_UH_ANGLE 30.5
-#define ALLSKY_UH_DIAMETER 580
-#define ALLSKY_UH_CENTERX 326
-#define ALLSKY_UH_CENTERY 235
-
-#define ALLSKY_ASIVAV_NAME "MaunaKea: CFHT ASIVA (Visible)"
-#define ALLSKY_ASIVAV_SHORT "ASIVA [Visible]"
-#define ALLSKY_ASIVAV_HOST "www.cfht.hawaii.edu"
-#define ALLSKY_ASIVAV_PATH "/~asiva/images/mask_rot/current_vis.png"
-#define ALLSKY_ASIVAV_FILE "allsky.png"
-#define ALLSKY_ASIVAV_LAST_FILE "allsky-%ld.png"
-#define ALLSKY_ASIVAV_ANGLE (-0.5)
-#define ALLSKY_ASIVAV_DIAMETER 570
-#define ALLSKY_ASIVAV_CENTERX 394
-#define ALLSKY_ASIVAV_CENTERY 282
+typedef struct _AllSkypara AllSkypara;
+struct _AllSkypara{
+  gchar *name;
+  gchar *sname;
+  gchar *host;
+  gchar *path;
+  gchar *file;
+  gchar *lfile;
+  gdouble angle;
+  gint diam;
+  gint x;
+  gint y;
+  gboolean limit;
+  gboolean flip;
+  gboolean ssl;
+};
 
 
-#define ALLSKY_ASIVAR_NAME "MaunaKea: CFHT ASIVA (Mid-IR)"
-#define ALLSKY_ASIVAR_SHORT "ASIVA [Mid-IR]"
-#define ALLSKY_ASIVAR_HOST "www.cfht.hawaii.edu"
-#define ALLSKY_ASIVAR_PATH "/~asiva/images/mask_rot/raw_a.jpg"
-#define ALLSKY_ASIVAR_FILE "allsky.jpg"
-#define ALLSKY_ASIVAR_LAST_FILE "allsky-%ld.jpg"
-#define ALLSKY_ASIVAR_ANGLE 14.0
-#define ALLSKY_ASIVAR_DIAMETER 550
-#define ALLSKY_ASIVAR_CENTERX 333
-#define ALLSKY_ASIVAR_CENTERY 253
+static const AllSkypara allsky_param[]={
+  // ALLSKY_UH
+  {"MaunaKea: UH 2.2m All-Sky Camera",
+   "UH88 All-Sky Camera",
+   "kree.ifa.hawaii.edu",
+   "/allsky/allsky_last_eq.png",
+   "allsky.png",
+   "allsky-%ld.png",
+   30.5,
+   580,
+   326,
+   235,
+   FALSE,
+   FALSE,
+   FALSE},
+  
+  // ALLSKY_ASIVAV
+  {"MaunaKea: CFHT ASIVA (Visible)",
+   "ASIVA [Visible]",
+   "www.cfht.hawaii.edu",
+   "/~asiva/images/mask_rot/current_vis.png",
+   "allsky.png",
+   "allsky-%ld.png",
+   -0.5,
+   570,
+   394,
+   282,
+   TRUE,
+   FALSE,
+   FALSE},
 
-#define ALLSKY_MKVIS_NAME "MaunaKea: Hale Pohaku (Visible)"
-#define ALLSKY_MKVIS_SHORT "Hale Pohaku [Visible]"
-#define ALLSKY_MKVIS_HOST "www.ifa.hawaii.edu"
-#define ALLSKY_MKVIS_PATH "/info/vis/uploads/webcams/allsky/AllSkyCurrentImage.JPG"
-#define ALLSKY_MKVIS_FILE "allsky.jpg"
-#define ALLSKY_MKVIS_LAST_FILE "allsky-%ld.jpg"
-#define ALLSKY_MKVIS_ANGLE (-63.0)
-#define ALLSKY_MKVIS_DIAMETER 610
-#define ALLSKY_MKVIS_CENTERX 313
-#define ALLSKY_MKVIS_CENTERY 243
+  // ALLSKY_ASIVAR
+  {"MaunaKea: CFHT ASIVA (Mid-IR)",
+   "ASIVA [Mid-IR]",
+   "www.cfht.hawaii.edu",
+   "/~asiva/images/mask_rot/raw_a.jpg",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   14.0,
+   550,
+   333,
+   253,
+   FALSE,
+   FALSE,
+   FALSE},
+  
+  //ALLSKY_MKVIS
+  {"MaunaKea: Hale Pohaku (Visible)",
+   "Hale Pohaku [Visible]",
+   "www.ifa.hawaii.edu",
+   "/info/vis/uploads/webcams/allsky/AllSkyCurrentImage.JPG",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   -63.0,
+   610,
+   313,
+   243,
+   FALSE,
+   FALSE,
+   FALSE},
+  
+  // Palomar 640x480
+  // ALLSKY_PALOMAR
+  {"USA/CA: Palomar Observatory (Visual)",
+   "Palomar [Visual]",
+   "bianca.palomar.caltech.edu",
+   "/images/allsky/AllSkyCurrentImage.JPG",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   -10.0,
+   610,
+   352,
+   248,
+   FALSE,
+   FALSE,
+   FALSE},
 
-// Palomar 640x480
-#define ALLSKY_PALOMAR_NAME "USA/CA: Palomar Observatory (Visual)"
-#define ALLSKY_PALOMAR_SHORT "Palomar [Visual]"
-#define ALLSKY_PALOMAR_HOST "bianca.palomar.caltech.edu"
-#define ALLSKY_PALOMAR_PATH "/images/allsky/AllSkyCurrentImage.JPG"
-#define ALLSKY_PALOMAR_FILE "allsky.jpg"
-#define ALLSKY_PALOMAR_LAST_FILE "allsky-%ld.jpg"
-#define ALLSKY_PALOMAR_ANGLE (-10.0)
-#define ALLSKY_PALOMAR_DIAMETER 610
-#define ALLSKY_PALOMAR_CENTERX 352
-#define ALLSKY_PALOMAR_CENTERY 248
+  // Lick 765x521
+  // ALLSKY_LICK
+  {"USA/CA: Lick Observatory / LICK (Visual)",
+   "Lick [Visual]",
+   "mthamilton.ucolick.org",
+   "/hamcam/skycam/current.jpg",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   -17.0,
+   850,
+   400,
+   275,
+   TRUE,
+   FALSE,
+   FALSE},
+   
+  // ALLSKY_KPNO
+  {"USA/AZ: Kitt Peak National Observatory (Visual/Red)",
+   "KPNO [Visual/Red]",
+   "kpasca-db.tuc.noao.edu",
+   "/latestred.png",
+   "allsky.png",
+   "allsky-%ld.png",
+   -0.9,
+   490,
+   252,
+   247,
+   FALSE,
+   FALSE,
+   FALSE},
+  
+  // ALLSKY_MMT
+  {"USA/AZ: Mt. Hopkins / MMT (Visual)",
+   "MMT [Visual]",
+   "skycam.mmto.arizona.edu",
+   "/skycam/latest_image.png",
+   "allsky.png",
+   "allsky-%ld.png",
+   8.0,
+   470,
+   296,
+   240,
+   FALSE,
+   FALSE,
+   FALSE},
 
-// Lick 765x521
-#define ALLSKY_LICK_NAME "USA/CA: Lick Observatory / LICK (Visual)"
-#define ALLSKY_LICK_SHORT "Lick [Visual]"
-#define ALLSKY_LICK_HOST "mthamilton.ucolick.org"
-#define ALLSKY_LICK_PATH "/hamcam/skycam/current.jpg"
-#define ALLSKY_LICK_FILE "allsky.jpg"
-#define ALLSKY_LICK_LAST_FILE "allsky-%ld.jpg"
-#define ALLSKY_LICK_ANGLE (-17.0)
-#define ALLSKY_LICK_DIAMETER 850
-#define ALLSKY_LICK_CENTERX 400
-#define ALLSKY_LICK_CENTERY 275
+  // ALLSKY_HET
+  {"USA/TX: McDonald Observatory / HET (Visual)",
+   "HET [Visual]",
+   "www.as.utexas.edu",
+   "/mcdonald/webcams/monet-n-sky.jpg",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   -5.0,
+   740,
+   332,
+   247,
+   FALSE,
+   FALSE,
+   FALSE},
+   
+  // ALLSKY_CPAC
+  {"Chile: Cerro Pachon (Visual)",
+   "Gemini-S [Visual]",
+   "www.gemini.edu",
+   "/sciops/telescopes-and-sites/weather/cerro-pachon/cameras/img.png",
+   "allsky.png",
+   "allsky-%ld.png",
+   0.0,
+   720,
+   414,
+   374,
+   TRUE,
+   TRUE,
+   FALSE},
+  
+  // ALLSKY_LASILLA
+  {"Chile: La Silla (Visual)",
+   "La Silla [Visual]",
+   "www.ls.eso.org",
+   "/lasilla/dimm/lasc/gifs/last.gif",
+   "allsky.gif",
+   "allsky-%ld.gif",
+   3.0,
+   510,
+   205,
+   220,
+   FALSE,
+   FALSE,
+   FALSE},
+  
+  // ALLSKY_GTC
+  {"Canary: La Palma / GTC (Visual)",
+   "La Palma [Visual]",
+   "www.gtc.iac.es",
+   "/multimedia/netcam/camaraAllSky.jpg",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   35.6,
+   600,
+   327,
+   252,
+   FALSE,
+   FALSE,
+   FALSE},
 
-#define ALLSKY_KPNO_NAME "USA/AZ: Kitt Peak National Observatory (Visual/Red)"
-#define ALLSKY_KPNO_SHORT "KPNO [Visual/Red]"
-#define ALLSKY_KPNO_HOST "kpasca-db.tuc.noao.edu"
-#define ALLSKY_KPNO_PATH "/latestred.png"
-#define ALLSKY_KPNO_FILE "allsky.png"
-#define ALLSKY_KPNO_LAST_FILE "allsky-%ld.png"
-#define ALLSKY_KPNO_ANGLE (-0.9)
-#define ALLSKY_KPNO_DIAMETER 490
-#define ALLSKY_KPNO_CENTERX 252
-#define ALLSKY_KPNO_CENTERY 247
+  // ALLSKY_KANATA
+  {"Japan: Higashi-Hiroshima / Kanata (Visual)",
+   "Kanata [Visual]",
+   "hasc.hiroshima-u.ac.jp",
+   "/environ/current_srk.jpg",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   0.0,
+   602,
+   304,
+   289,
+   FALSE,
+   FALSE,
+   FALSE},
 
-#define ALLSKY_MMT_NAME "USA/AZ: Mt. Hopkins / MMT (Visual)"
-#define ALLSKY_MMT_SHORT "MMT [Visual]"
-#define ALLSKY_MMT_HOST "skycam.mmto.arizona.edu"
-#define ALLSKY_MMT_PATH "/skycam/latest_image.png"
-#define ALLSKY_MMT_FILE "allsky.png"
-#define ALLSKY_MMT_LAST_FILE "allsky-%ld.png"
-#define ALLSKY_MMT_ANGLE 8.0
-#define ALLSKY_MMT_DIAMETER 470
-#define ALLSKY_MMT_CENTERX 296
-#define ALLSKY_MMT_CENTERY 240
+  // ALLSKY_OAO
+  {"Japan: Okayama Astrophysical Observatory (Visual)",
+   "OAO [Visual]",
+   "www.oao.nao.ac.jp",
+   "/weather/skymonitor/optsky.jpg",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   -3.5,
+   800,
+   370,
+   408,
+   TRUE,
+   FALSE,
+   FALSE},
 
-#define ALLSKY_HET_NAME "USA/TX: McDonald Observatory / HET (Visual)"
-#define ALLSKY_HET_SHORT "HET [Visual]"
-#define ALLSKY_HET_HOST "www.as.utexas.edu"
-#define ALLSKY_HET_PATH "/mcdonald/webcams/monet-n-sky.jpg"
-#define ALLSKY_HET_FILE "allsky.jpg"
-#define ALLSKY_HET_LAST_FILE "allsky-%ld.jpg"
-#define ALLSKY_HET_ANGLE (-5.0)
-#define ALLSKY_HET_DIAMETER 740
-#define ALLSKY_HET_CENTERX 332
-#define ALLSKY_HET_CENTERY 247
+  // ALLSKY_NHAO
+  {"Japan: Nishi-Harima / Nayuta (Visual)",
+   "Nayuta [Visual]",
+   "www.nhao.jp",
+   "/nhao/live/images/skyview.jpg",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   -90.0,
+   560,
+   300,
+   240,
+   FALSE,
+   FALSE,
+   FALSE},
 
-#define ALLSKY_CPAC_NAME "Chile: Cerro Pachon (Visual)"
-#define ALLSKY_CPAC_SHORT "Gemini-S [Visual]"
-#define ALLSKY_CPAC_HOST "www.gemini.edu"
-#define ALLSKY_CPAC_PATH "/sciops/telescopes-and-sites/weather/cerro-pachon/cameras/img.png"
-#define ALLSKY_CPAC_FILE "allsky.png"
-#define ALLSKY_CPAC_LAST_FILE "allsky-%ld.png"
-#define ALLSKY_CPAC_ANGLE 0.0
-#define ALLSKY_CPAC_DIAMETER 720
-#define ALLSKY_CPAC_CENTERX 414
-#define ALLSKY_CPAC_CENTERY 374
+  // ALLSKY_GAO
+  {"Japan: Gunma Astronomical Observatory (Visual)",
+   "GAO [Visual]",
+   "www.astron.pref.gunma.jp",
+   "/webcam/allsky.jpg",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   0.0,
+   460,
+   332,
+   238,
+   FALSE,
+   FALSE,
+   FALSE},
 
-#define ALLSKY_LASILLA_NAME "Chile: La Silla (Visual)"
-#define ALLSKY_LASILLA_SHORT "La Silla [Visual]"
-#define ALLSKY_LASILLA_HOST "www.ls.eso.org"
-#define ALLSKY_LASILLA_PATH "/lasilla/dimm/lasc/gifs/last.gif"
-#define ALLSKY_LASILLA_FILE "allsky.gif"
-#define ALLSKY_LASILLA_LAST_FILE "allsky-%ld.gif"
-#define ALLSKY_LASILLA_ANGLE 3.0
-#define ALLSKY_LASILLA_DIAMETER 510
-#define ALLSKY_LASILLA_CENTERX 205
-#define ALLSKY_LASILLA_CENTERY 220
-
-#define ALLSKY_GTC_NAME "Canary: La Palma / GTC (Visual)"
-#define ALLSKY_GTC_SHORT "La Palma [Visual]"
-#define ALLSKY_GTC_HOST "www.gtc.iac.es"
-#define ALLSKY_GTC_PATH "/multimedia/netcam/camaraAllSky.jpg"
-#define ALLSKY_GTC_FILE "allsky.jpg"
-#define ALLSKY_GTC_LAST_FILE "allsky-%ld.jpg"
-#define ALLSKY_GTC_ANGLE 35.6
-#define ALLSKY_GTC_DIAMETER 600
-#define ALLSKY_GTC_CENTERX 327
-#define ALLSKY_GTC_CENTERY 252
-
-#define ALLSKY_KANATA_NAME "Japan: Higashi-Hiroshima / Kanata (Visual)"
-#define ALLSKY_KANATA_SHORT "Kanata [Visual]"
-#define ALLSKY_KANATA_HOST "hasc.hiroshima-u.ac.jp"
-#define ALLSKY_KANATA_PATH "/environ/current_srk.jpg"
-#define ALLSKY_KANATA_FILE "allsky.jpg"
-#define ALLSKY_KANATA_LAST_FILE "allsky-%ld.jpg"
-#define ALLSKY_KANATA_ANGLE 0.0
-#define ALLSKY_KANATA_DIAMETER 602
-#define ALLSKY_KANATA_CENTERX 304
-#define ALLSKY_KANATA_CENTERY 289
-
-#define ALLSKY_OAO_NAME "Japan: Okayama Astrophysical Observatory (Visual)"
-#define ALLSKY_OAO_SHORT "OAO [Visual]"
-#define ALLSKY_OAO_HOST "www.oao.nao.ac.jp"
-#define ALLSKY_OAO_PATH "/weather/skymonitor/optsky.jpg"
-#define ALLSKY_OAO_FILE "allsky.jpg"
-#define ALLSKY_OAO_LAST_FILE "allsky-%ld.jpg"
-#define ALLSKY_OAO_ANGLE (-3.5)
-#define ALLSKY_OAO_DIAMETER 800
-#define ALLSKY_OAO_CENTERX 370
-#define ALLSKY_OAO_CENTERY 408
-
-#define ALLSKY_NHAO_NAME "Japan: Nishi-Harima / Nayuta (Visual)"
-#define ALLSKY_NHAO_SHORT "Nayuta [Visual]"
-#define ALLSKY_NHAO_HOST "www.nhao.jp"
-#define ALLSKY_NHAO_PATH "/nhao/live/images/skyview.jpg"
-#define ALLSKY_NHAO_FILE "allsky.jpg"
-#define ALLSKY_NHAO_LAST_FILE "allsky-%ld.jpg"
-#define ALLSKY_NHAO_ANGLE (-90.0)
-#define ALLSKY_NHAO_DIAMETER 560
-#define ALLSKY_NHAO_CENTERX 300
-#define ALLSKY_NHAO_CENTERY 240
-
-#define ALLSKY_GAO_NAME "Japan: Gunma Astronomical Observatory (Visual)"
-#define ALLSKY_GAO_SHORT "GAO [Visual]"
-#define ALLSKY_GAO_HOST "www.astron.pref.gunma.jp"
-#define ALLSKY_GAO_PATH "/webcam/allsky.jpg"
-#define ALLSKY_GAO_FILE "allsky.jpg"
-#define ALLSKY_GAO_LAST_FILE "allsky-%ld.jpg"
-#define ALLSKY_GAO_ANGLE 0.0
-#define ALLSKY_GAO_DIAMETER 460
-#define ALLSKY_GAO_CENTERX 332
-#define ALLSKY_GAO_CENTERY 238
-
-#define ALLSKY_AAT_NAME "Australia: Siding Spring Observatory (Visual)"
-#define ALLSKY_AAT_SHORT "AAT [Visual]"
-#define ALLSKY_AAT_HOST "150.203.153.131"
-#define ALLSKY_AAT_PATH "/~dbayliss/allskycam/latest_image.png"
-#define ALLSKY_AAT_FILE "allsky.png"
-#define ALLSKY_AAT_LAST_FILE "allsky-%ld.png"
-#define ALLSKY_AAT_ANGLE (-54.0)
-#define ALLSKY_AAT_DIAMETER 750
-#define ALLSKY_AAT_CENTERX 415
-#define ALLSKY_AAT_CENTERY 330
-
-#define ALLSKY_MSO_NAME "Australia: Mount Stromlo (Visual)"
-#define ALLSKY_MSO_SHORT "Mt. Stromlo [Visual]"
-#define ALLSKY_MSO_HOST "www.mso.anu.edu.au"
-#define ALLSKY_MSO_PATH "/msoallsky/msoskycam.jpg"
-#define ALLSKY_MSO_FILE "allsky.jpg"
-#define ALLSKY_MSO_LAST_FILE "allsky-%ld.jpg"
-#define ALLSKY_MSO_ANGLE 0.0
-#define ALLSKY_MSO_DIAMETER 750
-#define ALLSKY_MSO_CENTERX 415
-#define ALLSKY_MSO_CENTERY 330
+  // ALLSKY_AAT
+  {"Australia: Siding Spring Observatory (Visual)",
+   "AAT [Visual]",
+   "150.203.153.131",
+   "/~dbayliss/allskycam/latest_image.png",
+   "allsky.png",
+   "allsky-%ld.png",
+   -54.0,
+   750,
+   415,
+   330,
+   TRUE,
+   FALSE,
+   FALSE},
+  
+  // ALLSKY_MSO
+  {"Australia: Mount Stromlo (Visual)",
+   "Mt. Stromlo [Visual]",
+   "www.mso.anu.edu.au",
+   "/msoallsky/msoskycam.jpg",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   0.0,
+   560,
+   400,
+   300,
+   TRUE,
+   FALSE,
+   TRUE}
+};
 
 
 #define ALLSKY_INTERVAL 120
 
 #ifdef ALLSKY_DEBUG
-#define ALLSKY_LAST_MAX 20
+#define ALLSKY_LAST_MAX 30
 #else
-#define ALLSKY_LAST_MAX 20
-#endif
-
-#ifndef USE_WIN32
-#define ALLSKY_REPEAT_MAX 30
+#define ALLSKY_LAST_MAX 30
 #endif
 
 #define ALLSKY_DIFF_BASE 64
@@ -1848,17 +1963,6 @@ typedef struct _typHOE typHOE;
 struct _typHOE{
   gchar *temp_dir;
   gchar *home_dir;
-
-#ifdef USE_WIN32
-  HANDLE hThread_allsky;
-  HANDLE hThread_dss;
-  HANDLE hThread_stddb;
-  HANDLE hThread_fcdb;
-  unsigned int dwThreadID_allsky;
-  unsigned int dwThreadID_dss;
-  unsigned int dwThreadID_stddb;
-  unsigned int dwThreadID_fcdb;
-#endif
 
   gint sz_skymon;
   gint sz_plot;
@@ -2312,6 +2416,7 @@ struct _typHOE{
   gboolean allsky_diff_flag;
   gchar *allsky_name;
   gchar *allsky_host;
+  gboolean allsky_ssl;
   gchar *allsky_file;
   gchar *allsky_path;
   //  gchar *allsky_date_path;
@@ -2346,6 +2451,7 @@ struct _typHOE{
   GtkWidget *allsky_frame_server;
   GtkWidget *allsky_frame_image;
   GtkWidget *allsky_entry_host;
+  GtkWidget *allsky_check_ssl;
   GtkWidget *allsky_entry_file;
   GtkWidget *allsky_entry_path;
   //GtkWidget *allsky_entry_date_path;
@@ -2504,9 +2610,6 @@ int debug_flg;
 gboolean flag_getDSS;
 gboolean flag_getFCDB;
 
-#ifndef USE_WIN32
-pid_t allsky_pid;
-#endif
 pid_t fc_pid;
 pid_t fcdb_pid;
 pid_t stddb_pid;
@@ -2590,9 +2693,6 @@ void ext_play();
 //fc.c
 void thread_cancel_fcdb();
 gboolean delete_fcdb();
-#ifndef USE_WIN32
-void fcdb_signal();
-#endif
 void pdf_fc ();
 void set_fc_mode();
 void fc_item2 ();

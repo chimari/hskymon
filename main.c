@@ -1273,697 +1273,57 @@ void SetAllSkyPreset(typHOE *hg){
 
   if(!hg->allsky_preset_flag_tmp) return;
 
-  switch(hg->allsky_preset_tmp){
-  case ALLSKY_UH:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_UH_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_UH_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_UH_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_UH_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_UH_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_UH_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_UH_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_UH_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_ASIVAV:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_ASIVAV_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_ASIVAV_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_ASIVAV_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_ASIVAV_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_ASIVAV_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_ASIVAV_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_ASIVAV_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_ASIVAV_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 TRUE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_ASIVAR:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_ASIVAR_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_ASIVAR_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_ASIVAR_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_ASIVAR_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_ASIVAR_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_ASIVAR_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_ASIVAR_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_ASIVAR_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_MKVIS:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_MKVIS_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_MKVIS_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_MKVIS_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_MKVIS_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_MKVIS_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_MKVIS_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_MKVIS_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_MKVIS_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_PALOMAR:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_PALOMAR_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_PALOMAR_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_PALOMAR_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_PALOMAR_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_PALOMAR_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_PALOMAR_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_PALOMAR_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_PALOMAR_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_LICK:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_LICK_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_LICK_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_LICK_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_LICK_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_LICK_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_LICK_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_LICK_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_LICK_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 TRUE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_HET:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_HET_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_HET_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_HET_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_HET_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_HET_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_HET_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_HET_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_HET_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_KPNO:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_KPNO_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_KPNO_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_KPNO_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_KPNO_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_KPNO_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_KPNO_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_KPNO_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_KPNO_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_MMT:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_MMT_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_MMT_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_MMT_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_MMT_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_MMT_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_MMT_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_MMT_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_MMT_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_CPAC:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_CPAC_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_CPAC_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_CPAC_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_CPAC_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_CPAC_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_CPAC_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_CPAC_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_CPAC_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 TRUE);
-    break;
-  case ALLSKY_LASILLA:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_LASILLA_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_LASILLA_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_LASILLA_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_LASILLA_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_LASILLA_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_LASILLA_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_LASILLA_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_LASILLA_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_GTC:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_GTC_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_GTC_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_GTC_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_GTC_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_GTC_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_GTC_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_GTC_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_GTC_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_KANATA:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_KANATA_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_KANATA_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_KANATA_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_KANATA_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_KANATA_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_KANATA_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_KANATA_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_KANATA_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_OAO:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_OAO_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_OAO_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_OAO_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_OAO_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_OAO_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_OAO_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_OAO_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_OAO_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 TRUE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_NHAO:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_NHAO_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_NHAO_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_NHAO_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_NHAO_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_NHAO_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_NHAO_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_NHAO_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_NHAO_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_GAO:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_GAO_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_GAO_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_GAO_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_GAO_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_GAO_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_GAO_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_GAO_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_GAO_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  case ALLSKY_AAT:
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host), ALLSKY_AAT_HOST);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path), ALLSKY_AAT_PATH);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_AAT_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
-    gtk_adjustment_set_value(hg->allsky_adj_centerx, ALLSKY_AAT_CENTERX);
-    gtk_adjustment_set_value(hg->allsky_adj_centery, ALLSKY_AAT_CENTERY);
-    gtk_adjustment_set_value(hg->allsky_adj_diameter,ALLSKY_AAT_DIAMETER);
-    gtk_adjustment_set_value(hg->allsky_adj_angle,   ALLSKY_AAT_ANGLE);
-    g_free(tmp);
-    tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-		      ALLSKY_AAT_LAST_FILE, NULL);
-    gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
-				 TRUE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
-				 FALSE);
-    break;
-  }
+
+  gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_host),
+		     allsky_param[hg->allsky_preset_tmp].host);
+  gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path),
+		     allsky_param[hg->allsky_preset_tmp].path);
+  tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
+		    allsky_param[hg->allsky_preset_tmp].file, NULL);
+  gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file), tmp);
   g_free(tmp);
+  gtk_adjustment_set_value(hg->allsky_adj_centerx,
+			   (gdouble)allsky_param[hg->allsky_preset_tmp].x);
+  gtk_adjustment_set_value(hg->allsky_adj_centery,
+			   (gdouble)allsky_param[hg->allsky_preset_tmp].y);
+  gtk_adjustment_set_value(hg->allsky_adj_diameter,
+			   (gdouble)allsky_param[hg->allsky_preset_tmp].diam);
+  gtk_adjustment_set_value(hg->allsky_adj_angle,
+			   allsky_param[hg->allsky_preset_tmp].angle);
+  tmp = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
+		    allsky_param[hg->allsky_preset_tmp].lfile, NULL);
+  gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file), tmp);
+  g_free(tmp);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_limit),
+			       allsky_param[hg->allsky_preset_tmp].limit);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_flip),
+			       allsky_param[hg->allsky_preset_tmp].flip);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_ssl),
+			       allsky_param[hg->allsky_preset_tmp].ssl); 
 }
 
-void set_allsky_param_from_preset(typHOE *hg)
+void set_allsky_param_from_preset(typHOE *hg, gint i_ascam)
 {
-
-  switch(hg->allsky_preset){
-  case ALLSKY_UH:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_UH_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_UH_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_UH_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_UH_CENTERX;
-    hg->allsky_centery=ALLSKY_UH_CENTERY;
-    hg->allsky_diameter=ALLSKY_UH_DIAMETER;
-    hg->allsky_angle=ALLSKY_UH_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_UH_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_UH_SHORT);
-
-    break;
-  case ALLSKY_ASIVAV:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_ASIVAV_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_ASIVAV_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_ASIVAV_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_ASIVAV_CENTERX;
-    hg->allsky_centery=ALLSKY_ASIVAV_CENTERY;
-    hg->allsky_diameter=ALLSKY_ASIVAV_DIAMETER;
-    hg->allsky_angle=ALLSKY_ASIVAV_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_ASIVAV_LAST_FILE, NULL);
-    hg->allsky_limit= TRUE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_ASIVAV_SHORT);
-
-    break;
-  case ALLSKY_ASIVAR:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_ASIVAR_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_ASIVAR_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_ASIVAR_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_ASIVAR_CENTERX;
-    hg->allsky_centery=ALLSKY_ASIVAR_CENTERY;
-    hg->allsky_diameter=ALLSKY_ASIVAR_DIAMETER;
-    hg->allsky_angle=ALLSKY_ASIVAR_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_ASIVAR_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_ASIVAR_SHORT);
-
-    break;
-  case ALLSKY_MKVIS:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_MKVIS_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_MKVIS_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_MKVIS_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_MKVIS_CENTERX;
-    hg->allsky_centery=ALLSKY_MKVIS_CENTERY;
-    hg->allsky_diameter=ALLSKY_MKVIS_DIAMETER;
-    hg->allsky_angle=ALLSKY_MKVIS_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_MKVIS_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_MKVIS_SHORT);
-
-    break;
-  case ALLSKY_PALOMAR:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_PALOMAR_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_PALOMAR_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_PALOMAR_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_PALOMAR_CENTERX;
-    hg->allsky_centery=ALLSKY_PALOMAR_CENTERY;
-    hg->allsky_diameter=ALLSKY_PALOMAR_DIAMETER;
-    hg->allsky_angle=ALLSKY_PALOMAR_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_PALOMAR_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_PALOMAR_SHORT);
-
-    break;
-  case ALLSKY_LICK:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_LICK_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_LICK_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_LICK_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_LICK_CENTERX;
-    hg->allsky_centery=ALLSKY_LICK_CENTERY;
-    hg->allsky_diameter=ALLSKY_LICK_DIAMETER;
-    hg->allsky_angle=ALLSKY_LICK_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_LICK_LAST_FILE, NULL);
-    hg->allsky_limit= TRUE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_LICK_SHORT);
-
-    break;
-  case ALLSKY_HET:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_HET_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_HET_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_HET_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_HET_CENTERX;
-    hg->allsky_centery=ALLSKY_HET_CENTERY;
-    hg->allsky_diameter=ALLSKY_HET_DIAMETER;
-    hg->allsky_angle=ALLSKY_HET_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_HET_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_HET_SHORT);
-
-    break;
-  case ALLSKY_KPNO:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_KPNO_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_KPNO_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_KPNO_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_KPNO_CENTERX;
-    hg->allsky_centery=ALLSKY_KPNO_CENTERY;
-    hg->allsky_diameter=ALLSKY_KPNO_DIAMETER;
-    hg->allsky_angle=ALLSKY_KPNO_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_KPNO_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_KPNO_SHORT);
-
-    break;
-  case ALLSKY_MMT:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_MMT_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_MMT_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_MMT_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_MMT_CENTERX;
-    hg->allsky_centery=ALLSKY_MMT_CENTERY;
-    hg->allsky_diameter=ALLSKY_MMT_DIAMETER;
-    hg->allsky_angle=ALLSKY_MMT_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_MMT_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_MMT_SHORT);
-
-    break;
-  case ALLSKY_CPAC:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_CPAC_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_CPAC_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_CPAC_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_CPAC_CENTERX;
-    hg->allsky_centery=ALLSKY_CPAC_CENTERY;
-    hg->allsky_diameter=ALLSKY_CPAC_DIAMETER;
-    hg->allsky_angle=ALLSKY_CPAC_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_CPAC_LAST_FILE, NULL);
-    hg->allsky_limit= TRUE;
-    hg->allsky_flip= TRUE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_CPAC_SHORT);
-
-    break;
-  case ALLSKY_LASILLA:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_LASILLA_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_LASILLA_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_LASILLA_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_LASILLA_CENTERX;
-    hg->allsky_centery=ALLSKY_LASILLA_CENTERY;
-    hg->allsky_diameter=ALLSKY_LASILLA_DIAMETER;
-    hg->allsky_angle=ALLSKY_LASILLA_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_LASILLA_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_LASILLA_SHORT);
-
-    break;
-  case ALLSKY_GTC:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_GTC_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_GTC_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_GTC_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_GTC_CENTERX;
-    hg->allsky_centery=ALLSKY_GTC_CENTERY;
-    hg->allsky_diameter=ALLSKY_GTC_DIAMETER;
-    hg->allsky_angle=ALLSKY_GTC_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_GTC_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_GTC_SHORT);
-
-    break;
-  case ALLSKY_KANATA:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_KANATA_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_KANATA_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_KANATA_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_KANATA_CENTERX;
-    hg->allsky_centery=ALLSKY_KANATA_CENTERY;
-    hg->allsky_diameter=ALLSKY_KANATA_DIAMETER;
-    hg->allsky_angle=ALLSKY_KANATA_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_KANATA_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_KANATA_SHORT);
-
-    break;
-  case ALLSKY_OAO:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_OAO_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_OAO_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_OAO_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_OAO_CENTERX;
-    hg->allsky_centery=ALLSKY_OAO_CENTERY;
-    hg->allsky_diameter=ALLSKY_OAO_DIAMETER;
-    hg->allsky_angle=ALLSKY_OAO_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_OAO_LAST_FILE, NULL);
-    hg->allsky_limit= TRUE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_OAO_SHORT);
-
-    break;
-  case ALLSKY_NHAO:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_NHAO_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_NHAO_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_NHAO_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_NHAO_CENTERX;
-    hg->allsky_centery=ALLSKY_NHAO_CENTERY;
-    hg->allsky_diameter=ALLSKY_NHAO_DIAMETER;
-    hg->allsky_angle=ALLSKY_NHAO_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_NHAO_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_NHAO_SHORT);
-
-    break;
-  case ALLSKY_GAO:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_GAO_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_GAO_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_GAO_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_GAO_CENTERX;
-    hg->allsky_centery=ALLSKY_GAO_CENTERY;
-    hg->allsky_diameter=ALLSKY_GAO_DIAMETER;
-    hg->allsky_angle=ALLSKY_GAO_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_GAO_LAST_FILE, NULL);
-    hg->allsky_limit= FALSE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_GAO_SHORT);
-
-    break;
-  case ALLSKY_AAT:
-    if(hg->allsky_host) g_free(hg->allsky_host);
-    hg->allsky_host=g_strdup(ALLSKY_AAT_HOST);
-    if(hg->allsky_path) g_free(hg->allsky_path);
-    hg->allsky_path=g_strdup(ALLSKY_AAT_PATH);
-    if(hg->allsky_file) g_free(hg->allsky_file);
-    hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				  ALLSKY_AAT_FILE, NULL);
-    hg->allsky_centerx=ALLSKY_AAT_CENTERX;
-    hg->allsky_centery=ALLSKY_AAT_CENTERY;
-    hg->allsky_diameter=ALLSKY_AAT_DIAMETER;
-    hg->allsky_angle=ALLSKY_AAT_ANGLE;
-    if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
-    hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					 ALLSKY_AAT_LAST_FILE, NULL);
-    hg->allsky_limit= TRUE;
-    hg->allsky_flip= FALSE;
-    if(hg->allsky_name) g_free(hg->allsky_name);
-    hg->allsky_name=g_strdup(ALLSKY_AAT_SHORT);
-
-    break;
-  }
-
+  if(hg->allsky_host) g_free(hg->allsky_host);
+  hg->allsky_host=g_strdup(allsky_param[i_ascam].host);
+  if(hg->allsky_path) g_free(hg->allsky_path);
+  hg->allsky_path=g_strdup(allsky_param[i_ascam].path);
+  if(hg->allsky_file) g_free(hg->allsky_file);
+  hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
+				allsky_param[i_ascam].file, NULL);
+  hg->allsky_centerx=allsky_param[i_ascam].x;
+  hg->allsky_centery=allsky_param[i_ascam].y;
+  hg->allsky_diameter=allsky_param[i_ascam].diam;
+  hg->allsky_angle=allsky_param[i_ascam].angle;
+  if(hg->allsky_last_file00) g_free(hg->allsky_last_file00);
+  hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
+				       allsky_param[i_ascam].lfile,
+				       NULL);
+  hg->allsky_limit= allsky_param[i_ascam].limit;
+  hg->allsky_flip= allsky_param[i_ascam].flip;
+  hg->allsky_ssl=allsky_param[i_ascam].ssl;
+  if(hg->allsky_name) g_free(hg->allsky_name);
+  hg->allsky_name=g_strdup(allsky_param[i_ascam].sname);
 
 }
 
@@ -1992,6 +1352,7 @@ void PresetObs (GtkWidget *widget,  gpointer * gdata)
 void SetObsPreset(typHOE *hg){
   struct ln_dms obs_longitude_dms;
   struct ln_dms obs_latitude_dms;
+  gint i_obs=hg->obs_preset_tmp;
 
   if(!hg->obs_preset_flag_tmp) return;
 
@@ -2003,191 +1364,11 @@ void SetObsPreset(typHOE *hg){
   gtk_adjustment_set_value(hg->obs_adj_lamm, 0);
   gtk_adjustment_set_value(hg->obs_adj_lass, 0.0);
 
-  switch(hg->obs_preset_tmp){
-  case OBS_SUBARU:
-    ln_deg_to_dms(OBS_SUBARU_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_SUBARU_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_SUBARU_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_SUBARU_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_SUBARU_TZNAME);
-    break;
-
-  case OBS_PALOMAR:
-    ln_deg_to_dms(OBS_PALOMAR_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_PALOMAR_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_PALOMAR_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_PALOMAR_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_PALOMAR_TZNAME);
-    break;
-
-  case OBS_LICK:
-    ln_deg_to_dms(OBS_LICK_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_LICK_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_LICK_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_LICK_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_LICK_TZNAME);
-    break;
-
-  case OBS_KPNO:
-    ln_deg_to_dms(OBS_KPNO_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_KPNO_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_KPNO_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_KPNO_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_KPNO_TZNAME);
-    break;
-
-  case OBS_MMT:
-    ln_deg_to_dms(OBS_MMT_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_MMT_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_MMT_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_MMT_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_MMT_TZNAME);
-    break;
-
-  case OBS_LBT:
-    ln_deg_to_dms(OBS_LBT_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_LBT_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_LBT_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_LBT_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_LBT_TZNAME);
-    break;
-
-  case OBS_APACHE:
-    ln_deg_to_dms(OBS_APACHE_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_APACHE_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_APACHE_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_APACHE_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_APACHE_TZNAME);
-    break;
-
-  case OBS_HET:
-    ln_deg_to_dms(OBS_HET_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_HET_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_HET_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_HET_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_HET_TZNAME);
-    break;
-
-  case OBS_CTIO:
-    ln_deg_to_dms(OBS_CTIO_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_CTIO_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_CTIO_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_CTIO_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_CTIO_TZNAME);
-    break;
-
-  case OBS_GEMINIS:
-    ln_deg_to_dms(OBS_GEMINIS_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_GEMINIS_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_GEMINIS_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_GEMINIS_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_GEMINIS_TZNAME);
-    break;
-
-  case OBS_LASILLA:
-    ln_deg_to_dms(OBS_LASILLA_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_LASILLA_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_LASILLA_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_LASILLA_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_LASILLA_TZNAME);
-    break;
-
-  case OBS_MAGELLAN:
-    ln_deg_to_dms(OBS_MAGELLAN_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_MAGELLAN_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_MAGELLAN_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_MAGELLAN_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_MAGELLAN_TZNAME);
-    break;
-
-  case OBS_PARANAL:
-    ln_deg_to_dms(OBS_PARANAL_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_PARANAL_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_PARANAL_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_PARANAL_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_PARANAL_TZNAME);
-    break;
-
-  case OBS_GTC:
-    ln_deg_to_dms(OBS_GTC_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_GTC_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_GTC_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_GTC_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_GTC_TZNAME);
-    break;
-
-  case OBS_CAO:
-    ln_deg_to_dms(OBS_CAO_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_CAO_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_CAO_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_CAO_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_CAO_TZNAME);
-    break;
-
-  case OBS_SALT:
-    ln_deg_to_dms(OBS_SALT_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_SALT_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_SALT_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_SALT_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_SALT_TZNAME);
-    break;
-
-  case OBS_LAMOST:
-    ln_deg_to_dms(OBS_LAMOST_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_LAMOST_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_LAMOST_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_LAMOST_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_LAMOST_TZNAME);
-    break;
-
-  case OBS_KANATA:
-    ln_deg_to_dms(OBS_KANATA_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_KANATA_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_KANATA_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_KANATA_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_KANATA_TZNAME);
-    break;
-
-  case OBS_OAO:
-    ln_deg_to_dms(OBS_OAO_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_OAO_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_OAO_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_OAO_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_OAO_TZNAME);
-    break;
-
-  case OBS_NHAO:
-    ln_deg_to_dms(OBS_NHAO_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_NHAO_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_NHAO_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_NHAO_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_NHAO_TZNAME);
-    break;
-
-  case OBS_KISO:
-    ln_deg_to_dms(OBS_KISO_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_KISO_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_KISO_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_KISO_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_KISO_TZNAME);
-    break;
-
-  case OBS_GAO:
-    ln_deg_to_dms(OBS_GAO_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_GAO_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_GAO_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_GAO_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_GAO_TZNAME);
-    break;
-
-  case OBS_AAT:
-    ln_deg_to_dms(OBS_AAT_LONGITUDE,&obs_longitude_dms);
-    ln_deg_to_dms(OBS_AAT_LATITUDE, &obs_latitude_dms);
-    gtk_adjustment_set_value(hg->obs_adj_alt, OBS_AAT_ALTITUDE);
-    gtk_adjustment_set_value(hg->obs_adj_tz, OBS_AAT_TIMEZONE);
-    gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), OBS_AAT_TZNAME);
-    break;
-  }
+  ln_deg_to_dms(obs_param[i_obs].lng, &obs_longitude_dms);
+  ln_deg_to_dms(obs_param[i_obs].lat, &obs_latitude_dms);
+  gtk_adjustment_set_value(hg->obs_adj_alt, obs_param[i_obs].alt);
+  gtk_adjustment_set_value(hg->obs_adj_tz,  (gdouble)obs_param[i_obs].tz);
+  gtk_entry_set_text(GTK_ENTRY(hg->obs_entry_tz), obs_param[i_obs].tzname);
 
   if(obs_longitude_dms.neg){
     gtk_combo_box_set_active(GTK_COMBO_BOX(hg->obs_combo_ew),1);
@@ -2212,197 +1393,14 @@ void SetObsPreset(typHOE *hg){
 }
 
 
-void set_obs_param_from_preset(typHOE *hg)
+void set_obs_param_from_preset(typHOE *hg, gint i_obs)
 {
-
-  switch(hg->obs_preset){
-  case OBS_SUBARU:
-    hg->obs_longitude=OBS_SUBARU_LONGITUDE;
-    hg->obs_latitude =OBS_SUBARU_LATITUDE;
-    hg->obs_altitude =OBS_SUBARU_ALTITUDE;
-    hg->obs_timezone =OBS_SUBARU_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_SUBARU_TZNAME);
-    break;
-  case OBS_PALOMAR:
-    hg->obs_longitude=OBS_PALOMAR_LONGITUDE;
-    hg->obs_latitude =OBS_PALOMAR_LATITUDE;
-    hg->obs_altitude =OBS_PALOMAR_ALTITUDE;
-    hg->obs_timezone =OBS_PALOMAR_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_PALOMAR_TZNAME);
-    break;
-  case OBS_LICK:
-    hg->obs_longitude=OBS_LICK_LONGITUDE;
-    hg->obs_latitude =OBS_LICK_LATITUDE;
-    hg->obs_altitude =OBS_LICK_ALTITUDE;
-    hg->obs_timezone =OBS_LICK_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_LICK_TZNAME);
-    break;
-  case OBS_KPNO:
-    hg->obs_longitude=OBS_KPNO_LONGITUDE;
-    hg->obs_latitude =OBS_KPNO_LATITUDE;
-    hg->obs_altitude =OBS_KPNO_ALTITUDE;
-    hg->obs_timezone =OBS_KPNO_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_KPNO_TZNAME);
-    break;
-  case OBS_MMT:
-    hg->obs_longitude=OBS_MMT_LONGITUDE;
-    hg->obs_latitude =OBS_MMT_LATITUDE;
-    hg->obs_altitude =OBS_MMT_ALTITUDE;
-    hg->obs_timezone =OBS_MMT_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_MMT_TZNAME);
-    break;
-  case OBS_LBT:
-    hg->obs_longitude=OBS_LBT_LONGITUDE;
-    hg->obs_latitude =OBS_LBT_LATITUDE;
-    hg->obs_altitude =OBS_LBT_ALTITUDE;
-    hg->obs_timezone =OBS_LBT_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_LBT_TZNAME);
-    break;
-  case OBS_APACHE:
-    hg->obs_longitude=OBS_APACHE_LONGITUDE;
-    hg->obs_latitude =OBS_APACHE_LATITUDE;
-    hg->obs_altitude =OBS_APACHE_ALTITUDE;
-    hg->obs_timezone =OBS_APACHE_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_APACHE_TZNAME);
-    break;
-  case OBS_HET:
-    hg->obs_longitude=OBS_HET_LONGITUDE;
-    hg->obs_latitude =OBS_HET_LATITUDE;
-    hg->obs_altitude =OBS_HET_ALTITUDE;
-    hg->obs_timezone =OBS_HET_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_HET_TZNAME);
-    break;
-  case OBS_CTIO:
-    hg->obs_longitude=OBS_CTIO_LONGITUDE;
-    hg->obs_latitude =OBS_CTIO_LATITUDE;
-    hg->obs_altitude =OBS_CTIO_ALTITUDE;
-    hg->obs_timezone =OBS_CTIO_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_CTIO_TZNAME);
-    break;
-  case OBS_GEMINIS:
-    hg->obs_longitude=OBS_GEMINIS_LONGITUDE;
-    hg->obs_latitude =OBS_GEMINIS_LATITUDE;
-    hg->obs_altitude =OBS_GEMINIS_ALTITUDE;
-    hg->obs_timezone =OBS_GEMINIS_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_GEMINIS_TZNAME);
-    break;
-  case OBS_LASILLA:
-    hg->obs_longitude=OBS_LASILLA_LONGITUDE;
-    hg->obs_latitude =OBS_LASILLA_LATITUDE;
-    hg->obs_altitude =OBS_LASILLA_ALTITUDE;
-    hg->obs_timezone =OBS_LASILLA_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_LASILLA_TZNAME);
-    break; 
-  case OBS_MAGELLAN:
-    hg->obs_longitude=OBS_MAGELLAN_LONGITUDE;
-    hg->obs_latitude =OBS_MAGELLAN_LATITUDE;
-    hg->obs_altitude =OBS_MAGELLAN_ALTITUDE;
-    hg->obs_timezone =OBS_MAGELLAN_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_MAGELLAN_TZNAME);
-    break;
-  case OBS_PARANAL:
-    hg->obs_longitude=OBS_PARANAL_LONGITUDE;
-    hg->obs_latitude =OBS_PARANAL_LATITUDE;
-    hg->obs_altitude =OBS_PARANAL_ALTITUDE;
-    hg->obs_timezone =OBS_PARANAL_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_PARANAL_TZNAME);
-    break;
-  case OBS_GTC:
-    hg->obs_longitude=OBS_GTC_LONGITUDE;
-    hg->obs_latitude =OBS_GTC_LATITUDE;
-    hg->obs_altitude =OBS_GTC_ALTITUDE;
-    hg->obs_timezone =OBS_GTC_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_GTC_TZNAME);
-    break;
-  case OBS_CAO:
-    hg->obs_longitude=OBS_CAO_LONGITUDE;
-    hg->obs_latitude =OBS_CAO_LATITUDE;
-    hg->obs_altitude =OBS_CAO_ALTITUDE;
-    hg->obs_timezone =OBS_CAO_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_CAO_TZNAME);
-    break;
-  case OBS_SALT:
-    hg->obs_longitude=OBS_SALT_LONGITUDE;
-    hg->obs_latitude =OBS_SALT_LATITUDE;
-    hg->obs_altitude =OBS_SALT_ALTITUDE;
-    hg->obs_timezone =OBS_SALT_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_SALT_TZNAME);
-    break;
-  case OBS_LAMOST:
-    hg->obs_longitude=OBS_LAMOST_LONGITUDE;
-    hg->obs_latitude =OBS_LAMOST_LATITUDE;
-    hg->obs_altitude =OBS_LAMOST_ALTITUDE;
-    hg->obs_timezone =OBS_LAMOST_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_LAMOST_TZNAME);
-    break;
-  case OBS_KANATA:
-    hg->obs_longitude=OBS_KANATA_LONGITUDE;
-    hg->obs_latitude =OBS_KANATA_LATITUDE;
-    hg->obs_altitude =OBS_KANATA_ALTITUDE;
-    hg->obs_timezone =OBS_KANATA_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_KANATA_TZNAME);
-    break;
-  case OBS_OAO:
-    hg->obs_longitude=OBS_OAO_LONGITUDE;
-    hg->obs_latitude =OBS_OAO_LATITUDE;
-    hg->obs_altitude =OBS_OAO_ALTITUDE;
-    hg->obs_timezone =OBS_OAO_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_OAO_TZNAME);
-    break;
-  case OBS_NHAO:
-    hg->obs_longitude=OBS_NHAO_LONGITUDE;
-    hg->obs_latitude =OBS_NHAO_LATITUDE;
-    hg->obs_altitude =OBS_NHAO_ALTITUDE;
-    hg->obs_timezone =OBS_NHAO_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_NHAO_TZNAME);
-    break;
-  case OBS_KISO:
-    hg->obs_longitude=OBS_KISO_LONGITUDE;
-    hg->obs_latitude =OBS_KISO_LATITUDE;
-    hg->obs_altitude =OBS_KISO_ALTITUDE;
-    hg->obs_timezone =OBS_KISO_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_KISO_TZNAME);
-    break;
-  case OBS_GAO:
-    hg->obs_longitude=OBS_GAO_LONGITUDE;
-    hg->obs_latitude =OBS_GAO_LATITUDE;
-    hg->obs_altitude =OBS_GAO_ALTITUDE;
-    hg->obs_timezone =OBS_GAO_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_GAO_TZNAME);
-    break;
-  case OBS_AAT:
-    hg->obs_longitude=OBS_AAT_LONGITUDE;
-    hg->obs_latitude =OBS_AAT_LATITUDE;
-    hg->obs_altitude =OBS_AAT_ALTITUDE;
-    hg->obs_timezone =OBS_AAT_TIMEZONE;
-    if(hg->obs_tzname) g_free(hg->obs_tzname);
-    hg->obs_tzname=g_strdup(OBS_AAT_TZNAME);
-    break;
- }
-
-
+  hg->obs_longitude=obs_param[i_obs].lng;
+  hg->obs_latitude =obs_param[i_obs].lat;
+  hg->obs_altitude =obs_param[i_obs].alt;
+  hg->obs_timezone =obs_param[i_obs].tz;
+  if(hg->obs_tzname) g_free(hg->obs_tzname);
+  hg->obs_tzname=g_strdup(obs_param[i_obs].tzname);
 }
 
 
@@ -8582,6 +7580,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gint tmp_allsky_centerx;
   gint tmp_allsky_centery;
   gchar *tmp_allsky_host;
+  gboolean tmp_allsky_ssl;
   gchar *tmp_allsky_path;
   //gchar *tmp_allsky_date_path;
   gchar *tmp_allsky_file;
@@ -8660,6 +7659,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   tmp_allsky_limit   =hg->allsky_limit;
   tmp_allsky_flip    =hg->allsky_flip;
   tmp_allsky_host  =g_strdup(hg->allsky_host);
+  tmp_allsky_ssl   =hg->allsky_ssl;
   tmp_allsky_path  =g_strdup(hg->allsky_path);
   //tmp_allsky_date_path  =g_strdup(hg->allsky_date_path);
   tmp_allsky_file  =g_strdup(hg->allsky_file);
@@ -8746,125 +7746,16 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     GtkListStore *store;
     GtkTreeIter iter, iter_set;	  
     GtkCellRenderer *renderer;
+    gint i_obs;
     
     store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
-    
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_SUBARU_NAME,
-		       1, OBS_SUBARU, -1);
-    if(hg->obs_preset_tmp==OBS_SUBARU) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_PALOMAR_NAME,
-		       1, OBS_PALOMAR, -1);
-    if(hg->obs_preset_tmp==OBS_PALOMAR) iter_set=iter;
 
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_LICK_NAME,
-		       1, OBS_LICK, -1);
-    if(hg->obs_preset_tmp==OBS_LICK) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_KPNO_NAME,
-		       1, OBS_KPNO, -1);
-    if(hg->obs_preset_tmp==OBS_KPNO) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_MMT_NAME,
-		       1, OBS_MMT, -1);
-    if(hg->obs_preset_tmp==OBS_MMT) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_LBT_NAME,
-		       1, OBS_LBT, -1);
-    if(hg->obs_preset_tmp==OBS_LBT) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_APACHE_NAME,
-		       1, OBS_APACHE, -1);
-    if(hg->obs_preset_tmp==OBS_APACHE) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_HET_NAME,
-		       1, OBS_HET, -1);
-    if(hg->obs_preset_tmp==OBS_HET) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_CTIO_NAME,
-		       1, OBS_CTIO, -1);
-    if(hg->obs_preset_tmp==OBS_CTIO) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_GEMINIS_NAME,
-		       1, OBS_GEMINIS, -1);
-    if(hg->obs_preset_tmp==OBS_GEMINIS) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_LASILLA_NAME,
-		       1, OBS_LASILLA, -1);
-    if(hg->obs_preset_tmp==OBS_LASILLA) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_PARANAL_NAME,
-		       1, OBS_PARANAL, -1);
-    if(hg->obs_preset_tmp==OBS_PARANAL) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_MAGELLAN_NAME,
-		       1, OBS_MAGELLAN, -1);
-    if(hg->obs_preset_tmp==OBS_MAGELLAN) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_GTC_NAME,
-		       1, OBS_GTC, -1);
-    if(hg->obs_preset_tmp==OBS_GTC) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_CAO_NAME,
-		       1, OBS_CAO, -1);
-    if(hg->obs_preset_tmp==OBS_CAO) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_SALT_NAME,
-		       1, OBS_SALT, -1);
-    if(hg->obs_preset_tmp==OBS_SALT) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_LAMOST_NAME,
-		       1, OBS_LAMOST, -1);
-    if(hg->obs_preset_tmp==OBS_LAMOST) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_KANATA_NAME,
-		       1, OBS_KANATA, -1);
-    if(hg->obs_preset_tmp==OBS_KANATA) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_OAO_NAME,
-		       1, OBS_OAO, -1);
-    if(hg->obs_preset_tmp==OBS_OAO) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_NHAO_NAME,
-		       1, OBS_NHAO, -1);
-    if(hg->obs_preset_tmp==OBS_NHAO) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_KISO_NAME,
-		       1, OBS_KISO, -1);
-    if(hg->obs_preset_tmp==OBS_KISO) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_GAO_NAME,
-		       1, OBS_GAO, -1);
-    if(hg->obs_preset_tmp==OBS_GAO) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, OBS_AAT_NAME,
-		       1, OBS_AAT, -1);
-    if(hg->obs_preset_tmp==OBS_AAT) iter_set=iter;
-	
-	
+    for(i_obs=0;i_obs<NUM_OBS;i_obs++){
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, obs_param[i_obs].name,
+			 1, i_obs, -1);
+      if(hg->obs_preset_tmp==i_obs) iter_set=iter;
+    }	
 	
     hg->obs_combo_preset = 
       gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
@@ -9368,94 +8259,18 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     GtkListStore *store;
     GtkTreeIter iter, iter_set;	  
     GtkCellRenderer *renderer;
+    gint i_ascam;
     
     store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+
+
+    for(i_ascam=0;i_ascam<NUM_ALLSKY;i_ascam++){
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, allsky_param[i_ascam].name,
+			 1, i_ascam, -1);
+      if(hg->allsky_preset_tmp==i_ascam) iter_set=iter;
+    }
     
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_UH_NAME,
-		       1, ALLSKY_UH, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_UH) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_ASIVAV_NAME,
-		       1, ALLSKY_ASIVAV, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_ASIVAV) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_ASIVAR_NAME,
-		       1, ALLSKY_ASIVAR, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_ASIVAR) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_MKVIS_NAME,
-		       1, ALLSKY_MKVIS, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_MKVIS) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_PALOMAR_NAME,
-		       1, ALLSKY_PALOMAR, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_PALOMAR) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_LICK_NAME,
-		       1, ALLSKY_LICK, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_LICK) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_KPNO_NAME,
-		       1, ALLSKY_KPNO, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_KPNO) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_MMT_NAME,
-		       1, ALLSKY_MMT, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_MMT) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_HET_NAME,
-		       1, ALLSKY_HET, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_HET) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_CPAC_NAME,
-		       1, ALLSKY_CPAC, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_CPAC) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_LASILLA_NAME,
-		       1, ALLSKY_LASILLA, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_LASILLA) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_GTC_NAME,
-		       1, ALLSKY_GTC, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_GTC) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_KANATA_NAME,
-		       1, ALLSKY_KANATA, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_KANATA) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_OAO_NAME,
-		       1, ALLSKY_OAO, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_OAO) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_NHAO_NAME,
-		       1, ALLSKY_NHAO, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_NHAO) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_GAO_NAME,
-		       1, ALLSKY_GAO, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_GAO) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, ALLSKY_AAT_NAME,
-		       1, ALLSKY_AAT, -1);
-    if(hg->allsky_preset_tmp==ALLSKY_AAT) iter_set=iter;
-	
     hg->allsky_combo_preset = 
       gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     gtk_box_pack_start(GTK_BOX(hbox), hg->allsky_combo_preset,FALSE, FALSE, 0);
@@ -9491,7 +8306,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_container_set_border_width (GTK_CONTAINER (hg->allsky_frame_server), 5);
   gtk_widget_set_sensitive(hg->allsky_frame_server,!hg->allsky_preset_flag);
   
-  table2 = gtkut_table_new(3, 4, FALSE, 5, 5, 5);
+  table2 = gtkut_table_new(4, 4, FALSE, 5, 5, 5);
   gtk_container_add (GTK_CONTAINER (hg->allsky_frame_server), table2);
 
 
@@ -9518,6 +8333,16 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     cc_get_entry,
 		     &tmp_allsky_host);
 
+  hg->allsky_check_ssl = gtk_check_button_new_with_label("https");
+  my_signal_connect (hg->allsky_check_ssl, "toggled",
+		     cc_get_toggle,
+		     &tmp_allsky_ssl);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->allsky_check_ssl),
+			       hg->allsky_ssl);
+  gtkut_table_attach(table2, hg->allsky_check_ssl, 3, 4, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+
+  
   label = gtk_label_new ("Path");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_END);
@@ -9530,7 +8355,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   
 
   hg->allsky_entry_path = gtk_entry_new ();
-  gtkut_table_attach(table2, hg->allsky_entry_path, 1, 3, 1, 2,
+  gtkut_table_attach(table2, hg->allsky_entry_path, 1, 4, 1, 2,
 		     GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_path),
 		     hg->allsky_path);
@@ -9553,7 +8378,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   
 
   hg->allsky_entry_file = gtk_entry_new ();
-  gtkut_table_attach(table2, hg->allsky_entry_file, 1, 3, 2, 3,
+  gtkut_table_attach(table2, hg->allsky_entry_file, 1, 4, 2, 3,
 		     GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_file),
 		     hg->allsky_file);
@@ -9575,7 +8400,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     GTK_FILL,GTK_SHRINK,0,0);
 
   hg->allsky_entry_last_file = gtk_entry_new ();
-  gtkut_table_attach(table2, hg->allsky_entry_last_file, 1, 3, 3, 4,
+  gtkut_table_attach(table2, hg->allsky_entry_last_file, 1, 4, 3, 4,
 		     GTK_FILL,GTK_SHRINK,0,0);
   gtk_entry_set_text(GTK_ENTRY(hg->allsky_entry_last_file),
 		     hg->allsky_last_file00);
@@ -10801,7 +9626,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->obs_preset_flag	  = hg->obs_preset_flag_tmp;
     hg->obs_preset	  = hg->obs_preset_tmp;
     if(hg->obs_preset_flag){
-      set_obs_param_from_preset(hg);
+      set_obs_param_from_preset(hg, hg->obs_preset);
     }
     else{
       hg->obs_timezone	    =tmp_obs_timezone; 
@@ -10840,11 +9665,12 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->allsky_preset_flag	  = hg->allsky_preset_flag_tmp;
     hg->allsky_preset	  = hg->allsky_preset_tmp;
     if(hg->allsky_preset_flag){
-      set_allsky_param_from_preset(hg);
+      set_allsky_param_from_preset(hg, hg->allsky_preset);
     }
     else{
       if(hg->allsky_host) g_free(hg->allsky_host);
-      hg->allsky_host         =g_strdup(tmp_allsky_host);
+      hg->allsky_host        =g_strdup(tmp_allsky_host);
+      hg->allsky_ssl   = tmp_allsky_ssl;      
       if(hg->allsky_path) g_free(hg->allsky_path);
       hg->allsky_path         =g_strdup(tmp_allsky_path);
       if(hg->allsky_file) g_free(hg->allsky_file);
@@ -10970,7 +9796,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
     hg->obs_preset_flag    = TRUE;
     hg->obs_preset    = OBS_SUBARU;
-    set_obs_param_from_preset(hg);
+    set_obs_param_from_preset(hg, hg->obs_preset);
     hg->vel_az=VEL_AZ_SUBARU;
     hg->vel_el=VEL_EL_SUBARU;
     hg->pa_a0=PA_A0_SUBARU;
@@ -10996,7 +9822,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
     hg->allsky_preset_flag    = TRUE;
     hg->allsky_preset    = ALLSKY_ASIVAR;
-    set_allsky_param_from_preset(hg);
+    set_allsky_param_from_preset(hg, hg->allsky_preset);
 
     hg->allsky_interval=ALLSKY_INTERVAL;
     hg->allsky_last_interval=SKYCHECK_INTERVAL;
@@ -11228,9 +10054,6 @@ void global_init(){
   flag_getDSS=FALSE;
   flag_getFCDB=FALSE;
   
-#ifndef USE_WIN32
-  allsky_pid=0;
-#endif
   fc_pid=0;
   fcdb_pid=0;
   stddb_pid=0;
@@ -11255,13 +10078,6 @@ void param_init(typHOE *hg){
   hg->ope_max=0;
   hg->add_max=0;
   hg->nst_max=0;
-
-#ifdef USE_WIN32
-  hg->dwThreadID_allsky=0;
-  hg->dwThreadID_dss=0;
-  hg->dwThreadID_stddb=0;
-  hg->dwThreadID_fcdb=0;
-#endif
 
   hg->sz_skymon=SKYMON_WINSIZE;
   hg->sz_plot  =  PLOT_WINSIZE;
@@ -12639,6 +11455,7 @@ void WriteConf(typHOE *hg){
     xmms_cfg_write_int(cfgfile, "AllSky", "CenterY",hg->allsky_centery);
     xmms_cfg_write_boolean(cfgfile, "AllSky", "Limit",hg->allsky_limit);
     xmms_cfg_write_boolean(cfgfile, "AllSky", "Flip",hg->allsky_flip);
+    xmms_cfg_write_boolean(cfgfile, "AllSky", "SSL",hg->allsky_ssl);
   }
   xmms_cfg_write_boolean(cfgfile, "AllSky", "Pixbuf", hg->allsky_pixbuf_flag0);
   xmms_cfg_write_int(cfgfile, "AllSky", "Interval",(gint)hg->allsky_interval);
@@ -12902,29 +11719,29 @@ void ReadConf(typHOE *hg)
     else
       hg->obs_preset=OBS_SUBARU;
     if(hg->obs_preset_flag){
-      set_obs_param_from_preset(hg);
+      set_obs_param_from_preset(hg, hg->obs_preset);
     }
     else{
       if(xmms_cfg_read_double(cfgfile, "Observatory", "Longitude",     &f_buf))
 	hg->obs_longitude   =f_buf;
       else
-	hg->obs_longitude   =OBS_SUBARU_LONGITUDE;
+	hg->obs_longitude   =obs_param[hg->obs_preset].lng;
       if(xmms_cfg_read_double(cfgfile, "Observatory", "Latitude",     &f_buf))
 	hg->obs_latitude   =f_buf;
       else
-	hg->obs_latitude   =OBS_SUBARU_LATITUDE;
+	hg->obs_latitude   =obs_param[hg->obs_preset].lat;
       if(xmms_cfg_read_double(cfgfile, "Observatory", "Altitude",     &f_buf))
 	hg->obs_altitude   =f_buf;
       else
-	hg->obs_altitude   =OBS_SUBARU_ALTITUDE;
+	hg->obs_altitude   =obs_param[hg->obs_preset].alt;
       if(xmms_cfg_read_int(cfgfile, "Observatory", "TimeZone",     &i_buf))
 	hg->obs_timezone   =i_buf;
       else
-	hg->obs_timezone   =OBS_SUBARU_TIMEZONE; 
+	hg->obs_timezone   =obs_param[hg->obs_preset].tz; 
       if(xmms_cfg_read_string(cfgfile, "Observatory", "TZName", &c_buf)) 
 	hg->obs_tzname =c_buf;
       else
-	hg->obs_tzname=g_strdup(OBS_SUBARU_TZNAME);
+	hg->obs_tzname=g_strdup(obs_param[hg->obs_preset].tzname);
     }
     if(xmms_cfg_read_double(cfgfile, "Observatory", "VelAz",     &f_buf))
       hg->vel_az   =f_buf;
@@ -12959,51 +11776,57 @@ void ReadConf(typHOE *hg)
     else
       hg->allsky_preset=ALLSKY_ASIVAR;
     if(hg->allsky_preset_flag){
-      set_allsky_param_from_preset(hg);
+      set_allsky_param_from_preset(hg, hg->allsky_preset);
     }
     else{
       if(xmms_cfg_read_string(cfgfile, "AllSKy", "Host", &c_buf)) 
 	hg->allsky_host =c_buf;
       else
-	hg->allsky_host=g_strdup(ALLSKY_ASIVAR_HOST);
+	hg->allsky_host=g_strdup(allsky_param[hg->allsky_preset].host);
       if(xmms_cfg_read_string(cfgfile, "AllSKy", "Path", &c_buf)) 
 	hg->allsky_path =c_buf;
       else
-	hg->allsky_path=g_strdup(ALLSKY_ASIVAR_PATH);
+	hg->allsky_path=g_strdup(allsky_param[hg->allsky_preset].path);
       if(xmms_cfg_read_string(cfgfile, "AllSKy", "File", &c_buf)) 
 	hg->allsky_file =c_buf;
       else
 	hg->allsky_file = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-				      ALLSKY_ASIVAR_FILE, NULL);
+				      allsky_param[hg->allsky_preset].file,
+				      NULL);
       if(xmms_cfg_read_string(cfgfile, "AllSKy", "LastFile", &c_buf)) 
 	hg->allsky_last_file00 =c_buf;
       else
 	hg->allsky_last_file00 = g_strconcat(hg->temp_dir, G_DIR_SEPARATOR_S,
-					     ALLSKY_ASIVAR_LAST_FILE, NULL);
-      if(xmms_cfg_read_double(cfgfile, "AllSky", "Angle",     &f_buf))
+					     allsky_param[hg->allsky_preset].lfile,
+					     NULL);
+      if(xmms_cfg_read_double(cfgfile, "AllSky", "Angle",    &f_buf))
 	hg->allsky_angle   =f_buf;
       else
-	hg->allsky_angle   =ALLSKY_ASIVAR_ANGLE;
+	hg->allsky_angle   =allsky_param[hg->allsky_preset].angle;
       if(xmms_cfg_read_int  (cfgfile, "AllSky", "Diameter",  &i_buf)) 
 	hg->allsky_diameter=i_buf;
       else
-	hg->allsky_diameter=ALLSKY_ASIVAR_DIAMETER;
+	hg->allsky_diameter=allsky_param[hg->allsky_preset].diam;
       if(xmms_cfg_read_int  (cfgfile, "AllSky", "CenterX",  &i_buf)) 
 	hg->allsky_centerx=i_buf;
       else
-	hg->allsky_centerx=ALLSKY_ASIVAR_CENTERX;
+	hg->allsky_centerx=allsky_param[hg->allsky_preset].x;
       if(xmms_cfg_read_int  (cfgfile, "AllSky", "CenterY",  &i_buf)) 
 	hg->allsky_centery=i_buf;
       else
-	hg->allsky_centery=ALLSKY_ASIVAR_CENTERY;
+	hg->allsky_centery=allsky_param[hg->allsky_preset].y;
       if(xmms_cfg_read_boolean(cfgfile, "AllSky", "Limit", &b_buf))
 	hg->allsky_limit =b_buf;
       else
-	hg->allsky_limit =FALSE;
+	hg->allsky_limit =allsky_param[hg->allsky_preset].limit;
       if(xmms_cfg_read_boolean(cfgfile, "AllSky", "Flip", &b_buf))
 	hg->allsky_flip =b_buf;
       else
-	hg->allsky_flip =FALSE;
+	hg->allsky_flip =allsky_param[hg->allsky_preset].flip;
+      if(xmms_cfg_read_boolean(cfgfile, "AllSky", "SSL", &b_buf))
+	hg->allsky_ssl =b_buf;
+      else
+	hg->allsky_ssl =allsky_param[hg->allsky_preset].ssl;
 
 
       if(hg->allsky_name) g_free(hg->allsky_name);
@@ -13241,7 +12064,7 @@ void ReadConf(typHOE *hg)
 
     hg->obs_preset_flag=TRUE;
     hg->obs_preset=OBS_SUBARU;
-    set_obs_param_from_preset(hg);
+    set_obs_param_from_preset(hg, hg->obs_preset);
     hg->vel_az=VEL_AZ_SUBARU;
     hg->vel_el=VEL_EL_SUBARU;
     hg->pa_a0=PA_A0_SUBARU;
@@ -13268,7 +12091,7 @@ void ReadConf(typHOE *hg)
 
     hg->allsky_preset_flag=TRUE;
     hg->allsky_preset=ALLSKY_ASIVAR;
-    set_allsky_param_from_preset(hg);
+    set_allsky_param_from_preset(hg, hg->allsky_preset);
     hg->allsky_pixbuf_flag0=TRUE;
     hg->allsky_interval=ALLSKY_INTERVAL;
     hg->allsky_last_interval=SKYCHECK_INTERVAL;

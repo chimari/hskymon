@@ -1,3 +1,9 @@
+hskymon (4.0.0ubuntu) bionic; urgency=medium
+
+  * Revised all multi-thread process into glib based ones.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Tue, 24 Dec 2019 16:32:46 -1000
+
 hskymon (3.9.0ubuntu) bionic; urgency=medium
 
   * Added Proper Motion search frm Object List Window.

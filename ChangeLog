@@ -1,6 +1,9 @@
-2019.12.11 ver3.9.0 - Bug fix on target addtion from FCDB to Main Target list.
+2019.12.24 ver4.0.0 - Bug fix on target addtion from FCDB to Main Target list.
                     - Added "PM" button in Object LIst to search proper
 	              motions of targets.
+	            - Added SSL access mode to get All Sky Camera image.
+                    - Revised code to set Obs/AllSky Cam parameters.
+                    - Revised all multi-thread process into glib based ones. 
 
 2019.11.27 ver3.8.6 - Re-Added old PanSTARRS server in StSci (as default).
                       (MAST server is slow and unstable with large FOVs).

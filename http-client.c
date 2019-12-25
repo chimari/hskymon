@@ -355,6 +355,173 @@ int http_c(typHOE *hg){
 }
 
 
+int http_c_ssl(typHOE *hg){
+  int command_socket;           /* コマンド用ソケット */
+  int size;
+
+  char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
+  char buf[BUF_LEN+1];
+  
+  FILE *fp_write;
+  FILE *fp_read;
+
+  struct addrinfo hints, *res;
+  struct in_addr addr;
+  int err, ret;
+
+  gboolean chunked_flag=FALSE;
+  gchar *cp;
+
+  gchar *rand16=NULL;
+  gint plen;
+
+  SSL *ssl;
+  SSL_CTX *ctx;
+
+  gchar *img_tmp;
+  
+  // Calculate Content-Length
+  if(hg->fcdb_post){
+    rand16=make_rand16();
+    plen=post_body_ssl(hg, FALSE, NULL, rand16);
+  }
+   
+  check_msg_from_parent(hg);
+
+  /* ホストの情報 (IP アドレスなど) を取得 */
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_family = AF_INET;
+
+  if ((err = getaddrinfo(hg->fcdb_host, "https", &hints, &res)) !=0){
+    fprintf(stderr, "Bad hostname [%s]\n", hg->fcdb_host);
+    return(HSKYMON_HTTP_ERROR_GETHOST);
+  }
+
+  check_msg_from_parent(hg);
+
+    /* ソケット生成 */
+  if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
+    fprintf(stderr, "Failed to create a new socket.\n");
+    return(HSKYMON_HTTP_ERROR_SOCKET);
+  }
+
+  check_msg_from_parent(hg);
+  
+  /* サーバに接続 */
+  if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
+    fprintf(stderr, "Failed to connect to %s .\n", hg->fcdb_host);
+    return(HSKYMON_HTTP_ERROR_CONNECT);
+  }
+
+  check_msg_from_parent(hg);
+
+  SSL_load_error_strings();
+  SSL_library_init();
+
+  ctx = SSL_CTX_new(SSLv23_client_method());
+  ssl = SSL_new(ctx);
+  err = SSL_set_fd(ssl, command_socket);
+  while((ret=SSL_connect(ssl))!=1){
+    err=SSL_get_error(ssl, ret);
+    if( (err==SSL_ERROR_WANT_READ)||(err==SSL_ERROR_WANT_WRITE) ){
+      g_usleep(100000);
+      g_warning("SSL_connect(): try again\n");
+      continue;
+    }
+    g_warning("SSL_connect() failed with error %d, ret=%d (%s)\n",
+	      err, ret, ERR_error_string(ERR_get_error(), NULL));
+    return(HSKYMON_HTTP_ERROR_SSL);
+  }
+
+  check_msg_from_parent(hg);
+  
+  // AddrInfoの解放
+  freeaddrinfo(res);
+
+  // HTTP/1.1 ではchunked対策が必要
+  hg->psz=0;
+  if(hg->fcdb_post){
+    sprintf(send_mesg, "POST %s HTTP/1.1\r\n", hg->fcdb_path);
+  }
+  else{
+    sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->fcdb_path);
+  }
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "Accept: application/xml, application/json\r\n");
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "User-Agent: Mozilla/5.0\r\n");
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "Host: %s\r\n", hg->fcdb_host);
+  write_to_SSLserver(ssl, send_mesg);
+
+  sprintf(send_mesg, "Connection: close\r\n");
+  write_to_SSLserver(ssl, send_mesg);
+
+  // No POST for this function
+  
+  sprintf(send_mesg, "\r\n");
+  write_to_SSLserver(ssl, send_mesg);
+
+  // No POST for this function
+
+  if((fp_write=fopen(hg->allsky_file,"wb"))==NULL){
+    fprintf(stderr," File Write Error  \"%s\" \n", hg->allsky_file);
+    if(hg->allsky_date) g_free(hg->allsky_date);
+    hg->allsky_date=g_strdup("Error: Failed to create a temporary file.");
+    return(HSKYMON_HTTP_ERROR_TEMPFILE);
+  }
+  
+  while((size = ssl_gets(ssl, buf, BUF_LEN)) > 2 ){
+    // header lines
+    if(debug_flg){
+      fprintf(stderr,"[SSL] --> Header: %s", buf);
+    }
+    if(NULL != (cp = my_strcasestr(buf, "Transfer-Encoding: chunked"))){
+      chunked_flag=TRUE;
+    }
+    if (strncmp(buf,"Last-Modified: ",strlen("Last-Modified: "))==0){
+      if(hg->allsky_date) g_free(hg->allsky_date);
+      hg->allsky_date=g_strdup(buf+strlen("Last-Modified: "));
+      hg->allsky_date[strlen(hg->allsky_date)-2]='\0';
+      
+    }
+    // header lines
+  }
+  do { //data read
+    size = recv(command_socket, buf, BUF_LEN, 0);
+    fwrite( &buf , size , 1 , fp_write ); 
+  }while(size>0);
+  
+  g_free(img_tmp);
+
+  fclose(fp_write);
+  
+  check_msg_from_parent(hg);
+
+  if(chunked_flag) unchunk(hg->allsky_file);
+  
+  allsky_debug_print("Child: done\n");
+  
+  if((chmod(hg->allsky_file,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
+    g_print("Cannot Chmod Temporary File %s!  Please check!!!\n",hg->allsky_file);
+  }
+
+  SSL_shutdown(ssl);
+  SSL_free(ssl);
+  SSL_CTX_free(ctx);
+  ERR_free_strings();
+  
+  close(command_socket);
+
+  return 0;
+}
+
+
+
 int allsky_read_data(typHOE *hg){
   GdkPixbuf *tmp_pixbuf=NULL;
   time_t t,t0;
