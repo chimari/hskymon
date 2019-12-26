@@ -1,6 +1,6 @@
 Summary: Sky-Monitor for Subaru Telescope, NAOJ
 Name: hskymon
-Version: 4.0.0
+Version: 4.0.1
 Release: 1%{?_dist_release}
 License: GPL3
 Group: Applications/Engineering

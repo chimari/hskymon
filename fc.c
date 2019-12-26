@@ -3286,8 +3286,8 @@ void fcdb_dl(typHOE *hg)
   if(flag_getFCDB) return;
   flag_getFCDB=TRUE;
 
-  tmp=g_strdup_printf("Retrieving <b>%s</b> image from \"<b>%s</b>\" ...",
-		      FC_img[hg->fc_mode], FC_host[hg->fc_mode]);
+  tmp=g_strdup_printf("Searching objects around <b>%s</b> in \"<b>%s</b>\" ...",
+		      hg->obj[hg->fcdb_i].name, db_name[hg->fcdb_type]);
   create_pdialog(hg,
 		 (flagFC) ? hg->fc_main : hg->skymon_main,
 		 "Sky Monitor : Query to the database",
