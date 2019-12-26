@@ -310,7 +310,7 @@ void fc_dl (typHOE *hg)
   hg->pcancel=g_cancellable_new();
   hg->pthread=g_thread_new("hskymon_get_dss", thread_get_dss, (gpointer)hg);
   g_main_loop_run(hg->ploop);
-  //g_thread_join(hg->pthread);
+  g_thread_join(hg->pthread);
   g_main_loop_unref(hg->ploop);
   hg->ploop=NULL;
 
@@ -3263,7 +3263,7 @@ void ver_dl(typHOE *hg)
   hg->pcancel=g_cancellable_new();
   hg->pthread=g_thread_new("hskymon_get_fcdb", thread_get_fcdb, (gpointer)hg);
   g_main_loop_run(hg->ploop);
-  //g_thread_join(hg->pthread);
+  g_thread_join(hg->pthread);
   g_main_loop_unref(hg->ploop);
   hg->ploop=NULL;
   
@@ -3349,7 +3349,7 @@ void fcdb_dl(typHOE *hg)
   hg->pcancel=g_cancellable_new();
   hg->pthread=g_thread_new("hskymon_get_fcdb", thread_get_fcdb, (gpointer)hg);
   g_main_loop_run(hg->ploop);
-  //g_thread_join(hg->pthread);
+  g_thread_join(hg->pthread);
   g_main_loop_unref(hg->ploop);
   hg->ploop=NULL;
 
@@ -3451,7 +3451,7 @@ void addobj_dl(typHOE *hg)
   hg->pcancel=g_cancellable_new();
   hg->pthread=g_thread_new("hskymon_get_fcdb", thread_get_fcdb, (gpointer)hg);
   g_main_loop_run(hg->ploop);
-  //g_thread_join(hg->pthread);
+  g_thread_join(hg->pthread);
   g_main_loop_unref(hg->ploop);
   hg->ploop=NULL;
 
@@ -3661,7 +3661,7 @@ void pm_dl(typHOE *hg)
   hg->pcancel=g_cancellable_new();
   hg->pthread=g_thread_new("hskymon_get_fcdb", thread_get_fcdb, (gpointer)hg);
   g_main_loop_run(hg->ploop);
-  //g_thread_join(hg->pthread);
+  g_thread_join(hg->pthread);
   g_main_loop_unref(hg->ploop);
   hg->ploop=NULL;
 
@@ -3957,7 +3957,7 @@ void trdb_run (typHOE *hg)
     hg->pcancel=g_cancellable_new();
     hg->pthread=g_thread_new("hskymon_get_fcdb", thread_get_fcdb, (gpointer)hg);
     g_main_loop_run(hg->ploop);
-    //g_thread_join(hg->pthread);
+    g_thread_join(hg->pthread);
     g_main_loop_unref(hg->ploop);
     hg->ploop=NULL;
     

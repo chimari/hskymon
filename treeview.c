@@ -8176,7 +8176,7 @@ void stddb_dl(typHOE *hg)
   hg->pcancel=g_cancellable_new();
   hg->pthread=g_thread_new("hskymon_get_stddb", thread_get_stddb, (gpointer)hg);
   g_main_loop_run(hg->ploop);
-  //g_thread_join(hg->pthread);
+  g_thread_join(hg->pthread);
   g_main_loop_unref(hg->ploop);
   hg->ploop=NULL;
 

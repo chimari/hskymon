@@ -833,9 +833,10 @@ gboolean start_get_allsky(gpointer gdata){
   
   hg->asloop=g_main_loop_new(NULL, FALSE);
   hg->ascancel=g_cancellable_new();
-  hg->asthread=g_thread_new("hskymon_get_akksky",
+  hg->asthread=g_thread_new("hskymon_get_allsky",
 			    thread_get_allsky, (gpointer)hg);
   g_main_loop_run(hg->asloop);
+  g_thread_join(hg->asthread);
   g_main_loop_unref(hg->asloop);
   hg->asloop=NULL;
 
