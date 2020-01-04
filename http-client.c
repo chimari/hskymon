@@ -4950,6 +4950,7 @@ gpointer thread_get_fcdb(gpointer gdata){
   case FCDB_TYPE_GEMINI:
   case TRDB_TYPE_GEMINI:
   case TRDB_TYPE_FCDB_GEMINI:
+  case ADDOBJ_TYPE_TRANSIENT:
     http_c_fcdb_ssl(hg);
     break;
     

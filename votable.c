@@ -4603,3 +4603,340 @@ void addobj_vo_parse(typHOE *hg) {
 }
 
 
+void addobj_transient_txt_parse(typHOE *hg) {
+  FILE *fp;
+  gint i=0, i_name=-1, i_ra=-1, i_dec=-1, i_type=-1,
+    i_z=-1, i_mag=-1, i_host=-1, i_date=-1;
+  gchar *buf=NULL, *buf1=NULL, *tmp_char=NULL;
+  gchar *c_name=NULL, *c_ra=NULL, *c_dec=NULL, *c_type=NULL,
+    *c_z=NULL, *c_mag=NULL, *c_host=NULL, *c_date=NULL,
+    *str_z=NULL, *str_mag=NULL, *str_host=NULL, *str_date=NULL;
+  gint ra_h, ra_m, dec_d, dec_m;
+  gdouble ra_s, dec_s;
+  gboolean dec_n;
+  gint n_obj=0;
+  gchar *ip_name, *tgt_name;
+
+  if((fp=fopen(hg->fcdb_file,"rb"))==NULL){
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-warning", 
+#else
+		  GTK_STOCK_DIALOG_WARNING,
+#endif
+		  POPUP_TIMEOUT*2,
+		  "<b>Error</b>: File cannot be opened.",
+		  " ",
+		  hg->fcdb_file,
+		  NULL);
+    return;
+  }
+
+  ip_name=strip_spc(hg->addobj_name);
+
+  // Header
+  if((buf=fgets_new(fp))!=NULL){
+    tmp_char=(char *)strtok(buf,"\t");
+    
+    while(tmp_char!=NULL){
+      if(strncmp(tmp_char,"\"Name\"",strlen("\"Name\""))==0){
+	i_name=i;
+      }
+      else if(strncmp(tmp_char,"\"RA\"",strlen("\"RA\""))==0){
+	i_ra=i;
+      }
+      else if(strncmp(tmp_char,"\"DEC\"",strlen("\"DEC\""))==0){
+	i_dec=i;
+      }
+      else if(strncmp(tmp_char,"\"Obj. Type\"",strlen("\"Obj Type\""))==0){
+	i_type=i;
+      }
+      else if(strncmp(tmp_char,"\"Host Name\"",strlen("\"Host Name\""))==0){
+	i_host=i;
+      }
+      else if(strncmp(tmp_char,"\"Host Redshift\"",strlen("\"Host Redshift\""))==0){
+	i_z=i;
+      }
+      else if(strncmp(tmp_char,"\"Discovery Mag\"",strlen("\"Discovery Mag\""))==0){
+	i_mag=i;
+      }
+      else if(strncmp(tmp_char,"\"Discovery Date (UT)\"",strlen("\"Discovery Date (UT)\""))==0){
+	i_date=i;
+      }
+      
+      tmp_char=(char *)strtok(NULL,"\t");
+      i++;
+    }
+  }
+  else{
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-warning", 
+#else
+		  GTK_STOCK_DIALOG_WARNING,
+#endif
+		  POPUP_TIMEOUT*2,
+		  "<b>Error</b>: File is invalid.",
+		  " ",
+		  hg->fcdb_file,
+		  NULL);
+    return;
+  }
+
+  g_free(buf);
+
+  if((i_name<0) || (i_ra<0) || (i_dec<0)){
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-warning", 
+#else
+		  GTK_STOCK_DIALOG_WARNING,
+#endif
+		  POPUP_TIMEOUT*2,
+		  "<b>Error</b>: File is invalid.",
+		  " ",
+		  hg->fcdb_file,
+		  NULL);
+    return;
+  }  
+  
+  // Data
+  buf=fgets_new(fp);
+  
+  while(buf){
+    // Name
+    buf1=g_strdup(buf);
+    tmp_char=(char *)strtok(buf1,"\t");
+    for(i=0;i<i_name;i++){
+      tmp_char=(char *)strtok(NULL,"\t");
+    }   
+    if(strlen(tmp_char)>2){
+      c_name=g_strndup(tmp_char+1,strlen(tmp_char)-2);
+    }
+    g_free(buf1);
+    
+    // RA
+    buf1=g_strdup(buf);
+    tmp_char=(char *)strtok(buf1,"\t");
+    for(i=0;i<i_ra;i++){
+      tmp_char=(char *)strtok(NULL,"\t");
+    }
+    if(strlen(tmp_char)>2){
+      c_ra=g_strndup(tmp_char+1,strlen(tmp_char)-2);
+    }
+    g_free(buf1);
+    
+    // Dec
+    buf1=g_strdup(buf);
+    tmp_char=(char *)strtok(buf1,"\t");
+    for(i=0;i<i_dec;i++){
+      tmp_char=(char *)strtok(NULL,"\t");
+    }
+    if(strlen(tmp_char)>2){
+      c_dec=g_strndup(tmp_char+1,strlen(tmp_char)-2);
+    }
+    g_free(buf1);
+    
+    // Type
+    if(i_type > 0){
+      buf1=g_strdup(buf);
+      tmp_char=(char *)strtok(buf1,"\t");
+      for(i=0;i<i_type;i++){
+	tmp_char=(char *)strtok(NULL,"\t");
+      }
+      if(strlen(tmp_char)>2){
+	c_type=g_strndup(tmp_char+1,strlen(tmp_char)-2);
+      }
+      g_free(buf1);
+    }
+
+    // Host
+    if(i_host > 0){
+      buf1=g_strdup(buf);
+      tmp_char=(char *)strtok(buf1,"\t");
+      for(i=0;i<i_host;i++){
+	tmp_char=(char *)strtok(NULL,"\t");
+      }
+      if(strlen(tmp_char)>2){
+	c_host=g_strndup(tmp_char+1,strlen(tmp_char)-2);
+      }
+      g_free(buf1);
+    }
+    
+    // Z
+    if(i_z > 0){
+      buf1=g_strdup(buf);
+      tmp_char=(char *)strtok(buf1,"\t");
+      for(i=0;i<i_z;i++){
+	tmp_char=(char *)strtok(NULL,"\t");
+      }
+      if(strlen(tmp_char)>2){
+	c_z=g_strndup(tmp_char+1,strlen(tmp_char)-2);
+      }
+      g_free(buf1);
+    }
+    
+    // mag
+    if(i_mag > 0){
+      buf1=g_strdup(buf);
+      tmp_char=(char *)strtok(buf1,"\t");
+      for(i=0;i<i_mag;i++){
+	tmp_char=(char *)strtok(NULL,"\t");
+      }
+      if(strlen(tmp_char)>2){
+	c_mag=g_strndup(tmp_char+1,strlen(tmp_char)-2);
+      }
+      g_free(buf1);
+    }
+    
+    // Date
+    if(i_date > 0){
+      buf1=g_strdup(buf);
+      tmp_char=(char *)strtok(buf1,"\t");
+      for(i=0;i<i_date;i++){
+	tmp_char=(char *)strtok(NULL,"\t");
+      }
+      if(strlen(tmp_char)>2){
+	c_date=g_strndup(tmp_char+1,strlen(tmp_char)-2);
+      }
+      g_free(buf1);
+    }
+
+
+    if(n_obj>0){ // found 2 or more!
+      if(!c_name) return;
+      tgt_name=strip_spc(c_name);
+      if(strcasecmp(ip_name, tgt_name)==0){
+	g_free(tgt_name);
+	break;
+      }
+      else{
+	g_free(tgt_name);
+	
+	g_free(c_name);
+	g_free(c_ra);
+	g_free(c_dec);
+	g_free(c_type);
+	g_free(c_host);
+	g_free(c_z);
+	g_free(c_date);
+	g_free(c_mag);
+
+      	c_name=NULL;
+	c_ra=NULL;
+	c_dec=NULL;
+	c_type=NULL;
+	c_host=NULL;
+	c_z=NULL;
+	c_date=NULL;
+	c_mag=NULL;
+}
+    }
+    n_obj++;
+    buf=fgets_new(fp);
+  }
+ 
+  g_free(ip_name);
+  g_free(buf);
+  fclose(fp);
+
+  
+  // Name
+  if(hg->addobj_voname) g_free(hg->addobj_voname);
+  if(c_name){
+    hg->addobj_voname=g_strdup(c_name);
+    g_free(c_name);
+  }
+  else{
+    hg->addobj_voname=NULL;
+    return;
+  }
+
+  // RA
+  tmp_char=(char *)strtok(c_ra,":");
+  ra_h=atoi(tmp_char);
+  tmp_char=(char *)strtok(NULL,":");
+  ra_m=atoi(tmp_char);
+  tmp_char=(char *)strtok(NULL,":");
+  ra_s=atof(tmp_char);
+  hg->addobj_ra=ra_h*10000+ra_m*100+ra_s;
+  if(c_ra) g_free(c_ra);
+
+  // Dec
+  if(c_dec[0]=='-'){
+    dec_n=TRUE;
+  }
+  else{
+    dec_n=FALSE;
+  }
+  tmp_char=(char *)strtok(c_dec,":");
+  dec_d=abs(atoi(tmp_char));
+  tmp_char=(char *)strtok(NULL,":");
+  dec_m=atoi(tmp_char);
+  tmp_char=(char *)strtok(NULL,":");
+  dec_s=atof(tmp_char);
+  if(dec_n){
+    hg->addobj_dec=-dec_d*10000-dec_m*100-dec_s;
+  }
+  else{
+    hg->addobj_dec=dec_d*10000+dec_m*100+dec_s;
+  }
+  if(c_dec) g_free(c_dec);
+
+  // Type
+  if(hg->addobj_votype) g_free(hg->addobj_votype);
+  if(c_type){
+    hg->addobj_votype=g_strdup(c_type);
+  }
+  else{
+    hg->addobj_votype=g_strdup("(type unknown)");
+  }
+  
+  hg->addobj_pm_ra=0.0;
+  hg->addobj_pm_dec=0.0;
+
+
+  // mag
+  if(c_mag){
+    str_mag=g_strdup_printf("mag=%s, ",c_mag);
+    g_free(c_mag);
+  }
+  else{
+    str_mag=g_strdup(" ");
+  }
+  
+  // Host
+  if(c_host){
+    str_host=g_strdup_printf("in %s, ",c_host);
+    g_free(c_host);
+  }
+  else{
+    str_host=g_strdup(" ");
+  }
+
+  // Z
+  if(c_z){
+    str_z=g_strdup_printf("z=%s, ",c_z);
+    g_free(c_z);
+  }
+  else{
+    str_z=g_strdup(" ");
+  }
+
+  // Date
+  if(c_date){
+    str_date=g_strdup_printf("%s",c_date);
+    g_free(c_date);
+  }
+  else{
+    str_date=g_strdup(" ");
+  }
+  
+  if(hg->addobj_magsp) g_free(hg->addobj_magsp);
+  hg->addobj_magsp=g_strconcat(str_mag, str_host, str_z, str_date, NULL);
+
+  g_free(str_mag);
+  g_free(str_host);
+  g_free(str_z);
+  g_free(str_date);
+}

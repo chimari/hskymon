@@ -2030,6 +2030,12 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
 			  hobject_prec.dec.seconds);
       break;
 
+    case WWWDB_TRANSIENT:
+      tmp=g_strdup_printf(TRANSIENT_URL,
+			  ln_hms_to_deg(&hobject_prec.ra),
+			  ln_dms_to_deg(&hobject_prec.dec));
+      break;
+
     case WWWDB_DR8:
       tmp=g_strdup_printf(DR8_URL,
 			  hobject_prec.ra.hours,hobject_prec.ra.minutes,
@@ -7027,6 +7033,11 @@ do_editable_cells (typHOE *hg)
       if(hg->wwwdb_mode==WWWDB_NED) iter_set=iter;
       
       gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "Transient N. S.",
+			 1, WWWDB_TRANSIENT, 2, TRUE, -1);
+      if(hg->wwwdb_mode==WWWDB_TRANSIENT) iter_set=iter;
+      
+      gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, 0, "SDSS (DR15)",
 			 1, WWWDB_SDSS_DRNOW, 2, TRUE, -1);
       if(hg->wwwdb_mode==WWWDB_SDSS_DRNOW) iter_set=iter;
@@ -8738,6 +8749,21 @@ static void addobj_ned_query (GtkWidget *widget, gpointer gdata)
   addobj_dl(hg);
 }
 
+static void addobj_transient_query (GtkWidget *widget, gpointer gdata)
+{
+  typHOE *hg;
+  hg=(typHOE *)gdata;
+  gint i_tmp;
+
+  i_tmp=hg->fcdb_type;
+  
+  hg->addobj_type=ADDOBJ_TYPE_TRANSIENT;
+  hg->fcdb_type=hg->addobj_type;
+  addobj_dl(hg);
+  
+  hg->fcdb_type=i_tmp;
+}
+
 void addobj_dialog (GtkWidget *widget, gpointer gdata)
 {
   GtkWidget *dialog, *label, *button, *frame, *hbox, *vbox, *check,
@@ -8804,6 +8830,14 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
 #endif
   gtk_box_pack_start(GTK_BOX(hbox), button,FALSE,FALSE,0);
   my_signal_connect(button,"pressed", addobj_ned_query, (gpointer)hg);
+
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("Transient", "edit-find");
+#else
+  button=gtkut_button_new_from_stock("Transient", GTK_STOCK_FIND);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), button,FALSE,FALSE,0);
+  my_signal_connect(button,"pressed", addobj_transient_query, (gpointer)hg);
 
 #ifdef USE_GTK3
   bar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);

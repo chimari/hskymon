@@ -2004,7 +2004,7 @@ gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
 #endif
   gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
   
-  label = gtkut_label_new ("&#xA9; 2003-19 Akito Tajitsu");
+  label = gtkut_label_new ("&#xA9; 2003-20 Akito Tajitsu");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_CENTER);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);

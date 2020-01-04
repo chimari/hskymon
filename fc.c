@@ -3371,10 +3371,10 @@ void addobj_dl(typHOE *hg)
   if(flag_getFCDB) return;
   flag_getFCDB=TRUE;
 
-  tgt=make_simbad_id(hg->addobj_name);
 
   switch(hg->addobj_type){
   case FCDB_TYPE_SIMBAD:
+    tgt=make_simbad_id(hg->addobj_name);
     if(hg->fcdb_path) g_free(hg->fcdb_path);
     hg->fcdb_path=g_strdup_printf(ADDOBJ_SIMBAD_PATH,tgt);
     if(hg->fcdb_host) g_free(hg->fcdb_host);
@@ -3387,10 +3387,24 @@ void addobj_dl(typHOE *hg)
     break;
 
   case FCDB_TYPE_NED:
+    tgt=make_simbad_id(hg->addobj_name);
     if(hg->fcdb_path) g_free(hg->fcdb_path);
     hg->fcdb_path=g_strdup_printf(ADDOBJ_NED_PATH,tgt);
     if(hg->fcdb_host) g_free(hg->fcdb_host);
     hg->fcdb_host=g_strdup(FCDB_HOST_NED);
+    break;
+    
+  default: // Transient
+    tgt=strip_spc(hg->addobj_name);
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+    hg->fcdb_path=g_strdup_printf(ADDOBJ_TRANSIENT_PATH,tgt);
+    if(hg->fcdb_host) g_free(hg->fcdb_host);
+    hg->fcdb_host=g_strdup(ADDOBJ_TRANSIENT_HOST);
+    break;
+    if(hg->fcdb_file) g_free(hg->fcdb_file);
+    hg->fcdb_file=g_strconcat(hg->temp_dir,
+			      G_DIR_SEPARATOR_S,
+			      FCDB_FILE_XML,NULL);
     break;
   }
   g_free(tgt);
@@ -3407,6 +3421,10 @@ void addobj_dl(typHOE *hg)
 
   case FCDB_TYPE_NED:
     tmp=g_strdup("Searching objects in NED ...");
+    break;
+    
+  default: // Transient
+    tmp=g_strdup("Searching objects in Transient Name Server ...");
     break;
   }
   create_pdialog(hg,
@@ -3426,6 +3444,11 @@ void addobj_dl(typHOE *hg)
   case FCDB_TYPE_NED:
     gtk_label_set_markup(GTK_LABEL(hg->plabel),
 			 "Searching objects in NED ...");
+    break;
+    
+  default: // Transient
+    gtk_label_set_markup(GTK_LABEL(hg->plabel),
+			 "Searching objects in Transient Name Server ...");
     break;
   }
 
@@ -3461,7 +3484,16 @@ void addobj_dl(typHOE *hg)
 
   flag_getFCDB=FALSE;
  
-  addobj_vo_parse(hg);
+  switch(hg->addobj_type){
+  case FCDB_TYPE_SIMBAD:
+  case FCDB_TYPE_NED:
+    addobj_vo_parse(hg);
+    break;
+
+  default:
+    addobj_transient_txt_parse(hg);
+    break;
+  }
 
   if(hg->addobj_voname){
     tmp=g_strdup_printf("%09.2lf",hg->addobj_ra);
@@ -3494,6 +3526,13 @@ void addobj_dl(typHOE *hg)
 			  hg->addobj_voname, 
 			  hg->addobj_votype);
       break;
+
+    default: // Transient
+      tmp=g_strdup_printf("Your input \"%s\" is identified with \"<b>%s</b>\" (<i>%s</i>) in Transient Name Server.",
+			  hg->addobj_name, 
+			  hg->addobj_voname, 
+			  hg->addobj_votype);
+      break;
     }
     gtk_label_set_markup(GTK_LABEL(hg->addobj_label),tmp);
     g_free(tmp);
@@ -3507,6 +3546,11 @@ void addobj_dl(typHOE *hg)
 
     case FCDB_TYPE_NED:
       tmp=g_strdup_printf("span color=\"#FF0000\">Your input \"%s\" is not found in NED</span>",
+			  hg->addobj_name); 
+      break;
+
+    default:
+      tmp=g_strdup_printf("<span color=\"#FF0000\">Your input \"%s\" is not found in Transient Name Server.</span>",
 			  hg->addobj_name); 
       break;
     }

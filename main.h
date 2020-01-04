@@ -89,6 +89,7 @@
 #define DR8_URL "http://skyserver.sdss3.org/dr8/en/tools/quicklook/quickobj.asp?ra=%d:%d:%.2lf&dec=%s%d:%d:%.2lf"
 #define SDSS_DRNOW_URL "http://skyserver.sdss.org/dr15/en/tools/quicklook/summary.aspx?ra=%lf&dec=%s%lf"
 #define NED_URL "http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=2.0&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES"
+#define TRANSIENT_URL "https://wis-tns.weizmann.ac.il/search?&discovered_period_value=&discovered_period_units=years&unclassified_at=0&classified_sne=0&name=&name_like=0&isTNS_AT=all&public=all&ra=%lf&decl=%+lf&radius=120&coords_unit=arcsec&reporting_groupid%%5B%%5D=null&groupid%%5B%%5D=null&classifier_groupid%%5B%%5D=null&objtype%%5B%%5D=null&at_type%%5B%%5D=null&date_start%%5Bdate%%5D=&date_end%%5Bdate%%5D=&discovery_mag_min=&discovery_mag_max=&internal_name=&discoverer=&classifier=&spectra_count=&redshift_min=&redshift_max=&hostname=&ext_catid=&ra_range_min=&ra_range_max=&decl_range_min=&decl_range_max=&discovery_instrument%%5B%%5D=null&classification_instrument%%5B%%5D=null&associated_groups%%5B%%5D=null&at_rep_remarks=&class_rep_remarks=&num_page=50"
 #define MAST_URL "http://archive.stsci.edu/xcorr.php?target=%.5lf%s%.10lf&max_records=10&action=Search&resolver=SIMBAD&missions[]=EUVE&missions[]=WFC3-IMAGE&missions[]=WFPC1&missions[]=WFPC2&missions[]=FOC&missions[]=ACS-IMAGE&missions[]=UIT&missions[]=STIS-IMAGE&missions[]=COS-IMAGE&missions[]=GALEX&missions[]=XMM-OM&missions[]=NICMOS-IMAGE&missions[]=FUSE&missions[]=IMAPS&missions[]=BEFS&missions[]=TUES&missions[]=IUE&missions[]=COPERNICUS&missions[]=HUT&missions[]=WUPPE&missions[]=GHRS&missions[]=STIS-SPECTRUM&missions[]=COS-SPECTRUM&missions[]=WFC3-SPECTRUM&missions[]=ACS-SPECTRUM&missions[]=FOS&missions[]=HPOL&missions[]=NICMOS-SPECTRUM&missions[]=FGS&missions[]=HSP&missions[]=KEPLER"
 #define MASTP_URL "https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html?searchQuery=%lf%%20%s%lf"
 #define KECK_URL "https://koa.ipac.caltech.edu/cgi-bin/bgServices/nph-bgExec?bgApp=/KOA/nph-KOA&instrument_de=deimos&instrument_es=esi&instrument_hi=hires&instrument_lr=lris&instrument_lw=lws&instrument_mf=mosfire&instrument_n1=nirc&instrument_n2=nirc2&instrument_ns=nirspec&instrument_os=osiris&filetype=science&calibassoc=assoc&locstr=%.6lf+%+.6lf&regSize=120&resolver=ned&radunits=arcsec&spt_obj=spatial&single_multiple=single"
@@ -120,6 +121,7 @@
 #define DR8_URL "open http://skyserver.sdss3.org/dr8/en/tools/quicklook/quickobj.asp?ra=%d:%d:%.2lf\\&dec=%s%d:%d:%.2lf"
 #define SDSS_DRNOW_URL "open http://skyserver.sdss.org/dr14/en/tools/quicklook/summary.aspx?ra=%lf\\&dec=%s%lf"
 #define NED_URL "open http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search\\&in_csys=Equatorial\\&in_equinox=J2000.0\\&lon=%d%%3A%d%%3A%.2lf\\&lat=%s%d%%3A%d%%3A%.2lf\\&radius=2.0\\&hconst=73\\&omegam=0.27\\&omegav=0.73\\&corr_z=1\\&z_constraint=Unconstrained\\&z_value1=\\&z_value2=\\&z_unit=z\\&ot_include=ANY\\&nmp_op=ANY\\&out_csys=Equatorial\\&out_equinox=J2000.0\\&obj_sort=Distance+to+search+center\\&of=pre_text\\&zv_breaker=30000.0\\&list_limit=5\\&img_stamp=YES"
+#define TRANSIENT_URL "open https://wis-tns.weizmann.ac.il/search?\\&discovered_period_value=\\&discovered_period_units=years\\&unclassified_at=0\\&classified_sne=0\\&name=\\&name_like=0\\&isTNS_AT=all\\&public=all\\&ra=%lf\\&decl=%+lf\\&radius=120\\&coords_unit=arcsec\\&reporting_groupid%%5B%%5D=null\\&groupid%%5B%%5D=null\\&classifier_groupid%%5B%%5D=null\\&objtype%%5B%%5D=null\\&at_type%%5B%%5D=null\\&date_start%%5Bdate%%5D=\\&date_end%%5Bdate%%5D=\\&discovery_mag_min=\\&discovery_mag_max=\\&internal_name=\\&discoverer=\\&classifier=\\&spectra_count=\\&redshift_min=\\&redshift_max=\\&hostname=\\&ext_catid=\\&ra_range_min=\\&ra_range_max=\\&decl_range_min=\\&decl_range_max=\\&discovery_instrument%%5B%%5D=null\\&classification_instrument%%5B%%5D=null\\&associated_groups%%5B%%5D=null\\&at_rep_remarks=\\&class_rep_remarks=\\&num_page=50"
 #define MAST_URL "open http://archive.stsci.edu/xcorr.php?target=%.5lf%s%.10lf\\&max_records=10\\&action=Search\\&resolver=SIMBAD\\&missions[]=EUVE\\&missions[]=WFC3-IMAGE\\&missions[]=WFPC1\\&missions[]=WFPC2\\&missions[]=FOC\\&missions[]=ACS-IMAGE\\&missions[]=UIT\\&missions[]=STIS-IMAGE\\&missions[]=COS-IMAGE\\&missions[]=GALEX\\&missions[]=XMM-OM\\&missions[]=NICMOS-IMAGE\\&missions[]=FUSE\\&missions[]=IMAPS\\&missions[]=BEFS\\&missions[]=TUES\\&missions[]=IUE\\&missions[]=COPERNICUS\\&missions[]=HUT\\&missions[]=WUPPE\\&missions[]=GHRS\\&missions[]=STIS-SPECTRUM\\&missions[]=COS-SPECTRUM\\&missions[]=WFC3-SPECTRUM\\&missions[]=ACS-SPECTRUM\\&missions[]=FOS\\&missions[]=HPOL\\&missions[]=NICMOS-SPECTRUM\\&missions[]=FGS\\&missions[]=HSP\\&missions[]=KEPLER"
 #define MASTP_URL "open https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html?searchQuery=%lf%%20%s%lf"
 #define KECK_URL "open https://koa.ipac.caltech.edu/cgi-bin/bgServices/nph-bgExec?bgApp=/KOA/nph-KOA&instrument_de=deimos&instrument_es=esi&instrument_hi=hires&instrument_lr=lris&instrument_lw=lws&instrument_mf=mosfire&instrument_n1=nirc&instrument_n2=nirc2&instrument_ns=nirspec&instrument_os=osiris&filetype=science&calibassoc=assoc&locstr=%.6lf+%+.6lf&regSize=120&resolver=ned&radunits=arcsec&spt_obj=spatial&single_multiple=single"
@@ -150,6 +152,7 @@
 #define DR8_URL "\"http://skyserver.sdss3.org/dr8/en/tools/quicklook/quickobj.asp?ra=%d:%d:%.2lf&dec=%s%d:%d:%.2lf\""
 #define SDSS_DRNOW_URL "\"http://skyserver.sdss.org/dr15/en/tools/quicklook/summary.aspx?ra=%lf&dec=%s%lf\""
 #define NED_URL "\"http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=2.0&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES\""
+#define TRANSIENT_URL "\"https://wis-tns.weizmann.ac.il/search?&discovered_period_value=&discovered_period_units=years&unclassified_at=0&classified_sne=0&name=&name_like=0&isTNS_AT=all&public=all&ra=%lf&decl=%+lf&radius=120&coords_unit=arcsec&reporting_groupid%%5B%%5D=null&groupid%%5B%%5D=null&classifier_groupid%%5B%%5D=null&objtype%%5B%%5D=null&at_type%%5B%%5D=null&date_start%%5Bdate%%5D=&date_end%%5Bdate%%5D=&discovery_mag_min=&discovery_mag_max=&internal_name=&discoverer=&classifier=&spectra_count=&redshift_min=&redshift_max=&hostname=&ext_catid=&ra_range_min=&ra_range_max=&decl_range_min=&decl_range_max=&discovery_instrument%%5B%%5D=null&classification_instrument%%5B%%5D=null&associated_groups%%5B%%5D=null&at_rep_remarks=&class_rep_remarks=&num_page=50\""
 #define MAST_URL "\"http://archive.stsci.edu/xcorr.php?target=%.5lf%s%.10lf&max_records=10&action=Search&resolver=SIMBAD&missions[]=EUVE&missions[]=WFC3-IMAGE&missions[]=WFPC1&missions[]=WFPC2&missions[]=FOC&missions[]=ACS-IMAGE&missions[]=UIT&missions[]=STIS-IMAGE&missions[]=COS-IMAGE&missions[]=GALEX&missions[]=XMM-OM&missions[]=NICMOS-IMAGE&missions[]=FUSE&missions[]=IMAPS&missions[]=BEFS&missions[]=TUES&missions[]=IUE&missions[]=COPERNICUS&missions[]=HUT&missions[]=WUPPE&missions[]=GHRS&missions[]=STIS-SPECTRUM&missions[]=COS-SPECTRUM&missions[]=WFC3-SPECTRUM&missions[]=ACS-SPECTRUM&missions[]=FOS&missions[]=HPOL&missions[]=NICMOS-SPECTRUM&missions[]=FGS&missions[]=HSP&missions[]=KEPLER\""
 #define MASTP_URL "\"https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html?searchQuery=%lf%%20%s%lf\""
 #define KECK_URL "\"https://koa.ipac.caltech.edu/cgi-bin/bgServices/nph-bgExec?bgApp=/KOA/nph-KOA&instrument_de=deimos&instrument_es=esi&instrument_hi=hires&instrument_lr=lris&instrument_lw=lws&instrument_mf=mosfire&instrument_n1=nirc&instrument_n2=nirc2&instrument_ns=nirspec&instrument_os=osiris&filetype=science&calibassoc=assoc&locstr=%.6lf+%+.6lf&regSize=120&resolver=ned&radunits=arcsec&spt_obj=spatial&single_multiple=single\""
@@ -282,6 +285,9 @@ enum
 
 #define ADDOBJ_SIMBAD_PATH "/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=VOTABLE"
 #define ADDOBJ_NED_PATH "/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES&of=xml_main"
+
+#define ADDOBJ_TRANSIENT_HOST "wis-tns.weizmann.ac.il"
+#define ADDOBJ_TRANSIENT_PATH "/search?name=%s&discovered_period_value=100&discovered_period_units=years&format=tsv"
 
 #define FC_MAX_MAG 5
 
@@ -883,7 +889,8 @@ enum
   TRDB_TYPE_FCDB_SMOKA,
   TRDB_TYPE_FCDB_HST,
   TRDB_TYPE_FCDB_ESO,
-  TRDB_TYPE_FCDB_GEMINI
+  TRDB_TYPE_FCDB_GEMINI,
+  ADDOBJ_TYPE_TRANSIENT
 };
 
 static const gchar* db_name[]={  
@@ -1048,6 +1055,7 @@ enum{ AZEL_NORMAL, AZEL_POSI, AZEL_NEGA} AZElMode;
 
 enum{ WWWDB_SIMBAD, 
       WWWDB_NED, 
+      WWWDB_TRANSIENT, 
       WWWDB_DR8, 
       WWWDB_SDSS_DRNOW, 
       WWWDB_MAST, 
@@ -2768,7 +2776,7 @@ void addobj_dialog();
 void raise_tree();
 void str_replace();
 void fcdb_append_tree();
-
+gchar *strip_spc();
 
 //utility.c
 void ln_deg_to_dms();
@@ -2799,6 +2807,7 @@ void fcdb_eso_vo_parse();
 void trdb_eso_vo_parse();
 void addobj_vo_parse();
 void stddb_vo_parse();
+void addobj_transient_txt_parse();
 
 //jason_parse.c
 void fcdb_gemini_jason_parse();
