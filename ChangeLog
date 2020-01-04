@@ -1,4 +1,4 @@
-2019.01.03 ver4.0.2 - Added Transient Name Server in Addobj search & WWWDB.
+2020.01.03 ver4.0.2 - Added Transient Name Server in Addobj search & WWWDB.
 
 2019.12.26 ver4.0.1 - Revised downloading popup messages in FCDB search.
                     - Added g_thread_join() after threads finished.
