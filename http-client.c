@@ -813,6 +813,8 @@ gpointer thread_get_allsky(gpointer gdata){
   get_allsky(hg);
 
   if(hg->asloop) g_main_loop_quit(hg->asloop);
+
+  return(NULL);
 }
 
 
@@ -4919,6 +4921,8 @@ gpointer thread_get_dss(gpointer gdata){
 
   hg->fc_pid=1;
   if(hg->ploop) g_main_loop_quit(hg->ploop);
+  
+  return(NULL);
 }
 
 
@@ -4931,6 +4935,8 @@ gpointer thread_get_stddb(gpointer gdata){
   http_c_std(hg);
 
   if(hg->ploop) g_main_loop_quit(hg->ploop);
+  
+  return(NULL);
 }
 
  
@@ -4960,6 +4966,8 @@ gpointer thread_get_fcdb(gpointer gdata){
   }
  
   if(hg->ploop) g_main_loop_quit(hg->ploop);
+  
+  return(NULL);
 }
 
 void allsky_debug_print(const gchar *format, ...)

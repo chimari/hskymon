@@ -1,3 +1,6 @@
+2020.01.29 ver4.0.3 - Bug fix for multi-thread operation.
+	              Added "return(NULL)" at the end of thread funcs.
+
 2020.01.03 ver4.0.2 - Added Transient Name Server in Addobj search & WWWDB.
 
 2019.12.26 ver4.0.1 - Revised downloading popup messages in FCDB search.

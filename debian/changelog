@@ -1,3 +1,9 @@
+hskymon (4.0.3ubuntu) bionic; urgency=medium
+
+  * Bug fix for multi-thread operation.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Wed, 29 Jan 2020 13:43:53 -1000
+
 hskymon (4.0.2ubuntu) bionic; urgency=medium
 
   * Added Transient Name Server in Addobj search & WWWDB.
