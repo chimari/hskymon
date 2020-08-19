@@ -78,6 +78,7 @@ void draw_ircs();
 void draw_comics();
 void draw_focas();
 void draw_moircs();
+void draw_swims();
 void draw_spcam();
 void draw_hsc();
 void draw_hsc_ol();
@@ -128,6 +129,10 @@ void fc_item2 (typHOE *hg)
       else if(strcmp(hg->stat_obcp,"MOIRCS")==0){
 	hg->fc_inst=FC_INST_MOIRCS;
 	hg->dss_arcmin=MOIRCS_SIZE;
+      }
+      else if(strcmp(hg->stat_obcp,"SWIMS")==0){
+	hg->fc_inst=FC_INST_SWIMS;
+	hg->dss_arcmin=SWIMS_SIZE;
       }
       else if(strcmp(hg->stat_obcp,"FMOS")==0){
 	hg->fc_inst=FC_INST_FMOS;
@@ -982,6 +987,11 @@ void create_fc_dialog(typHOE *hg)
     if(hg->fc_inst==FC_INST_MOIRCS) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "SWIMS",
+		       1, FC_INST_SWIMS, -1);
+    if(hg->fc_inst==FC_INST_SWIMS) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "FMOS",
 		       1, FC_INST_FMOS, -1);
     if(hg->fc_inst==FC_INST_FMOS) iter_set=iter;
@@ -1562,6 +1572,7 @@ void translate_to_center(typHOE *hg,
   case FC_INST_COMICS:
   case FC_INST_FOCAS:
   case FC_INST_MOIRCS:
+  case FC_INST_SWIMS:
   case FC_INST_FMOS:
   case FC_INST_PFS:
     angle=M_PI*(gdouble)hg->dss_pa/180.;
@@ -1892,6 +1903,10 @@ gboolean draw_fc_cairo(GtkWidget *widget,
       draw_moircs(hg, cr, width, height, width_file, height_file, scale, r);
       break;
 
+    case FC_INST_SWIMS:
+      draw_swims(hg, cr, width, height, width_file, height_file, scale, r);
+      break;
+
     case FC_INST_SPCAM:
       draw_spcam(hg, cr, width, height, width_file, height_file, scale, r);
       break;
@@ -2051,6 +2066,7 @@ void rot_pa(typHOE *hg, cairo_t *cr){
   case FC_INST_COMICS:
   case FC_INST_FOCAS:
   case FC_INST_MOIRCS:
+  case FC_INST_SWIMS:
   case FC_INST_FMOS:
   case FC_INST_PFS:
     angle=M_PI*(gdouble)hg->dss_pa/180.;
@@ -2333,6 +2349,11 @@ static void cc_get_fc_inst (GtkWidget *widget,  gpointer * gdata)
   case FC_INST_MOIRCS:
     gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
 			     (gdouble)(MOIRCS_SIZE));
+    break;
+
+  case FC_INST_SWIMS:
+    gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			     (gdouble)(SWIMS_SIZE));
     break;
 
   case FC_INST_FMOS:
@@ -6131,6 +6152,7 @@ void draw_fcdb1(typHOE *hg,
     case FC_INST_COMICS:
     case FC_INST_FOCAS:
     case FC_INST_MOIRCS:
+    case FC_INST_SWIMS:
     case FC_INST_FMOS:
       theta=-M_PI*(gdouble)hg->dss_pa/180.;
       break;
@@ -6674,6 +6696,79 @@ void draw_moircs(typHOE *hg,
     cairo_move_to(cr,-extents.width/2.,
 		  -(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_VIGR_ARCMIN/2.-5*scale);
     cairo_show_text(cr,"6 arcmin from the center");
+  }
+}
+
+
+void draw_swims(typHOE *hg,
+		 cairo_t *cr,
+		 gint width, gint height,
+		 gint width_file, gint height_file,
+		 gdouble scale,
+		 gdouble r)
+{ // Drawing Inst (MOIRCS)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_rectangle(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*SWIMS_X_ARCMIN)/2.,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SWIMS_Y_ARCMIN)/2.,
+		  (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*SWIMS_X_ARCMIN,
+		  (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SWIMS_Y_ARCMIN);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  tmp=g_strdup_printf("SWIMS FOV (%.1lfx%.1lfarcmin)",SWIMS_X_ARCMIN, SWIMS_Y_ARCMIN);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,-extents.width/2,
+		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SWIMS_Y_ARCMIN)/2.-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+  
+  if(hg->dss_draw_slit){
+    cairo_new_path(cr);
+    cairo_rectangle(cr,
+		    -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*SWIMS_X_ARCMIN)/2.,
+		    -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SWIMS_Y_ARCMIN)/2.,
+		    (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*SWIMS_X_ARCMIN,
+		    (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SWIMS_Y_ARCMIN);
+    cairo_clip(cr);
+    cairo_new_path(cr);
+	
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+    cairo_set_line_width (cr, SWIMS_GAP_ARCSEC/60.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip));
+    cairo_move_to(cr,0, -(gdouble)height/2);
+    cairo_line_to(cr,0, (gdouble)height/2);
+    cairo_stroke(cr);
+	
+    cairo_reset_clip(cr);
+    
+    if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+    else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+    
+    cairo_set_line_width(cr,1.5*scale);
+    cairo_arc(cr,0,0,
+	      (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*SWIMS_R_ARCMIN/2.,
+	      0,M_PI*2);
+    cairo_stroke(cr);
+       
+    cairo_rotate (cr,-M_PI/2);
+    cairo_text_extents (cr,"7.2 arcmin from the center", &extents);
+    cairo_move_to(cr,-extents.width/2.,
+		  -(gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*SWIMS_R_ARCMIN/2.-5*scale);
+    cairo_show_text(cr,"7.2 arcmin from the center");
   }
 }
 

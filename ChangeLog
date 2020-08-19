@@ -1,3 +1,7 @@
+2020.08.18 ver4.0.4 - Added SWIMS into the FC instruments
+	              PA is temporary (N-up = 0 and should be fixed
+	              in observations).
+
 2020.01.29 ver4.0.3 - Bug fix for multi-thread operation.
 	              Added "return(NULL)" at the end of thread funcs.
 

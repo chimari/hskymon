@@ -1,3 +1,9 @@
+hskymon (4.0.4ubuntu) bionic; urgency=medium
+
+  * Added SWIMS into the FC instruments.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Tue, 18 Aug 2020 18:02:09 -1000
+
 hskymon (4.0.3ubuntu) bionic; urgency=medium
 
   * Bug fix for multi-thread operation.
