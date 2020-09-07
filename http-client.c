@@ -254,7 +254,7 @@ int http_c(typHOE *hg){
   struct in_addr addr;
   int err;
   const char *cause=NULL;
-  gchar *img_tmp;
+  gboolean chunked_flag=FALSE;
   
   allsky_debug_print("Child: http accessing to %s\n",hg->allsky_host);
   
@@ -290,15 +290,13 @@ int http_c(typHOE *hg){
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
 
-  img_tmp=g_strdup(hg->allsky_path);
-  
   // AddrInfoの解放
   freeaddrinfo(res);
 
-  allsky_debug_print("Child: downloading %s ...\n",img_tmp);
+  allsky_debug_print("Child: downloading %s ...\n",hg->allsky_path);
   
   // bin mode
-  sprintf(send_mesg, "GET %s HTTP/1.1\r\n", img_tmp);
+  sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->allsky_path);
   write_to_server(command_socket, send_mesg);
   
   sprintf(send_mesg, "Accept: image/gif, image/jpeg, */*\r\n");
@@ -325,6 +323,12 @@ int http_c(typHOE *hg){
   }
   
   while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
+    if(debug_flg){
+      fprintf(stderr,"--> Header: %s", buf);
+    }
+    if (strcmp(buf, "Transfer-Encoding: chunked")==0){
+      chunked_flag=TRUE;
+    }
     if (strncmp(buf,"Last-Modified: ",strlen("Last-Modified: "))==0){
       if(hg->allsky_date) g_free(hg->allsky_date);
       hg->allsky_date=g_strdup(buf+strlen("Last-Modified: "));
@@ -338,10 +342,12 @@ int http_c(typHOE *hg){
     fwrite( &buf , size , 1 , fp_write ); 
   }while(size>0);
   
-  g_free(img_tmp);
-
   fclose(fp_write);
   
+  check_msg_from_parent(hg);
+
+  if(chunked_flag) unchunk(hg->allsky_file);
+
   allsky_debug_print("Child: done\n");
   
   if((chmod(hg->allsky_file,(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH | S_IWOTH ))) != 0){
@@ -378,23 +384,15 @@ int http_c_ssl(typHOE *hg){
   SSL *ssl;
   SSL_CTX *ctx;
 
-  gchar *img_tmp;
+  allsky_debug_print("Child: https accessing to %s\n",hg->allsky_host);
   
-  // Calculate Content-Length
-  if(hg->fcdb_post){
-    rand16=make_rand16();
-    plen=post_body_ssl(hg, FALSE, NULL, rand16);
-  }
-   
-  check_msg_from_parent(hg);
-
   /* ホストの情報 (IP アドレスなど) を取得 */
   memset(&hints, 0, sizeof(hints));
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_family = AF_INET;
 
-  if ((err = getaddrinfo(hg->fcdb_host, "https", &hints, &res)) !=0){
-    fprintf(stderr, "Bad hostname [%s]\n", hg->fcdb_host);
+  if ((err = getaddrinfo(hg->allsky_host, "https", &hints, &res)) !=0){
+    fprintf(stderr, "Bad hostname [%s]\n", hg->allsky_host);
     return(HSKYMON_HTTP_ERROR_GETHOST);
   }
 
@@ -410,7 +408,7 @@ int http_c_ssl(typHOE *hg){
   
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
-    fprintf(stderr, "Failed to connect to %s .\n", hg->fcdb_host);
+    fprintf(stderr, "Failed to connect to %s .\n", hg->allsky_host);
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
 
@@ -442,10 +440,10 @@ int http_c_ssl(typHOE *hg){
   // HTTP/1.1 ではchunked対策が必要
   hg->psz=0;
   if(hg->fcdb_post){
-    sprintf(send_mesg, "POST %s HTTP/1.1\r\n", hg->fcdb_path);
+    sprintf(send_mesg, "POST %s HTTP/1.1\r\n", hg->allsky_path);
   }
   else{
-    sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->fcdb_path);
+    sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->allsky_path);
   }
   write_to_SSLserver(ssl, send_mesg);
 
@@ -455,18 +453,15 @@ int http_c_ssl(typHOE *hg){
   sprintf(send_mesg, "User-Agent: Mozilla/5.0\r\n");
   write_to_SSLserver(ssl, send_mesg);
 
-  sprintf(send_mesg, "Host: %s\r\n", hg->fcdb_host);
+  sprintf(send_mesg, "Host: %s\r\n", hg->allsky_host);
   write_to_SSLserver(ssl, send_mesg);
 
   sprintf(send_mesg, "Connection: close\r\n");
   write_to_SSLserver(ssl, send_mesg);
 
-  // No POST for this function
-  
   sprintf(send_mesg, "\r\n");
   write_to_SSLserver(ssl, send_mesg);
 
-  // No POST for this function
 
   if((fp_write=fopen(hg->allsky_file,"wb"))==NULL){
     fprintf(stderr," File Write Error  \"%s\" \n", hg->allsky_file);
@@ -474,8 +469,8 @@ int http_c_ssl(typHOE *hg){
     hg->allsky_date=g_strdup("Error: Failed to create a temporary file.");
     return(HSKYMON_HTTP_ERROR_TEMPFILE);
   }
-  
-  while((size = ssl_gets(ssl, buf, BUF_LEN)) > 2 ){
+
+  while((size = ssl_gets(ssl, buf,BUF_LEN)) > 2 ){
     // header lines
     if(debug_flg){
       fprintf(stderr,"[SSL] --> Header: %s", buf);
@@ -489,17 +484,14 @@ int http_c_ssl(typHOE *hg){
       hg->allsky_date[strlen(hg->allsky_date)-2]='\0';
       
     }
-    // header lines
   }
-  do { //data read
-    size = recv(command_socket, buf, BUF_LEN, 0);
+  do{ // data read
+    size = SSL_read(ssl, buf, BUF_LEN);
     fwrite( &buf , size , 1 , fp_write ); 
-  }while(size>0);
+  }while(size >0);
   
-  g_free(img_tmp);
-
   fclose(fp_write);
-  
+
   check_msg_from_parent(hg);
 
   if(chunked_flag) unchunk(hg->allsky_file);
@@ -791,16 +783,22 @@ int get_allsky(typHOE *hg){
 
   printf_log(hg, "[AllSky] fetching AllSky image from %s.",
 	     hg->allsky_host);
+  
 
- hg->allsky_http_status=http_c(hg);
- if(hg->allsky_http_status==0){
-   hg->allsky_data_status=allsky_read_data(hg);
+  if(hg->allsky_ssl){
+    hg->allsky_http_status=http_c_ssl(hg);
+  }
+  else{
+    hg->allsky_http_status=http_c(hg);
+  }
+  if(hg->allsky_http_status==0){
+    hg->allsky_data_status=allsky_read_data(hg);
    if(hg->allsky_data_status>=0){
      if(hg->skymon_mode==SKYMON_CUR){
        draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
      }
    }
- }
+  }
 
   return 0;
 }

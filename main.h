@@ -1328,7 +1328,7 @@ static const OBSpara obs_param[]={
   {"Japan: Okayama Astrophysical Observatory",
    133.5940,
    34.5771,
-   370,
+   390,
    540,
    "JST"},
 
@@ -1439,7 +1439,7 @@ static const AllSkypara allsky_param[]={
    282,
    TRUE,
    FALSE,
-   FALSE},
+   TRUE},
 
   // ALLSKY_ASIVAR
   {"MaunaKea: CFHT ASIVA (Mid-IR)",
@@ -1454,7 +1454,7 @@ static const AllSkypara allsky_param[]={
    253,
    FALSE,
    FALSE,
-   FALSE},
+   TRUE},
   
   //ALLSKY_MKVIS
   {"MaunaKea: Hale Pohaku (Visible)",
