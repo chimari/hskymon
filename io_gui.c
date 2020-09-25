@@ -2306,10 +2306,10 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 
 
 void AutoLoadNST(typHOE *hg){
-  gint i_nst;
+  gint i_nst, j_nst;
   gboolean ret;
   gchar *basename=NULL, *dirname=NULL;
-  
+
   // Non-Sidereal
   for(i_nst=0; i_nst<hg->i_nst_found; i_nst++){
     //printf("New Non-Sidereal file \"%s\" is detected in OPE\n",
@@ -2344,12 +2344,6 @@ void AutoLoadNST(typHOE *hg){
       if(dirname) g_free(dirname);
       if(basename) g_free(basename);
     }
-    
-    for(i_nst=0; i_nst<hg->i_nst_found; i_nst++){
-      if(hg->nst_found[i_nst]) g_free(hg->nst_found[i_nst]);
-      hg->nst_found[i_nst]=NULL;
-    }
-    hg->i_nst_found=0;
 
     if(ret){
       popup_message(hg->skymon_main, 
@@ -2382,10 +2376,15 @@ void AutoLoadNST(typHOE *hg){
 		    " ",
 		    "Please put the tracking file into the same directory where the OPE file is stored.",
 		    NULL);
+
+      hg->i_nst_found=0;
       return;
     }
     
   }
+  
+  hg->i_nst_found=0;
+  
   
   if(hg->skymon_mode==SKYMON_SET){
     calcpa2_skymon(hg);

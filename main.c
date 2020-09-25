@@ -10831,6 +10831,7 @@ void CheckNST_in_OPE(typHOE *hg, gchar *cpp){
     }
 
     if(new_flag){
+      if(hg->nst_found[hg->i_nst_found]) g_free(hg->nst_found[hg->i_nst_found]);
       hg->nst_found[hg->i_nst_found]=g_strdup(arg);
       hg->i_nst_found++;
     }

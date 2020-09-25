@@ -1,3 +1,9 @@
+hskymon (4.0.6ubuntu) bionic; urgency=medium
+
+  * Bug fix for TSC files auto loading.
+
+ -- Akito Tajitsu <tajitsu@naoj.org>  Thu, 24 Sep 2020 19:27:18 -1000
+
 hskymon (4.0.5ubuntu) bionic; urgency=medium
 
   * Revised https access for allsky images.
