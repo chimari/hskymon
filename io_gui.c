@@ -1150,6 +1150,45 @@ void ReadListOPE(typHOE *hg, gint ope_max){
 	    }while(cp);
 	  }
 
+	  // PM
+	  hg->obj[i_list].pm_ra=0.0;
+	  if(ok_obj&&ok_ra&&ok_dec){
+	    cpp=BUF;
+	    do{
+	      if(NULL != (cp = my_strcasestr(cpp, "PMRA="))){
+		cpp=cp+strlen("PMRA=");
+		cp--;
+		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
+		  cp++;
+		  cp+=strlen("PMRA=");
+		  if(cp3) g_free(cp3);
+		  cp3=g_strndup(cp,strcspn(cp," \n"));
+		  
+		  hg->obj[i_list].pm_ra=(gdouble)g_strtod(cp3,NULL)*1e3;
+		  break;
+		}
+	      }
+	    }while(cp);
+
+	    hg->obj[i_list].pm_dec=0.0;
+	    cpp=BUF;
+	    do{
+	      if(NULL != (cp = my_strcasestr(cpp, "PMDEC="))){
+		cpp=cp+strlen("PMDEC=");
+		cp--;
+		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
+		  cp++;
+		  cp+=strlen("PMDEC=");
+		  if(cp3) g_free(cp3);
+		  cp3=g_strndup(cp,strcspn(cp," \n"));
+		  
+		  hg->obj[i_list].pm_dec=(gdouble)g_strtod(cp3,NULL)*1e3;
+		  break;
+		}
+	      }
+	    }while(cp);
+	  }
+	  
 	  if(hg->hide_flag){
 	    hg->obj[i_list].check_disp=FALSE;
 	  }
@@ -2036,6 +2075,45 @@ void MergeListOPE(typHOE *hg, gint ope_max){
 	    }while(cp);
 	  }
 	  
+	  // PM
+	  hg->obj[i_list].pm_ra=0.0;
+	  if(ok_obj&&ok_ra&&ok_dec){
+	    cpp=BUF;
+	    do{
+	      if(NULL != (cp = my_strcasestr(cpp, "PMRA="))){
+		cpp=cp+strlen("PMRA=");
+		cp--;
+		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
+		  cp++;
+		  cp+=strlen("PMRA=");
+		  if(cp3) g_free(cp3);
+		  cp3=g_strndup(cp,strcspn(cp," \n"));
+		  
+		  hg->obj[i_list].pm_ra=(gdouble)g_strtod(cp3,NULL)*1e3;
+		  break;
+		}
+	      }
+	    }while(cp);
+
+	    hg->obj[i_list].pm_dec=0.0;
+	    cpp=BUF;
+	    do{
+	      if(NULL != (cp = my_strcasestr(cpp, "PMDEC="))){
+		cpp=cp+strlen("PMDEC=");
+		cp--;
+		if( (cp[0]==0x20) || (cp[0]==0x3d) || (cp[0]==0x09) ){
+		  cp++;
+		  cp+=strlen("PMDEC=");
+		  if(cp3) g_free(cp3);
+		  cp3=g_strndup(cp,strcspn(cp," \n"));
+		  
+		  hg->obj[i_list].pm_dec=(gdouble)g_strtod(cp3,NULL)*1e3;
+		  break;
+		}
+	      }
+	    }while(cp);
+	  }
+
 	  if(ok_obj && ok_ra && ok_dec && ok_equinox){
 	    if(!ObjOverlap(hg,i_list)){
 	      

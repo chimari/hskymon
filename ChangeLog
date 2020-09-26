@@ -1,4 +1,5 @@
 2020.09.24 ver4.0.6 - Bug fix for TSC files auto loading.
+                    - PMRA & PMDEC read for IRD OPE files.
 
 2020.09.07 ver4.0.5 - Changed ASIVA's address to https.
                     - Revised https access for allsky cam images.
