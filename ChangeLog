@@ -1,3 +1,8 @@
+2021.01.?? ver4.1.0 - Added telescope azimuth mode (N=0 or S=0deg).
+                    - Adjusted OAO sky camera parameters.
+	            - Revised LAMOST FCDB search. Now supported DR5, DR6(low)
+                      and DR6(Med).
+
 2020.09.24 ver4.0.6 - Bug fix for TSC files auto loading.
                     - PMRA & PMDEC read for IRD OPE files.
 

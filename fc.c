@@ -1081,8 +1081,27 @@ void create_fc_dialog(typHOE *hg)
 		    G_CALLBACK (cc_get_toggle), 
 		    &hg->dss_flip);
 
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_LAMOST:
+    switch(hg->fcdb_lamost_dr){
+    case FCDB_LAMOST_DR5:
+      tmp=g_strdup_printf("<b>%s DR5</b>", db_name[hg->fcdb_type]);
+      break;
 
-  tmp=g_strdup_printf("<b>%s</b>", db_name[hg->fcdb_type]);
+    case FCDB_LAMOST_DR6:
+      tmp=g_strdup_printf("<b>%s DR6 low</b>", db_name[hg->fcdb_type]);
+      break;
+
+    case FCDB_LAMOST_DR6M:
+      tmp=g_strdup_printf("<b>%s DR6 med</b>", db_name[hg->fcdb_type]);
+      break;
+    }
+    break;
+
+  default:
+    tmp=g_strdup_printf("<b>%s</b>", db_name[hg->fcdb_type]);
+    break;
+  }
   hg->fcdb_frame = gtkut_frame_new (tmp);
   g_free(tmp);
   gtk_box_pack_start(GTK_BOX(hbox), hg->fcdb_frame, FALSE, FALSE, 0);
@@ -4442,10 +4461,28 @@ void fcdb_item2 (typHOE *hg)
   case FCDB_TYPE_LAMOST:
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     if(hg->fcdb_host) g_free(hg->fcdb_host);
-    hg->fcdb_host=g_strdup(FCDB_HOST_LAMOST);
+    switch(hg->fcdb_lamost_dr){
+    case FCDB_LAMOST_DR5:
+      hg->fcdb_host=g_strdup(FCDB_HOST_LAMOST_DR5);
+      break;
+
+    case FCDB_LAMOST_DR6:
+    case FCDB_LAMOST_DR6M:
+      hg->fcdb_host=g_strdup(FCDB_HOST_LAMOST_DR6);
+      break;
+    }
 
     if(hg->fcdb_path) g_free(hg->fcdb_path);
-    hg->fcdb_path=g_strdup(FCDB_LAMOST_PATH);
+    switch(hg->fcdb_lamost_dr){
+    case FCDB_LAMOST_DR5:
+    case FCDB_LAMOST_DR6:
+      hg->fcdb_path=g_strdup(FCDB_LAMOST_PATH);
+      break;
+      
+    case FCDB_LAMOST_DR6M:
+      hg->fcdb_path=g_strdup(FCDB_LAMOST_MED_PATH);
+      break;
+    }
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,

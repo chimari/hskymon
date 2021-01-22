@@ -930,21 +930,33 @@ void tree_update_azel_item(typHOE *hg,
     // Az
     {
       gdouble az_tmp;
+
       if(hg->obj[i_list].c_el>0){
-	if(hg->azel_mode==AZEL_POSI){
-	  if(hg->obj[i_list].c_az<-90)
-	    az_tmp=hg->obj[i_list].c_az+360;
-	  else
+	if(hg->obs_az_n0){  // Subaru
+	  if(hg->azel_mode==AZEL_POSI){
+	    if(hg->obj[i_list].c_az<-90)
+	      az_tmp=hg->obj[i_list].c_az+360;
+	    else
+	      az_tmp=hg->obj[i_list].c_az;
+	  }
+	  else if(hg->azel_mode==AZEL_NEGA){
+	    if(hg->obj[i_list].c_az>90)
+	      az_tmp=hg->obj[i_list].c_az-360;
+	    else
+	      az_tmp=hg->obj[i_list].c_az;
+	  }
+	  else{
 	    az_tmp=hg->obj[i_list].c_az;
+	  }
 	}
-	else if(hg->azel_mode==AZEL_NEGA){
-	  if(hg->obj[i_list].c_az>90)
-	    az_tmp=hg->obj[i_list].c_az-360;
-	  else
-	    az_tmp=hg->obj[i_list].c_az;
-	}
-	else{
-	  az_tmp=hg->obj[i_list].c_az;
+	else{ // Seimei
+	  az_tmp=hg->obj[i_list].c_az+180;
+	  if(hg->azel_mode==AZEL_NORMAL){
+	    if(az_tmp>180) az_tmp-=360;
+	  }
+	  else if(hg->azel_mode==AZEL_NEGA){
+	    az_tmp-=360;
+	  }
 	}
       }
       gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
@@ -1066,21 +1078,32 @@ void tree_update_azel_item(typHOE *hg,
     // Az
     {
       gdouble az_tmp;
-      if(hg->obj[i_list].s_el>0){
-	if(hg->azel_mode==AZEL_POSI){
-	  if(hg->obj[i_list].s_az<-90)
-	    az_tmp=hg->obj[i_list].s_az+360;
-	  else
+      if(hg->obj[i_list].s_el>0){ 
+	if(hg->obs_az_n0){  // Subaru
+	  if(hg->azel_mode==AZEL_POSI){
+	    if(hg->obj[i_list].s_az<-90)
+	      az_tmp=hg->obj[i_list].s_az+360;
+	    else
+	      az_tmp=hg->obj[i_list].s_az;
+	  }
+	  else if(hg->azel_mode==AZEL_NEGA){
+	    if(hg->obj[i_list].s_az>90)
+	      az_tmp=hg->obj[i_list].s_az-360;
+	    else
+	      az_tmp=hg->obj[i_list].s_az;
+	  }
+	  else{
 	    az_tmp=hg->obj[i_list].s_az;
+	  }
 	}
-	else if(hg->azel_mode==AZEL_NEGA){
-	  if(hg->obj[i_list].s_az>90)
-	    az_tmp=hg->obj[i_list].s_az-360;
-	  else
-	    az_tmp=hg->obj[i_list].s_az;
-	}
-	else{
-	  az_tmp=hg->obj[i_list].s_az;
+	else{ // Seimei
+	  az_tmp=hg->obj[i_list].s_az+180;
+	  if(hg->azel_mode==AZEL_NORMAL){
+	    if(az_tmp>180) az_tmp-=360;
+	  }
+	  else if(hg->azel_mode==AZEL_NEGA){
+	    az_tmp-=360;
+	  }
 	}
       }
       gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
@@ -1594,6 +1617,8 @@ void move_focus_item(typHOE *hg, gint i_set){
       }
     }
     gtk_tree_path_free(path);
+
+    gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
   }
 }
 
@@ -2439,8 +2464,23 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
   if((hg->fcdb_tree_focus>=0)&&(hg->fcdb_tree_focus<hg->fcdb_i_max)){
     switch(hg->fcdb_type){
     case FCDB_TYPE_LAMOST:
-      tmp=g_strdup_printf(FCDB_LAMOST_URL,
-			  hg->fcdb[hg->fcdb_tree_focus].ref);
+      switch(hg->fcdb_lamost_dr){
+      case FCDB_LAMOST_DR5:
+	tmp=g_strdup_printf(FCDB_LAMOST_DR5_URL,
+			    hg->fcdb[hg->fcdb_tree_focus].ref);
+	break;
+
+      case FCDB_LAMOST_DR6:
+	tmp=g_strdup_printf(FCDB_LAMOST_DR6_URL,
+			    hg->fcdb[hg->fcdb_tree_focus].ref);
+	break;
+
+      case FCDB_LAMOST_DR6M:
+	tmp=g_strdup_printf(FCDB_LAMOST_DR6M_URL,
+			    hg->fcdb[hg->fcdb_tree_focus].ref);
+	break;
+      }
+	
       break;
 
     case FCDB_TYPE_SMOKA:
@@ -6964,7 +7004,7 @@ do_editable_cells (typHOE *hg)
       store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
       
       gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "-270",
+      gtk_list_store_set(store, &iter, 0, "Negative",
 			 1, AZEL_NEGA, -1);
       if(hg->azel_mode==AZEL_NEGA) iter_set=iter;
       
@@ -6974,7 +7014,7 @@ do_editable_cells (typHOE *hg)
       if(hg->azel_mode==AZEL_NORMAL) iter_set=iter;
       
       gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, "+270",
+      gtk_list_store_set(store, &iter, 0, "Positive",
 			 1, AZEL_POSI, -1);
       if(hg->azel_mode==AZEL_POSI) iter_set=iter;
       

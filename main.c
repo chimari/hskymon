@@ -1389,6 +1389,13 @@ void SetObsPreset(typHOE *hg){
   gtk_adjustment_set_value(hg->obs_adj_ladd, obs_latitude_dms.degrees);
   gtk_adjustment_set_value(hg->obs_adj_lamm, obs_latitude_dms.minutes);
   gtk_adjustment_set_value(hg->obs_adj_lass, obs_latitude_dms.seconds);
+
+  if(obs_param[i_obs].az_n0){
+    gtk_combo_box_set_active(GTK_COMBO_BOX(hg->obs_combo_az_n0),0);
+  }
+  else{
+    gtk_combo_box_set_active(GTK_COMBO_BOX(hg->obs_combo_az_n0),1);
+  }
     
 }
 
@@ -1401,6 +1408,7 @@ void set_obs_param_from_preset(typHOE *hg, gint i_obs)
   hg->obs_timezone =obs_param[i_obs].tz;
   if(hg->obs_tzname) g_free(hg->obs_tzname);
   hg->obs_tzname=g_strdup(obs_param[i_obs].tzname);
+  hg->obs_az_n0 =obs_param[i_obs].az_n0;
 }
 
 
@@ -2004,7 +2012,7 @@ gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
 #endif
   gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
   
-  label = gtkut_label_new ("&#xA9; 2003-20 Akito Tajitsu");
+  label = gtkut_label_new ("&#xA9; 2003-21 Akito Tajitsu");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_CENTER);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -2022,7 +2030,7 @@ gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
 #endif
   gtk_box_pack_start(GTK_BOX(vbox), label,FALSE, FALSE, 0);
 
-  label = gtkut_label_new ("&lt;<i>tajitsu@naoj.org</i>&gt;");
+  label = gtkut_label_new ("&lt;<i>akito.tajitsu@nao.ac.jp</i>&gt;");
 #ifdef USE_GTK3
     gtk_widget_set_halign (label, GTK_ALIGN_CENTER);
     gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -4713,7 +4721,7 @@ void create_fcdb_para_dialog (typHOE *hg)
     tmp_gsc_mag, tmp_gsc_diam, tmp_ps1_mag, tmp_ps1_mindet, 
     tmp_ps1_mode, tmp_ps1_dr, tmp_sdss_search,
     tmp_sdss_magmax[NUM_SDSS_BAND], tmp_sdss_magmin[NUM_SDSS_BAND], 
-    tmp_sdss_diam, tmp_usno_mag, tmp_ucac_mag,
+    tmp_sdss_diam, tmp_lamost_dr, tmp_usno_mag, tmp_ucac_mag,
     tmp_gaia_mag, tmp_kepler_mag, 
     tmp_2mass_mag, tmp_2mass_diam,
     tmp_wise_mag;
@@ -4773,6 +4781,7 @@ void create_fcdb_para_dialog (typHOE *hg)
     tmp_sdss_magmin[i]=hg->fcdb_sdss_magmin[i];
   }
   tmp_sdss_diam=hg->fcdb_sdss_diam;
+  tmp_lamost_dr=hg->fcdb_lamost_dr;
   tmp_usno_fil=hg->fcdb_usno_fil;
   tmp_usno_mag=hg->fcdb_usno_mag;
   tmp_ucac_fil=hg->fcdb_ucac_fil;
@@ -5711,7 +5720,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 
 
   vbox = gtkut_vbox_new (FALSE, 0);
-  label = gtk_label_new ("LAMOST DR4");
+  label = gtk_label_new ("LAMOST");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
   table = gtkut_table_new(3, 6, FALSE, 10, 5, 5);
@@ -5726,6 +5735,48 @@ void create_fcdb_para_dialog (typHOE *hg)
 #endif
   gtkut_table_attach(table, label, 0, 3, 0, 1,
 		     GTK_FILL,GTK_SHRINK,0,0);
+
+  {
+    GtkListStore *store;
+    GtkTreeIter iter, iter_set;	  
+    GtkCellRenderer *renderer;
+      
+    store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "DR5",
+		       1, FCDB_LAMOST_DR5, -1);
+    if(hg->fcdb_lamost_dr==FCDB_LAMOST_DR5) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "DR6 (Low Resolution)",
+		       1, FCDB_LAMOST_DR6, -1);
+    if(hg->fcdb_lamost_dr==FCDB_LAMOST_DR6) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "DR6 (Medium Resolution)",
+		       1, FCDB_LAMOST_DR6M, -1);
+    if(hg->fcdb_lamost_dr==FCDB_LAMOST_DR6M) iter_set=iter;
+    
+    combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+#ifdef USE_GTK3
+    gtk_widget_set_halign(combo,GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(combo,GTK_ALIGN_CENTER);
+#endif
+    gtkut_table_attach(table, combo, 0, 1, 1, 2,
+		       GTK_SHRINK,GTK_SHRINK,0,0);
+    g_object_unref(store);
+    
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+    	
+    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+    gtk_widget_show(combo);
+    my_signal_connect (combo,"changed",cc_get_combo_box,
+		       &tmp_lamost_dr);
+  }
+  
 
   vbox = gtkut_vbox_new (FALSE, 0);
   label = gtk_label_new ("USNO-B");
@@ -7003,6 +7054,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 	hg->fcdb_sdss_magmax[i]  = tmp_sdss_magmax[i];
       }
       hg->fcdb_sdss_diam  = tmp_sdss_diam;
+      hg->fcdb_lamost_dr  = tmp_lamost_dr;
       hg->fcdb_usno_fil  = tmp_usno_fil;
       hg->fcdb_usno_mag  = tmp_usno_mag;
       hg->fcdb_ucac_fil  = tmp_ucac_fil;
@@ -7090,6 +7142,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 	hg->fcdb_sdss_magmax[i] = 20;
       }
       hg->fcdb_sdss_diam = FCDB_ARCMIN_MAX;
+      hg->fcdb_lamost_dr = FCDB_LAMOST_DR5;
       hg->fcdb_usno_fil = TRUE;
       hg->fcdb_usno_mag = 19;
       hg->fcdb_ucac_fil = TRUE;
@@ -7155,7 +7208,27 @@ void create_fcdb_para_dialog (typHOE *hg)
     }
 
     if(flagFC){
-      tmp=g_strdup_printf("<b>%s</b>",db_name[hg->fcdb_type]);
+      switch(hg->fcdb_type){
+      case FCDB_TYPE_LAMOST:
+	switch(hg->fcdb_lamost_dr){
+	case FCDB_LAMOST_DR5:
+	  tmp=g_strdup_printf("<b>%s DR5</b>", db_name[hg->fcdb_type]);
+	  break;
+	  
+	case FCDB_LAMOST_DR6:
+	  tmp=g_strdup_printf("<b>%s DR6 low</b>", db_name[hg->fcdb_type]);
+	  break;
+
+	case FCDB_LAMOST_DR6M:
+	  tmp=g_strdup_printf("<b>%s DR6 med</b>", db_name[hg->fcdb_type]);
+	  break;
+	}
+	break;
+	
+      default:
+	tmp=g_strdup_printf("<b>%s</b>", db_name[hg->fcdb_type]);
+	break;
+      }
       gtkut_frame_set_label(GTK_FRAME(hg->fcdb_frame),tmp);
       g_free(tmp);
     }
@@ -7543,7 +7616,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   GtkWidget *dialog, *label, *button, *pixmap, *vbox, *hbox,
     *frame, *frame1, *spinner, *table1, *table2, *entry, *check;
   GtkAdjustment *adj;
-  GSList *obs_group=NULL, *allsky_group=NULL;
+  GSList *obs_group=NULL, *allsky_group=NULL, *az_group=NULL;
   GdkPixbuf *icon;
 #if HAVE_SYS_UTSNAME_H
   struct utsname utsbuf;
@@ -7557,6 +7630,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   struct ln_dms tmp_obs_longitude_dms;
   struct ln_dms tmp_obs_latitude_dms;
   gdouble tmp_obs_altitude;
+  gboolean tmp_obs_az_n0;
   gdouble tmp_vel_az;
   gdouble tmp_vel_el;
   gdouble tmp_pa_a0;
@@ -7627,6 +7701,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   ln_deg_to_dms(hg->obs_longitude,&tmp_obs_longitude_dms);
   ln_deg_to_dms(hg->obs_latitude, &tmp_obs_latitude_dms);
   tmp_obs_altitude =hg->obs_altitude;
+  tmp_obs_az_n0    =hg->obs_az_n0;
   tmp_vel_az       =hg->vel_az;
   tmp_vel_el       =hg->vel_el;
   tmp_pa_a0        =hg->pa_a0;
@@ -8065,6 +8140,52 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     cc_get_adj_double,
 		     &tmp_obs_altitude);
 
+  // Az N=0 or S=0
+  label = gtk_label_new ("    Azimuth");
+  gtkut_table_attach(table2, label, 2, 3, 2, 3,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+
+  {
+    GtkListStore *store;
+    GtkTreeIter iter, iter_set;	  
+    GtkCellRenderer *renderer;
+    
+    store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "North = 0&#xB0;",
+		       1, 1, -1);
+    if(tmp_obs_az_n0) iter_set=iter;
+	
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "South = 0&#xB0;",
+		       1, 0, -1);
+    if(!tmp_obs_az_n0) iter_set=iter;
+	
+    hg->obs_combo_az_n0 = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    gtkut_table_attach(table2, hg->obs_combo_az_n0, 3, 4, 2, 3,
+		       GTK_SHRINK,GTK_SHRINK,0,0);
+    g_object_unref(store);
+	
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(hg->obs_combo_az_n0),
+			       renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(hg->obs_combo_az_n0),
+				    renderer, "markup",0,NULL);
+		
+    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(hg->obs_combo_az_n0),&iter_set);
+    gtk_widget_show(hg->obs_combo_az_n0);
+    my_signal_connect (hg->obs_combo_az_n0,"changed",cc_get_neg,
+		       &tmp_obs_az_n0);
+  }
+
+  
   // Time Zone
   label = gtk_label_new ("Time Zone[min]");
 #ifdef USE_GTK3
@@ -9635,6 +9756,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       hg->obs_longitude	    =ln_dms_to_deg(&tmp_obs_longitude_dms);
       hg->obs_latitude	    =ln_dms_to_deg(&tmp_obs_latitude_dms); 
       hg->obs_altitude	    =tmp_obs_altitude; 
+      hg->obs_az_n0	    =tmp_obs_az_n0; 
     }
     hg->vel_az	            =tmp_vel_az; 
     hg->vel_el	            =tmp_vel_el; 
@@ -10316,6 +10438,7 @@ void param_init(typHOE *hg){
     hg->fcdb_sdss_magmax[i]=20;
   }
   hg->fcdb_sdss_diam=FCDB_ARCMIN_MAX;
+  hg->fcdb_lamost_dr=FCDB_LAMOST_DR5;
   hg->fcdb_usno_fil=TRUE;
   hg->fcdb_usno_mag=19;
   hg->fcdb_ucac_fil=TRUE;
@@ -11429,6 +11552,7 @@ void WriteConf(typHOE *hg){
     xmms_cfg_write_double2(cfgfile, "Observatory", "Longitude",hg->obs_longitude, "%+.4f");
     xmms_cfg_write_double2(cfgfile, "Observatory", "Latitude",hg->obs_latitude, "%+.4f");
     xmms_cfg_write_int(cfgfile, "Observatory", "Altitude",(gint)hg->obs_altitude);
+    xmms_cfg_write_boolean(cfgfile, "Observatory", "AzN0",hg->obs_az_n0);
     xmms_cfg_write_int(cfgfile, "Observatory", "TimeZone",hg->obs_timezone);
     if(hg->obs_tzname) 
       xmms_cfg_write_string(cfgfile, "Observatory", "TZName", hg->obs_tzname);
@@ -11735,6 +11859,10 @@ void ReadConf(typHOE *hg)
 	hg->obs_altitude   =f_buf;
       else
 	hg->obs_altitude   =obs_param[hg->obs_preset].alt;
+      if(xmms_cfg_read_boolean(cfgfile, "Observatory", "AzN0",     &b_buf))
+	hg->obs_az_n0   =b_buf;
+      else
+	hg->obs_az_n0   =obs_param[hg->obs_preset].az_n0;
       if(xmms_cfg_read_int(cfgfile, "Observatory", "TimeZone",     &i_buf))
 	hg->obs_timezone   =i_buf;
       else

@@ -692,6 +692,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
   gfloat min_offset;
 
   gdouble atw_set, atw_rise, sun_rise, sun_set;
+  gdouble cx0;
 
   if(!flagPlot) return (FALSE);
 
@@ -1079,35 +1080,71 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 			      CAIRO_FONT_WEIGHT_NORMAL);
       cairo_set_source_rgba(cr, 0.2, 0.4, 0.1, 0.8);
       cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*scale);
-      cairo_text_extents (cr, "+180", &extents);
-      x = dx-extents.width-5*scale;
-      y = dy2-(extents.height/2 + extents.y_bearing);
-      cairo_move_to(cr, x, y);
-      cairo_show_text(cr, "+180");
-      
-      cairo_text_extents (cr, "+90", &extents);
-      x = dx-extents.width-5*scale;
-      y = dy2+ly*90/360-(extents.height/2 + extents.y_bearing);
-      cairo_move_to(cr, x, y);
-      cairo_show_text(cr, "+90");
-      
-      cairo_text_extents (cr, "0", &extents);
-      x = dx-extents.width-5*scale;
-      y = dy2+ly*180/360-(extents.height/2 + extents.y_bearing);
-      cairo_move_to(cr, x, y);
-      cairo_show_text(cr, "0");
-      
-      cairo_text_extents (cr, "-90", &extents);
-      x = dx-extents.width-5*scale;
-      y = dy2+ly*270/360-(extents.height/2 + extents.y_bearing);
-      cairo_move_to(cr, x, y);
-      cairo_show_text(cr, "-90");
-      
-      cairo_text_extents (cr, "-180", &extents);
-      x = dx-extents.width-5*scale;
-      y = dy2+ly-(extents.height/2 + extents.y_bearing);
-      cairo_move_to(cr, x, y);
-      cairo_show_text(cr, "-180");
+
+      if(hg->obs_az_n0){
+	cairo_text_extents (cr, "+180", &extents);
+	x = dx-extents.width-5*scale;
+	y = dy2-(extents.height/2 + extents.y_bearing);
+	cairo_move_to(cr, x, y);
+	cairo_show_text(cr, "+180");
+	
+	cairo_text_extents (cr, "+90", &extents);
+	x = dx-extents.width-5*scale;
+	y = dy2+ly*90/360-(extents.height/2 + extents.y_bearing);
+	cairo_move_to(cr, x, y);
+	cairo_show_text(cr, "+90");
+	
+	cairo_text_extents (cr, "0", &extents);
+	x = dx-extents.width-5*scale;
+	y = dy2+ly*180/360-(extents.height/2 + extents.y_bearing);
+	cairo_move_to(cr, x, y);
+	cairo_show_text(cr, "0");
+	cx0=extents.width;
+	
+	cairo_text_extents (cr, "-90", &extents);
+	x = dx-extents.width-5*scale;
+	y = dy2+ly*270/360-(extents.height/2 + extents.y_bearing);
+	cairo_move_to(cr, x, y);
+	cairo_show_text(cr, "-90");
+	
+	cairo_text_extents (cr, "-180", &extents);
+	x = dx-extents.width-5*scale;
+	y = dy2+ly-(extents.height/2 + extents.y_bearing);
+	cairo_move_to(cr, x, y);
+	cairo_show_text(cr, "-180");
+      }
+      else{
+	cairo_text_extents (cr, "360", &extents);
+	x = dx-extents.width-5*scale;
+	y = dy2-(extents.height/2 + extents.y_bearing);
+	cairo_move_to(cr, x, y);
+	cairo_show_text(cr, "360");
+	
+	cairo_text_extents (cr, "270", &extents);
+	x = dx-extents.width-5*scale;
+	y = dy2+ly*90/360-(extents.height/2 + extents.y_bearing);
+	cairo_move_to(cr, x, y);
+	cairo_show_text(cr, "270");
+	
+	cairo_text_extents (cr, "180", &extents);
+	x = dx-extents.width-5*scale;
+	y = dy2+ly*180/360-(extents.height/2 + extents.y_bearing);
+	cairo_move_to(cr, x, y);
+	cairo_show_text(cr, "180");
+	cx0=extents.width;
+	
+	cairo_text_extents (cr, "90", &extents);
+	x = dx-extents.width-5*scale;
+	y = dy2+ly*270/360-(extents.height/2 + extents.y_bearing);
+	cairo_move_to(cr, x, y);
+	cairo_show_text(cr, "90");
+	
+	cairo_text_extents (cr, "0", &extents);
+	x = dx-extents.width-5*scale;
+	y = dy2+ly-(extents.height/2 + extents.y_bearing);
+	cairo_move_to(cr, x, y);
+	cairo_show_text(cr, "0");
+      }
 
       x0=extents.width;
 
@@ -1152,7 +1189,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       cairo_text_extents (cr, "Azimuth[deg]", &extents);
 
       x = dx-extents.width/2-x0-(dx-x0);
-      y = height/2+extents.height+10-(height/2);
+      y = height/2+extents.height+cx0+10-(height/2);
       cairo_move_to(cr, x, y);
 
       cairo_show_text(cr, "Azimuth[deg]");
@@ -1315,14 +1352,14 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       y = dy2+ly*(360-180)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "0");
-
+      
       cairo_text_extents (cr, "-90", &extents);
       x = dx+lx+5*scale;
       y = dy2+ly*(360-90)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "-90");
       
-      cairo_text_extents (cr, "-90", &extents);
+      cairo_text_extents (cr, "-180", &extents);
       x = dx+lx+5*scale;
       y = dy2+ly-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
@@ -1526,19 +1563,19 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
       y = dy2+ly*(360-180)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "0");
-
+      
       cairo_text_extents (cr, "-90", &extents);
       x = dx+lx+5*scale;
       y = dy2+ly*(360-90)/360-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "-90");
       
-      cairo_text_extents (cr, "-90", &extents);
+      cairo_text_extents (cr, "-180", &extents);
       x = dx+lx+5*scale;
       y = dy2+ly-(extents.height/2 + extents.y_bearing);
       cairo_move_to(cr, x, y);
       cairo_show_text(cr, "-180");
-
+      
       x0=extents.width;
 
       cairo_save (cr);

@@ -2629,53 +2629,109 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket,
     ip=0;
     plen=0;
 
-    while(1){
-      if(lamost_post[ip].key==NULL) break;
-      switch(lamost_post[ip].flg){
-      case POST_NULL:
-	sprintf(send_mesg,
-		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n\r\n",
-		rand16,
-		lamost_post[ip].key);
-	break;
 
-      case POST_CONST:
-	sprintf(send_mesg,
-		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
-		rand16,
-		lamost_post[ip].key,
-		lamost_post[ip].prm);
-	break;
-	
-      case POST_INPUT:
-	if(strcmp(lamost_post[ip].key,"pos.racenter")==0){
+    switch(hg->fcdb_lamost_dr){
+    case FCDB_LAMOST_DR6M:
+      while(1){
+	if(lamost_med_post[ip].key==NULL) break;
+	switch(lamost_med_post[ip].flg){
+	case POST_NULL:
 	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n\r\n",
 		  rand16,
-		  lamost_post[ip].key,
+		  lamost_med_post[ip].key);
+	  break;
+	  
+	case POST_CONST:
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		  rand16,
+		  lamost_med_post[ip].key,
+		  lamost_med_post[ip].prm);
+	  break;
+	  
+	case POST_INPUT:
+	  if(strcmp(lamost_med_post[ip].key,"pos.racenter")==0){
+	    sprintf(send_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		    rand16,
+		    lamost_med_post[ip].key,
 		    hg->fcdb_d_ra0);
+	  }
+	  else if(strcmp(lamost_med_post[ip].key,"pos.deccenter")==0){
+	    sprintf(send_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		    rand16,
+		    lamost_med_post[ip].key,
+		    hg->fcdb_d_dec0);
+	  }
+	  else if(strcmp(lamost_med_post[ip].key,"pos.radius")==0){
+	    sprintf(send_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.1lf\r\n",
+		    rand16,
+		    lamost_med_post[ip].key,
+		    hg->dss_arcmin*30.0);
+	  }
+	  break;
 	}
-	else if(strcmp(lamost_post[ip].key,"pos.deccenter")==0){
-	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
-		  rand16,
-		  lamost_post[ip].key,
-		  hg->fcdb_d_dec0);
+	plen+=strlen(send_mesg);
+	if(wflag){
+	  write_to_server(command_socket, send_mesg);
 	}
-	else if(strcmp(lamost_post[ip].key,"pos.radius")==0){
-	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.1lf\r\n",
-		  rand16,
-		  lamost_post[ip].key,
-		  hg->dss_arcmin*30.0);
-	}
-	break;
-      }	
-      plen+=strlen(send_mesg);
-      if(wflag){
-	write_to_server(command_socket, send_mesg);
+	ip++;
       }
-      ip++;
+      break;
+
+    default:
+      while(1){
+	if(lamost_post[ip].key==NULL) break;
+	switch(lamost_post[ip].flg){
+	case POST_NULL:
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n\r\n",
+		  rand16,
+		  lamost_post[ip].key);
+	  break;
+	  
+	case POST_CONST:
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		  rand16,
+		  lamost_post[ip].key,
+		  lamost_post[ip].prm);
+	  break;
+	  
+	case POST_INPUT:
+	  if(strcmp(lamost_post[ip].key,"pos.racenter")==0){
+	    sprintf(send_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		    rand16,
+		    lamost_post[ip].key,
+		    hg->fcdb_d_ra0);
+	  }
+	  else if(strcmp(lamost_post[ip].key,"pos.deccenter")==0){
+	    sprintf(send_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		    rand16,
+		    lamost_post[ip].key,
+		    hg->fcdb_d_dec0);
+	  }
+	  else if(strcmp(lamost_post[ip].key,"pos.radius")==0){
+	    sprintf(send_mesg,
+		    "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.1lf\r\n",
+		    rand16,
+		    lamost_post[ip].key,
+		    hg->dss_arcmin*30.0);
+	  }
+	  break;
+	}
+	plen+=strlen(send_mesg);
+	if(wflag){
+	  write_to_server(command_socket, send_mesg);
+	}
+	ip++;
+      }
+      break;
     }
     
     sprintf(send_mesg,

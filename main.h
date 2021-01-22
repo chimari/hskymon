@@ -103,7 +103,9 @@
 #define STD_SIMBAD_URL "http://%s/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=HTML"
 #define FCDB_NED_URL "http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES"
 #define FCDB_SDSS_URL "http://skyserver.sdss.org/dr14/en/tools/quicklook/summary.aspx?id=%s"
-#define FCDB_LAMOST_URL "http://dr4.lamost.org/spectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR5_URL "http://dr5.lamost.org/spectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR6_URL "http://dr6.lamost.org/spectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR6M_URL "http://dr6.lamost.org/medspectrum/view?obsid=%d"
 #define FCDB_SMOKA_URL "https://smoka.nao.ac.jp/info.jsp?frameid=%s&date_obs=%s&i=%d"
 #define FCDB_SMOKA_SHOT_URL "https://smoka.nao.ac.jp/fssearch?frameid=%s*&instruments=%s&obs_mod=all&data_typ=all&dispcol=default&diff=1000&action=Search&asciitable=table&obs_cat=all"
 #define FCDB_HST_URL "http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst&dataid=%s"
@@ -135,7 +137,9 @@
 #define STD_SIMBAD_URL "open http://%s/simbad/sim-id?Ident=%s\\&NbIdent=1\\&Radius=2\\&Radius.unit=arcmin\\&submit=submit+id\\&output.format=HTML"
 #define FCDB_NED_URL "open http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s\\&extend=no\\&hconst=73\\&omegam=0.27\\&omegav=0.73\\&corr_z=1\\&out_csys=Equatorial\\&out_equinox=J2000.0\\&obj_sort=RA+or+Longitude\\&of=pre_text\\&zv_breaker=30000.0\\&list_limit=5\\&img_stamp=YES"
 #define FCDB_SDSS_URL "open http://skyserver.sdss.org/dr15/en/tools/quicklook/summary.aspx?id=%s"
-#define FCDB_LAMOST_URL "open http://dr4.lamost.org/spectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR5_URL "open http://dr5.lamost.org/spectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR6_URL "open http://dr6.lamost.org/spectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR6M_URL "open http://dr6.lamost.org/medspectrum/view?obsid=%d"
 #define FCDB_SMOKA_URL "open https://smoka.nao.ac.jp/info.jsp?frameid=%s\\&date_obs=%s\\&i=%d"
 #define FCDB_SMOKA_SHOT_URL "open https://smoka.nao.ac.jp/fssearch?frameid=%s*\\&instruments=%s\\&obs_mod=all\\&data_typ=all\\&dispcol=default\\&diff=1000\\&action=Search\\&asciitable=table\\&obs_cat=all"
 #define FCDB_HST_URL "open http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst\\&dataid=%s"
@@ -166,7 +170,9 @@
 #define STD_SIMBAD_URL "\"http://%s/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=HTML\""
 #define FCDB_NED_URL "\"http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES\""
 #define FCDB_SDSS_URL "\"http://skyserver.sdss.org/dr15/en/tools/quicklook/summary.aspx?id=%s\""
-#define FCDB_LAMOST_URL "\"http://dr4.lamost.org/spectrum/view?obsid=%d\""
+#define FCDB_LAMOST_DR5_URL "\"http://dr5.lamost.org/spectrum/view?obsid=%d\""
+#define FCDB_LAMOST_DR6_URL "\"http://dr6.lamost.org/spectrum/view?obsid=%d\""
+#define FCDB_LAMOST_DR6M_URL "\"http://dr6.lamost.org/medspectrum/view?obsid=%d\""
 #define FCDB_SMOKA_URL "\"https://smoka.nao.ac.jp/info.jsp?frameid=%s&date_obs=%s&i=%d\""
 #define FCDB_SMOKA_SHOT_URL "\"https://smoka.nao.ac.jp/fssearch?frameid=%s*&instruments=%s&obs_mod=all&data_typ=all&dispcol=default&diff=1000&action=Search&asciitable=table&obs_cat=all\""
 #define FCDB_HST_URL "\"http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst&dataid=%s\""
@@ -262,8 +268,10 @@ enum
 #define FCDB_HOST_FIS "vizier.u-strasbg.fr"
 #define FCDB_FIS_PATH_B "/viz-bin/votable?-source=II/298/fis&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=b&-out.max=5000&-out.form=VOTable"
 
-#define FCDB_HOST_LAMOST "dr4.lamost.org"
+#define FCDB_HOST_LAMOST_DR5 "dr5.lamost.org"
+#define FCDB_HOST_LAMOST_DR6 "dr6.lamost.org"
 #define FCDB_LAMOST_PATH "/q"
+#define FCDB_LAMOST_MED_PATH "/medcas/q"
 
 #define FCDB_HOST_KEPLER "archive.stsci.edu"
 #define FCDB_KEPLER_PATH "/kepler/kic10/search.php"
@@ -905,7 +913,7 @@ static const gchar* db_name[]={
   "GSC 2.4.1",      //FCDB_TYPE_GSC,
   "PanSTARRS1",     //FCDB_TYPE_PS1,
   "SDSS DR15",      //FCDB_TYPE_SDSS,
-  "LAMOST DR4",     //FCDB_TYPE_LAMOST,
+  "LAMOST",         //FCDB_TYPE_LAMOST,
   "USNO",           //FCDB_TYPE_USNO,
   "UCAC4",          //FCDB_TYPE_UCAC,
   "GAIA DR2",       //FCDB_TYPE_GAIA, 
@@ -936,6 +944,14 @@ static const gchar* db_name[]={
 };
 
 
+enum
+{
+  FCDB_LAMOST_DR5,
+  FCDB_LAMOST_DR6,
+  FCDB_LAMOST_DR6M,
+  NUM_FCDB_LAMOST
+};
+  
 enum
 {
   FCDB_BAND_NOP,
@@ -1162,6 +1178,7 @@ OBS_SALT,
 OBS_LAMOST,
 OBS_KANATA,
 OBS_OAO,
+OBS_Seimei,
 OBS_NHAO,
 OBS_KISO,
 OBS_GAO,
@@ -1177,6 +1194,7 @@ struct _OBSpara{
   gdouble alt;
   gint tz;
   gchar *tzname;
+  gboolean az_n0;
 };
 
 static const OBSpara obs_param[]={
@@ -1186,7 +1204,8 @@ static const OBSpara obs_param[]={
    19.8255,      //[deg] 19 49 31.8
    4163,    //[m]
    -600,
-   "HST"},
+   "HST",
+   TRUE},
 
   // OBS_PALOMAR
   {"USA/CA: Palomar Observatory",
@@ -1194,7 +1213,8 @@ static const OBSpara obs_param[]={
    33.356278,
    1706,
    -480,
-   "PST"},
+   "PST",
+   FALSE},
 
   // OBS_LICK
   {"USA/CA: Lick Observatory",
@@ -1202,7 +1222,8 @@ static const OBSpara obs_param[]={
    37.343022,
    1290,
    -480,
-   "PST"},
+   "PST",
+   FALSE},
 
   // OBS_KPNO
   {"USA/AZ: Kitt Peak National Observatory",
@@ -1210,7 +1231,8 @@ static const OBSpara obs_param[]={
    31.964133,    //[deg] 31 57.8
    2120,    //[m]
    -420,
-   "MST"},
+   "MST",
+   FALSE},
 
   // OBS_MMT
   {"USA/AZ: Mt. Hopkins (MMT)",
@@ -1218,7 +1240,8 @@ static const OBSpara obs_param[]={
    31.688889,
    2606,    //[m]
    -420,
-   "MST"},
+   "MST",
+   FALSE},
 
   // OBS_LBT
   {"USA/AZ: Mt. Graham (LBT)",
@@ -1226,7 +1249,8 @@ static const OBSpara obs_param[]={
    32.70131,
    3221,    //[m]
    -420,
-   "MST"},
+   "MST",
+   FALSE},
 
   // OBS_APACHE
   {"USA/NM: Apache Point Observatory (SDSS)",
@@ -1234,7 +1258,8 @@ static const OBSpara obs_param[]={
    32.78,
    2798,    //[m]
    -420,
-   "MST"},
+   "MST",
+   FALSE},
 
   // OBS_HET
   {"USA/TX: McDonald Observatory (HET)",
@@ -1242,7 +1267,8 @@ static const OBSpara obs_param[]={
    30.68144,
    2026,
    -360,
-   "CST"},
+   "CST",
+   FALSE},
 
   // OBS_CTIO
   {"Chile: Cerro Tololo Interamerican Observatory",
@@ -1250,7 +1276,8 @@ static const OBSpara obs_param[]={
    -30.169661,
    2241,
    -240,
-   "PRT"},
+   "PRT",
+   FALSE},
 
   // OBS_GEMINIS
   {"Chile: Cerro Pachon (Gemini South)",
@@ -1258,7 +1285,8 @@ static const OBSpara obs_param[]={
    -30.240742,
    2750,
    -240,
-   "PRT"},
+   "PRT",
+   FALSE},
 
   // OBS_LASILLA
   {"Chile: La Silla (NTT)",
@@ -1266,7 +1294,8 @@ static const OBSpara obs_param[]={
    -29.261211,
    2375,
    -240,
-   "PRT"},
+   "PRT",
+   FALSE},
 
   // OBS_MAGELLAN
   {"Chile: Las Campanus (Magellan)",
@@ -1274,7 +1303,8 @@ static const OBSpara obs_param[]={
    -29.01418,
    2282,
    -240,
-   "PRT"},
+   "PRT",
+   FALSE},
 
   // OBS_PARANAL
   {"Chile: Cerro Paranal (VLT)",
@@ -1282,7 +1312,8 @@ static const OBSpara obs_param[]={
    -24.627328,
    2635,
    -240,
-   "PRT"},
+   "PRT",
+   FALSE},
 
   // OBS_GTC
   {"Canary: La Palma (GTC)",
@@ -1290,7 +1321,8 @@ static const OBSpara obs_param[]={
    28.7564,
    2267,
    0,
-   "GMT"},
+   "GMT",
+   FALSE},
 
   // OBS_CAO
   {"Spain: Calar Alto Observatory",
@@ -1298,7 +1330,8 @@ static const OBSpara obs_param[]={
    37.2236,
    2168,
    60,
-   "ECT"},
+   "ECT",
+   FALSE},
 
   // OBS_SALT
   {"South Africa: SAAO (SALT)",
@@ -1306,7 +1339,8 @@ static const OBSpara obs_param[]={
    -32.3760,
    1798,
    120,
-   "EET"},
+   "EET",
+   FALSE},
 
   // OBS_LAMOST
   {"China: Xinglong (LAMOST)",
@@ -1314,7 +1348,8 @@ static const OBSpara obs_param[]={
    40.389094,
    656,
    480,
-   "CST"},
+   "CST",
+   FALSE},
 
   // OBS_KANATA
   {"Japan: Higashi-Hiroshima (Kanata)",
@@ -1322,7 +1357,8 @@ static const OBSpara obs_param[]={
    34.3775,
    511,
    540,
-   "JST"},
+   "JST",
+   FALSE},
 
   // OBS_OAO
   {"Japan: Okayama Astrophysical Observatory",
@@ -1330,7 +1366,17 @@ static const OBSpara obs_param[]={
    34.5771,
    390,
    540,
-   "JST"},
+   "JST",
+   FALSE},
+
+  // OBS_Seimei
+  {"Japan: Kyoto-univ. Seimei Telescope",
+   133.596685,
+   34.576850,
+   370,
+   540,
+   "JST",
+   FALSE},
 
   // OBS_NHAO
   {"Japan: Nishi-Harima (Nayuta)",
@@ -1338,7 +1384,8 @@ static const OBSpara obs_param[]={
    35.025272,
    418,
    540,
-   "JST"},
+   "JST",
+   FALSE},
 
   // OBS_KISO
   {"Japan: Kiso Observatory (Univ. of Tokyo)",
@@ -1346,7 +1393,8 @@ static const OBSpara obs_param[]={
    35.797290,
    1130,
    540,
-   "JST"},
+   "JST",
+   FALSE},
 
   // OBS_GAO
   {"Japan: Gunma Astronomical Observatory",
@@ -1354,7 +1402,8 @@ static const OBSpara obs_param[]={
    36.596806,
    885,
    540,
-   "JST"},
+   "JST",
+   FALSE},
 
   // OBS_AAT_NAME
   {"Australia: Anglo-Australian Observatory",
@@ -1362,7 +1411,8 @@ static const OBSpara obs_param[]={
    -31.275558,
    1164,
    600,
-   "AEST"}
+   "AEST",
+   FALSE}
 };
 
 
@@ -1616,9 +1666,9 @@ static const AllSkypara allsky_param[]={
    "allsky.jpg",
    "allsky-%ld.jpg",
    -3.5,
-   800,
-   370,
-   408,
+   760,
+   395,
+   415,
    TRUE,
    FALSE,
    FALSE},
@@ -2055,6 +2105,7 @@ struct _typHOE{
   gboolean obs_preset_flag_tmp;
   gint obs_preset;
   gint obs_preset_tmp;
+  gboolean obs_az_n0;
   gdouble obs_longitude;
   gdouble obs_latitude;
   gdouble obs_longitude_tmp;
@@ -2063,7 +2114,7 @@ struct _typHOE{
   gdouble obs_altitude;
   gchar *obs_tzname;
   GtkWidget *obs_combo_preset;
-  GtkWidget *obs_combo_ew, *obs_combo_ns, *obs_entry_tz, *obs_frame_pos; 
+  GtkWidget *obs_combo_ew, *obs_combo_ns, *obs_combo_az_n0, *obs_entry_tz, *obs_frame_pos; 
   GtkAdjustment *obs_adj_lodd,*obs_adj_lomm,*obs_adj_loss;
   GtkAdjustment *obs_adj_ladd,*obs_adj_lamm,*obs_adj_lass;
   GtkAdjustment *obs_adj_alt, *obs_adj_tz;
@@ -2290,6 +2341,7 @@ struct _typHOE{
   gint fcdb_sdss_magmax[NUM_SDSS_BAND];
   gboolean fcdb_sdss_fil[NUM_SDSS_BAND];
   gint fcdb_sdss_diam;
+  gint fcdb_lamost_dr;
   gint fcdb_usno_mag;
   gboolean fcdb_usno_fil;
   gint fcdb_ucac_mag;
