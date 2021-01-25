@@ -4457,6 +4457,14 @@ int post_body_ssl(typHOE *hg, gboolean wflag, SSL *ssl,
 	      strcat(send_mesg,ins_mesg);
 	    }	
 	  }
+	  for(i=0;i<NUM_SMOKA_NAYUTA;i++){
+	    if(hg->fcdb_smoka_nayuta[i]) {
+	      sprintf(ins_mesg, "%s=%s&", 
+		      smoka_post[ip].key, 
+		      smoka_nayuta[i].prm);
+	      strcat(send_mesg,ins_mesg);
+	    }	
+	  }
 	  break;
 
 	case TRDB_TYPE_SMOKA:

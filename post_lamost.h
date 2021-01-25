@@ -331,5 +331,7 @@ static const PARAMpost lamost_med_post[] = {
   {POST_CONST, "output.med_stellar.feh_lasp",       "on"},
   {POST_CONST, "output.med_stellar.rv_b0",        "on"},
   {POST_CONST, "output.med_stellar.rv_b1",        "on"},
+  {POST_CONST, "output.med_stellar.rv_r0",        "on"},
+  {POST_CONST, "output.med_stellar.rv_r1",        "on"},
   {POST_CONST, "sBtn",     "Search"},
   {POST_NULL,  NULL, NULL}};

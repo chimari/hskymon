@@ -922,14 +922,14 @@ static const gchar* db_name[]={
   "WISE",           //FCDB_TYPE_WISE,
   "Akari/IRC",      //FCDB_TYPE_IRC,
   "Akari/FIS",      //FCDB_TYPE_FIS,
-  "Subaru(SMOKA)",  //FCDB_TYPE_SMOKA,
+  "SMOKA",          //FCDB_TYPE_SMOKA,
   "HST archive",    //FCDB_TYPE_HST,
   "ESO archive",    //FCDB_TYPE_ESO,
   "Gemini archive", //FCDB_TYPE_GEMINI,
-  "Subaru(SMOKA)",  //FCDB_TYPE_WWWDB_SMOKA,
+  "SMOKA",          //FCDB_TYPE_WWWDB_SMOKA,
   "HST archive",    //FCDB_TYPE_WWWDB_HST,
   "ESO archive",    //FCDB_TYPE_WWWDB_ESO,
-  "Subaru(SMOKA)",  //TRDB_TYPE_SMOKA,
+  "SMOKA",          //TRDB_TYPE_SMOKA,
   "HST archive",    //TRDB_TYPE_HST,
   "ESO archive",    //TRDB_TYPE_ESO,
   "Gemini archive", //TRDB_TYPE_GEMINI,
@@ -937,7 +937,7 @@ static const gchar* db_name[]={
   "SMOKA",          //TRDB_TYPE_WWWDB_SMOKA,
   "HST archive",    //TRDB_TYPE_WWWDB_HST,
   "ESO archive",    //TRDB_TYPE_WWWDB_ESO,
-  "Subaru(SMOKA)",  //TRDB_TYPE_FCDB_SMOKA,
+  "SMOKA",          //TRDB_TYPE_FCDB_SMOKA,
   "HST archive",    //TRDB_TYPE_FCDB_HST,
   "ESO archive",    //TRDB_TYPE_FCDB_ESO,
   "Gemini archive", //TRDB_TYPE_FCDB_GEMINI,
@@ -2362,6 +2362,7 @@ struct _typHOE{
   gboolean fcdb_smoka_oao[NUM_SMOKA_OAO];
   gboolean fcdb_smoka_mtm[NUM_SMOKA_MTM];
   gboolean fcdb_smoka_kanata[NUM_SMOKA_KANATA];
+  gboolean fcdb_smoka_nayuta[NUM_SMOKA_NAYUTA];
   gboolean fcdb_hst_image[NUM_HST_IMAGE];
   gboolean fcdb_hst_spec[NUM_HST_SPEC];
   gboolean fcdb_hst_other[NUM_HST_OTHER];

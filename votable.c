@@ -3189,6 +3189,12 @@ void fcdb_lamost_vo_parse(typHOE *hg) {
     fprintf(stderr,"memory problem\n");
 
   for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
+    if(hg->fcdb_lamost_dr==FCDB_LAMOST_DR6M){
+      if(hg->fcdb[i_list].otype) g_free(hg->fcdb[i_list].otype);
+      hg->fcdb[i_list].otype=NULL;
+      if(hg->fcdb[i_list].sp) g_free(hg->fcdb[i_list].sp);
+      hg->fcdb[i_list].sp=NULL;
+    }
     if(!hg->fcdb[i_list].otype) hg->fcdb[i_list].otype=g_strdup("---");
     if(!hg->fcdb[i_list].sp) hg->fcdb[i_list].sp=g_strdup("---");
 

@@ -4735,6 +4735,7 @@ void create_fcdb_para_dialog (typHOE *hg)
     tmp_smoka_oao[NUM_SMOKA_OAO],
     tmp_smoka_mtm[NUM_SMOKA_MTM],
     tmp_smoka_kanata[NUM_SMOKA_KANATA],
+    tmp_smoka_nayuta[NUM_SMOKA_NAYUTA],
     tmp_hst_image[NUM_HST_IMAGE],
     tmp_hst_spec[NUM_HST_SPEC],
     tmp_hst_other[NUM_HST_OTHER],
@@ -4811,6 +4812,9 @@ void create_fcdb_para_dialog (typHOE *hg)
   }
   for(i=0;i<NUM_SMOKA_KANATA;i++){
     tmp_smoka_kanata[i]=hg->fcdb_smoka_kanata[i];
+  }
+  for(i=0;i<NUM_SMOKA_NAYUTA;i++){
+    tmp_smoka_nayuta[i]=hg->fcdb_smoka_nayuta[i];
   }
   for(i=0;i<NUM_HST_IMAGE;i++){
     tmp_hst_image[i]=hg->fcdb_hst_image[i];
@@ -6639,6 +6643,23 @@ void create_fcdb_para_dialog (typHOE *hg)
 				 hg->fcdb_smoka_kanata[i]);
   }
 
+  frame = gtkut_frame_new ("<b>Nishi-Harima</b>");
+  gtk_container_add (GTK_CONTAINER (vbox1), frame);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
+
+  vbox = gtkut_vbox_new(FALSE,0);  gtk_container_add (GTK_CONTAINER (frame), vbox);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+
+  for(i=0;i<NUM_SMOKA_NAYUTA;i++){
+    check = gtk_check_button_new_with_label(smoka_nayuta[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
+    my_signal_connect (check, "toggled",
+		       cc_get_toggle,
+		       &tmp_smoka_nayuta[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
+				 hg->fcdb_smoka_nayuta[i]);
+  }
+  
   vbox1 = gtkut_vbox_new(FALSE,0);
   gtkut_table_attach(table, vbox1, 3, 4, 2, 3,
 		     GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
@@ -7085,6 +7106,9 @@ void create_fcdb_para_dialog (typHOE *hg)
       for(i=0;i<NUM_SMOKA_KANATA;i++){
 	hg->fcdb_smoka_kanata[i]  = tmp_smoka_kanata[i];
       }
+      for(i=0;i<NUM_SMOKA_NAYUTA;i++){
+	hg->fcdb_smoka_nayuta[i]  = tmp_smoka_nayuta[i];
+      }
       for(i=0;i<NUM_HST_IMAGE;i++){
 	hg->fcdb_hst_image[i]  = tmp_hst_image[i];
       }
@@ -7172,6 +7196,9 @@ void create_fcdb_para_dialog (typHOE *hg)
       }
       for(i=0;i<NUM_SMOKA_KANATA;i++){
 	hg->fcdb_smoka_kanata[i]  = FALSE;
+      }
+      for(i=0;i<NUM_SMOKA_NAYUTA;i++){
+	hg->fcdb_smoka_nayuta[i]  = FALSE;
       }
       for(i=0;i<NUM_HST_IMAGE;i++){
 	hg->fcdb_hst_image[i]  = TRUE;
@@ -10468,6 +10495,9 @@ void param_init(typHOE *hg){
   }
   for(i=0;i<NUM_SMOKA_KANATA;i++){
     hg->fcdb_smoka_kanata[i]  = FALSE;
+  }
+  for(i=0;i<NUM_SMOKA_NAYUTA;i++){
+    hg->fcdb_smoka_nayuta[i]  = FALSE;
   }
   for(i=0;i<NUM_HST_IMAGE;i++){
     hg->fcdb_hst_image[i]  = TRUE;

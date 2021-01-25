@@ -4,7 +4,7 @@ Version: 4.1.0
 Release: 1%{?_dist_release}
 License: GPL3
 Group: Applications/Engineering
-Packager: Akito Tajitsu <tajitsu@naoj.org>
+Packager: Akito Tajitsu <akito.tajitsu@nao.ac.jp>
 URL: http://www.naoj.org/Observing/tools/hskymon/
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot

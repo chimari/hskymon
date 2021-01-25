@@ -1,3 +1,9 @@
+hskymon (4.1.0ubuntu) bionic; urgency=medium
+
+  * Added telescope azimuth mode (N=0 or S=0).
+
+ -- Akito Tajitsu <akito.tajitsu@nao.ac.jp>  Mon, 25 Jan 2021 10:30:32 +0900
+
 hskymon (4.0.6ubuntu) bionic; urgency=medium
 
   * Bug fix for TSC files auto loading.
