@@ -2629,7 +2629,6 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket,
     ip=0;
     plen=0;
 
-
     switch(hg->fcdb_lamost_dr){
     case FCDB_LAMOST_DR6M:
       while(1){

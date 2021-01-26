@@ -87,7 +87,7 @@
 #define DSS_URL "http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey"
 #define SIMBAD_URL "http://%s/simbad/sim-coo?CooDefinedFrames=none&CooEquinox=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML"
 #define DR8_URL "http://skyserver.sdss3.org/dr8/en/tools/quicklook/quickobj.asp?ra=%d:%d:%.2lf&dec=%s%d:%d:%.2lf"
-#define SDSS_DRNOW_URL "http://skyserver.sdss.org/dr15/en/tools/quicklook/summary.aspx?ra=%lf&dec=%s%lf"
+#define SDSS_DRNOW_URL "http://skyserver.sdss.org/dr16/en/tools/quicklook/summary.aspx?ra=%lf&dec=%s%lf"
 #define NED_URL "http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=2.0&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES"
 #define TRANSIENT_URL "https://wis-tns.weizmann.ac.il/search?&discovered_period_value=&discovered_period_units=years&unclassified_at=0&classified_sne=0&name=&name_like=0&isTNS_AT=all&public=all&ra=%lf&decl=%+lf&radius=120&coords_unit=arcsec&reporting_groupid%%5B%%5D=null&groupid%%5B%%5D=null&classifier_groupid%%5B%%5D=null&objtype%%5B%%5D=null&at_type%%5B%%5D=null&date_start%%5Bdate%%5D=&date_end%%5Bdate%%5D=&discovery_mag_min=&discovery_mag_max=&internal_name=&discoverer=&classifier=&spectra_count=&redshift_min=&redshift_max=&hostname=&ext_catid=&ra_range_min=&ra_range_max=&decl_range_min=&decl_range_max=&discovery_instrument%%5B%%5D=null&classification_instrument%%5B%%5D=null&associated_groups%%5B%%5D=null&at_rep_remarks=&class_rep_remarks=&num_page=50"
 #define MAST_URL "http://archive.stsci.edu/xcorr.php?target=%.5lf%s%.10lf&max_records=10&action=Search&resolver=SIMBAD&missions[]=EUVE&missions[]=WFC3-IMAGE&missions[]=WFPC1&missions[]=WFPC2&missions[]=FOC&missions[]=ACS-IMAGE&missions[]=UIT&missions[]=STIS-IMAGE&missions[]=COS-IMAGE&missions[]=GALEX&missions[]=XMM-OM&missions[]=NICMOS-IMAGE&missions[]=FUSE&missions[]=IMAPS&missions[]=BEFS&missions[]=TUES&missions[]=IUE&missions[]=COPERNICUS&missions[]=HUT&missions[]=WUPPE&missions[]=GHRS&missions[]=STIS-SPECTRUM&missions[]=COS-SPECTRUM&missions[]=WFC3-SPECTRUM&missions[]=ACS-SPECTRUM&missions[]=FOS&missions[]=HPOL&missions[]=NICMOS-SPECTRUM&missions[]=FGS&missions[]=HSP&missions[]=KEPLER"
@@ -136,7 +136,7 @@
 #define SSLOC_URL "open http://%s/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s\\&submit=submit%%20query\\&output.max=%d\\&OutputMode=LIST"
 #define STD_SIMBAD_URL "open http://%s/simbad/sim-id?Ident=%s\\&NbIdent=1\\&Radius=2\\&Radius.unit=arcmin\\&submit=submit+id\\&output.format=HTML"
 #define FCDB_NED_URL "open http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s\\&extend=no\\&hconst=73\\&omegam=0.27\\&omegav=0.73\\&corr_z=1\\&out_csys=Equatorial\\&out_equinox=J2000.0\\&obj_sort=RA+or+Longitude\\&of=pre_text\\&zv_breaker=30000.0\\&list_limit=5\\&img_stamp=YES"
-#define FCDB_SDSS_URL "open http://skyserver.sdss.org/dr15/en/tools/quicklook/summary.aspx?id=%s"
+#define FCDB_SDSS_URL "open http://skyserver.sdss.org/dr16/en/tools/quicklook/summary.aspx?id=%s"
 #define FCDB_LAMOST_DR5_URL "open http://dr5.lamost.org/spectrum/view?obsid=%d"
 #define FCDB_LAMOST_DR6_URL "open http://dr6.lamost.org/spectrum/view?obsid=%d"
 #define FCDB_LAMOST_DR6M_URL "open http://dr6.lamost.org/medspectrum/view?obsid=%d"
@@ -154,7 +154,7 @@
 #define DSS_URL "\"http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey\""
 #define SIMBAD_URL "\"http://%s/simbad/sim-coo?CooDefinedFrames=none&CooEquinox=2000&Coord=%d%%20%d%%20%.2lf%%20%s%d%%20%d%%20%.2lf&submit=submit%%20query&Radius.unit=arcmin&CooEqui=2000&CooFrame=FK5&Radius=2&output.format=HTML\""
 #define DR8_URL "\"http://skyserver.sdss3.org/dr8/en/tools/quicklook/quickobj.asp?ra=%d:%d:%.2lf&dec=%s%d:%d:%.2lf\""
-#define SDSS_DRNOW_URL "\"http://skyserver.sdss.org/dr15/en/tools/quicklook/summary.aspx?ra=%lf&dec=%s%lf\""
+#define SDSS_DRNOW_URL "\"http://skyserver.sdss.org/dr16/en/tools/quicklook/summary.aspx?ra=%lf&dec=%s%lf\""
 #define NED_URL "\"http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Near+Position+Search&in_csys=Equatorial&in_equinox=J2000.0&lon=%d%%3A%d%%3A%.2lf&lat=%s%d%%3A%d%%3A%.2lf&radius=2.0&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&z_constraint=Unconstrained&z_value1=&z_value2=&z_unit=z&ot_include=ANY&nmp_op=ANY&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=Distance+to+search+center&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES\""
 #define TRANSIENT_URL "\"https://wis-tns.weizmann.ac.il/search?&discovered_period_value=&discovered_period_units=years&unclassified_at=0&classified_sne=0&name=&name_like=0&isTNS_AT=all&public=all&ra=%lf&decl=%+lf&radius=120&coords_unit=arcsec&reporting_groupid%%5B%%5D=null&groupid%%5B%%5D=null&classifier_groupid%%5B%%5D=null&objtype%%5B%%5D=null&at_type%%5B%%5D=null&date_start%%5Bdate%%5D=&date_end%%5Bdate%%5D=&discovery_mag_min=&discovery_mag_max=&internal_name=&discoverer=&classifier=&spectra_count=&redshift_min=&redshift_max=&hostname=&ext_catid=&ra_range_min=&ra_range_max=&decl_range_min=&decl_range_max=&discovery_instrument%%5B%%5D=null&classification_instrument%%5B%%5D=null&associated_groups%%5B%%5D=null&at_rep_remarks=&class_rep_remarks=&num_page=50\""
 #define MAST_URL "\"http://archive.stsci.edu/xcorr.php?target=%.5lf%s%.10lf&max_records=10&action=Search&resolver=SIMBAD&missions[]=EUVE&missions[]=WFC3-IMAGE&missions[]=WFPC1&missions[]=WFPC2&missions[]=FOC&missions[]=ACS-IMAGE&missions[]=UIT&missions[]=STIS-IMAGE&missions[]=COS-IMAGE&missions[]=GALEX&missions[]=XMM-OM&missions[]=NICMOS-IMAGE&missions[]=FUSE&missions[]=IMAPS&missions[]=BEFS&missions[]=TUES&missions[]=IUE&missions[]=COPERNICUS&missions[]=HUT&missions[]=WUPPE&missions[]=GHRS&missions[]=STIS-SPECTRUM&missions[]=COS-SPECTRUM&missions[]=WFC3-SPECTRUM&missions[]=ACS-SPECTRUM&missions[]=FOS&missions[]=HPOL&missions[]=NICMOS-SPECTRUM&missions[]=FGS&missions[]=HSP&missions[]=KEPLER\""
@@ -169,7 +169,7 @@
 #define SSLOC_URL "\"http://%s/simbad/sim-sam?Criteria=cat=%s%%26%%28ra>%.2lf%sra<%.2lf%%29%%26dec>%.2lf%%26dec<%.2lf%%26%%28%s>%d%%26%s<%d%%29%s&submit=submit%%20query&output.max=%d&OutputMode=LIST\""
 #define STD_SIMBAD_URL "\"http://%s/simbad/sim-id?Ident=%s&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id&output.format=HTML\""
 #define FCDB_NED_URL "\"http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES\""
-#define FCDB_SDSS_URL "\"http://skyserver.sdss.org/dr15/en/tools/quicklook/summary.aspx?id=%s\""
+#define FCDB_SDSS_URL "\"http://skyserver.sdss.org/dr16/en/tools/quicklook/summary.aspx?id=%s\""
 #define FCDB_LAMOST_DR5_URL "\"http://dr5.lamost.org/spectrum/view?obsid=%d\""
 #define FCDB_LAMOST_DR6_URL "\"http://dr6.lamost.org/spectrum/view?obsid=%d\""
 #define FCDB_LAMOST_DR6M_URL "\"http://dr6.lamost.org/medspectrum/view?obsid=%d\""
@@ -239,7 +239,7 @@ enum
 #define FCDB_PS1_PATH  "/api/v0.1/panstarrs/%s/%s?ra=%lf&dec=%+lf&radius=%lf&nDetections.gte=%d%spagesize=5000&format=votable"
 
 #define FCDB_HOST_SDSS "skyserver.sdss.org"
-#define FCDB_SDSS_PATH "/dr15/en/tools/search/x_results.aspx"
+#define FCDB_SDSS_PATH "/dr16/en/tools/search/x_results.aspx"
 
 #define FCDB_HOST_VIZIER_STRASBG "vizier.u-strasbg.fr"
 #define FCDB_HOST_VIZIER_NAOJ "vizier.nao.ac.jp"
@@ -355,7 +355,7 @@ enum
 #define FC_PATH_SDSS8 "/DR8/ImgCutout/getjpeg.aspx?ra=%lf&dec=%lf&scale=%f&opt=&width=%d&height=%d&opt=%s%s&query=%s%s"
 #define SDSS_SCALE 0.39612
 #define FC_HOST_SDSS13 "skyserver.sdss.org"
-#define FC_PATH_SDSS13 "/dr15/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Chart.image&ra=%lf&dec=%lf&scale=%f&width=%d&height=%d&opt=%s%s&query=%s%s"
+#define FC_PATH_SDSS13 "/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Chart.image&ra=%lf&dec=%lf&scale=%f&width=%d&height=%d&opt=%s%s&query=%s%s"
 #define FC_HOST_PANCOL "ps1images.stsci.edu"
 #define FC_PATH_PANCOL "/cgi-bin/ps1cutouts?pos=%lf+%+lf&filter=color&filetypes=stack&auxiliary=data&size=%d&output_size=1024&verbose=0&autoscale=99.500000&catlist="
 #define FC_PATH_PANG "/cgi-bin/ps1cutouts?pos=%lf+%+lf&filter=g&filetypes=stack&auxiliary=data&size=%d&output_size=1024&verbose=0&autoscale=99.500000&catlist="
@@ -513,7 +513,7 @@ static const gchar* FC_name[]={
   "SkyView: RGB composite",    // FC_SKYVIEW_RGB,
   NULL,                        // FC_SEP3,
   "SDSS DR7 (color)",          // FC_SDSS,
-  "SDSS DR15 (color)",         // FC_SDSS13,
+  "SDSS DR16 (color)",         // FC_SDSS13,
   NULL,                        // FC_SEP4,
   "PanSTARRS-1 (color)",       // FC_PANCOL,
   "PanSTARRS-1 (g)",           // FC_PANG,
@@ -561,7 +561,7 @@ static const gchar* FC_markup[]={
   "SkyView: <span color=\"#FF7F7F\">R</span><span color=\"#7FFF7F\">G</span><span color=\"#7F7FFF\">B</span> composite",    // FC_SKYVIEW_RGB,
   NULL,                        // FC_SEP3,
   "SDSS DR7 (color)",          // FC_SDSS,
-  "SDSS DR15 (color)",         // FC_SDSS13,
+  "SDSS DR16 (color)",         // FC_SDSS13,
   NULL,                        // FC_SEP4,
   "PanSTARRS-1 (color)",       // FC_PANCOL,
   "PanSTARRS-1 (g)",           // FC_PANG,
@@ -609,7 +609,7 @@ static const gchar* FC_img[]={
   "RGB composite",             // FC_SKYVIEW_RGB,
   NULL,                        // FC_SEP3,
   "SDSS (DR7/color)",          // FC_SDSS,
-  "SDSS (DR15/color)",         // FC_SDSS13,
+  "SDSS (DR16/color)",         // FC_SDSS13,
   NULL,                        // FC_SEP4,
   "PanSTARRS-1 (color)",       // FC_PANCOL,
   "PanSTARRS-1 (g-band)",      // FC_PANG,
@@ -912,7 +912,7 @@ static const gchar* db_name[]={
   "NED",            //FCDB_TYPE_NED,
   "GSC 2.4.1",      //FCDB_TYPE_GSC,
   "PanSTARRS1",     //FCDB_TYPE_PS1,
-  "SDSS DR15",      //FCDB_TYPE_SDSS,
+  "SDSS DR16",      //FCDB_TYPE_SDSS,
   "LAMOST",         //FCDB_TYPE_LAMOST,
   "USNO",           //FCDB_TYPE_USNO,
   "UCAC4",          //FCDB_TYPE_UCAC,

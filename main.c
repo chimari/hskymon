@@ -5592,7 +5592,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 
 
   vbox = gtkut_vbox_new (FALSE, 0);
-  label = gtk_label_new ("SDSS DR15");
+  label = gtk_label_new ("SDSS DR16");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
   table = gtkut_table_new(3, 3, FALSE, 10, 5, 5);

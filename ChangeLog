@@ -4,6 +4,7 @@
                       and DR6(Med).
                     - Added Subaru CHARIS, IRD, SWIMS, MIMIZUKU, OAO MuSCAT,
 	              KOOLS-IFU, and Nishi-Harima NIC for SMOKA archive search.
+                    - Updated SDSS data server to DR16.
 
 2020.09.24 ver4.0.6 - Bug fix for TSC files auto loading.
                     - PMRA & PMDEC read for IRD OPE files.
