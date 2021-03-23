@@ -84,6 +84,7 @@ void draw_hsc();
 void draw_hsc_ol();
 void draw_fmos();
 void draw_pfs();
+void draw_kools();
 
 void draw_fc_label();
 
@@ -944,78 +945,91 @@ void create_fc_dialog(typHOE *hg)
     GtkTreeIter iter, iter_set;	  
     GtkCellRenderer *renderer;
     
-    store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+    store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, 
+			       G_TYPE_BOOLEAN);
     
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "None",
-		       1, FC_INST_NONE, -1);
+		       1, FC_INST_NONE, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_NONE) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "HDS",
-		       1, FC_INST_HDS, -1);
+		       1, FC_INST_HDS, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_HDS) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "HDS (w/oImR)",
-		       1, FC_INST_HDSAUTO, -1);
+		       1, FC_INST_HDSAUTO, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_HDSAUTO) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "HDS (Zenith)",
-		       1, FC_INST_HDSZENITH, -1);
+		       1, FC_INST_HDSZENITH, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_HDSZENITH) iter_set=iter;
 	
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "IRCS",
-		       1, FC_INST_IRCS, -1);
+		       1, FC_INST_IRCS, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_IRCS) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "COMICS",
-		       1, FC_INST_COMICS, -1);
+		       1, FC_INST_COMICS, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_COMICS) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "FOCAS",
-		       1, FC_INST_FOCAS, -1);
+		       1, FC_INST_FOCAS, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_FOCAS) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "MOIRCS",
-		       1, FC_INST_MOIRCS, -1);
+		       1, FC_INST_MOIRCS, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_MOIRCS) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "SWIMS",
-		       1, FC_INST_SWIMS, -1);
+		       1, FC_INST_SWIMS, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_SWIMS) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "FMOS",
-		       1, FC_INST_FMOS, -1);
+		       1, FC_INST_FMOS, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_FMOS) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "SupCam",
-		       1, FC_INST_SPCAM, -1);
+		       1, FC_INST_SPCAM, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_SPCAM) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "HSC (Det-ID)",
-		       1, FC_INST_HSCDET, -1);
+		       1, FC_INST_HSCDET, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_HSCDET) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "HSC (HSCA)",
-		       1, FC_INST_HSCA, -1);
+		       1, FC_INST_HSCA, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_HSCA) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, "PFS",
-		       1, FC_INST_PFS, -1);
+		       1, FC_INST_PFS, 2, TRUE, -1);
     if(hg->fc_inst==FC_INST_PFS) iter_set=iter;
 
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter,
+			0, NULL,
+			1, FC_INST_SEP1,2, FALSE, 
+			-1);
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "KOOLS-IFU",
+		       1, FC_INST_KOOLS, 2, TRUE, -1);
+    if(hg->fc_inst==FC_INST_KOOLS) iter_set=iter;
+    
+    
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 #ifdef USE_GTK3      
     gtk_widget_set_valign(combo,GTK_ALIGN_CENTER);
@@ -1029,6 +1043,9 @@ void create_fc_dialog(typHOE *hg)
     gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
     gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
 	
+    gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (combo), 
+					  is_separator, NULL, NULL);	
+    
     gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
     gtk_widget_show(combo);
     my_signal_connect (combo,"changed",cc_get_fc_inst, (gpointer)hg);
@@ -1594,6 +1611,7 @@ void translate_to_center(typHOE *hg,
   case FC_INST_SWIMS:
   case FC_INST_FMOS:
   case FC_INST_PFS:
+  case FC_INST_KOOLS:
     angle=M_PI*(gdouble)hg->dss_pa/180.;
     break;
 
@@ -1914,6 +1932,10 @@ gboolean draw_fc_cairo(GtkWidget *widget,
       draw_ircs(hg, cr, width, height, width_file, height_file, scale, r);
       break;
 
+    case FC_INST_COMICS:
+      draw_comics(hg, cr, width, height, width_file, height_file, scale, r);
+      break;
+      
     case FC_INST_FOCAS:
       draw_focas(hg, cr, width, height, width_file, height_file, scale, r);
       break;
@@ -1946,6 +1968,10 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 
     case FC_INST_PFS:
       draw_pfs(hg, cr, width, height, width_file, height_file, scale, r);
+      break;
+
+    case FC_INST_KOOLS:
+      draw_kools(hg, cr, width, height, width_file, height_file, scale, r);
       break;
     }
     
@@ -2088,6 +2114,7 @@ void rot_pa(typHOE *hg, cairo_t *cr){
   case FC_INST_SWIMS:
   case FC_INST_FMOS:
   case FC_INST_PFS:
+  case FC_INST_KOOLS:
     angle=M_PI*(gdouble)hg->dss_pa/180.;
     break;
     
@@ -2432,6 +2459,11 @@ static void cc_get_fc_inst (GtkWidget *widget,  gpointer * gdata)
 			       (gdouble)(HSC_SIZE));
       break;
     }
+    break;
+
+  case FC_INST_KOOLS:
+    gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			     (gdouble)(KOOLS_SIZE));
     break;
 
   default:
@@ -6191,6 +6223,7 @@ void draw_fcdb1(typHOE *hg,
     case FC_INST_MOIRCS:
     case FC_INST_SWIMS:
     case FC_INST_FMOS:
+    case FC_INST_KOOLS:
       theta=-M_PI*(gdouble)hg->dss_pa/180.;
       break;
       
@@ -6545,6 +6578,110 @@ void draw_comics(typHOE *hg,
 		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_Y_ARCSEC/60.)/2.-5*scale);
   cairo_show_text(cr, tmp);
   if(tmp) g_free(tmp);
+}
+
+
+void draw_kools(typHOE *hg,
+		cairo_t *cr,
+		gint width, gint height,
+		gint width_file, gint height_file,
+		gdouble scale,
+		gdouble r)
+{ // Drawing Inst (ZWO-Cam for KOOLS-IFU)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+
+  cairo_set_line_width (cr, 3.0*scale);
+  cairo_rectangle(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*ZWOCAM_X_ARCSEC/60.)/2.,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*ZWOCAM_Y_ARCSEC/60.)/2.,
+		  (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*ZWOCAM_X_ARCSEC/60.,
+		  (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*ZWOCAM_Y_ARCSEC/60.);
+  cairo_stroke(cr);
+
+  /*
+  cairo_set_line_width (cr, 3.0*scale);
+  cairo_rectangle(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*KOOLS_X_ARCSEC/60.)/2.,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*KOOLS_Y_ARCSEC/60.)/2.,
+		  (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*KOOLS_X_ARCSEC/60.,
+		  (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*KOOLS_Y_ARCSEC/60.);
+  cairo_stroke(cr);
+  */
+
+  if(hg->dss_draw_slit){
+    // Reticle
+    cairo_set_line_width (cr, 1.5*scale);
+
+    cairo_move_to(cr,0,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*ZWOCAM_Y_ARCSEC/60.)/2.);
+    cairo_line_to(cr,0,
+		  -((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*ZWOCAM_RETICLE1_ARCSEC/60.);
+    cairo_stroke(cr);
+
+    cairo_line_to(cr,0,
+		  +((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*ZWOCAM_RETICLE1_ARCSEC/60.);
+    cairo_line_to(cr,0,
+		  +((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*ZWOCAM_Y_ARCSEC/60.)/2.);
+    cairo_stroke(cr);
+
+    
+
+    cairo_move_to(cr,-((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*ZWOCAM_X_ARCSEC/60.)/2.,
+		  0);
+    cairo_line_to(cr,-((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*ZWOCAM_RETICLE1_ARCSEC/60.,
+		  0);
+    cairo_stroke(cr);
+    
+    cairo_move_to(cr,+((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*ZWOCAM_RETICLE1_ARCSEC/60.,
+		  0);
+    cairo_line_to(cr,+((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*ZWOCAM_X_ARCSEC/60.)/2.,
+		  0);
+    cairo_stroke(cr);
+
+    
+    cairo_arc(cr,0,0,
+	      ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*ZWOCAM_RETICLE1_ARCSEC/60.,
+	      0,M_PI*2);
+    cairo_stroke(cr);
+    cairo_arc(cr,0,0,
+	      ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*ZWOCAM_RETICLE2_ARCSEC/60.,
+	      0,M_PI*2);
+    cairo_stroke(cr);
+    cairo_arc(cr,0,0,
+	      ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*ZWOCAM_RETICLE3_ARCSEC/60.,
+	      0,M_PI*2);
+    cairo_stroke(cr);
+  }
+  
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+
+  /*
+  tmp=g_strdup_printf("KOOLS-IFU FOV (%.1lfx%.1lfarcsec)",KOOLS_X_ARCSEC, KOOLS_Y_ARCSEC);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,-extents.width/2,
+		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*KOOLS_Y_ARCSEC/60.)/2.-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+  */
+ 
+  tmp=g_strdup_printf("ZWO-Cam FOV (%dx%darcsec)",(gint)ZWOCAM_X_ARCSEC, (gint)ZWOCAM_Y_ARCSEC);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,-extents.width/2,
+		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*ZWOCAM_Y_ARCSEC/60.)/2.-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+
 }
 
 

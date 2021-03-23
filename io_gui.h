@@ -62,6 +62,7 @@ enum
   SAVE_FILE_PDF_PLOT,	
   SAVE_FILE_PDF_FC,	    
   SAVE_FILE_TXT_LIST,
+  SAVE_FILE_TXT_SEIMEI,
   SAVE_FILE_OPE_DEF,
   SAVE_FILE_TRDB,
   SAVE_FILE_FCDB_CSV,
@@ -78,6 +79,7 @@ void hskymon_SaveFile();
 void do_save_plot_pdf();
 void do_save_fc_pdf();
 void do_save_txt_list();
+void do_save_txt_seimei();
 void do_save_ope_def();
 void do_save_TRDB();
 void do_save_FCDB_csv();
@@ -87,4 +89,5 @@ void do_save_pam_csv();
 void do_save_pam_all();
 
 void Export_TextList();
+void Export_TextSeimei();
 void Export_OpeDef();

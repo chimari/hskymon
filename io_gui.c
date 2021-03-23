@@ -312,6 +312,7 @@ void hskymon_OpenFile(typHOE *hg, guint mode){
 			       "*." LIST1_EXTENSION,
 			       "*." LIST2_EXTENSION,
 			       "*." LIST3_EXTENSION,
+			       "*." LIST4_EXTENSION,
 			       NULL);
     break;
   }
@@ -725,12 +726,25 @@ void do_open_TRDB (GtkWidget *widget, gpointer gdata)
 }
 
 
+gchar *remove_c(gchar *s, int c)
+{
+  char *p;
+  size_t n = 0;
+  
+  for(p = s; *(p - n) = *p; ++ p) n += (*p == c);
+  return s;
+}
+
+
 void ReadList(typHOE *hg, gint ope_max){
   FILE *fp;
   int i_list=0,i_use;
   gchar *tmp_char;
   gchar *buf=NULL;
   gchar *win_title;
+  gint is_ret;
+  gboolean seimei_flag;
+  gchar *s;
   
   if((fp=fopen(hg->filename_list,"rb"))==NULL){
     popup_message(hg->skymon_main, 
@@ -759,8 +773,16 @@ void ReadList(typHOE *hg, gint ope_max){
     if((buf=fgets_new(fp))==NULL){
       break;
     }
+    else if(strlen(buf)<10){
+      // skip
+    }
+    else if(buf[0]==0x23){
+      // skip
+    }
     else{
-      if(strlen(buf)<10) break;
+
+      seimei_flag=FALSE;
+      
       tmp_char=(char *)strtok(buf,",");
       if(hg->obj[i_list].name) g_free(hg->obj[i_list].name);
       //hg->obj[i_list].name=g_strdup(tmp_char);
@@ -770,19 +792,71 @@ void ReadList(typHOE *hg, gint ope_max){
       hg->obj[i_list].def=NULL;
 
       tmp_char=(char *)strtok(NULL,",");
-      if(!is_number(hg->skymon_main,tmp_char,i_list+1,"RA")) break;
-      hg->obj[i_list].ra=(gdouble)g_strtod(tmp_char,NULL);
+      is_ret=is_number(hg->skymon_main,tmp_char,i_list+1,"RA");
+      if(is_ret<0){
+	break;
+      }
+      else if(is_ret>0){
+	seimei_flag=TRUE;
+	s=remove_c(tmp_char, 0x3A);
+	hg->obj[i_list].ra=(gdouble)g_strtod(s,NULL);
+      }
+      else{
+	hg->obj[i_list].ra=(gdouble)g_strtod(tmp_char,NULL);
+      }
       
       tmp_char=(char *)strtok(NULL,",");
-      if(!is_number(hg->skymon_main,tmp_char,i_list+1,"Dec")) break;
-      hg->obj[i_list].dec=(gdouble)g_strtod(tmp_char,NULL);
+      is_ret=is_number(hg->skymon_main,tmp_char,i_list+1,"Dec");
+      if(is_ret<0){
+	break;
+      }
+      else if(is_ret>0){
+	seimei_flag=TRUE;
+	s=remove_c(tmp_char, 0x3A);
+	hg->obj[i_list].dec=(gdouble)g_strtod(s,NULL);
+      }
+      else{
+	hg->obj[i_list].dec=(gdouble)g_strtod(tmp_char,NULL);
+      }
       
       tmp_char=(char *)strtok(NULL,",");
-      if(!is_number(hg->skymon_main,tmp_char,i_list+1,"Equinox")) break;
-      hg->obj[i_list].equinox=(gdouble)g_strtod(tmp_char,NULL);
+      is_ret=is_number(hg->skymon_main,tmp_char,i_list+1,"Equinox");
+      if(is_ret<0){
+	break;
+      }
+      else{
+	hg->obj[i_list].equinox=(gdouble)g_strtod(tmp_char,NULL);
+      }
+
+      if(seimei_flag){
+	tmp_char=(char *)strtok(NULL,",");
+	is_ret=is_number(hg->skymon_main,tmp_char,i_list+1,"Proper Motion (RA)");
+	if(is_ret<0){
+	  break;
+	}
+	else{
+	  hg->obj[i_list].pm_ra=(gdouble)g_strtod(tmp_char,NULL)*1000.0;
+	}
+
+	tmp_char=(char *)strtok(NULL,",");
+	is_ret=is_number(hg->skymon_main,tmp_char,i_list+1,"Proper Motion (Dec)");
+	if(is_ret<0){
+	  break;
+	}
+	else{
+	  hg->obj[i_list].pm_dec=(gdouble)g_strtod(tmp_char,NULL)*1000.0;
+	}
+      }
       
       if((tmp_char=(char *)strtok(NULL,"\r\n"))!=NULL){
-	hg->obj[i_list].note=cut_spc(tmp_char);
+	if(seimei_flag){
+	  hg->obj[i_list].note=g_strconcat("mag=",
+					   tmp_char,
+					   NULL);
+	}
+	else{
+	  hg->obj[i_list].note=cut_spc(tmp_char);
+	}
       }
       else{
 	hg->obj[i_list].note=NULL;
@@ -831,6 +905,9 @@ void MergeList(typHOE *hg, gint ope_max){
   gchar *buf;
   gboolean name_flag;
   gchar *win_title=NULL, *tmp_name=NULL;
+  gint is_ret;
+  gboolean seimei_flag;
+  gchar *s;
   
   
   if((fp=fopen(hg->filename_list,"rb"))==NULL){
@@ -862,9 +939,13 @@ void MergeList(typHOE *hg, gint ope_max){
     if((buf=fgets_new(fp))==NULL){
       break;
     }
+    else if(strlen(buf)<10){
+      // skip
+    }
+    else if(buf[0]==0x23){
+      // skip
+    }
     else{
-      if(strlen(buf)<10) break;
-      
       tmp_char=(char *)strtok(buf,",");
       tmp_name=cut_spc(tmp_char);
       
@@ -875,21 +956,48 @@ void MergeList(typHOE *hg, gint ope_max){
 	  break;
 	}
       }
-
+      
       if(!name_flag){
+	seimei_flag=FALSE;
+      
 	i=hg->i_max;
 
 	tmp_char=(char *)strtok(NULL,",");
-	if(!is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"RA")) break;
-	hg->obj[i].ra=(gdouble)g_strtod(tmp_char,NULL);
+	is_ret=is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"RA");
+	if(is_ret<0){
+	  break;
+	}
+	else if(is_ret>0){
+	  seimei_flag=TRUE;
+	  s=remove_c(tmp_char, 0x3A);
+	  hg->obj[i].ra=(gdouble)g_strtod(s,NULL);
+	}
+	else{
+	  hg->obj[i].ra=(gdouble)g_strtod(tmp_char,NULL);
+	}
 	
 	tmp_char=(char *)strtok(NULL,",");
-	if(!is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"Dec")) break;
-	hg->obj[i].dec=(gdouble)g_strtod(tmp_char,NULL);
+	is_ret=is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"Dec");
+	if(is_ret<0){
+	  break;
+	}
+	else if(is_ret>0){
+	  seimei_flag=TRUE;
+	  s=remove_c(tmp_char, 0x3A);
+	  hg->obj[i].dec=(gdouble)g_strtod(s,NULL);
+	}
+	else{
+	  hg->obj[i].dec=(gdouble)g_strtod(tmp_char,NULL);
+	}
       
 	tmp_char=(char *)strtok(NULL,",");
-	if(!is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"Equinox")) break;
-	hg->obj[i].equinox=(gdouble)g_strtod(tmp_char,NULL);
+	is_ret=is_number(hg->skymon_main,tmp_char,hg->i_max-i_base+1,"Equinox");
+	if(is_ret<0){
+	  break;
+	}
+	else{
+	  hg->obj[i].equinox=(gdouble)g_strtod(tmp_char,NULL);
+	}
 	
 	init_obj(&hg->obj[i]);
 
@@ -898,9 +1006,36 @@ void MergeList(typHOE *hg, gint ope_max){
 	if(hg->obj[i].def) g_free(hg->obj[i].def);
 	hg->obj[i].def=NULL;
 
+	if(seimei_flag){
+	  tmp_char=(char *)strtok(NULL,",");
+	  is_ret=is_number(hg->skymon_main,tmp_char,i+1,"Proper Motion (RA)");
+	  if(is_ret<0){
+	    break;
+	  }
+	  else{
+	    hg->obj[i].pm_ra=(gdouble)g_strtod(tmp_char,NULL)*1000.0;
+	  }
+	  
+	  tmp_char=(char *)strtok(NULL,",");
+	  is_ret=is_number(hg->skymon_main,tmp_char,i+1,"Proper Motion (Dec)");
+	  if(is_ret<0){
+	    break;
+	  }
+	  else{
+	    hg->obj[i].pm_dec=(gdouble)g_strtod(tmp_char,NULL)*1000.0;
+	  }
+	}
+
 	if(hg->obj[i].note) g_free(hg->obj[i].note);
 	if((tmp_char=(char *)strtok(NULL,"\r\n"))!=NULL){
-	  hg->obj[i].note=cut_spc(tmp_char);
+	  if(seimei_flag){
+	    hg->obj[i].note=g_strconcat("mag=",
+					tmp_char,
+					NULL);
+	  }
+	  else{
+	    hg->obj[i].note=cut_spc(tmp_char);
+	  }
 	}
 	else{
 	  hg->obj[i].note=NULL;
@@ -3467,6 +3602,7 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
     break;
 
   case SAVE_FILE_TXT_LIST:
+  case SAVE_FILE_TXT_SEIMEI:
   case SAVE_FILE_OPE_DEF:
     tmp=g_strdup("Sky Monitor : Input Text File to be Saved");
     tgt_file=&hg->filename_txt;
@@ -3539,6 +3675,11 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
   case SAVE_FILE_TXT_LIST:
   if(!*tgt_file)
     *tgt_file=g_strconcat("hskymon_ObjList" "." LIST3_EXTENSION,NULL);
+  break;
+  
+  case SAVE_FILE_TXT_SEIMEI:
+  if(!*tgt_file)
+    *tgt_file=g_strconcat("Seimei_ObjList" "." LIST4_EXTENSION,NULL);
   break;
   
   case SAVE_FILE_OPE_DEF:
@@ -3614,6 +3755,11 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
 			       "*." LIST3_EXTENSION,NULL);
     break;
     
+  case SAVE_FILE_TXT_SEIMEI:
+    my_file_chooser_add_filter(fdialog,"TXT File",
+			       "*." LIST4_EXTENSION,NULL);
+    break;
+    
   case SAVE_FILE_TRDB:
     my_file_chooser_add_filter(fdialog,"HSK File",
 			       "*." HSKYMON_EXTENSION,NULL);
@@ -3659,6 +3805,10 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
     case SAVE_FILE_TXT_LIST:
     case SAVE_FILE_OPE_DEF:
       dest_file=check_ext(pw, dest_file,LIST3_EXTENSION);
+      break;
+
+    case SAVE_FILE_TXT_SEIMEI:
+      dest_file=check_ext(pw, dest_file,LIST4_EXTENSION);
       break;
       
     case SAVE_FILE_TRDB:
@@ -3760,6 +3910,10 @@ void hskymon_SaveFile(typHOE *hg, guint mode)
 	    Export_TextList(hg);
 	    break;
 	    
+	  case SAVE_FILE_TXT_SEIMEI:
+	    Export_TextSeimei(hg);
+	    break;
+	    
 	  case SAVE_FILE_OPE_DEF:
 	    Export_OpeDef(hg);
 	    break;
@@ -3832,6 +3986,15 @@ void do_save_txt_list (GtkWidget *widget, gpointer gdata)
   hg=(typHOE *)gdata;
 
   hskymon_SaveFile(hg, SAVE_FILE_TXT_LIST);
+}
+
+
+void do_save_txt_seimei (GtkWidget *widget, gpointer gdata)
+{
+  typHOE *hg;
+  hg=(typHOE *)gdata;
+
+  hskymon_SaveFile(hg, SAVE_FILE_TXT_SEIMEI);
 }
 
 
@@ -3938,6 +4101,99 @@ void Export_TextList(typHOE *hg){
 
   g_free(text_form1);
   g_free(text_form2);
+  
+  fclose(fp);
+}
+
+
+gchar *repl_spc(gchar * in_str){
+  gchar *out_str;
+  gint  i_str=0,i;
+
+  out_str=g_strdup(in_str);
+  
+  for(i=0;i<strlen(out_str);i++){
+    if(out_str[i]==0x20){
+      out_str[i]=0x5F;
+    }
+  }
+  
+  return(out_str);
+}
+
+void Export_TextSeimei(typHOE *hg){
+  FILE *fp;
+  int i_list;
+  gchar *text_form1, *text_form2;
+  gdouble d_ra, d_dec, mag;
+  struct ln_hms hms;
+  struct ln_dms dms;
+  gchar *tmp_name=NULL, *tmp_note=NULL;
+
+  if(hg->i_max<=0) return;
+
+  if((fp=fopen(hg->filename_txt,"w"))==NULL){
+    fprintf(stderr," File Write Error  \"%s\" \n", hg->filename_txt);
+    exit(1);
+  }
+
+  text_form1=g_strdup("%s, %02d:%02d:%05.2lf, %s%02d:%02d:%4.1lf, %.0lf, %+.2lf, %+.2lf, %.1lf, %s");
+  text_form2=g_strdup("%s,%02d:%02d:%05.2lf, %s%02d:%02d:%4.1lf, %.0lf, %+.2lf, %+.2lf, %.1lf, target");
+
+  for(i_list=0;i_list<hg->i_max;i_list++){
+    if(tmp_name) g_free(tmp_name);
+    tmp_name=repl_spc(hg->obj[i_list].name);
+    
+    d_ra=ra_to_deg(hg->obj[i_list].ra);
+    ln_deg_to_hms(d_ra,&hms);
+    d_dec=dec_to_deg(hg->obj[i_list].dec);
+    ln_deg_to_dms(d_dec,&dms);
+    
+    mag=99.9;
+   
+    if(hg->obj[i_list].note){
+      if(tmp_note) g_free(tmp_note);
+      tmp_note=repl_spc(hg->obj[i_list].note);
+      
+      fprintf(fp,text_form1,
+	      tmp_name,
+	      hms.hours,
+	      hms.minutes,
+	      hms.seconds,
+	      (dms.neg) ? "-" : "+",
+	      dms.degrees,
+	      dms.minutes,
+	      dms.seconds,
+	      hg->obj[i_list].equinox,
+	      hg->obj[i_list].pm_ra/1000.*cos(d_dec/180.*M_PI),
+	      hg->obj[i_list].pm_dec/1000.,
+	      mag,
+	      tmp_note); 
+      fprintf(fp,"\n");
+    }
+    else{
+      fprintf(fp,text_form2,
+	      tmp_name,
+	      hms.hours,
+	      hms.minutes,
+	      hms.seconds,
+	      (dms.neg) ? "-" : "+",
+	      dms.degrees,
+	      dms.minutes,
+	      dms.seconds,
+	      hg->obj[i_list].equinox,
+	      hg->obj[i_list].pm_ra/1000.*cos(d_dec/180.*M_PI),
+	      hg->obj[i_list].pm_dec/1000.,
+	      mag);
+      fprintf(fp,"\n");
+    }
+  }
+
+  g_free(text_form1);
+  g_free(text_form2);
+
+  if(tmp_name) g_free(tmp_name);
+  if(tmp_note) g_free(tmp_note);
   
   fclose(fp);
 }

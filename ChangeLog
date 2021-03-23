@@ -1,3 +1,7 @@
+2021.03.23 ver4.2.0 - Revised Atmospherc Dispersion mappng, added KOOLS.
+                    - Revised FC for KOOLS IFU.
+	            - Read/Write for Seimei target list (.dat) file.
+
 2021.01.25 ver4.1.0 - Added telescope azimuth mode (N=0 or S=0deg).
                     - Adjusted OAO sky camera parameters.
 	            - Revised LAMOST FCDB search. Now supported DR5, DR6(low)

@@ -727,6 +727,19 @@ GtkWidget *make_menu(typHOE *hg){
     gtk_widget_show (popup_button);
     gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
     my_signal_connect (popup_button, "activate",do_save_txt_list,(gpointer)hg);
+
+    //File/Export/Text Seimei.
+#ifdef USE_GTK3
+    image=gtk_image_new_from_icon_name ("document-save", GTK_ICON_SIZE_MENU);
+    popup_button =gtkut_image_menu_item_new_with_label (image, "Text for Seimei");
+#else
+    image=gtk_image_new_from_stock (GTK_STOCK_SAVE, GTK_ICON_SIZE_MENU);
+    popup_button =gtk_image_menu_item_new_with_label ("Text for Seimei");
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(popup_button),image);
+#endif
+    gtk_widget_show (popup_button);
+    gtk_container_add (GTK_CONTAINER (new_menu), popup_button);
+    my_signal_connect (popup_button, "activate",do_save_txt_seimei,(gpointer)hg);
     
     popup_button =gtk_menu_item_new_with_label ("Export to");
     gtk_widget_show (popup_button);
@@ -8875,7 +8888,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     GTK_FILL,GTK_SHRINK,0,0);
   
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->temp,
-					    -15, 15, 
+					    -40, 40, 
 					    1.0,1.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
@@ -8899,7 +8912,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     GTK_FILL,GTK_SHRINK,0,0);
   
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->pres,
-					    600, 650, 
+					    400, 1200, 
 					    1.0,1.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
@@ -12599,8 +12612,9 @@ void ReadTRDB(typHOE *hg)
 
 
 
-gboolean is_number(GtkWidget *parent, gchar *s, gint line, const gchar* sect){
+gint is_number(GtkWidget *parent, gchar *s, gint line, const gchar* sect){
   gchar* msg;
+  gint ret=0;
 
   if(!s){
     msg=g_strdup_printf(" Line=%d  /  Sect=\"%s\"", line, sect);
@@ -12617,32 +12631,38 @@ gboolean is_number(GtkWidget *parent, gchar *s, gint line, const gchar* sect){
 		  NULL);
   
     g_free(msg);
-    return FALSE;
+    return -1;
   }
 
   while((*s!='\0')&&(*s!=0x0a)&&(*s!=0x0d)){
     if(!is_num_char(*s)){
-      msg=g_strdup_printf(" Line=%d  /  Sect=\"%s\"\n Irregal character code : \"%02x\"", 
-			  line, sect,*s);
-      popup_message(parent, 
+      if(*s==0x3A){
+	ret=1;
+      }
+      else{
+	msg=g_strdup_printf(" Line=%d  /  Sect=\"%s\"\n Irregal character code : \"%02x\"", 
+			    line, sect,*s);
+	popup_message(parent, 
 #ifdef USE_GTK3
-		    "dialog-error", 
+		      "dialog-error", 
 #else
-		    GTK_STOCK_DIALOG_ERROR, 
+		      GTK_STOCK_DIALOG_ERROR, 
 #endif
-		    POPUP_TIMEOUT*2,
-		    "<b>Error</b>: Input File is invalid.",
-		    " ",
-		    msg,
-		    NULL);
+		      POPUP_TIMEOUT*2,
+		      "<b>Error</b>: Input File is invalid.",
+		      " ",
+		      msg,
+		      NULL);
       
-      g_free(msg);
-      return FALSE;
+	g_free(msg);
+	return -1;
+      }
     }
     s++;
   }
-  return TRUE;
+  return ret;
 }
+
 
 gchar* to_utf8(gchar *input){
   gchar *ret;

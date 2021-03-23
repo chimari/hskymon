@@ -1407,8 +1407,8 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 	    cairo_set_source_rgba(cr, 0.8, 0, 0, 1.0);
 	  }
 	}
-	cairo_rectangle (cr, x0+1, y0+1+dy*(gdouble)(i_last),
-			 dy-2, dy-2);
+	cairo_rectangle (cr, x0+1, y0+2+dy/2.*(gdouble)(i_last),
+			 dy-2, dy/2.-2);
 	cairo_fill(cr);
       }
 
@@ -1416,12 +1416,14 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 	
 	cairo_set_font_size (cr, dy-2);
 	cairo_set_source_rgba(cr, 0, 0.5, 0, 0.5);
-	cairo_move_to(cr,x0+2+dy,y0-1+dy);
+	cairo_move_to(cr,x0+2+dy,y0-2+dy/2.);
 	tmp=g_strdup_printf("Old [%dmin]",hg->allsky_last_time);
 	cairo_show_text(cr, tmp);
+	cairo_text_extents (cr, tmp, &extents);
 	if(tmp) g_free(tmp);
 
-	cairo_move_to(cr,x0+2+dy,y0-1+dy*(gdouble)(hg->allsky_last_i));
+	   
+	cairo_move_to(cr,x0+2+dy,y0-2+dy/2.*(gdouble)(hg->allsky_last_i));
 	cairo_show_text(cr, "New");
       }
 
