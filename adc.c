@@ -339,7 +339,7 @@ void create_adc_dialog(typHOE *hg)
   hbox2 = gtkut_hbox_new(FALSE,0);
   gtk_container_add (GTK_CONTAINER (frame), hbox2);
 
-  label=gtk_label_new("Target");
+  label=gtkut_label_new("Target");
   gtk_box_pack_start(GTK_BOX(hbox2),label,FALSE,FALSE,1);
   
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->wave1,
