@@ -1,3 +1,9 @@
+hskymon (4.3.0ubuntu) bionic; urgency=medium
+
+  * Added IRD and TriCCS for FC.
+
+ -- Akito Tajitsu <akito.tajitsu@nao.ac.jp>  Tue, 06 Apr 2021 13:06:37 +0900
+
 hskymon (4.2.0ubuntu) bionic; urgency=medium
 
   * Revised for KOOLS/Seimei telescope.

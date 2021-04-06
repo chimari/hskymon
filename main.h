@@ -54,6 +54,8 @@
 
 #include "gen2.h"
 
+#include "observatory.h"
+
 #include "post.h"
 #include "post_sdss.h"
 #include "post_lamost.h"
@@ -670,11 +672,11 @@ static const gchar* FC_host[]={
 
 #define FC_WINSIZE 400
 enum{ FC_OUTPUT_WINDOW, FC_OUTPUT_PDF, FC_OUTPUT_PRINT} FCOutput;
-enum{ FC_INST_NO_SELECT,
-      FC_INST_NONE,
+enum{ FC_INST_NONE,
       FC_INST_HDS,
       FC_INST_HDSAUTO,
       FC_INST_HDSZENITH,
+      FC_INST_IRD,
       FC_INST_IRCS,
       FC_INST_COMICS,
       FC_INST_FOCAS,
@@ -687,7 +689,30 @@ enum{ FC_INST_NO_SELECT,
       FC_INST_PFS,
       FC_INST_SEP1,
       FC_INST_KOOLS,
+      FC_INST_TRICCS,
       NUM_FC_INST} FCInst;
+
+static const gchar* FC_instname[]={
+  "None",        //FC_INST_NONE,	  
+  "HDS",         //FC_INST_HDS,	  
+  "HDS (w/o ImR)", //FC_INST_HDSAUTO,	  
+  "HDS (zenith)",  //FC_INST_HDSZENITH,  
+  "IRD",         //FC_INST_IRD,	  
+  "IRCS",        //FC_INST_IRCS,	  
+  "COMICS",      //FC_INST_COMICS,	  
+  "FOCAS",       //FC_INST_FOCAS,	  
+  "MOIRCS",      //FC_INST_MOIRCS,	  
+  "SWIMS",       //FC_INST_SWIMS,	  
+  "FMOS",        //FC_INST_FMOS,	  
+  "Suprime-Cam", //FC_INST_SPCAM,	  
+  "HSC (Det-ID)",//FC_INST_HSCDET,	  
+  "HSC (HSCA)",  //FC_INST_HSCA,	  
+  "PFS",         //FC_INST_PFS,	  
+  NULL,          //FC_INST_SEP1,	  
+  "Seimei : KOOLS-IFU",//FC_INST_KOOLS,	  
+  "Seimei : TriCCS"};//FC_INST_TRICCS,	  
+
+
 enum{ FC_SCALE_LINEAR, FC_SCALE_LOG, FC_SCALE_SQRT, FC_SCALE_HISTEQ, FC_SCALE_LOGLOG} FCScale;
 
 enum{ FCDB_SIMBAD_STRASBG, FCDB_SIMBAD_HARVARD } FCDBSimbad;
@@ -733,6 +758,11 @@ enum{ HSC_DITH_NO, HSC_DITH_5, HSC_DITH_N} HSC_Dith;
 #define FOCAS_GAP_ARCSEC 5.
 #define FOCAS_SIZE 10
 
+#define IRD_SIZE 3
+#define IRD_X_ARCSEC 20.
+#define IRD_Y_ARCSEC 10.
+#define IRD_TTGS_ARCMIN 2
+
 #define IRCS_X_ARCSEC 54.
 #define IRCS_Y_ARCSEC 54.
 #define IRCS_SIZE 3
@@ -768,6 +798,10 @@ enum{ HSC_DITH_NO, HSC_DITH_5, HSC_DITH_N} HSC_Dith;
 #define ZWOCAM_RETICLE1_ARCSEC 4.
 #define ZWOCAM_RETICLE2_ARCSEC 20.
 #define ZWOCAM_RETICLE3_ARCSEC 40.
+
+#define TRICCS_SIZE 15
+#define TRICCS_X_ARCMIN 12.6
+#define TRICCS_Y_ARCMIN 7.5
 
 
 // Object Type
@@ -1191,264 +1225,6 @@ enum{ SKYMON_CUR, SKYMON_SET, SKYMON_LAST} SkymonMode;
 #define SOSS_PATH "Procedure"
 #define COMMON_DIR "COMMON"
 
-
-// OBSERVATORY
-enum{
-OBS_SUBARU, 
-OBS_PALOMAR,  
-OBS_LICK,  
-OBS_KPNO, 
-OBS_MMT,  
-OBS_LBT,  
-OBS_APACHE,  
-OBS_HET,  
-OBS_CTIO, 
-OBS_GEMINIS, 
-OBS_LASILLA,  
-OBS_MAGELLAN,  
-OBS_PARANAL,  
-OBS_GTC,  
-OBS_CAO,  
-OBS_SALT,  
-OBS_LAMOST,
-OBS_KANATA,
-OBS_OAO,
-OBS_Seimei,
-OBS_NHAO,
-OBS_KISO,
-OBS_GAO,
-OBS_AAT,
-NUM_OBS
-} ObsPos;
-
-typedef struct _OBSpara OBSpara;
-struct _OBSpara{
-  gchar *name;
-  gdouble lng;
-  gdouble lat;
-  gdouble alt;
-  gint tz;
-  gchar *tzname;
-  gboolean az_n0;
-};
-
-static const OBSpara obs_param[]={
-  // OBS_SUBARU
-  {"MaunaKea: Subaru Telescope, NAOJ",
-   -155.4760278, //[deg] 155 28 33.7
-   19.8255,      //[deg] 19 49 31.8
-   4163,    //[m]
-   -600,
-   "HST",
-   TRUE},
-
-  // OBS_PALOMAR
-  {"USA/CA: Palomar Observatory",
-   -116.864944,
-   33.356278,
-   1706,
-   -480,
-   "PST",
-   FALSE},
-
-  // OBS_LICK
-  {"USA/CA: Lick Observatory",
-   -121.637256,
-   37.343022,
-   1290,
-   -480,
-   "PST",
-   FALSE},
-
-  // OBS_KPNO
-  {"USA/AZ: Kitt Peak National Observatory",
-   -111.599997, //[deg] 111 36.0
-   31.964133,    //[deg] 31 57.8
-   2120,    //[m]
-   -420,
-   "MST",
-   FALSE},
-
-  // OBS_MMT
-  {"USA/AZ: Mt. Hopkins (MMT)",
-   -110.885156,
-   31.688889,
-   2606,    //[m]
-   -420,
-   "MST",
-   FALSE},
-
-  // OBS_LBT
-  {"USA/AZ: Mt. Graham (LBT)",
-   -109.88906,
-   32.70131,
-   3221,    //[m]
-   -420,
-   "MST",
-   FALSE},
-
-  // OBS_APACHE
-  {"USA/NM: Apache Point Observatory (SDSS)",
-   -105.82,
-   32.78,
-   2798,    //[m]
-   -420,
-   "MST",
-   FALSE},
-
-  // OBS_HET
-  {"USA/TX: McDonald Observatory (HET)",
-   -104.01472,
-   30.68144,
-   2026,
-   -360,
-   "CST",
-   FALSE},
-
-  // OBS_CTIO
-  {"Chile: Cerro Tololo Interamerican Observatory",
-   -70.806525,
-   -30.169661,
-   2241,
-   -240,
-   "PRT",
-   FALSE},
-
-  // OBS_GEMINIS
-  {"Chile: Cerro Pachon (Gemini South)",
-   -70.736683,
-   -30.240742,
-   2750,
-   -240,
-   "PRT",
-   FALSE},
-
-  // OBS_LASILLA
-  {"Chile: La Silla (NTT)",
-   -70.7317,
-   -29.261211,
-   2375,
-   -240,
-   "PRT",
-   FALSE},
-
-  // OBS_MAGELLAN
-  {"Chile: Las Campanus (Magellan)",
-   -70.69239,
-   -29.01418,
-   2282,
-   -240,
-   "PRT",
-   FALSE},
-
-  // OBS_PARANAL
-  {"Chile: Cerro Paranal (VLT)",
-   -70.404267,
-   -24.627328,
-   2635,
-   -240,
-   "PRT",
-   FALSE},
-
-  // OBS_GTC
-  {"Canary: La Palma (GTC)",
-   -17.8917,
-   28.7564,
-   2267,
-   0,
-   "GMT",
-   FALSE},
-
-  // OBS_CAO
-  {"Spain: Calar Alto Observatory",
-   -2.54625,
-   37.2236,
-   2168,
-   60,
-   "ECT",
-   FALSE},
-
-  // OBS_SALT
-  {"South Africa: SAAO (SALT)",
-   20.8107,
-   -32.3760,
-   1798,
-   120,
-   "EET",
-   FALSE},
-
-  // OBS_LAMOST
-  {"China: Xinglong (LAMOST)",
-   117.489433,
-   40.389094,
-   656,
-   480,
-   "CST",
-   FALSE},
-
-  // OBS_KANATA
-  {"Japan: Higashi-Hiroshima (Kanata)",
-   132.7767,
-   34.3775,
-   511,
-   540,
-   "JST",
-   FALSE},
-
-  // OBS_OAO
-  {"Japan: Okayama Astrophysical Observatory",
-   133.5940,
-   34.5771,
-   390,
-   540,
-   "JST",
-   FALSE},
-
-  // OBS_Seimei
-  {"Japan: Kyoto-univ. Seimei Telescope",
-   133.596685,
-   34.576850,
-   370,
-   540,
-   "JST",
-   FALSE},
-
-  // OBS_NHAO
-  {"Japan: Nishi-Harima (Nayuta)",
-   134.33556,
-   35.025272,
-   418,
-   540,
-   "JST",
-   FALSE},
-
-  // OBS_KISO
-  {"Japan: Kiso Observatory (Univ. of Tokyo)",
-   137.625352,
-   35.797290,
-   1130,
-   540,
-   "JST",
-   FALSE},
-
-  // OBS_GAO
-  {"Japan: Gunma Astronomical Observatory",
-   138.972917,
-   36.596806,
-   885,
-   540,
-   "JST",
-   FALSE},
-
-  // OBS_AAT_NAME
-  {"Australia: Anglo-Australian Observatory",
-   149.067222,
-   -31.275558,
-   1164,
-   600,
-   "AEST",
-   FALSE}
-};
 
 
 // All-Sky Camera
@@ -2153,6 +1929,8 @@ struct _typHOE{
   GtkAdjustment *obs_adj_lodd,*obs_adj_lomm,*obs_adj_loss;
   GtkAdjustment *obs_adj_ladd,*obs_adj_lamm,*obs_adj_lass;
   GtkAdjustment *obs_adj_alt, *obs_adj_tz;
+  GtkAdjustment *obs_adj_vel_az, *obs_adj_vel_el;
+  GtkAdjustment *obs_adj_wave1,*obs_adj_wave0,*obs_adj_temp,*obs_adj_pres;
   gdouble vel_az;
   gdouble vel_el;
   gdouble pa_a0;

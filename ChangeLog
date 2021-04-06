@@ -1,3 +1,6 @@
+2021.04.06 ver4.3.0 - Added IRD and Seimei TriCCS for FC.
+                    - Move AD, Tel Speed parameters to Obs position.
+
 2021.03.23 ver4.2.0 - Revised Atmospherc Dispersion mappng, added KOOLS.
                     - Revised FC for KOOLS IFU.
 	            - Read/Write for Seimei target list (.dat) file.

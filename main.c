@@ -1403,6 +1403,14 @@ void SetObsPreset(typHOE *hg){
   gtk_adjustment_set_value(hg->obs_adj_lamm, obs_latitude_dms.minutes);
   gtk_adjustment_set_value(hg->obs_adj_lass, obs_latitude_dms.seconds);
 
+  gtk_adjustment_set_value(hg->obs_adj_vel_az, obs_param[i_obs].vel_az);
+  gtk_adjustment_set_value(hg->obs_adj_vel_el, obs_param[i_obs].vel_el);
+  
+  gtk_adjustment_set_value(hg->obs_adj_wave1, obs_param[i_obs].wave1);
+  gtk_adjustment_set_value(hg->obs_adj_wave0, obs_param[i_obs].wave0);
+  gtk_adjustment_set_value(hg->obs_adj_temp, obs_param[i_obs].temp);
+  gtk_adjustment_set_value(hg->obs_adj_pres, obs_param[i_obs].pres);
+  
   if(obs_param[i_obs].az_n0){
     gtk_combo_box_set_active(GTK_COMBO_BOX(hg->obs_combo_az_n0),0);
   }
@@ -8293,15 +8301,15 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtkut_table_attach(table1, label, 0, 1, 0, 1,
 		     GTK_FILL,GTK_SHRINK,0,0);
   
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->vel_az,
-					    0.01, 10.0, 
-					    0.01,0.1,0);
-  spinner =  gtk_spin_button_new (adj, 2, 2);
+  hg->obs_adj_vel_az = (GtkAdjustment *)gtk_adjustment_new(hg->vel_az,
+							   0.01, 10.0, 
+							   0.01,0.1,0);
+  spinner =  gtk_spin_button_new (hg->obs_adj_vel_az, 2, 2);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtkut_table_attach(table1, spinner, 1, 2, 0, 1,
 		     GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),8);
-  my_signal_connect (adj, "value_changed",
+  my_signal_connect (hg->obs_adj_vel_az, "value_changed",
 		     cc_get_adj_double,
 		     &tmp_vel_az);
 
@@ -8316,15 +8324,15 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtkut_table_attach(table1, label, 2, 3, 0, 1,
 		     GTK_FILL,GTK_SHRINK,0,0);
   
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->vel_el,
-					    0.01, 10.0, 
-					    0.01,0.1,0);
-  spinner =  gtk_spin_button_new (adj, 2, 2);
+  hg->obs_adj_vel_el = (GtkAdjustment *)gtk_adjustment_new(hg->vel_el,
+							   0.01, 10.0, 
+							   0.01,0.1,0);
+  spinner =  gtk_spin_button_new (hg->obs_adj_vel_el, 2, 2);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
   gtkut_table_attach(table1, spinner, 3, 4, 0, 1,
 		     GTK_SHRINK,GTK_SHRINK,0,0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),8);
-  my_signal_connect (adj, "value_changed",
+  my_signal_connect (hg->obs_adj_vel_el, "value_changed",
 		     cc_get_adj_double,
 		     &tmp_vel_el);
 
@@ -8385,6 +8393,110 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_pa_a1);
 
 
+  // Environment for AD Calc.
+  frame = gtkut_frame_new ("<b>Parameters for Calculation of Atmospheric Dispersion</b>");
+  gtk_box_pack_start(GTK_BOX(note_vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+  
+  table1 = gtkut_table_new(4, 2, FALSE, 5, 5, 5);
+  gtk_container_add (GTK_CONTAINER (frame), table1);
+  
+  
+  // OBS Wavelength
+  label = gtkut_label_new ("Observing &#x3BB; [&#xC5;]");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtkut_table_attach(table1, label, 0, 1, 0, 1,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  
+  hg->obs_adj_wave1 = (GtkAdjustment *)gtk_adjustment_new(hg->wave1,
+							  2800, 30000, 
+							  100.0,100.0,0);
+  spinner =  gtk_spin_button_new (hg->obs_adj_wave1, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtkut_table_attach(table1, spinner, 1, 2, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
+  my_signal_connect (hg->obs_adj_wave1, "value_changed",
+		     cc_get_adj,
+		     &tmp_wave1);
+
+
+  // Wavelength0
+  label = gtkut_label_new ("     Guiding &#x3BB; [&#xC5;]");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtkut_table_attach(table1, label, 2, 3, 0, 1,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  
+  hg->obs_adj_wave0 = (GtkAdjustment *)gtk_adjustment_new(hg->wave0,
+							  2800, 30000, 
+							  100.0,100.0,0);
+  spinner =  gtk_spin_button_new (hg->obs_adj_wave0, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtkut_table_attach(table1, spinner, 3, 4, 0, 1,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
+  my_signal_connect (hg->obs_adj_wave0, "value_changed",
+		     cc_get_adj,
+		     &tmp_wave0);
+  
+  
+  // Temperature
+  label = gtkut_label_new ("Temperature [&#xB0;C]");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtkut_table_attach(table1, label, 0, 1, 1, 2,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  
+  hg->obs_adj_temp = (GtkAdjustment *)gtk_adjustment_new(hg->temp,
+							 -40, 40, 
+							 1.0,1.0,0);
+  spinner =  gtk_spin_button_new (hg->obs_adj_temp, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtkut_table_attach(table1, spinner, 1, 2, 1, 2,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
+  my_signal_connect (hg->obs_adj_temp, "value_changed",
+		     cc_get_adj,
+		     &tmp_temp);
+
+
+  // Pressure
+  label = gtk_label_new ("     Pressure [hPa]");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtkut_table_attach(table1, label, 2, 3, 1, 2,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  
+  hg->obs_adj_pres = (GtkAdjustment *)gtk_adjustment_new(hg->pres,
+							 400, 1200, 
+							 1.0,1.0,0);
+  spinner =  gtk_spin_button_new (hg->obs_adj_pres, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtkut_table_attach(table1, spinner, 3, 4, 1, 2,
+		     GTK_SHRINK,GTK_SHRINK,0,0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
+  my_signal_connect (hg->obs_adj_pres, "value_changed",
+		     cc_get_adj,
+		     &tmp_pres);
 
 
   label = gtk_label_new ("Observatory");
@@ -8811,120 +8923,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtkut_table_attach_defaults(table1, label, 2, 3, 1, 2);
 
 
-
-
   label = gtk_label_new ("AllSkyCamera");
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
-  note_vbox = gtkut_vbox_new(FALSE,2);
-
-  // Environment for AD Calc.
-  frame = gtkut_frame_new ("<b>Parameters for Calculation of Atmospheric Dispersion</b>");
-  gtk_box_pack_start(GTK_BOX(note_vbox),
-		     frame,FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-  
-  table1 = gtkut_table_new(4, 2, FALSE, 5, 5, 5);
-  gtk_container_add (GTK_CONTAINER (frame), table1);
-  
-  
-  // OBS Wavelength
-  label = gtkut_label_new ("Observing &#x3BB; [&#xC5;]");
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-#endif
-  gtkut_table_attach(table1, label, 0, 1, 0, 1,
-		     GTK_FILL,GTK_SHRINK,0,0);
-  
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->wave1,
-					    2800, 30000, 
-					    100.0,100.0,0);
-  spinner =  gtk_spin_button_new (adj, 0, 0);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtkut_table_attach(table1, spinner, 1, 2, 0, 1,
-		     GTK_SHRINK,GTK_SHRINK,0,0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
-  my_signal_connect (adj, "value_changed",
-		     cc_get_adj,
-		     &tmp_wave1);
-
-
-  // Wavelength0
-  label = gtkut_label_new ("     Guiding &#x3BB; [&#xC5;]");
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-#endif
-  gtkut_table_attach(table1, label, 2, 3, 0, 1,
-		     GTK_FILL,GTK_SHRINK,0,0);
-  
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->wave0,
-					    2800, 30000, 
-					    100.0,100.0,0);
-  spinner =  gtk_spin_button_new (adj, 0, 0);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtkut_table_attach(table1, spinner, 3, 4, 0, 1,
-		     GTK_SHRINK,GTK_SHRINK,0,0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
-  my_signal_connect (adj, "value_changed",
-		     cc_get_adj,
-		     &tmp_wave0);
-  
-  
-  // Temperature
-  label = gtkut_label_new ("Temperature [&#xB0;C]");
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-#endif
-  gtkut_table_attach(table1, label, 0, 1, 1, 2,
-		     GTK_FILL,GTK_SHRINK,0,0);
-  
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->temp,
-					    -40, 40, 
-					    1.0,1.0,0);
-  spinner =  gtk_spin_button_new (adj, 0, 0);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtkut_table_attach(table1, spinner, 1, 2, 1, 2,
-		     GTK_SHRINK,GTK_SHRINK,0,0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
-  my_signal_connect (adj, "value_changed",
-		     cc_get_adj,
-		     &tmp_temp);
-
-
-  // Pressure
-  label = gtk_label_new ("     Pressure [hPa]");
-#ifdef USE_GTK3
-  gtk_widget_set_halign (label, GTK_ALIGN_END);
-  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-#else
-  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-#endif
-  gtkut_table_attach(table1, label, 2, 3, 1, 2,
-		     GTK_FILL,GTK_SHRINK,0,0);
-  
-  adj = (GtkAdjustment *)gtk_adjustment_new(hg->pres,
-					    400, 1200, 
-					    1.0,1.0,0);
-  spinner =  gtk_spin_button_new (adj, 0, 0);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
-  gtkut_table_attach(table1, spinner, 3, 4, 1, 2,
-		     GTK_SHRINK,GTK_SHRINK,0,0);
-  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
-  my_signal_connect (adj, "value_changed",
-		     cc_get_adj,
-		     &tmp_pres);
-
-  label = gtk_label_new ("AD");
-  gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
   note_vbox = gtkut_vbox_new(FALSE,2);
 

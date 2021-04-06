@@ -75,6 +75,7 @@ void draw_fcdb2();
 
 void draw_hds();
 void draw_ircs();
+void draw_ird();
 void draw_comics();
 void draw_focas();
 void draw_moircs();
@@ -85,6 +86,7 @@ void draw_hsc_ol();
 void draw_fmos();
 void draw_pfs();
 void draw_kools();
+void draw_triccs();
 
 void draw_fc_label();
 
@@ -114,6 +116,10 @@ void fc_item2 (typHOE *hg)
       if(strcmp(hg->stat_obcp,"HDS")==0){
 	hg->fc_inst=FC_INST_HDSAUTO;
 	hg->dss_arcmin=HDS_SIZE;
+      }
+      else if(strcmp(hg->stat_obcp,"IRD")==0){
+	hg->fc_inst=FC_INST_IRD;
+	hg->dss_arcmin=IRD_SIZE;
       }
       else if(strcmp(hg->stat_obcp,"IRCS")==0){
 	hg->fc_inst=FC_INST_IRCS;
@@ -944,91 +950,25 @@ void create_fc_dialog(typHOE *hg)
     GtkListStore *store;
     GtkTreeIter iter, iter_set;	  
     GtkCellRenderer *renderer;
+    gint i_inst;
     
     store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, 
 			       G_TYPE_BOOLEAN);
     
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "None",
-		       1, FC_INST_NONE, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_NONE) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "HDS",
-		       1, FC_INST_HDS, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_HDS) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "HDS (w/oImR)",
-		       1, FC_INST_HDSAUTO, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_HDSAUTO) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "HDS (Zenith)",
-		       1, FC_INST_HDSZENITH, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_HDSZENITH) iter_set=iter;
-	
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "IRCS",
-		       1, FC_INST_IRCS, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_IRCS) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "COMICS",
-		       1, FC_INST_COMICS, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_COMICS) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "FOCAS",
-		       1, FC_INST_FOCAS, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_FOCAS) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "MOIRCS",
-		       1, FC_INST_MOIRCS, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_MOIRCS) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SWIMS",
-		       1, FC_INST_SWIMS, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_SWIMS) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "FMOS",
-		       1, FC_INST_FMOS, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_FMOS) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "SupCam",
-		       1, FC_INST_SPCAM, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_SPCAM) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "HSC (Det-ID)",
-		       1, FC_INST_HSCDET, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_HSCDET) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "HSC (HSCA)",
-		       1, FC_INST_HSCA, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_HSCA) iter_set=iter;
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "PFS",
-		       1, FC_INST_PFS, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_PFS) iter_set=iter;
-
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
-			0, NULL,
-			1, FC_INST_SEP1,2, FALSE, 
-			-1);
-    
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "KOOLS-IFU",
-		       1, FC_INST_KOOLS, 2, TRUE, -1);
-    if(hg->fc_inst==FC_INST_KOOLS) iter_set=iter;
-    
+    for(i_inst=0;i_inst<NUM_FC_INST;i_inst++){
+      if(FC_instname[i_inst]){
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, FC_instname[i_inst],
+			   1, i_inst, 2, TRUE, -1);
+	if(hg->fc_inst==i_inst) iter_set=iter;
+      }
+      else{
+	gtk_list_store_append (store, &iter);
+	gtk_list_store_set (store, &iter,
+			    0, NULL,
+			    1, i_inst, 2, FALSE, -1);
+      }
+    }   
     
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 #ifdef USE_GTK3      
@@ -1603,18 +1543,6 @@ void translate_to_center(typHOE *hg,
 		   (gdouble)height_file*r/2);
 
   switch(hg->fc_inst){
-  case FC_INST_NONE:
-  case FC_INST_HDS:
-  case FC_INST_COMICS:
-  case FC_INST_FOCAS:
-  case FC_INST_MOIRCS:
-  case FC_INST_SWIMS:
-  case FC_INST_FMOS:
-  case FC_INST_PFS:
-  case FC_INST_KOOLS:
-    angle=M_PI*(gdouble)hg->dss_pa/180.;
-    break;
-
   case FC_INST_HDSAUTO:
     if(hg->skymon_mode==SKYMON_SET){
       gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
@@ -1650,6 +1578,10 @@ void translate_to_center(typHOE *hg,
   case FC_INST_HSCDET:
   case FC_INST_HSCA:
     angle=M_PI*(gdouble)(270-hg->dss_pa)/180.;
+    break;
+
+  default:
+    angle=M_PI*(gdouble)hg->dss_pa/180.;
     break;
   }
 
@@ -1928,6 +1860,10 @@ gboolean draw_fc_cairo(GtkWidget *widget,
       draw_hds(hg, cr, width, height, width_file, height_file, scale, r);
       break;
 
+    case FC_INST_IRD:
+      draw_ird(hg, cr, width, height, width_file, height_file, scale, r);
+      break;
+
     case FC_INST_IRCS:
       draw_ircs(hg, cr, width, height, width_file, height_file, scale, r);
       break;
@@ -1972,6 +1908,10 @@ gboolean draw_fc_cairo(GtkWidget *widget,
 
     case FC_INST_KOOLS:
       draw_kools(hg, cr, width, height, width_file, height_file, scale, r);
+      break;
+      
+    case FC_INST_TRICCS:
+      draw_triccs(hg, cr, width, height, width_file, height_file, scale, r);
       break;
     }
     
@@ -2104,20 +2044,6 @@ void rot_pa(typHOE *hg, cairo_t *cr){
   gdouble angle;
   
   switch(hg->fc_inst){
-  case FC_INST_NONE:
-  case FC_INST_HDS:
-  case FC_INST_HDSAUTO:
-  case FC_INST_HDSZENITH:
-  case FC_INST_COMICS:
-  case FC_INST_FOCAS:
-  case FC_INST_MOIRCS:
-  case FC_INST_SWIMS:
-  case FC_INST_FMOS:
-  case FC_INST_PFS:
-  case FC_INST_KOOLS:
-    angle=M_PI*(gdouble)hg->dss_pa/180.;
-    break;
-    
   case FC_INST_IRCS:
     angle=M_PI*(gdouble)(-90+hg->dss_pa)/180.;
     break;
@@ -2130,6 +2056,10 @@ void rot_pa(typHOE *hg, cairo_t *cr){
   case FC_INST_HSCA:
     angle=M_PI*(gdouble)(270-hg->dss_pa)/180.;
     break;
+
+  default:
+    angle=M_PI*(gdouble)hg->dss_pa/180.;
+    break;   
   }
 
   cairo_rotate (cr, (hg->dss_flip) ? -angle : angle);
@@ -2377,6 +2307,11 @@ static void cc_get_fc_inst (GtkWidget *widget,  gpointer * gdata)
 			     (gdouble)(HDS_SIZE));
     break;
 
+  case FC_INST_IRD:
+    gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			     (gdouble)(IRD_SIZE));
+    break;
+
   case FC_INST_IRCS:
     gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
 			     (gdouble)(IRCS_SIZE));
@@ -2464,6 +2399,11 @@ static void cc_get_fc_inst (GtkWidget *widget,  gpointer * gdata)
   case FC_INST_KOOLS:
     gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
 			     (gdouble)(KOOLS_SIZE));
+    break;
+
+  case FC_INST_TRICCS:
+    gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			     (gdouble)(TRICCS_SIZE));
     break;
 
   default:
@@ -6214,19 +6154,6 @@ void draw_fcdb1(typHOE *hg,
     pty0=((gdouble)hg->fc_pty1-cy);
     
     switch(hg->fc_inst){
-    case FC_INST_NONE:
-    case FC_INST_HDS:
-    case FC_INST_HDSAUTO:
-    case FC_INST_HDSZENITH:
-    case FC_INST_COMICS:
-    case FC_INST_FOCAS:
-    case FC_INST_MOIRCS:
-    case FC_INST_SWIMS:
-    case FC_INST_FMOS:
-    case FC_INST_KOOLS:
-      theta=-M_PI*(gdouble)hg->dss_pa/180.;
-      break;
-      
     case FC_INST_IRCS:
       theta=-M_PI*(gdouble)(-90+hg->dss_pa)/180.;
       break;
@@ -6238,6 +6165,10 @@ void draw_fcdb1(typHOE *hg,
     case FC_INST_HSCDET:
     case FC_INST_HSCA:
       theta=-M_PI*(gdouble)(270-hg->dss_pa)/180.;
+      break;
+
+    default:
+      theta=-M_PI*(gdouble)hg->dss_pa/180.;
       break;
     }
     
@@ -6543,6 +6474,63 @@ void draw_ircs(typHOE *hg,
 }
 
 
+void draw_ird(typHOE *hg,
+	      cairo_t *cr,
+	      gint width, gint height,
+	      gint width_file, gint height_file,
+	      gdouble scale,
+	      gdouble r)
+{ // Drawing Inst (IRD)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+  
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  
+  if(hg->dss_draw_slit){
+    cairo_set_line_width (cr, 1.5*scale);
+    cairo_arc(cr,0,0,
+	      ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*IRD_TTGS_ARCMIN,
+	      0,M_PI*2);
+    cairo_stroke(cr);
+    
+    cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+    
+    tmp=g_strdup_printf("Tip-Tilt Guide Star w/LGS (%darcmin)",IRD_TTGS_ARCMIN/2);
+    cairo_text_extents (cr,tmp, &extents);
+    cairo_move_to(cr,
+		  -extents.width/2,
+		  -IRD_TTGS_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
+    cairo_show_text(cr, tmp);
+    if(tmp) g_free(tmp);
+  }
+  
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_rectangle(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*IRD_X_ARCSEC/60.)/2.,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRD_Y_ARCSEC/60.)/2.,
+		  (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*IRD_X_ARCSEC/60.,
+		  (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRD_Y_ARCSEC/60.);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  tmp=g_strdup_printf("IRD FOV for FIM (%dx%darcsec)",(gint)IRD_X_ARCSEC, (gint)IRD_Y_ARCSEC);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,-extents.width/2,
+		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRD_Y_ARCSEC/60.)/2.-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+}
+
+
 void draw_comics(typHOE *hg,
 		 cairo_t *cr,
 		 gint width, gint height,
@@ -6685,6 +6673,43 @@ void draw_kools(typHOE *hg,
 }
 
 
+void draw_triccs(typHOE *hg,
+		 cairo_t *cr,
+		 gint width, gint height,
+		 gint width_file, gint height_file,
+		 gdouble scale,
+		 gdouble r)
+{ // Drawing Inst (TriCCS)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_rectangle(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*TRICCS_X_ARCMIN)/2.,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*TRICCS_Y_ARCMIN)/2.,
+		  (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*TRICCS_X_ARCMIN,
+		  (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*TRICCS_Y_ARCMIN);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  tmp=g_strdup_printf("TriCCS FOV (%.1lfx%.1lfarcmin)",TRICCS_X_ARCMIN, TRICCS_Y_ARCMIN);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,-extents.width/2,
+		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*TRICCS_Y_ARCMIN)/2.-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+  
+}
 
 void draw_focas(typHOE *hg,
 		cairo_t *cr,

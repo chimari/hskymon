@@ -442,7 +442,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = . libnova std_data debian sample icons
 hskymon_SOURCES = \
-	 main.c gtkut.c calcpa.c fc.c fc_output.c progress.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h gtkut.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c json_parse.c io_gui.c lgs.c resources.c votable.h remoteObjects.h configfile.h esostd.h ssl.h gen2.h post.h post_sdss.h post_lamost.h post_kepler.h post_smoka.h post_hst.h post_eso.h get_gemini.h io_gui.h lgs.h resources.h
+	 main.c gtkut.c calcpa.c fc.c fc_output.c progress.c adc.c lunar.c solar.c earth.c mercury.c venus.c mars.c jupiter.c saturn.c uranus.c neptune.c pluto.c rise_set.c sidereal_time.c vsop87.c julian_day.c utility.c transform.c precession.c nutation.c dynamical_time.c http-client.c main.h gtkut.h configfile.c skymon.c treeview.c telstat.c remoteObjects.c hsc.h votable.c json_parse.c io_gui.c lgs.c resources.c votable.h remoteObjects.h configfile.h esostd.h ssl.h gen2.h post.h post_sdss.h post_lamost.h post_kepler.h post_smoka.h post_hst.h post_eso.h get_gemini.h io_gui.h lgs.h resources.h observatory.h
 
 CLEANFILES = *~ libnova/*~ std_data/*~ debian/*~ sample/*~ icons/*~ \
 	$(BUILT_SOURCES)
