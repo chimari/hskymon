@@ -690,6 +690,7 @@ enum{ FC_INST_NONE,
       FC_INST_SEP1,
       FC_INST_KOOLS,
       FC_INST_TRICCS,
+      FC_INST_NO_SELECT,
       NUM_FC_INST} FCInst;
 
 static const gchar* FC_instname[]={

@@ -1,3 +1,5 @@
+2021.04.07 ver4.3.1 - Fixed a bug in XMLRPC mode.
+
 2021.04.06 ver4.3.0 - Added IRD and Seimei TriCCS for FC.
                     - Move AD, Tel Speed parameters to Obs position.
 
