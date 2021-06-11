@@ -554,9 +554,6 @@ int allsky_read_data(typHOE *hg){
 	    tmp_pixbuf= gdk_pixbuf_copy(pixbuf_flip);
 	    g_object_unref(G_OBJECT(pixbuf_flip));
 	  }
-	  else{
-	    printf("NO Flipping\n ");
-	  }
 	  
 	  if(hg->allsky_last_date[0])
 	    g_free(hg->allsky_last_date[0]);
@@ -594,6 +591,7 @@ int allsky_read_data(typHOE *hg){
 	}
 	else{
 	  printf_log(hg,"[AllSky] Broken image.");
+	  g_object_unref(G_OBJECT(tmp_pixbuf));
 	  ret=-3;
 	}
       }
@@ -715,6 +713,7 @@ int allsky_read_data(typHOE *hg){
 	}
 	else{
 	  printf_log(hg,"[AllSky] Broken image");
+	  g_object_unref(G_OBJECT(tmp_pixbuf));
 	  ret=-3;
 	}
 	
