@@ -711,7 +711,8 @@ static const gchar* FC_instname[]={
   "PFS",         //FC_INST_PFS,	  
   NULL,          //FC_INST_SEP1,	  
   "Seimei : KOOLS-IFU",//FC_INST_KOOLS,	  
-  "Seimei : TriCCS"};//FC_INST_TRICCS,	  
+  "Seimei : TriCCS",//FC_INST_TRICCS,
+  NULL};
 
 
 enum{ FC_SCALE_LINEAR, FC_SCALE_LOG, FC_SCALE_SQRT, FC_SCALE_HISTEQ, FC_SCALE_LOGLOG} FCScale;
@@ -1233,6 +1234,8 @@ enum{
 ALLSKY_UH, 
 ALLSKY_ASIVAV, 
 ALLSKY_ASIVAR, 
+ALLSKY_SUBARU, 
+ALLSKY_SUBARU_RAW, 
 ALLSKY_MKVIS,
 ALLSKY_PALOMAR,
 ALLSKY_LICK,
@@ -1317,6 +1320,36 @@ static const AllSkypara allsky_param[]={
    FALSE,
    FALSE,
    TRUE},
+  
+  // ALLSKY_SUBARU
+  {"Subaru Telescope (Visible)",
+   "Subaru",
+   "allsky.sum.subaru.nao.ac.jp",
+   "/ftp/images/ImageLastFTP_AllSKY.jpg",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   158.0,
+   540,
+   400,
+   270,
+   TRUE,
+   TRUE,
+   FALSE},
+  
+  // ALLSKY_SUBARU_RAW
+  {"Subaru Telescope : Raw (Visible)",
+   "Subaru Raw",
+   "allsky.sum.subaru.nao.ac.jp",
+   "/ftp/images/ImageLastFTP_AllSKY.jpg",
+   "allsky.jpg",
+   "allsky-%ld.jpg",
+   158.0,
+   3700,
+   2760,
+   1850,
+   FALSE,
+   TRUE,
+   FALSE},
   
   //ALLSKY_MKVIS
   {"MaunaKea: Hale Pohaku (Visible)",

@@ -45,6 +45,7 @@ int post_body_ssl();
 
 void thread_cancel_allsky();
 
+gboolean check_pixbuf();
 void unchunk();
 
 gint ssl_read();
@@ -541,49 +542,59 @@ int allsky_read_data(typHOE *hg){
 	tmp_pixbuf
 	  = gdk_pixbuf_new_from_file(hg->allsky_file, NULL);
       }
-      
+
       if(GDK_IS_PIXBUF(tmp_pixbuf)){
-	if(hg->allsky_flip){
-	  GdkPixbuf *pixbuf_flip=NULL;
+	// Check Broken Img
+	if(check_pixbuf(tmp_pixbuf)){
+	  if(hg->allsky_flip){
+	    GdkPixbuf *pixbuf_flip=NULL;
+	    
+	    pixbuf_flip=gdk_pixbuf_flip(tmp_pixbuf,TRUE);
+	    g_object_unref(G_OBJECT(tmp_pixbuf));
+	    tmp_pixbuf= gdk_pixbuf_copy(pixbuf_flip);
+	    g_object_unref(G_OBJECT(pixbuf_flip));
+	  }
+	  else{
+	    printf("NO Flipping\n ");
+	  }
 	  
-	  pixbuf_flip=gdk_pixbuf_flip(tmp_pixbuf,TRUE);
+	  if(hg->allsky_last_date[0])
+	    g_free(hg->allsky_last_date[0]);
+	  hg->allsky_last_date[0]=g_strdup(hg->allsky_date);
+	  hg->allsky_last_t[0] = t + hg->obs_timezone*60;
+	  
+	  if(hg->allsky_last_pixbuf[0])  
+	    g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[0]));
+	  hg->allsky_last_pixbuf[0]
+	    = gdk_pixbuf_copy(tmp_pixbuf);
 	  g_object_unref(G_OBJECT(tmp_pixbuf));
-	  tmp_pixbuf= gdk_pixbuf_copy(pixbuf_flip);
-	  g_object_unref(G_OBJECT(pixbuf_flip));
-	}
-	
-	if(hg->allsky_last_date[0])
-	  g_free(hg->allsky_last_date[0]);
-	hg->allsky_last_date[0]=g_strdup(hg->allsky_date);
-	hg->allsky_last_t[0] = t + hg->obs_timezone*60;
-	
-	if(hg->allsky_last_pixbuf[0])  
-	  g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[0]));
-	hg->allsky_last_pixbuf[0]
-	  = gdk_pixbuf_copy(tmp_pixbuf);
-	g_object_unref(G_OBJECT(tmp_pixbuf));
-	
-	if(hg->allsky_diff_pixbuf[0])
-	  g_free(hg->allsky_diff_pixbuf[0]);
-	hg->allsky_diff_pixbuf[0]
-	  = diff_pixbuf(hg->allsky_last_pixbuf[0],hg->allsky_last_pixbuf[0],
-			hg->allsky_diff_mag,hg->allsky_diff_base,
-			hg->allsky_diff_dpix,
-			hg->allsky_centerx,hg->allsky_centery,
-			hg->allsky_diameter, hg->allsky_cloud_thresh,
-			&hg->allsky_cloud_abs[0],
-			&hg->allsky_cloud_se[0],
-			&hg->allsky_cloud_area[0],
-			hg->allsky_cloud_emp,
-			hg->allsky_diff_zero,
-			0);
-	
-	if(hg->allsky_diff_pixbuf[0]){
-	  hg->allsky_last_i++;
+	  
+	  if(hg->allsky_diff_pixbuf[0])
+	    g_free(hg->allsky_diff_pixbuf[0]);
+	  hg->allsky_diff_pixbuf[0]
+	    = diff_pixbuf(hg->allsky_last_pixbuf[0],hg->allsky_last_pixbuf[0],
+			  hg->allsky_diff_mag,hg->allsky_diff_base,
+			  hg->allsky_diff_dpix,
+			  hg->allsky_centerx,hg->allsky_centery,
+			  hg->allsky_diameter, hg->allsky_cloud_thresh,
+			  &hg->allsky_cloud_abs[0],
+			  &hg->allsky_cloud_se[0],
+			  &hg->allsky_cloud_area[0],
+			  hg->allsky_cloud_emp,
+			  hg->allsky_diff_zero,
+			  0);
+	  
+	  if(hg->allsky_diff_pixbuf[0]){
+	    hg->allsky_last_i++;
+	  }
+	  else{
+	    printf_log(hg,"[AllSky] Skipping to create diff image");
+	    ret=-1;
+	  }
 	}
 	else{
-	  printf_log(hg,"[AllSky] error in pixbuf, skipping to create diff image");
-	  ret=-1;
+	  printf_log(hg,"[AllSky] Broken image.");
+	  ret=-3;
 	}
       }
       else{
@@ -608,87 +619,103 @@ int allsky_read_data(typHOE *hg){
       }
       
       if(GDK_IS_PIXBUF(tmp_pixbuf)){
-	if(hg->allsky_last_date[hg->allsky_last_i])
+	// Check Broken Img
+	if(check_pixbuf(tmp_pixbuf)){
+	  if(hg->allsky_flip){
+	    GdkPixbuf *pixbuf_flip=NULL;
+	    
+	    pixbuf_flip=gdk_pixbuf_flip(tmp_pixbuf,TRUE);
+	    g_object_unref(G_OBJECT(tmp_pixbuf));
+	    tmp_pixbuf= gdk_pixbuf_copy(pixbuf_flip);
+	    g_object_unref(G_OBJECT(pixbuf_flip));
+	  }
+
+	  if(hg->allsky_last_date[hg->allsky_last_i])
 	  g_free(hg->allsky_last_date[hg->allsky_last_i]);
-	hg->allsky_last_date[hg->allsky_last_i]=g_strdup(hg->allsky_date);
-	hg->allsky_last_t[hg->allsky_last_i] = t + hg->obs_timezone*60;
+	  hg->allsky_last_date[hg->allsky_last_i]=g_strdup(hg->allsky_date);
+	  hg->allsky_last_t[hg->allsky_last_i] = t + hg->obs_timezone*60;
 	  
-	if(hg->allsky_last_pixbuf[hg->allsky_last_i])  
-	  g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[hg->allsky_last_i]));
-	hg->allsky_last_pixbuf[hg->allsky_last_i]
-	  = gdk_pixbuf_copy(tmp_pixbuf);
-	g_object_unref(G_OBJECT(tmp_pixbuf));
-	
-	// Differential Image
-	if(hg->allsky_diff_pixbuf[hg->allsky_last_i])
-	  g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[hg->allsky_last_i]));
-	hg->allsky_diff_pixbuf[hg->allsky_last_i]
-	  = diff_pixbuf(hg->allsky_last_pixbuf[hg->allsky_last_i-1],
-			hg->allsky_last_pixbuf[hg->allsky_last_i],
-			hg->allsky_diff_mag,hg->allsky_diff_base,
-			hg->allsky_diff_dpix,
-			hg->allsky_centerx,hg->allsky_centery,
-			hg->allsky_diameter, hg->allsky_cloud_thresh,
-			&hg->allsky_cloud_abs[hg->allsky_last_i],
-			&hg->allsky_cloud_se[hg->allsky_last_i],
-			&hg->allsky_cloud_area[hg->allsky_last_i],
-			hg->allsky_cloud_emp,
-			hg->allsky_diff_zero,
-			hg->allsky_last_i);
-	
-	
-	if(hg->allsky_diff_pixbuf[hg->allsky_last_i]){
-	  if(hg->allsky_last_i==ALLSKY_LAST_MAX){
-	    gint i;
-	    
-	    for(i=0;i<ALLSKY_LAST_MAX;i++){
-	      if(hg->allsky_last_date[i]) g_free(hg->allsky_last_date[i]);
-	      hg->allsky_last_date[i]=g_strdup(hg->allsky_last_date[i+1]);
-	      hg->allsky_last_t[i] = hg->allsky_last_t[i+1];
+	  if(hg->allsky_last_pixbuf[hg->allsky_last_i])  
+	    g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[hg->allsky_last_i]));
+	  hg->allsky_last_pixbuf[hg->allsky_last_i]
+	    = gdk_pixbuf_copy(tmp_pixbuf);
+	  g_object_unref(G_OBJECT(tmp_pixbuf));
+	  
+	  // Differential Image
+	  if(hg->allsky_diff_pixbuf[hg->allsky_last_i])
+	    g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[hg->allsky_last_i]));
+	  hg->allsky_diff_pixbuf[hg->allsky_last_i]
+	    = diff_pixbuf(hg->allsky_last_pixbuf[hg->allsky_last_i-1],
+			  hg->allsky_last_pixbuf[hg->allsky_last_i],
+			  hg->allsky_diff_mag,hg->allsky_diff_base,
+			  hg->allsky_diff_dpix,
+			  hg->allsky_centerx,hg->allsky_centery,
+			  hg->allsky_diameter, hg->allsky_cloud_thresh,
+			  &hg->allsky_cloud_abs[hg->allsky_last_i],
+			  &hg->allsky_cloud_se[hg->allsky_last_i],
+			  &hg->allsky_cloud_area[hg->allsky_last_i],
+			  hg->allsky_cloud_emp,
+			  hg->allsky_diff_zero,
+			  hg->allsky_last_i);
+	  
+	  
+	  if(hg->allsky_diff_pixbuf[hg->allsky_last_i]){
+	    if(hg->allsky_last_i==ALLSKY_LAST_MAX){
+	      gint i;
 	      
-	      if(hg->allsky_last_pixbuf[i])  
-		g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[i]));
-	      if(hg->allsky_last_pixbuf[i+1]){
-		hg->allsky_last_pixbuf[i]=
-		  gdk_pixbuf_copy(hg->allsky_last_pixbuf[i+1]);
+	      for(i=0;i<ALLSKY_LAST_MAX;i++){
+		if(hg->allsky_last_date[i]) g_free(hg->allsky_last_date[i]);
+		hg->allsky_last_date[i]=g_strdup(hg->allsky_last_date[i+1]);
+		hg->allsky_last_t[i] = hg->allsky_last_t[i+1];
+		
+		if(hg->allsky_last_pixbuf[i])  
+		  g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[i]));
+		if(hg->allsky_last_pixbuf[i+1]){
+		  hg->allsky_last_pixbuf[i]=
+		    gdk_pixbuf_copy(hg->allsky_last_pixbuf[i+1]);
+		}
+		else{
+		  hg->allsky_last_pixbuf[i]=NULL;
+		}
 	      }
-	      else{
-		hg->allsky_last_pixbuf[i]=NULL;
+	      
+	      // Differential Image
+	      for(i=0;i<ALLSKY_LAST_MAX;i++){
+		if(hg->allsky_diff_pixbuf[i])  
+		  g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[i]));
+		if(hg->allsky_diff_pixbuf[i+1]){
+		  hg->allsky_diff_pixbuf[i]=
+		    gdk_pixbuf_copy(hg->allsky_diff_pixbuf[i+1]);
+		}
+		else{
+		  hg->allsky_diff_pixbuf[i]=NULL;
+		}
+		hg->allsky_cloud_abs[i]=hg->allsky_cloud_abs[i+1];
+		hg->allsky_cloud_se[i]=hg->allsky_cloud_se[i+1];
+		hg->allsky_cloud_area[i]=hg->allsky_cloud_area[i+1];
+	      }
+	      
+	      if(hg->allsky_last_pixbuf[ALLSKY_LAST_MAX]){
+		g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[ALLSKY_LAST_MAX]));
+		hg->allsky_last_pixbuf[ALLSKY_LAST_MAX]=NULL;
+	      }
+	      if(hg->allsky_diff_pixbuf[ALLSKY_LAST_MAX]){
+		g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[ALLSKY_LAST_MAX]));
+		hg->allsky_diff_pixbuf[ALLSKY_LAST_MAX]=NULL;
 	      }
 	    }
-	    
-	    // Differential Image
-	    for(i=0;i<ALLSKY_LAST_MAX;i++){
-	      if(hg->allsky_diff_pixbuf[i])  
-		g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[i]));
-	      if(hg->allsky_diff_pixbuf[i+1]){
-		hg->allsky_diff_pixbuf[i]=
-		  gdk_pixbuf_copy(hg->allsky_diff_pixbuf[i+1]);
-	      }
-	      else{
-		hg->allsky_diff_pixbuf[i]=NULL;
-	      }
-	      hg->allsky_cloud_abs[i]=hg->allsky_cloud_abs[i+1];
-	      hg->allsky_cloud_se[i]=hg->allsky_cloud_se[i+1];
-	      hg->allsky_cloud_area[i]=hg->allsky_cloud_area[i+1];
-	      }
-	    
-	    if(hg->allsky_last_pixbuf[ALLSKY_LAST_MAX]){
-	      g_object_unref(G_OBJECT(hg->allsky_last_pixbuf[ALLSKY_LAST_MAX]));
-	      hg->allsky_last_pixbuf[ALLSKY_LAST_MAX]=NULL;
+	    else{
+	      hg->allsky_last_i++;
 	    }
-	    if(hg->allsky_diff_pixbuf[ALLSKY_LAST_MAX]){
-	      g_object_unref(G_OBJECT(hg->allsky_diff_pixbuf[ALLSKY_LAST_MAX]));
-	      hg->allsky_diff_pixbuf[ALLSKY_LAST_MAX]=NULL;
-	    }
-	    }
+	  }
 	  else{
-	    hg->allsky_last_i++;
+	    printf_log(hg,"[AllSky] Skipping to create diff image");
+	    ret=-1;
 	  }
 	}
 	else{
-	  printf_log(hg,"[AllSky] error in pixbuf, skipping to create diff image");
-	  ret=-1;
+	  printf_log(hg,"[AllSky] Broken image");
+	  ret=-3;
 	}
 	
 	t0=ghttp_parse_date(hg->allsky_last_date[0]);
@@ -5363,7 +5390,7 @@ GdkPixbuf* diff_pixbuf(GdkPixbuf *pixbuf1, GdkPixbuf* pixbuf2,
 
   if(all_pix==0) *ret_se=0;
   else *ret_se=sigsum/(gdouble)all_pix;
-  allsky_debug_print("  StdErr=%lf in %ldpix\n", *ret_se,all_pix);
+  allsky_debug_print("  StdErr=%lg in %ldpix\n", *ret_se,all_pix);
   if(last_i>0){
     if((fabs(dark)<0.000001)&&(fabs(*ret_se)<0.000001)){
       allsky_debug_print(" !!! Time stamps are different, but Same images!!!\n");
@@ -5379,6 +5406,66 @@ GdkPixbuf* diff_pixbuf(GdkPixbuf *pixbuf1, GdkPixbuf* pixbuf2,
     *ret_area=(gdouble)area_pix/(gdouble)all_pix*100.;
   }
   return(pixbuf_ret);
+}
+
+
+gboolean check_pixbuf(GdkPixbuf *pixbuf1){
+  gboolean ret10=FALSE, ret90=FALSE;
+  guint w1,   h1;
+  guint h10, h90;
+  guchar *p1;
+  guint p1_0;
+  guint w ,h;
+  guint sz;
+  gint bits=0x01;
+
+  if(!GDK_IS_PIXBUF(pixbuf1)){
+    allsky_debug_print("  check_pixbuf() : Error in Pixbuf, Skipping...\n");
+    return(FALSE);
+  }
+
+  allsky_debug_print("  check_pixbuf() : Starting...\n");
+
+  w1 = gdk_pixbuf_get_width(pixbuf1);
+  h1 = gdk_pixbuf_get_height(pixbuf1);
+
+  h10=(guint)((gdouble)h1*0.1);
+  h90=(guint)((gdouble)h1*0.9);
+
+  sz=gdk_pixbuf_get_rowstride(pixbuf1)/w1;
+  bits=(bits << gdk_pixbuf_get_bits_per_sample (pixbuf1)) -1;
+
+  p1 = gdk_pixbuf_get_pixels(pixbuf1);
+
+  for(h=0;h<h1;h++){
+    if(h==h10){
+      p1_0=p1[(h*w1)*sz];
+      
+      for(w=1;w<w1;w++){
+	if(p1_0 != p1[(h*w1+w)*sz]){
+	  ret10=TRUE;
+	  break;
+	}
+      }
+    }
+    else if(h==h90){
+      p1_0=p1[(h*w1)*sz];
+      
+      for(w=1;w<w1;w++){
+	if(p1_0 != p1[(h*w1+w)*sz]){
+	  ret90=TRUE;
+	  break;
+	}
+      }
+    }
+  }
+
+  if((!ret10)||(!ret90)){
+    allsky_debug_print("  check_pixbuf() : Image is broken!!!\n");
+    return(FALSE);
+  }
+
+  return(TRUE);
 }
 
 

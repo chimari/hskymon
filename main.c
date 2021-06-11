@@ -10737,7 +10737,7 @@ gboolean check_allsky (gpointer gdata){
       if(hg->allsky_http_status<0){
 	terminate_allsky(hg);
       }
-      else if(hg->allsky_data_status<0){
+      else if(hg->allsky_data_status==-2){
 	popup_message(hg->skymon_main, 
 #ifdef USE_GTK3
 		      "dialog-error", 

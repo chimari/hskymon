@@ -1,4 +1,9 @@
-2021.04.07 ver4.3.1 - Fixed a bug in XMLRPC mode.
+2021.06.11 ver4.3.2 - Added Subaru's All Sky Image
+	              (just for testing / Subaru inside only).
+                     - A bug fix for all sky image flipping.
+	             - Automatic broken image check for all sky images.
+
+2021.04.27 ver4.3.1 - Fixed a bug in XMLRPC mode.
 
 2021.04.06 ver4.3.0 - Added IRD and Seimei TriCCS for FC.
                     - Move AD, Tel Speed parameters to Obs position.

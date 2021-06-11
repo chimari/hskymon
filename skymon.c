@@ -1784,7 +1784,32 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 	  
 	  if(hg->allsky_data_status<0){
 	    cairo_set_source_rgba(cr, 1.0, 0.2, 0.2, 1.0);
-	    tmp=g_strdup("Data Read Error");
+	    if(hg->allsky_data_status==-3){
+	      if(ago>60*24){
+		tmp=g_strdup_printf("%ddays ago *",ago/60/24);
+	      }
+	      else if(ago>60){
+		tmp=g_strdup_printf("%dhrs ago *",ago/60);
+	      }
+	      else{
+		tmp=g_strdup_printf("%dmin ago *",ago);
+	      }
+	    }
+	    else if(hg->allsky_data_status==-1){
+	      if(ago>60*24){
+		tmp=g_strdup_printf("%ddays ago -",ago/60/24);
+	      }
+	      else if(ago>60){
+		tmp=g_strdup_printf("%dhrs ago -",ago/60);
+	      }
+	      else{
+		tmp=g_strdup_printf("%dmin ago -",ago);
+	      }
+	    }
+
+	    else{
+	      tmp=g_strdup("Data Read Error");
+	    }
 	  }
 	  else if((hg->allsky_diff_flag)&&(hg->allsky_last_i>1)){
 	    gint ago0=(t0-hg->allsky_last_t[hg->allsky_last_i-2])/60
