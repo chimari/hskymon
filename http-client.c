@@ -533,10 +533,11 @@ int allsky_read_data(typHOE *hg){
     if(hg->allsky_last_i==0){
       if(hg->allsky_limit){
 	tmp_pixbuf
-	  = gdk_pixbuf_new_from_file_at_size(hg->allsky_file,
-					     ALLSKY_LIMIT,
-					     ALLSKY_LIMIT,
-					     NULL);
+	  = gdk_pixbuf_new_from_file_at_scale(hg->allsky_file,
+					      ALLSKY_LIMIT,
+					      ALLSKY_LIMIT,
+					      TRUE,
+					      NULL);
       }
       else{
 	tmp_pixbuf
@@ -546,6 +547,22 @@ int allsky_read_data(typHOE *hg){
       if(GDK_IS_PIXBUF(tmp_pixbuf)){
 	// Check Broken Img
 	if(check_pixbuf(tmp_pixbuf)){
+	  if(hg->allsky_limit){
+	    GdkPixbuf *orig_pixbuf=NULL;
+	    gint orig_w, orig_h, new_w, new_h;
+	    orig_pixbuf = gdk_pixbuf_new_from_file(hg->allsky_file, NULL);
+	    orig_w=gdk_pixbuf_get_width(orig_pixbuf);
+	    orig_h=gdk_pixbuf_get_height(orig_pixbuf);
+	    new_w=gdk_pixbuf_get_width(tmp_pixbuf);
+	    new_h=gdk_pixbuf_get_height(tmp_pixbuf);
+	    if(orig_w>orig_h){
+	      hg->allsky_ratio=(gdouble)new_w/(gdouble)orig_w;
+	    }
+	    else{
+	      hg->allsky_ratio=(gdouble)new_h/(gdouble)orig_h;
+	    }
+	    g_object_unref(G_OBJECT(orig_pixbuf));
+	  }
 	  if(hg->allsky_flip){
 	    GdkPixbuf *pixbuf_flip=NULL;
 	    
@@ -572,8 +589,10 @@ int allsky_read_data(typHOE *hg){
 	    = diff_pixbuf(hg->allsky_last_pixbuf[0],hg->allsky_last_pixbuf[0],
 			  hg->allsky_diff_mag,hg->allsky_diff_base,
 			  hg->allsky_diff_dpix,
-			  hg->allsky_centerx,hg->allsky_centery,
-			  hg->allsky_diameter, hg->allsky_cloud_thresh,
+			  (gint)(hg->allsky_ratio*(gdouble)hg->allsky_centerx),
+			  (gint)(hg->allsky_ratio*(gdouble)hg->allsky_centery),
+			  (gint)(hg->allsky_ratio*(gdouble)hg->allsky_diameter),
+			  hg->allsky_cloud_thresh,
 			  &hg->allsky_cloud_abs[0],
 			  &hg->allsky_cloud_se[0],
 			  &hg->allsky_cloud_area[0],
@@ -606,10 +625,11 @@ int allsky_read_data(typHOE *hg){
     else if( strcmp(hg->allsky_date,hg->allsky_last_date[hg->allsky_last_i-1])!=0 ){
       if(hg->allsky_limit){
 	tmp_pixbuf
-	  = gdk_pixbuf_new_from_file_at_size(hg->allsky_file,
-					     ALLSKY_LIMIT,
-					     ALLSKY_LIMIT,
-					     NULL);
+	  = gdk_pixbuf_new_from_file_at_scale(hg->allsky_file,
+					      ALLSKY_LIMIT,
+					      ALLSKY_LIMIT,
+					      TRUE,
+					      NULL);
       }
       else{
 	tmp_pixbuf
@@ -647,8 +667,10 @@ int allsky_read_data(typHOE *hg){
 			  hg->allsky_last_pixbuf[hg->allsky_last_i],
 			  hg->allsky_diff_mag,hg->allsky_diff_base,
 			  hg->allsky_diff_dpix,
-			  hg->allsky_centerx,hg->allsky_centery,
-			  hg->allsky_diameter, hg->allsky_cloud_thresh,
+			  (gint)(hg->allsky_ratio*(gdouble)hg->allsky_centerx),
+			  (gint)(hg->allsky_ratio*(gdouble)hg->allsky_centery),
+			  (gint)(hg->allsky_ratio*(gdouble)hg->allsky_diameter),
+			  hg->allsky_cloud_thresh,
 			  &hg->allsky_cloud_abs[hg->allsky_last_i],
 			  &hg->allsky_cloud_se[hg->allsky_last_i],
 			  &hg->allsky_cloud_area[hg->allsky_last_i],
@@ -721,10 +743,10 @@ int allsky_read_data(typHOE *hg){
 	hg->allsky_last_time=(t-t0)/60;
 	
       }
-	else{
-	  printf_log(hg,"[AllSky] Error in reading image.");
-	  ret=-2;
-	}
+      else{
+	printf_log(hg,"[AllSky] Error in reading image.");
+	ret=-2;
+      }
     }
     else{
       printf_log(hg,"[AllSky] Time stamp is not changed. Skip image.");

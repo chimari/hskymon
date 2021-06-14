@@ -869,6 +869,23 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 	}
 
 	if(GDK_IS_PIXBUF(pixbuf_tmp)){
+	  if(hg->allsky_limit){
+	    GdkPixbuf *orig_pixbuf=NULL;
+	    gint orig_w, orig_h, new_w, new_h;
+	    orig_pixbuf = gdk_pixbuf_new_from_file(hg->allsky_file, NULL);
+	    orig_w=gdk_pixbuf_get_width(orig_pixbuf);
+	    orig_h=gdk_pixbuf_get_height(orig_pixbuf);
+	    new_w=gdk_pixbuf_get_width(pixbuf_tmp);
+	    new_h=gdk_pixbuf_get_height(pixbuf_tmp);
+	    if(orig_w>orig_h){
+	      hg->allsky_ratio=(gdouble)new_w/(gdouble)orig_w;
+	    }
+	    else{
+	      hg->allsky_ratio=(gdouble)new_h/(gdouble)orig_h;
+	    }
+	    g_object_unref(G_OBJECT(orig_pixbuf));
+	  }
+
 	  if((hg->allsky_sat<1.0)||(hg->allsky_sat>1.0))
 	    gdk_pixbuf_saturate_and_pixelate(pixbuf_tmp,pixbuf_tmp,
 					     (gfloat)hg->allsky_sat,FALSE);
@@ -935,10 +952,10 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
     if(GDK_IS_PIXBUF(pixbuf_tmp)){
       if((pixbuf_flag)||(width!=old_width)||(height!=old_height)){
 	if(width>height){
-	  r=(gdouble)height/((gdouble)hg->allsky_diameter/0.9);
+	  r=(gdouble)height/(hg->allsky_ratio*(gdouble)hg->allsky_diameter/0.9);
 	}
 	else{
-	  r=(gdouble)width/((gdouble)hg->allsky_diameter/0.9);
+	  r=(gdouble)width/(hg->allsky_ratio*(gdouble)hg->allsky_diameter/0.9);
 	}
 	
 	w = gdk_pixbuf_get_width(pixbuf_tmp);
@@ -965,16 +982,18 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 	skymon_debug_print("*** using old pixbuf2\n");
       }
 
-      off_x=(gint)((gdouble)width/2-(gdouble)hg->allsky_centerx*r);
-      off_y=(gint)((gdouble)height/2-(gdouble)hg->allsky_centery*r);
+      off_x=(gint)((gdouble)width/2-hg->allsky_ratio*(gdouble)hg->allsky_centerx*r);
+      off_y=(gint)((gdouble)height/2-hg->allsky_ratio*(gdouble)hg->allsky_centery*r);
       
       cairo_translate(cr,off_x,off_y);
       
-      cairo_translate(cr,(gdouble)hg->allsky_centerx*r,
-		      (gdouble)hg->allsky_centery*r);
+      cairo_translate(cr,
+		      hg->allsky_ratio*(gdouble)hg->allsky_centerx*r,
+		      hg->allsky_ratio*(gdouble)hg->allsky_centery*r);
       cairo_rotate (cr,M_PI*hg->allsky_angle/180.);
-      cairo_translate(cr,-(gdouble)hg->allsky_centerx*r,
-		      -(gdouble)hg->allsky_centery*r);
+      cairo_translate(cr,
+		      -hg->allsky_ratio*(gdouble)hg->allsky_centerx*r,
+		      -hg->allsky_ratio*(gdouble)hg->allsky_centery*r);
       gdk_cairo_set_source_pixbuf(cr, pixbuf_tmp2, 0, 0);
       
       my_cairo_arc_center2 (cr, width, height, -off_x,-off_y, 0.0); 

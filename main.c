@@ -1338,6 +1338,7 @@ void set_allsky_param_from_preset(typHOE *hg, gint i_ascam)
   if(hg->allsky_name) g_free(hg->allsky_name);
   hg->allsky_name=g_strdup(allsky_param[i_ascam].sname);
 
+  hg->allsky_ratio=1.0;
 }
 
 
@@ -2789,8 +2790,10 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 		      hg->allsky_last_pixbuf[0],
 		      hg->allsky_diff_mag,hg->allsky_diff_base,
 		      hg->allsky_diff_dpix,
-		      hg->allsky_centerx,hg->allsky_centery,
-		      hg->allsky_diameter, hg->allsky_cloud_thresh,
+		      (gint)(hg->allsky_ratio*(gdouble)hg->allsky_centerx),
+		      (gint)(hg->allsky_ratio*(gdouble)hg->allsky_centery),
+		      (gint)(hg->allsky_ratio*(gdouble)hg->allsky_diameter),
+		      hg->allsky_cloud_thresh,
 		      &hg->allsky_cloud_abs[0],
 		      &hg->allsky_cloud_se[0],
 		      &hg->allsky_cloud_area[0],
@@ -2807,8 +2810,10 @@ void create_diff_para_dialog (GtkWidget *widget, gpointer gdata)
 			hg->allsky_last_pixbuf[i],
 			hg->allsky_diff_mag,hg->allsky_diff_base,
 			hg->allsky_diff_dpix,
-			hg->allsky_centerx,hg->allsky_centery,
-			hg->allsky_diameter, hg->allsky_cloud_thresh,
+			(gint)(hg->allsky_ratio*(gdouble)hg->allsky_centerx),
+			(gint)(hg->allsky_ratio*(gdouble)hg->allsky_centery),
+			(gint)(hg->allsky_ratio*(gdouble)hg->allsky_diameter),
+			hg->allsky_cloud_thresh,
 			&hg->allsky_cloud_abs[i],
 			&hg->allsky_cloud_se[i],
 			&hg->allsky_cloud_area[i],
@@ -9851,6 +9856,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
       hg->allsky_flip	    = tmp_allsky_flip;
     }
     hg->allsky_pixbuf_flag0	  = tmp_allsky_pixbuf_flag0;
+    hg->allsky_ratio=1.0;
 
     hg->show_def   = tmp_show_def;
     hg->show_elmax   = tmp_show_elmax;
@@ -10372,6 +10378,7 @@ void param_init(typHOE *hg){
   hg->allsky_date_old=g_strdup("(Update time)");
   hg->allsky_sat=1.0;
   hg->allsky_alpha=(ALLSKY_ALPHA);
+  hg->allsky_ratio=1.0;
 
   hg->allsky_pixbuf_flag=hg->allsky_pixbuf_flag0;
   hg->allsky_last_i=0;

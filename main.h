@@ -1235,7 +1235,6 @@ ALLSKY_UH,
 ALLSKY_ASIVAV, 
 ALLSKY_ASIVAR, 
 ALLSKY_SUBARU, 
-ALLSKY_SUBARU_RAW, 
 ALLSKY_MKVIS,
 ALLSKY_PALOMAR,
 ALLSKY_LICK,
@@ -1329,25 +1328,10 @@ static const AllSkypara allsky_param[]={
    "allsky.jpg",
    "allsky-%ld.jpg",
    158.0,
-   540,
-   400,
-   270,
-   TRUE,
-   TRUE,
-   FALSE},
-  
-  // ALLSKY_SUBARU_RAW
-  {"Subaru Telescope : Raw (Visible)",
-   "Subaru Raw",
-   "allsky.sum.subaru.nao.ac.jp",
-   "/ftp/images/ImageLastFTP_AllSKY.jpg",
-   "allsky.jpg",
-   "allsky-%ld.jpg",
-   158.0,
    3700,
    2760,
    1850,
-   FALSE,
+   TRUE,
    TRUE,
    FALSE},
   
@@ -1451,9 +1435,9 @@ static const AllSkypara allsky_param[]={
    "allsky.png",
    "allsky-%ld.png",
    0.0,
-   720,
-   414,
-   374,
+   1620,
+   930,
+   844,
    TRUE,
    TRUE,
    FALSE},
@@ -1511,9 +1495,9 @@ static const AllSkypara allsky_param[]={
    "allsky.jpg",
    "allsky-%ld.jpg",
    -3.5,
-   760,
-   395,
-   415,
+   2500,
+   1278,
+   1353,
    TRUE,
    FALSE,
    FALSE},
@@ -1571,10 +1555,10 @@ static const AllSkypara allsky_param[]={
    "allsky.jpg",
    "allsky-%ld.jpg",
    0.0,
-   560,
-   400,
-   300,
-   TRUE,
+   530,
+   382,
+   285,
+   FALSE,
    FALSE,
    TRUE}
 };
@@ -1589,7 +1573,7 @@ static const AllSkypara allsky_param[]={
 
 #define ALLSKY_ALPHA (-20)
 
-#define ALLSKY_LIMIT 800
+#define ALLSKY_LIMIT 1200
 
 #define ALLSKY_CLOUD_THRESH 3.0
 #define ALLSKY_SE_MIN 20.0
@@ -2385,6 +2369,8 @@ struct _typHOE{
   GtkWidget *allsky_button;
   gint allsky_data_status;
   gint allsky_http_status;
+  gdouble allsky_ratio;
+
 
   gboolean allsky_pixbuf_flag;
   gboolean allsky_pixbuf_flag0;

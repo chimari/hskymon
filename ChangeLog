@@ -1,3 +1,8 @@
+2021.06.14 ver4.3.4 - Changed the limit size of all sky images to 1200 pix.
+	            - Automatic rescale of X, Y, and d of all sky iamges over
+	              the limit size.
+                    - Adjusted all sky camera parameters.
+
 2021.06.11 ver4.3.3 - A bug fix on memory release for broken all sky images.
 
 2021.06.11 ver4.3.2 - Added Subaru's All Sky Image
