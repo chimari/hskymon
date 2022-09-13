@@ -428,7 +428,8 @@ static GdkColor color_com3 = {0, 0xDDDD, 0x0000, 0x0000};
 
 
 // Finding Chart
-enum{FC_STSCI_DSS1R, 
+typedef enum {
+     FC_STSCI_DSS1R, 
      FC_STSCI_DSS1B, 
      FC_STSCI_DSS2R,
      FC_STSCI_DSS2B,
@@ -474,7 +475,8 @@ enum{FC_STSCI_DSS1R,
      FC_PANI,
      FC_PANZ,
      FC_PANY,
-     NUM_FC} ModeFC;
+     NUM_FC} enum_ModeFC;
+extern enum_ModeFC ModeFC;
 
 static const gchar* FC_name[]={
   "STScI: DSS1 (Red)",         // FC_STSCI_DSS1R, 
@@ -671,8 +673,10 @@ static const gchar* FC_host[]={
 #define PANSTARRS_MAX_ARCMIN 25
 
 #define FC_WINSIZE 400
-enum{ FC_OUTPUT_WINDOW, FC_OUTPUT_PDF, FC_OUTPUT_PRINT} FCOutput;
-enum{ FC_INST_NONE,
+typedef enum { FC_OUTPUT_WINDOW, FC_OUTPUT_PDF, FC_OUTPUT_PRINT} enum_FCOutput;
+extern enum_FCOutput FCOutput;
+typedef enum {
+      FC_INST_NONE,
       FC_INST_HDS,
       FC_INST_HDSAUTO,
       FC_INST_HDSZENITH,
@@ -691,7 +695,8 @@ enum{ FC_INST_NONE,
       FC_INST_KOOLS,
       FC_INST_TRICCS,
       FC_INST_NO_SELECT,
-      NUM_FC_INST} FCInst;
+      NUM_FC_INST} enum_FCInst;
+extern enum_FCInst FCInst;
 
 static const gchar* FC_instname[]={
   "None",        //FC_INST_NONE,	  
@@ -715,21 +720,26 @@ static const gchar* FC_instname[]={
   NULL};
 
 
-enum{ FC_SCALE_LINEAR, FC_SCALE_LOG, FC_SCALE_SQRT, FC_SCALE_HISTEQ, FC_SCALE_LOGLOG} FCScale;
+typedef enum { FC_SCALE_LINEAR, FC_SCALE_LOG, FC_SCALE_SQRT, FC_SCALE_HISTEQ, FC_SCALE_LOGLOG} enum_FCScale;
+extern enum_FCScale FCScale;
 
-enum{ FCDB_SIMBAD_STRASBG, FCDB_SIMBAD_HARVARD } FCDBSimbad;
-enum{ FCDB_VIZIER_STRASBG, FCDB_VIZIER_NAOJ, 
-      FCDB_VIZIER_HARVARD } FCDBVizieR;
+typedef enum { FCDB_SIMBAD_STRASBG, FCDB_SIMBAD_HARVARD } enum_FCDBSimbad;
+extern enum_FCDBSimbad FCDBSimbad;
+typedef enum { FCDB_VIZIER_STRASBG, FCDB_VIZIER_NAOJ, 
+  FCDB_VIZIER_HARVARD } enum_FCDBVizieR;
+extern enum_FCDBVizieR FCDBVizieR;
 
 #define ADC_WINSIZE 400
 #define ADC_SLIT_WIDTH 0.4
 #define ADC_SIZE 5.0
 #define ADC_SEEING 0.6
-enum{ ADC_INST_IMR,
+typedef enum {
+      ADC_INST_IMR,
       ADC_INST_HDSAUTO,
       ADC_INST_HDSZENITH,
       ADC_INST_KOOLS,
-      NUM_ADC_INST} ADC_Inst;
+      NUM_ADC_INST} enum_ADC_Inst;
+extern enum_ADC_Inst ADC_Inst;
 
 //  Instrument
 #define HDS_SLIT_MASK_ARCSEC 9.2
@@ -748,7 +758,8 @@ enum{ ADC_INST_IMR,
 #define SPCAM_SIZE 40
 
 #define HSC_R_ARCMIN 90
-enum{ HSC_DITH_NO, HSC_DITH_5, HSC_DITH_N} HSC_Dith;
+typedef enum { HSC_DITH_NO, HSC_DITH_5, HSC_DITH_N} enum_HSC_Dith;
+extern enum_HSC_Dith HSC_Dith;
 #define HSC_DRA 120
 #define HSC_DDEC 120
 #define HSC_TDITH 15
@@ -807,10 +818,12 @@ enum{ HSC_DITH_NO, HSC_DITH_5, HSC_DITH_N} HSC_Dith;
 
 
 // Object Type
-enum{OBJTYPE_OBJ,
+typedef enum {
+     OBJTYPE_OBJ,
      OBJTYPE_STD,
      OBJTYPE_TTGS
-} ObjType; 
+} enum_ObjType;
+extern enum_ObjType ObjType; 
 
 #define ADDTYPE_OBJ   -1
 #define ADDTYPE_STD   -2
@@ -1120,7 +1133,8 @@ enum{
 #define MAX_TRDB_BAND 100
 
 #ifdef USE_XMLRPC
-enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
+typedef enum { ROPE_DIR, ROPE_ALL} enum_ROPEMode;
+extern enum_ROPEMode ROPEMode;
 #endif
 
 #define BUFFSIZE 65535
@@ -1143,9 +1157,11 @@ enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
 #define PA_A1_SUBARU 0.00
 
 
-enum{ AZEL_NORMAL, AZEL_POSI, AZEL_NEGA} AZElMode;
+typedef enum{ AZEL_NORMAL, AZEL_POSI, AZEL_NEGA} enum_AZElMode;
+extern enum_AZElMode AZElMode;
 
-enum{ WWWDB_SIMBAD, 
+typedef enum{
+      WWWDB_SIMBAD, 
       WWWDB_NED, 
       WWWDB_TRANSIENT, 
       WWWDB_DR8, 
@@ -1165,15 +1181,18 @@ enum{ WWWDB_SIMBAD,
       WWWDB_SEP2, 
       WWWDB_SMOKA, 
       WWWDB_HST, 
-      WWWDB_ESO} WWWDBMode;
+      WWWDB_ESO} enum_WWWDBMode;
+extern enum_WWWDBMode WWWDBMode;
 
-enum{ STDDB_SSLOC, 
+typedef enum{
+      STDDB_SSLOC, 
       STDDB_RAPID, 
       STDDB_MIRSTD, 
       STDDB_ESOSTD, 
       STDDB_IRAFSTD, 
       STDDB_CALSPEC, 
-      STDDB_HDSSTD} STDDBMode;
+      STDDB_HDSSTD} enum_STDDBMode;
+extern enum_STDDBMode STDDBMode;
 
 #define STD_DRA 20
 #define STD_DDEC 10
@@ -1210,7 +1229,8 @@ enum{ STDDB_SSLOC,
 
 
 // SKYMON Mode
-enum{ SKYMON_CUR, SKYMON_SET, SKYMON_LAST} SkymonMode;
+typedef enum{ SKYMON_CUR, SKYMON_SET, SKYMON_LAST} enum_SkymonMode;
+extern enum_SkymonMode SkymonMode;
 
 #define SUNSET_OFFSET 25
 #define SUNRISE_OFFSET 25
@@ -1230,7 +1250,7 @@ enum{ SKYMON_CUR, SKYMON_SET, SKYMON_LAST} SkymonMode;
 
 
 // All-Sky Camera
-enum{ 
+typedef enum { 
 ALLSKY_UH, 
 ALLSKY_ASIVAV, 
 ALLSKY_ASIVAR, 
@@ -1251,7 +1271,8 @@ ALLSKY_GAO,
 ALLSKY_AAT,
 ALLSKY_MSO,
 NUM_ALLSKY
-} AllSkyCamera;
+} enum_AllSkyCamera;
+extern enum_AllSkyCamera AllSkyCamera;
 
 
 #define ALLSKY_DEF_SHORT "All-Sky Camera"
@@ -1586,10 +1607,18 @@ static const AllSkypara allsky_param[]={
 #define HSKYMON_HTTP_ERROR_SSL -5
 
 // Plot Mode
-enum{ PLOT_EL, PLOT_AZ, PLOT_AD, PLOT_ADPAEL, PLOT_MOONSEP,  PLOT_HDSPA} PlotMode;
-enum{ PLOT_ALL_SINGLE, PLOT_ALL_SELECTED,PLOT_ALL_ALL} PlotAll;
-enum{ PLOT_OUTPUT_WINDOW, PLOT_OUTPUT_PDF, PLOT_OUTPUT_PRINT} PlotOutput;
-enum{ PLOT_CENTER_MIDNIGHT, PLOT_CENTER_CURRENT,PLOT_CENTER_MERIDIAN} PlotCenter;
+typedef enum{ PLOT_EL, PLOT_AZ, PLOT_AD, PLOT_ADPAEL, PLOT_MOONSEP,
+  PLOT_HDSPA} enum_PlotMode;
+extern enum_PlotMode PlotMode;
+typedef enum{ PLOT_ALL_SINGLE, PLOT_ALL_SELECTED,PLOT_ALL_ALL} enum_PlotAll;
+extern enum_PlotAll PlotAll;
+typedef enum{ PLOT_OUTPUT_WINDOW, PLOT_OUTPUT_PDF,
+  PLOT_OUTPUT_PRINT} enum_PlotOutput;
+extern enum_PlotOutput PlotOutput;
+typedef enum{ PLOT_CENTER_MIDNIGHT, PLOT_CENTER_CURRENT,
+  PLOT_CENTER_MERIDIAN} enum_PlotCenter;
+extern enum_PlotCenter PlotCenter;
+
 #define PLOT_INTERVAL 60*1000
 
 typedef struct _EPHpara EPHpara;
@@ -2499,20 +2528,20 @@ typedef struct{
 
 
 //// Global args.
-gboolean  flagProp;
-gboolean  flagChildDialog;
-gboolean  flagTree;
-gboolean  flagPlot;
-gboolean  flagFC;
-gboolean  flagADC;
-gboolean  flagPAM;
-int debug_flg;
-gboolean flag_getDSS;
-gboolean flag_getFCDB;
+extern gboolean  flagProp;
+extern gboolean  flagChildDialog;
+extern gboolean  flagTree;
+extern gboolean  flagPlot;
+extern gboolean  flagFC;
+extern gboolean  flagADC;
+extern gboolean  flagPAM;
+extern int debug_flg;
+extern gboolean flag_getDSS;
+extern gboolean flag_getFCDB;
 
-pid_t fc_pid;
-pid_t fcdb_pid;
-pid_t stddb_pid;
+extern pid_t fc_pid;
+extern pid_t fcdb_pid;
+extern pid_t stddb_pid;
 
 
 //// Functions' proto-type

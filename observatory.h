@@ -1,5 +1,5 @@
 // OBSERVATORY
-enum{
+typedef enum{
 OBS_SUBARU, 
 OBS_PALOMAR,  
 OBS_LICK,  
@@ -25,7 +25,8 @@ OBS_KISO,
 OBS_GAO,
 OBS_AAT,
 NUM_OBS
-} ObsPos;
+} enum_ObsPos;
+extern enum_ObsPos ObsPos;
 
 
 typedef struct _OBSpara OBSpara;
