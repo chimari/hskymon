@@ -1,3 +1,4 @@
+
 //    hskymon  from HDS OPE file Editor
 //          New SkyMonitor for Subaru Gen2
 //      main.c  --- main program
@@ -21,6 +22,43 @@
 #endif
 
 #include<locale.h>
+
+//// Global args.
+enum_ModeFC ModeFC;
+enum_FCOutput FCOutput;
+enum_FCInst FCInst;
+enum_FCScale  FCScale;
+enum_FCDBSimbad FCDBSimbad;
+enum_FCDBVizieR FCDBVizieR;
+enum_ADC_Inst ADC_Inst;
+enum_HSC_Dith HSC_Dith;
+enum_ObjType ObjType;
+enum_ROPEMode ROPEMode;
+enum_AZElMode AZElMode;
+enum_WWWDBMode WWWDBMode;
+enum_STDDBMode STDDBMode;
+enum_SkymonMode SkymonMode;
+enum_AllSkyCamera AllSkyCamera;
+enum_PlotMode PlotMode;
+
+enum_SDSSSearch SDSSSearch;
+enum_POST_num POST_num;
+enum_ObsPos ObsPos;
+
+gboolean  flagProp;
+gboolean  flagChildDialog;
+gboolean  flagTree;
+gboolean  flagPlot;
+gboolean  flagFC;
+gboolean  flagADC;
+gboolean  flagPAM;
+int debug_flg;
+gboolean flag_getDSS;
+gboolean flag_getFCDB;
+
+pid_t fc_pid;
+pid_t fcdb_pid;
+pid_t stddb_pid;
 
 #ifndef USE_WIN32
 void ChildTerm();

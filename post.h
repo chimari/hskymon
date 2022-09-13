@@ -11,7 +11,8 @@ struct _PARAMpost{
   gchar *prm;
 };
 
-enum{ POST_NULL, 
+typedef enum{
+      POST_NULL, 
       POST_CONST, 
       POST_INPUT, 
       POST_INST1,
@@ -25,4 +26,5 @@ enum{ POST_NULL,
       POST_SPEC,
       POST_IPOL,
       POST_ADD
-} POST_num;
+} enum_POST_num;
+extern enum_POST_num POST_num;
