@@ -17,6 +17,24 @@
 #ifndef USE_WIN32
 #include<sys/time.h>
 #endif
+
+//// Global args.
+extern gboolean  flagProp;
+extern gboolean  flagChildDialog;
+extern gboolean  flagTree;
+extern gboolean  flagPlot;
+extern gboolean  flagFC;
+extern gboolean  flagADC;
+extern gboolean  flagPAM;
+extern int debug_flg;
+extern gboolean flag_getDSS;
+extern gboolean flag_getFCDB;
+
+extern pid_t fc_pid;
+extern pid_t fcdb_pid;
+extern pid_t stddb_pid;
+
+
 static gint time_spin_input();
 static gint time_spin_output();
 
@@ -47,8 +65,8 @@ void my_cairo_std2();
 void my_cairo_moon();
 void my_cairo_sun();
 void my_cairo_planet();
-#ifdef USE_XMLRPC
 void my_cairo_telescope();
+#ifdef USE_XMLRPC
 void my_cairo_telescope_cmd();
 void my_cairo_telescope_path();
 #endif
@@ -720,6 +738,7 @@ gboolean draw_skymon(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 #ifdef USE_XMLRPC
   draw_skymon_with_telstat_cairo(widget, hg);
 #endif
+  draw_skymon_with_seimei_cairo(widget, hg);
   return TRUE;
 }
 
@@ -2388,7 +2407,151 @@ gboolean draw_skymon_with_telstat_cairo(GtkWidget *widget,
   return TRUE;
 }
 #endif
-  
+
+
+gboolean draw_skymon_with_seimei_cairo(GtkWidget *widget, 
+				       typHOE *hg){
+  cairo_t *cr;
+  cairo_surface_t *surface;
+  cairo_text_extents_t extents;
+  double x,y;
+  gint i_list;
+  gint from_set, to_rise;
+  gint w=0,h=0;
+  gdouble r=1.0;
+  gint off_x, off_y;
+#ifndef USE_GTK3
+  GdkPixmap *pixmap_skymon_with_telstat=NULL;
+#endif
+  gboolean as_flag=FALSE;
+  gchar *tmp;
+
+  if(!hg->seimei_flag) return (FALSE);
+
+  skymon_debug_print("Starting draw_skymon_seimei_cairo\n");
+
+  int width, height;
+  {
+    GtkAllocation *allocation=g_new(GtkAllocation, 1);
+    gtk_widget_get_allocation(widget,allocation);
+
+    width= allocation->width;
+    height=allocation->height;
+    g_free(allocation);
+  }
+
+  if(width<=1){
+    gtk_window_get_size(GTK_WINDOW(hg->skymon_main), &width, &height);
+  }
+
+  if(hg->skymon_mode==SKYMON_CUR){
+#ifdef USE_GTK3
+    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+					 width, height);
+    
+    cr = cairo_create(surface);
+
+    gdk_cairo_set_source_pixbuf(cr, pixbuf_skymonbg, 0, 0);
+    cairo_paint(cr);
+#else
+    pixmap_skymon_with_telstat = gdk_pixmap_new(gtk_widget_get_window(widget),
+						width,
+						height,
+						-1);
+    
+
+    if(pixmap_skymonbg){
+      GtkStyle *style=gtk_widget_get_style(widget);
+
+      gdk_draw_drawable(pixmap_skymon_with_telstat,
+			style->fg_gc[gtk_widget_get_state(widget)],
+			pixmap_skymonbg,
+			0,0,0,0,
+			width,
+			height);
+    }
+    else{
+      return(FALSE);
+    }
+
+    cr = gdk_cairo_create(pixmap_skymon_with_telstat);
+#endif
+    
+    as_flag=hg->allsky_flag;
+
+    cairo_set_line_cap  (cr, CAIRO_LINE_CAP_ROUND);
+    cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
+    
+    if(hg->skymon_mode==SKYMON_CUR) as_flag=hg->allsky_flag;
+
+    work_page^=1;
+    my_cairo_telescope(cr,hg->fontfamily,width,height,
+		       hg->seimei_az-180,hg->seimei_el, 
+		       as_flag, 
+		       TRUE, hg->skymon_objsz,
+		       hg->size_edge);
+
+    cairo_destroy(cr);
+
+#ifdef USE_GTK3
+    if(pixbuf_skymon) g_object_unref(G_OBJECT(pixbuf_skymon));
+    pixbuf_skymon=gdk_pixbuf_get_from_surface(surface,0,0,width,height);
+    cairo_surface_destroy(surface);
+    gtk_widget_queue_draw(widget);
+#else
+    if(pixmap_skymon) g_object_unref(G_OBJECT(pixmap_skymon));
+    pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
+				       width,
+				       height,
+				       -1);
+		
+    {
+      GtkStyle *style=gtk_widget_get_style(widget);
+     
+      gdk_draw_drawable(pixmap_skymon,
+			style->fg_gc[gtk_widget_get_state(widget)],
+			pixmap_skymon_with_telstat,
+			0,0,0,0,
+			width,
+			height);
+    }
+    
+    g_object_unref(G_OBJECT(pixmap_skymon_with_telstat));
+#endif
+  }
+  else{
+#ifdef USE_GTK3
+    if(pixbuf_skymon) g_object_unref(G_OBJECT(pixbuf_skymon));
+    pixbuf_skymon=gdk_pixbuf_copy(pixbuf_skymonbg);
+    gtk_widget_queue_draw(widget);
+#else
+    if(pixmap_skymon) g_object_unref(G_OBJECT(pixmap_skymon));
+    pixmap_skymon = gdk_pixmap_new(gtk_widget_get_window(widget),
+				       width,
+				       height,
+				       -1);
+    {
+      GtkStyle *style=gtk_widget_get_style(widget);
+
+      gdk_draw_drawable(pixmap_skymon,
+			style->fg_gc[gtk_widget_get_state(widget)],
+			pixmap_skymonbg,
+			0,0,0,0,
+			width,
+			height);
+    }
+#endif
+  }
+
+  gtk_widget_show_all(widget);
+#ifndef USE_GTK3
+  draw_skymon_pixmap(widget,hg);
+#endif
+
+  skymon_debug_print("Finishing draw_skymon_with_seimei_cairo\n");
+  return TRUE;
+}
+
 
 
 void my_cairo_arc_center(cairo_t *cr, gint w, gint h, gdouble r){
@@ -3170,7 +3333,6 @@ void my_cairo_planet(cairo_t *cr, gchar *fontname, gint w, gint h, gdouble az, g
 
 
 
-#ifdef USE_XMLRPC
 #define SKYMON_TELSIZE 8
 void my_cairo_telescope(cairo_t *cr,gchar *fontname, gint w, gint h, gdouble az, gdouble el, 
 			gboolean allsky_flag, 
@@ -3329,6 +3491,7 @@ void my_cairo_telescope(cairo_t *cr,gchar *fontname, gint w, gint h, gdouble az,
 }
 
 
+#ifdef USE_XMLRPC
 void my_cairo_telescope_path(cairo_t *cr, gchar *fontname, gint w, gint h, 
 			     gdouble az, gdouble el, 
 			     gdouble az_cmd, gdouble el_cmd, 

@@ -12,6 +12,22 @@
 #include<ctype.h>
 #include <cairo-pdf.h>
 
+//// Global args.
+extern gboolean  flagProp;
+extern gboolean  flagChildDialog;
+extern gboolean  flagTree;
+extern gboolean  flagPlot;
+extern gboolean  flagFC;
+extern gboolean  flagADC;
+extern gboolean  flagPAM;
+extern int debug_flg;
+extern gboolean flag_getDSS;
+extern gboolean flag_getFCDB;
+
+extern pid_t fc_pid;
+extern pid_t fcdb_pid;
+extern pid_t stddb_pid;
+
 
 
 double adrad(double zrad, double wlnm,double h,double t,double p,double f);

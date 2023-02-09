@@ -11,7 +11,25 @@
 
 #include "esostd.h"
 
+//// Global args.
+extern gboolean  flagProp;
+extern gboolean  flagChildDialog;
+extern gboolean  flagTree;
+extern gboolean  flagPlot;
+extern gboolean  flagFC;
+extern gboolean  flagADC;
+extern gboolean  flagPAM;
+extern int debug_flg;
+extern gboolean flag_getDSS;
+extern gboolean flag_getFCDB;
+
+extern pid_t fc_pid;
+extern pid_t fcdb_pid;
+extern pid_t stddb_pid;
+
 static GtkWidget *window = NULL;
+
+
 //void tree_update_azel_item();
 void stddb_tree_update_azel_item();
 void std_make_tree();

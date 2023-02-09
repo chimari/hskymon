@@ -22,6 +22,25 @@
 
 #include<locale.h>
 
+
+//// Global args.
+gboolean  flagProp;
+gboolean  flagChildDialog;
+gboolean  flagTree;
+gboolean  flagPlot;
+gboolean  flagFC;
+gboolean  flagADC;
+gboolean  flagPAM;
+int debug_flg;
+gboolean flag_getDSS;
+gboolean flag_getFCDB;
+
+pid_t fc_pid;
+pid_t fcdb_pid;
+pid_t stddb_pid;
+
+
+
 #ifndef USE_WIN32
 void ChildTerm();
 #endif // USE_WIN32
@@ -5924,10 +5943,10 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_box_pack_start(GTK_BOX(hbox), spinner,FALSE, FALSE, 0);
   my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
   my_signal_connect (adj, "value_changed", cc_get_adj, &tmp_ucac_mag);
-
+ 
   
   vbox = gtkut_vbox_new (FALSE, 0);
-  label = gtk_label_new ("GAIA DR2");
+  label = gtk_label_new ("GAIA DR3");
   gtk_notebook_append_page (GTK_NOTEBOOK (hg->query_note), vbox, label);
 
   table = gtkut_table_new(2, 2, FALSE, 10, 5, 5);
@@ -7715,6 +7734,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gboolean tmp_allsky_limit;
   gboolean tmp_allsky_flip;
   gboolean tmp_allsky_pixbuf_flag0;
+  gchar *tmp_proxy_host;
+  gboolean tmp_proxy_flag;
+  gint tmp_proxy_port;
   gboolean tmp_show_def,tmp_show_elmax,tmp_show_secz,tmp_show_ha,tmp_show_ad,
     tmp_show_ang,tmp_show_hpa,tmp_show_moon,
     tmp_show_ra,tmp_show_dec,tmp_show_equinox,tmp_show_pam,tmp_show_note;
@@ -7787,6 +7809,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   tmp_allsky_limit   =hg->allsky_limit;
   tmp_allsky_flip    =hg->allsky_flip;
   tmp_allsky_host  =g_strdup(hg->allsky_host);
+  tmp_proxy_host  =g_strdup(hg->proxy_host);
+  tmp_proxy_flag  =hg->proxy_flag;
+  tmp_proxy_port  =hg->proxy_port;
   tmp_allsky_ssl   =hg->allsky_ssl;
   tmp_allsky_path  =g_strdup(hg->allsky_path);
   //tmp_allsky_date_path  =g_strdup(hg->allsky_date_path);
@@ -8818,6 +8843,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     cc_get_toggle,
 		     &tmp_allsky_flip);
 
+ 
 
   frame = gtkut_frame_new ("<b>Update</b>");
   gtk_box_pack_start(GTK_BOX(note_vbox),
@@ -8931,7 +8957,83 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   label = gtk_label_new ("AllSkyCamera");
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
+  
+  // Proxy
+  note_vbox = gtkut_vbox_new(FALSE,2);
+  
+  frame = gtkut_frame_new ("<b>Proxy for http access</b>");
+  gtk_box_pack_start(GTK_BOX(note_vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
 
+  table1 = gtkut_table_new(3, 1, FALSE, 5, 5, 5);
+  gtk_container_add (GTK_CONTAINER (frame), table1);
+
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtkut_table_attach(table1, hbox, 0, 1, 0, 1,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  
+  check = gtk_check_button_new_with_label("Use Proxy (still under testing)");
+  gtk_box_pack_start(GTK_BOX(hbox), check, FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->proxy_flag);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_proxy_flag);
+
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtkut_table_attach(table1, hbox, 0, 2, 1, 2,
+		     GTK_FILL,GTK_SHRINK,0,0);
+
+  label = gtk_label_new ("Host");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  
+
+  entry = gtk_entry_new ();
+  gtk_box_pack_start(GTK_BOX(hbox), entry, FALSE, FALSE, 0);
+  gtk_entry_set_text(GTK_ENTRY(entry),
+		     hg->proxy_host);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
+  my_entry_set_width_chars(GTK_ENTRY(entry),40);
+  my_signal_connect (entry,
+		     "changed",
+		     cc_get_entry,
+		     &tmp_proxy_host);
+
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtkut_table_attach(table1, hbox, 2, 3, 1, 2,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("Port");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->proxy_port,
+					    80, 65535, 
+					    1.0,1.0,0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
+  my_signal_connect (adj, "value_changed",
+		     cc_get_adj,
+		     &tmp_proxy_port);
+   
+
+  label = gtk_label_new ("Proxy");
+  gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
+
+  
   note_vbox = gtkut_vbox_new(FALSE,2);
 
   // Parameter Show
@@ -9536,7 +9638,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 #ifdef USE_GTK3
   gtk_widget_set_hexpand(hbox,TRUE);
 #endif
-  gtkut_table_attach_defaults(table1, hbox, 0, 1, 0, 1);
+  gtkut_table_attach(table1, hbox, 0, 1, 0, 1,
+		     GTK_FILL,GTK_SHRINK,0,0);
 
   label = gtk_label_new ("Color/Alpha");
 #ifdef USE_GTK3
@@ -9572,7 +9675,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   
 
   hbox = gtkut_hbox_new(FALSE,2);
-  gtkut_table_attach_defaults(table1, hbox, 1, 2, 0, 1);
+  gtkut_table_attach(table1, hbox, 1, 2, 0, 1,
+		     GTK_FILL,GTK_SHRINK,0,0);
 
   label = gtk_label_new ("Pixel Size");
 #ifdef USE_GTK3
@@ -9757,7 +9861,6 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   label = gtk_label_new ("Window");
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
-  
 
 
 #ifdef USE_GTK3
@@ -9838,6 +9941,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     else{
       if(hg->allsky_host) g_free(hg->allsky_host);
       hg->allsky_host        =g_strdup(tmp_allsky_host);
+      
       hg->allsky_ssl   = tmp_allsky_ssl;      
       if(hg->allsky_path) g_free(hg->allsky_path);
       hg->allsky_path         =g_strdup(tmp_allsky_path);
@@ -9858,6 +9962,11 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->allsky_pixbuf_flag0	  = tmp_allsky_pixbuf_flag0;
     hg->allsky_ratio=1.0;
 
+    if(hg->proxy_host) g_free(hg->proxy_host);
+    hg->proxy_host        =g_strdup(tmp_proxy_host);
+    hg->proxy_flag        =tmp_proxy_flag;
+    hg->proxy_port        =tmp_proxy_port;
+    
     hg->show_def   = tmp_show_def;
     hg->show_elmax   = tmp_show_elmax;
     hg->show_secz    = tmp_show_secz;
@@ -10089,6 +10198,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   g_free(tmp_allsky_path);
   g_free(tmp_allsky_file);
   g_free(tmp_allsky_last_file00);
+  g_free(tmp_proxy_host);
   g_free(tmp_fontname);
   g_free(tmp_fontname_all);
 
@@ -10422,6 +10532,8 @@ void param_init(typHOE *hg){
 
   hg->telstat_error=FALSE;
 #endif
+  hg->seimeistat_timer=-1;
+  hg->seimei_id=1;
 
   hg->dss_arcmin        =DSS_ARCMIN;
   hg->dss_pix             =DSS_PIX;
@@ -10714,6 +10826,20 @@ gboolean update_telstat (gpointer gdata){
   return(TRUE);
 }
 #endif
+
+gboolean update_seimeistat (gpointer gdata){
+  typHOE *hg;
+
+  hg=(typHOE *)gdata;
+
+  if(get_seimei_azel(hg)==-1){
+    return(FALSE);
+  }
+  
+  draw_skymon_with_seimei_cairo(hg->skymon_dw,hg);
+
+  return(TRUE);
+}
 
 gboolean update_allsky (gpointer gdata){
   typHOE *hg;
@@ -11636,6 +11762,11 @@ void WriteConf(typHOE *hg){
   xmms_cfg_write_boolean(cfgfile, "AllSky", "Pixbuf", hg->allsky_pixbuf_flag0);
   xmms_cfg_write_int(cfgfile, "AllSky", "Interval",(gint)hg->allsky_interval);
   xmms_cfg_write_int(cfgfile, "AllSky", "LastInterval",(gint)hg->allsky_last_interval);
+  
+  if(hg->proxy_host) 
+    xmms_cfg_write_string(cfgfile, "Proxy", "Host", hg->proxy_host);
+  xmms_cfg_write_boolean(cfgfile, "Proxy", "Flag",hg->proxy_flag);
+  xmms_cfg_write_int(cfgfile, "Proxy", "Port",hg->proxy_port);
 
   // AD Calc.
   xmms_cfg_write_int(cfgfile, "ADC", "Wave1",(gint)hg->wave1);
@@ -12102,6 +12233,20 @@ void ReadConf(typHOE *hg)
       hg->show_note =b_buf;
     else
       hg->show_note =TRUE;
+
+    // Proxy
+    if(xmms_cfg_read_string(cfgfile, "Proxy", "Host", &c_buf)) 
+      hg->proxy_host =c_buf;
+    else
+      hg->proxy_host=g_strdup(DEFAULT_PROXY_HOST);
+    if(xmms_cfg_read_int  (cfgfile, "Proxy", "Port",  &i_buf)) 
+      hg->proxy_port=i_buf;
+    else
+      hg->proxy_port=3128;
+    if(xmms_cfg_read_boolean  (cfgfile, "Proxy", "Flag",  &b_buf)) 
+      hg->proxy_flag=b_buf;
+    else
+      hg->proxy_flag=FALSE;
 
 #ifdef USE_XMLRPC
     //if(xmms_cfg_read_string(cfgfile, "RemoteObject", "nameserver", &c_buf)) 
@@ -13412,6 +13557,24 @@ int main(int argc, char* argv[]){
     }
   }
 #endif
+
+  create_seimei_socket(hg);
+  if(hg->seimei_flag){
+    printf_log(hg,"[Seimei] starting to fetch telescope status from %s",
+	       SEIMEI_STATUS_HOST);
+    if(update_seimeistat((gpointer)hg)){
+      printf_log(hg,"[Seimei] connected to the server %s",
+		 SEIMEI_STATUS_HOST);
+      draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
+      hg->seimeistat_timer=g_timeout_add(TELSTAT_INTERVAL, 
+					 (GSourceFunc)update_seimeistat,
+					 (gpointer)hg);
+    }
+    else{
+      printf_log(hg,"[SeimeiStat] cannot connect to the server %s",
+		 SEIMEI_STATUS_HOST);
+    }
+  }
 
   // All Sky Checking TimeOut
   //   Leave it running

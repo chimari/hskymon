@@ -27,6 +27,23 @@
 #include "ssl.h"
 
 
+//// Global args.
+extern gboolean  flagProp;
+extern gboolean  flagChildDialog;
+extern gboolean  flagTree;
+extern gboolean  flagPlot;
+extern gboolean  flagFC;
+extern gboolean  flagADC;
+extern gboolean  flagPAM;
+extern int debug_flg;
+extern gboolean flag_getDSS;
+extern gboolean flag_getFCDB;
+
+extern pid_t fc_pid;
+extern pid_t fcdb_pid;
+extern pid_t stddb_pid;
+
+
 // From libghttp-1.0.9
 time_t http_date_to_time(const char *a_date);
 time_t ghttp_parse_date(char *a_date);
@@ -52,6 +69,10 @@ gint ssl_read();
 gint ssl_peek();
 gint ssl_gets();
 gint ssl_write();
+
+//int create_seimei_scoket();
+//int get_seimei_azel();
+int close_seimei_scoket();
 
 
 #define BUF_LEN 65535             /* Buffer size */
@@ -242,7 +263,7 @@ void write_to_SSLserver(SSL *ssl, char *p){
   ssl_write(ssl, p, strlen(p));
 }
 
-int http_c(typHOE *hg){
+int http_c(typHOE *hg, gboolean proxy_ssl){
   int command_socket;           /* コマンド用ソケット */
   int size;
   
@@ -252,6 +273,7 @@ int http_c(typHOE *hg){
   FILE *fp_write;
   
   struct addrinfo hints, *res;
+  struct sockaddr_in *addr_in;
   struct in_addr addr;
   int err;
   const char *cause=NULL;
@@ -265,22 +287,37 @@ int http_c(typHOE *hg){
   memset(&hints, 0, sizeof(hints));
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_family = AF_INET;
-  
-  if ((err = getaddrinfo(hg->allsky_host, "http", &hints, &res)) !=0){
-    fprintf(stderr, "Bad hostname [%s]\n", hg->allsky_host);
-    if(hg->allsky_date) g_free(hg->allsky_date);
-    hg->allsky_date=g_strdup("Error: Bad hostname");
-    return(HSKYMON_HTTP_ERROR_GETHOST);
+
+  if(hg->proxy_flag){
+    if ((err = getaddrinfo(hg->proxy_host, "http", &hints, &res)) !=0){
+      fprintf(stderr, "Bad hostname [%s]\n", hg->allsky_host);
+      if(hg->allsky_date) g_free(hg->allsky_date);
+      hg->allsky_date=g_strdup("Error: Bad hostname");
+      return(HSKYMON_HTTP_ERROR_GETHOST);
+    }
+  }
+  else{
+    if ((err = getaddrinfo(hg->allsky_host, "http", &hints, &res)) !=0){
+      fprintf(stderr, "Bad hostname [%s]\n", hg->allsky_host);
+      if(hg->allsky_date) g_free(hg->allsky_date);
+      hg->allsky_date=g_strdup("Error: Bad hostname");
+      return(HSKYMON_HTTP_ERROR_GETHOST);
+    }
   }
 
   /* ソケット生成 */
   if( (command_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
-      fprintf(stderr, "Failed to create a new socket.\n");
-      if(hg->allsky_date) g_free(hg->allsky_date);
-      hg->allsky_date=g_strdup("Error: Failed to create a new socket.");
-      freeaddrinfo(res);
-      return(HSKYMON_HTTP_ERROR_SOCKET);
-    }
+    fprintf(stderr, "Failed to create a new socket.\n");
+    if(hg->allsky_date) g_free(hg->allsky_date);
+    hg->allsky_date=g_strdup("Error: Failed to create a new socket.");
+    freeaddrinfo(res);
+    return(HSKYMON_HTTP_ERROR_SOCKET);
+  }
+
+  if(hg->proxy_flag){
+    addr_in = (struct sockaddr_in *)(res -> ai_addr);
+    addr_in -> sin_port=htons(hg->proxy_port);
+  }
   
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) != 0){
@@ -290,14 +327,24 @@ int http_c(typHOE *hg){
     freeaddrinfo(res);
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
-
+  
   // AddrInfoの解放
   freeaddrinfo(res);
 
   allsky_debug_print("Child: downloading %s ...\n",hg->allsky_path);
   
   // bin mode
-  sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->allsky_path);
+  if(hg->proxy_flag){
+    if(proxy_ssl){
+      sprintf(send_mesg, "GET https://%s%s HTTP/1.1\r\n", hg->allsky_host, hg->allsky_path);
+    }
+    else{
+      sprintf(send_mesg, "GET http://%s%s HTTP/1.1\r\n", hg->allsky_host, hg->allsky_path);
+    }
+  }
+  else{
+    sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->allsky_path);
+  }
   write_to_server(command_socket, send_mesg);
   
   sprintf(send_mesg, "Accept: image/gif, image/jpeg, */*\r\n");
@@ -373,6 +420,7 @@ int http_c_ssl(typHOE *hg){
   FILE *fp_read;
 
   struct addrinfo hints, *res;
+  struct sockaddr_in *addr_in;
   struct in_addr addr;
   int err, ret;
 
@@ -392,11 +440,19 @@ int http_c_ssl(typHOE *hg){
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_family = AF_INET;
 
-  if ((err = getaddrinfo(hg->allsky_host, "https", &hints, &res)) !=0){
-    fprintf(stderr, "Bad hostname [%s]\n", hg->allsky_host);
-    return(HSKYMON_HTTP_ERROR_GETHOST);
+  if(hg->proxy_flag){
+    if ((err = getaddrinfo(hg->proxy_host, "https", &hints, &res)) !=0){
+      fprintf(stderr, "Bad hostname [%s]\n", hg->allsky_host);
+      return(HSKYMON_HTTP_ERROR_GETHOST);
+    }
   }
-
+  else{
+    if ((err = getaddrinfo(hg->allsky_host, "https", &hints, &res)) !=0){
+      fprintf(stderr, "Bad hostname [%s]\n", hg->allsky_host);
+      return(HSKYMON_HTTP_ERROR_GETHOST);
+    }
+  }
+  
   check_msg_from_parent(hg);
 
     /* ソケット生成 */
@@ -406,6 +462,11 @@ int http_c_ssl(typHOE *hg){
   }
 
   check_msg_from_parent(hg);
+  
+  if(hg->proxy_flag){
+    addr_in = (struct sockaddr_in *)(res -> ai_addr);
+    addr_in -> sin_port=htons(hg->proxy_port);
+  }
   
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
@@ -440,11 +501,23 @@ int http_c_ssl(typHOE *hg){
 
   // HTTP/1.1 ではchunked対策が必要
   hg->psz=0;
-  if(hg->fcdb_post){
-    sprintf(send_mesg, "POST %s HTTP/1.1\r\n", hg->allsky_path);
+  if(hg->proxy_flag){
+    if(hg->fcdb_post){
+      sprintf(send_mesg, "POST https://%s%s HTTP/1.1\r\n",
+	      hg->allsky_host,hg->allsky_path);
+    }
+    else{
+      sprintf(send_mesg, "GET https://%s%s HTTP/1.1\r\n",
+	      hg->allsky_host,hg->allsky_path);
+    }
   }
   else{
-    sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->allsky_path);
+    if(hg->fcdb_post){
+      sprintf(send_mesg, "POST %s HTTP/1.1\r\n", hg->allsky_path);
+    }
+    else{
+      sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->allsky_path);
+    }
   }
   write_to_SSLserver(ssl, send_mesg);
 
@@ -833,11 +906,16 @@ int get_allsky(typHOE *hg){
 	     hg->allsky_host);
   
 
-  if(hg->allsky_ssl){
-    hg->allsky_http_status=http_c_ssl(hg);
+  if(hg->proxy_flag){
+    hg->allsky_http_status=http_c(hg, hg->allsky_ssl);
   }
   else{
-    hg->allsky_http_status=http_c(hg);
+    if(hg->allsky_ssl){
+      hg->allsky_http_status=http_c_ssl(hg);
+    }
+    else{
+      hg->allsky_http_status=http_c(hg, FALSE);
+    }
   }
   if(hg->allsky_http_status==0){
     hg->allsky_data_status=allsky_read_data(hg);
@@ -1178,7 +1256,7 @@ void copy_file(gchar *src, gchar *dest)
 }
  
 
-int http_c_fc(typHOE *hg){
+int http_c_fc(typHOE *hg, gboolean proxy_ssl){
   int command_socket;           /* コマンド用ソケット */
   int size;
 
@@ -1201,6 +1279,7 @@ int http_c_fc(typHOE *hg){
   struct ln_equ_posn object_prec;
 
   struct addrinfo hints, *res;
+  struct sockaddr_in *addr_in;
   struct in_addr addr;
   int err;
   const char *cause=NULL;
@@ -1214,9 +1293,17 @@ int http_c_fc(typHOE *hg){
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_family = AF_INET;
 
-  if ((err = getaddrinfo(hg->dss_host, "http", &hints, &res)) !=0){
-    fprintf(stderr, "Bad hostname [%s]\n", hg->dss_host);
-    return(HSKYMON_HTTP_ERROR_GETHOST);
+  if(hg->proxy_flag){
+    if ((err = getaddrinfo(hg->proxy_host, "https", &hints, &res)) !=0){
+      fprintf(stderr, "Bad hostname [%s]\n", hg->dss_host);
+      return(HSKYMON_HTTP_ERROR_GETHOST);
+    }
+  }
+  else{
+    if ((err = getaddrinfo(hg->dss_host, "http", &hints, &res)) !=0){
+      fprintf(stderr, "Bad hostname [%s]\n", hg->dss_host);
+      return(HSKYMON_HTTP_ERROR_GETHOST);
+    }
   }
 
   check_msg_from_parent(hg);
@@ -1228,6 +1315,11 @@ int http_c_fc(typHOE *hg){
   }
   
   check_msg_from_parent(hg);
+
+  if(hg->proxy_flag){
+    addr_in = (struct sockaddr_in *)(res -> ai_addr);
+    addr_in -> sin_port=htons(hg->proxy_port);
+  }
 
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
@@ -1317,7 +1409,7 @@ int http_c_fc(typHOE *hg){
       tmp_scale=g_strdup("Linear");
     }
     tmp=g_strdup_printf(hg->dss_path,
-			hg->dss_src, 2000,
+			hg->dss_src, 2000.0,
 			tmp_scale,
 			(hg->dss_invert) ? "&invert=on&" : "&",
 			(gdouble)hg->dss_arcmin/60.,
@@ -1347,7 +1439,7 @@ int http_c_fc(typHOE *hg){
       tmp_scale=g_strdup("Linear");
     }
     tmp=g_strdup_printf(hg->dss_path,
-			hg->dss_src, 2000,
+			hg->dss_src, 2000.0,
 			tmp_scale,
 			(gdouble)hg->dss_arcmin/60.,
 			(gdouble)hg->dss_arcmin/60.,
@@ -1414,7 +1506,17 @@ int http_c_fc(typHOE *hg){
 
   hg->psz=0;
 
-  sprintf(send_mesg, "GET %s HTTP/1.1\r\n", tmp);
+  if(hg->proxy_flag){
+    if(proxy_ssl){
+      sprintf(send_mesg, "GET https://%s%s HTTP/1.1\r\n", hg->dss_host,tmp);
+    }
+    else{
+      sprintf(send_mesg, "GET http://%s%s HTTP/1.1\r\n", hg->dss_host,tmp);
+    }
+  }
+  else{
+    sprintf(send_mesg, "GET %s HTTP/1.1\r\n", tmp);
+  }
   write_to_server(command_socket, send_mesg);
   if(tmp) g_free(tmp);
 
@@ -1819,7 +1921,7 @@ int http_c_fc_ssl(typHOE *hg){
   }
   
   check_msg_from_parent(hg);
-
+ 
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
     fprintf(stderr, "Failed to connect to %s .\n", hg->dss_host);
@@ -4667,7 +4769,7 @@ int post_body_ssl(typHOE *hg, gboolean wflag, SSL *ssl,
 }
  
 
-int http_c_fcdb(typHOE *hg){
+int http_c_fcdb(typHOE *hg, gboolean proxy_ssl){
   int command_socket;           /* コマンド用ソケット */
   int size;
 
@@ -4678,6 +4780,7 @@ int http_c_fcdb(typHOE *hg){
   FILE *fp_read;
 
   struct addrinfo hints, *res;
+  struct sockaddr_in *addr_in;
   struct in_addr addr;
   int err;
 
@@ -4700,11 +4803,19 @@ int http_c_fcdb(typHOE *hg){
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_family = AF_INET;
 
-  if ((err = getaddrinfo(hg->fcdb_host, "http", &hints, &res)) !=0){
-    fprintf(stderr, "Bad hostname [%s]\n", hg->fcdb_host);
-    return(HSKYMON_HTTP_ERROR_GETHOST);
+  if(hg->proxy_flag){
+    if ((err = getaddrinfo(hg->proxy_host, "http", &hints, &res)) !=0){
+      fprintf(stderr, "Bad hostname [%s]\n", hg->fcdb_host);
+      return(HSKYMON_HTTP_ERROR_GETHOST);
+    }
   }
-
+  else{
+    if ((err = getaddrinfo(hg->fcdb_host, "http", &hints, &res)) !=0){
+      fprintf(stderr, "Bad hostname [%s]\n", hg->fcdb_host);
+      return(HSKYMON_HTTP_ERROR_GETHOST);
+    }
+  }
+    
   check_msg_from_parent(hg);
    
   /* ソケット生成 */
@@ -4715,6 +4826,11 @@ int http_c_fcdb(typHOE *hg){
   
   check_msg_from_parent(hg);
    
+  if(hg->proxy_flag){
+    addr_in = (struct sockaddr_in *)(res -> ai_addr);
+    addr_in -> sin_port=htons(hg->proxy_port);
+  }
+
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
     fprintf(stderr, "Failed to connect to %s .\n", hg->fcdb_host);
@@ -4728,11 +4844,35 @@ int http_c_fcdb(typHOE *hg){
 
   // HTTP/1.1 ではchunked対策が必要
   hg->psz=0;
-  if(hg->fcdb_post){
-    sprintf(send_mesg, "POST %s HTTP/1.1\r\n", hg->fcdb_path);
+  if(hg->proxy_flag){
+    if(proxy_ssl){
+      if(hg->fcdb_post){
+	sprintf(send_mesg, "POST https://%s%s HTTP/1.1\r\n",
+		hg->fcdb_host,hg->fcdb_path);
+      }
+      else{
+	sprintf(send_mesg, "GET https://%s%s HTTP/1.1\r\n",
+		hg->fcdb_host,hg->fcdb_path);
+      }
+    }
+    else{ 
+      if(hg->fcdb_post){
+	sprintf(send_mesg, "POST http://%s%s HTTP/1.1\r\n",
+		hg->fcdb_host,hg->fcdb_path);
+      }
+      else{
+	sprintf(send_mesg, "GET http://%s%s HTTP/1.1\r\n",
+		hg->fcdb_host,hg->fcdb_path);
+      }
+    }
   }
   else{
-    sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->fcdb_path);
+    if(hg->fcdb_post){
+      sprintf(send_mesg, "POST %s HTTP/1.1\r\n", hg->fcdb_path);
+    }
+    else{
+      sprintf(send_mesg, "GET %s HTTP/1.1\r\n", hg->fcdb_path);
+    }
   }
   write_to_server(command_socket, send_mesg);
 
@@ -5020,12 +5160,22 @@ gpointer thread_get_dss(gpointer gdata){
 
   hg->psz=0;
   hg->pabort=FALSE;
-  
-  if((hg->fc_mode<FC_SEP2)||(hg->fc_mode>FC_SEP3)){
-    http_c_fc(hg);
+
+  if(hg->proxy_flag){
+    if((hg->fc_mode<FC_SEP2)||(hg->fc_mode>FC_SEP3)){
+      http_c_fc(hg, TRUE);
+    }
+    else{
+      http_c_fc(hg, FALSE);
+    }
   }
   else{
-    http_c_fc_ssl(hg);
+    if((hg->fc_mode<FC_SEP2)||(hg->fc_mode>FC_SEP3)){
+      http_c_fc(hg, FALSE);
+    }
+    else{
+      http_c_fc_ssl(hg);
+    }
   }
 
   hg->fc_pid=1;
@@ -5055,6 +5205,7 @@ gpointer thread_get_fcdb(gpointer gdata){
   hg->psz=0;
   hg->pabort=FALSE;
 
+  
   switch(hg->fcdb_type){
   case (-1):    
   case FCDB_TYPE_PS1:
@@ -5066,11 +5217,21 @@ gpointer thread_get_fcdb(gpointer gdata){
   case TRDB_TYPE_GEMINI:
   case TRDB_TYPE_FCDB_GEMINI:
   case ADDOBJ_TYPE_TRANSIENT:
-    http_c_fcdb_ssl(hg);
+    if(hg->proxy_flag){
+      http_c_fcdb(hg, TRUE);
+    }
+    else{
+      http_c_fcdb_ssl(hg);
+    }
     break;
     
   default:
-    http_c_fcdb(hg);
+    if(hg->proxy_flag){
+      http_c_fcdb(hg, FALSE);
+    }
+    else{
+      http_c_fcdb(hg, FALSE);
+    }
     break;
   }
  
@@ -5656,3 +5817,122 @@ gint ssl_write(SSL *ssl, const gchar *buf, gint len)
 	}
 }
 
+
+int create_seimei_socket(typHOE *hg){
+
+  //hg->seimei_flag=TRUE;
+  
+  return 0;
+}
+
+
+
+int get_seimei_azel(typHOE *hg){
+  struct addrinfo hints, *res;
+  struct in_addr addr;
+  int err;
+  const char *cause=NULL;
+  gboolean chunked_flag=FALSE;
+
+  int size;
+  
+  char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
+  char buf[BUF_LEN+1];
+  gchar *cp, *cpp;
+  
+  if(!hg->seimei_flag) return(-1);
+
+  
+  allsky_debug_print("Child: http accessing to %s\n",hg->allsky_host);
+   
+  /* ホストの情報 (IP アドレスなど) を取得 */
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_family = AF_INET;
+  
+  if ((err = getaddrinfo(SEIMEI_STATUS_HOST, SEIMEI_STATUS_PORT, &hints, &res)) !=0){
+    fprintf(stderr, "Bad hostname [%s]\n", SEIMEI_STATUS_HOST);
+    return(HSKYMON_SEIMEI_ERROR_GETHOST);
+  }
+
+  /* ソケット生成 */
+  if( (hg->seimei_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
+      fprintf(stderr, "Failed to create a new socket.\n");
+      freeaddrinfo(res);
+      return(HSKYMON_SEIMEI_ERROR_SOCKET);
+    }
+  
+  /* サーバに接続 */
+  if( connect(hg->seimei_socket, res->ai_addr, res->ai_addrlen) != 0){
+    fprintf(stderr, "Failed to connect to %s .\n", SEIMEI_STATUS_HOST);
+    freeaddrinfo(res);
+    return(HSKYMON_SEIMEI_ERROR_CONNECT);
+  }
+
+  // AddrInfoの解放
+  freeaddrinfo(res);
+  
+
+  allsky_debug_print("Child: getting status ...\n");
+  
+  // get
+  sprintf(send_mesg, "%010ld,HSKYMON   ,STATUS TEL.AZI\n",hg->seimei_id);
+  write_to_server(hg->seimei_socket, send_mesg);
+
+  // OK
+  size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  //fprintf(stderr,"--> %s", buf);
+
+  // TEL.AZI
+  size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  //fprintf(stderr,"--> %s", buf);
+  cpp=buf;
+  cp=strstr(cpp,"TEL.AZI=");
+  cp+=strlen("TEL.AZI=");
+  hg->seimei_az=atof(cp);
+  
+  // END
+  size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  //fprintf(stderr,"--> %s", buf);
+
+
+  // get
+  sprintf(send_mesg, "%010ld,HSKYMON   ,STATUS TEL.ALT\n",hg->seimei_id);
+  write_to_server(hg->seimei_socket, send_mesg);
+
+  // OK
+  size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  //fprintf(stderr,"--> %s", buf);
+
+  // TEL.ALT
+  size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  //fprintf(stderr,"--> %s", buf);
+  cpp=buf;
+  cp=strstr(cpp,"TEL.ALT=");
+  cp+=strlen("TEL.ALT=");
+  hg->seimei_el=atof(cp);
+  
+  // END
+  size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  //fprintf(stderr,"--> %s", buf);
+
+  printf(" Seimei Az=%lf   El=%lf\n",hg->seimei_az, hg->seimei_el);
+  
+  check_msg_from_parent(hg);
+
+  close(hg->seimei_socket);
+  hg->seimei_id++;
+
+  allsky_debug_print("Child: done\n");
+   
+  return 0;
+}
+
+int close_seimei_socket(typHOE *hg){
+ 
+  close(hg->seimei_socket);
+
+  hg->seimei_flag=FALSE;
+  
+  return 0;
+}

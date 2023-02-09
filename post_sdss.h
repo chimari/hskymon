@@ -11,7 +11,7 @@ static gchar *sdss_band[NUM_SDSS_BAND]=
   "u", "g", "r", "i", "z"
 };
 
-enum{ FCDB_SDSS_SEARCH_IMAG, FCDB_SDSS_SEARCH_SPEC} SDSSSearch;
+enum{ FCDB_SDSS_SEARCH_IMAG, FCDB_SDSS_SEARCH_SPEC};
 
 
 static const PARAMpost sdss_post[] = {

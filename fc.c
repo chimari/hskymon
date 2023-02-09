@@ -11,6 +11,21 @@
 #include <cairo.h>
 #include <cairo-pdf.h>
 
+//// Global args.
+extern gboolean  flagProp;
+extern gboolean  flagChildDialog;
+extern gboolean  flagTree;
+extern gboolean  flagPlot;
+extern gboolean  flagFC;
+extern gboolean  flagADC;
+extern gboolean  flagPAM;
+extern int debug_flg;
+extern gboolean flag_getDSS;
+extern gboolean flag_getFCDB;
+
+extern pid_t fc_pid;
+extern pid_t fcdb_pid;
+extern pid_t stddb_pid;
 
 #ifdef USE_GTK3
 gboolean draw_fc_cb();
@@ -3672,7 +3687,7 @@ void pm_dl(typHOE *hg)
     break;
     
   case FCDB_TYPE_GAIA:
-    tmp=g_strdup("Searching objects in GAIA DR2 ...");
+    tmp=g_strdup("Searching objects in GAIA DR3 ...");
     break;
   }
   create_pdialog(hg,
@@ -3691,7 +3706,7 @@ void pm_dl(typHOE *hg)
 
   case FCDB_TYPE_GAIA:
     gtk_label_set_markup(GTK_LABEL(hg->plabel),
-			 "Searching objects in GAIA DR2 ...");
+			 "Searching objects in GAIA DR3 ...");
     break;
   }
   
@@ -3761,7 +3776,7 @@ void pm_dl(typHOE *hg)
       gtk_entry_set_text(GTK_ENTRY(hg->pm_entry_pm_dec),tmp);
       g_free(tmp);
 
-      tmp=g_strdup_printf("Your input coordinate matches with a <i>G=%.2lf mag</i> star in GAIA DR2.",
+      tmp=g_strdup_printf("Your input coordinate matches with a <i>G=%.2lf mag</i> star in GAIA DR3.",
 			  hg->obj[hg->pm_i].gaia_g); 
     }
     else{

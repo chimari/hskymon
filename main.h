@@ -69,6 +69,7 @@
 
 #include "lgs.h"
 
+#include "seimei.h"
 
 #ifdef USE_WIN32
 #define USER_CONFFILE "hskymon.ini"
@@ -84,6 +85,8 @@
 #define DEFAULT_URL "https://www.naoj.org/Observing/tools/hskymon/"
 #define VER_HOST "www.naoj.org"
 #define VER_PATH "/Observing/tools/hskymon/ver"
+
+#define DEFAULT_PROXY_HOST "proxy.host.address"
 
 #ifdef USE_WIN32
 #define DSS_URL "http://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Interface=quick&Position=%d+%d+%.2lf%%2C+%s%d+%d+%.2lf&SURVEY=Digitized+Sky+Survey"
@@ -255,8 +258,8 @@ enum
 #define FCDB_UCAC_PATH_R "/viz-bin/votable?-source=UCAC4&-c=%lf%%20%+lf&-c.u=arcsec&-c.r=%d&-c.geom=r&-out.max=5000%s-out.form=VOTable&-out=UCAC4&-out=RAJ2000&-out=DEJ2000&-out=ePos&-out=f.mag&-out=of&-out=db&-out=pmRA&-out=pmDE&-out=Jmag&-out=Hmag&-out=Kmag&-out=Bmag&-out=Vmag&-out=gmag&-out=rmag&-out=imag"
 
 #define FCDB_HOST_GAIA "vizier.u-strasbg.fr"
-#define FCDB_GAIA_PATH_R "/viz-bin/votable?-source=I/345/gaia2&-c=%lf%%20%+lf&-c.u=arcsec&-c.r=%d&-c.geom=r&-out.max=5000%s-out.form=VOTable"
-#define FCDB_GAIA_PATH_B "/viz-bin/votable?-source=I/345/gaia2&-c=%lf%%20%+lf&-c.u=arcsec&-c.bs=%dx%d&-c.geom=b&-out.max=5000%s-out.form=VOTable"
+#define FCDB_GAIA_PATH_R "/viz-bin/votable?-source=I/355/gaiadr3&-c=%lf%%20%+lf&-c.u=arcsec&-c.r=%d&-c.geom=r&-out.max=5000%s-out.form=VOTable"
+#define FCDB_GAIA_PATH_B "/viz-bin/votable?-source=I/355/gaiadr3&-c=%lf%%20%+lf&-c.u=arcsec&-c.bs=%dx%d&-c.geom=b&-out.max=5000%s-out.form=VOTable"
 
 #define FCDB_HOST_2MASS "gsss.stsci.edu"
 #define FCDB_2MASS_PATH "/webservices/vo/CatalogSearch.aspx?CAT=2MASS&RA=%lf&DEC=%+lf&SR=%lf%sMAXOBJ=5000"
@@ -474,7 +477,7 @@ enum{FC_STSCI_DSS1R,
      FC_PANI,
      FC_PANZ,
      FC_PANY,
-     NUM_FC} ModeFC;
+     NUM_FC};
 
 static const gchar* FC_name[]={
   "STScI: DSS1 (Red)",         // FC_STSCI_DSS1R, 
@@ -671,7 +674,7 @@ static const gchar* FC_host[]={
 #define PANSTARRS_MAX_ARCMIN 25
 
 #define FC_WINSIZE 400
-enum{ FC_OUTPUT_WINDOW, FC_OUTPUT_PDF, FC_OUTPUT_PRINT} FCOutput;
+enum{ FC_OUTPUT_WINDOW, FC_OUTPUT_PDF, FC_OUTPUT_PRINT};
 enum{ FC_INST_NONE,
       FC_INST_HDS,
       FC_INST_HDSAUTO,
@@ -691,7 +694,7 @@ enum{ FC_INST_NONE,
       FC_INST_KOOLS,
       FC_INST_TRICCS,
       FC_INST_NO_SELECT,
-      NUM_FC_INST} FCInst;
+      NUM_FC_INST};
 
 static const gchar* FC_instname[]={
   "None",        //FC_INST_NONE,	  
@@ -715,11 +718,11 @@ static const gchar* FC_instname[]={
   NULL};
 
 
-enum{ FC_SCALE_LINEAR, FC_SCALE_LOG, FC_SCALE_SQRT, FC_SCALE_HISTEQ, FC_SCALE_LOGLOG} FCScale;
+enum{ FC_SCALE_LINEAR, FC_SCALE_LOG, FC_SCALE_SQRT, FC_SCALE_HISTEQ, FC_SCALE_LOGLOG};
 
-enum{ FCDB_SIMBAD_STRASBG, FCDB_SIMBAD_HARVARD } FCDBSimbad;
+enum{ FCDB_SIMBAD_STRASBG, FCDB_SIMBAD_HARVARD };
 enum{ FCDB_VIZIER_STRASBG, FCDB_VIZIER_NAOJ, 
-      FCDB_VIZIER_HARVARD } FCDBVizieR;
+      FCDB_VIZIER_HARVARD };
 
 #define ADC_WINSIZE 400
 #define ADC_SLIT_WIDTH 0.4
@@ -729,7 +732,7 @@ enum{ ADC_INST_IMR,
       ADC_INST_HDSAUTO,
       ADC_INST_HDSZENITH,
       ADC_INST_KOOLS,
-      NUM_ADC_INST} ADC_Inst;
+      NUM_ADC_INST};
 
 //  Instrument
 #define HDS_SLIT_MASK_ARCSEC 9.2
@@ -737,6 +740,7 @@ enum{ ADC_INST_IMR,
 #define HDS_SLIT_LENGTH 10000
 #define HDS_SLIT_WIDTH 500
 #define HDS_PA_OFFSET (-58.4)
+//#define GAOES_PA_OFFSET (-90.0)
 #define HDS_SIZE 3
 
 #define FMOS_SIZE 40
@@ -748,7 +752,7 @@ enum{ ADC_INST_IMR,
 #define SPCAM_SIZE 40
 
 #define HSC_R_ARCMIN 90
-enum{ HSC_DITH_NO, HSC_DITH_5, HSC_DITH_N} HSC_Dith;
+enum{ HSC_DITH_NO, HSC_DITH_5, HSC_DITH_N};
 #define HSC_DRA 120
 #define HSC_DDEC 120
 #define HSC_TDITH 15
@@ -807,27 +811,28 @@ enum{ HSC_DITH_NO, HSC_DITH_5, HSC_DITH_N} HSC_Dith;
 
 
 // Object Type
-enum{OBJTYPE_OBJ,
-     OBJTYPE_STD,
-     OBJTYPE_TTGS
-} ObjType; 
+enum{
+  OBJTYPE_OBJ,
+  OBJTYPE_STD,
+  OBJTYPE_TTGS
+}; 
 
 #define ADDTYPE_OBJ   -1
 #define ADDTYPE_STD   -2
 #define ADDTYPE_TTGS  -3
 
 // OpenSSL
-typedef enum {
-	SSL_NONE,
-	SSL_TUNNEL,
-	SSL_STARTTLS
-} SSLType;
+enum {
+  SSL_NONE,
+  SSL_TUNNEL,
+  SSL_STARTTLS
+};
 
-typedef enum {
-	SSL_CERT_NONE,
-	SSL_CERT_ACCEPT,
-	SSL_CERT_DENY
-} SSLCertRes;
+enum {
+  SSL_CERT_NONE,
+  SSL_CERT_ACCEPT,
+  SSL_CERT_DENY
+};
 
 
 // Treeview
@@ -983,7 +988,7 @@ static const gchar* db_name[]={
   "LAMOST",         //FCDB_TYPE_LAMOST,
   "USNO",           //FCDB_TYPE_USNO,
   "UCAC4",          //FCDB_TYPE_UCAC,
-  "GAIA DR2",       //FCDB_TYPE_GAIA, 
+  "GAIA DR3",       //FCDB_TYPE_GAIA, 
   "Kepler",         //FCDB_TYPE_KEPLER,
   "2MASS",          //FCDB_TYPE_2MASS,
   "WISE",           //FCDB_TYPE_WISE,
@@ -1120,7 +1125,7 @@ enum{
 #define MAX_TRDB_BAND 100
 
 #ifdef USE_XMLRPC
-enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
+enum{ ROPE_DIR, ROPE_ALL};
 #endif
 
 #define BUFFSIZE 65535
@@ -1143,7 +1148,7 @@ enum{ ROPE_DIR, ROPE_ALL} ROPEMode;
 #define PA_A1_SUBARU 0.00
 
 
-enum{ AZEL_NORMAL, AZEL_POSI, AZEL_NEGA} AZElMode;
+enum{ AZEL_NORMAL, AZEL_POSI, AZEL_NEGA};
 
 enum{ WWWDB_SIMBAD, 
       WWWDB_NED, 
@@ -1165,7 +1170,7 @@ enum{ WWWDB_SIMBAD,
       WWWDB_SEP2, 
       WWWDB_SMOKA, 
       WWWDB_HST, 
-      WWWDB_ESO} WWWDBMode;
+      WWWDB_ESO};
 
 enum{ STDDB_SSLOC, 
       STDDB_RAPID, 
@@ -1173,7 +1178,7 @@ enum{ STDDB_SSLOC,
       STDDB_ESOSTD, 
       STDDB_IRAFSTD, 
       STDDB_CALSPEC, 
-      STDDB_HDSSTD} STDDBMode;
+      STDDB_HDSSTD};
 
 #define STD_DRA 20
 #define STD_DDEC 10
@@ -1210,7 +1215,7 @@ enum{ STDDB_SSLOC,
 
 
 // SKYMON Mode
-enum{ SKYMON_CUR, SKYMON_SET, SKYMON_LAST} SkymonMode;
+enum{ SKYMON_CUR, SKYMON_SET, SKYMON_LAST};
 
 #define SUNSET_OFFSET 25
 #define SUNRISE_OFFSET 25
@@ -1231,27 +1236,27 @@ enum{ SKYMON_CUR, SKYMON_SET, SKYMON_LAST} SkymonMode;
 
 // All-Sky Camera
 enum{ 
-ALLSKY_UH, 
-ALLSKY_ASIVAV, 
-ALLSKY_ASIVAR, 
-ALLSKY_SUBARU, 
-ALLSKY_MKVIS,
-ALLSKY_PALOMAR,
-ALLSKY_LICK,
-ALLSKY_KPNO,
-ALLSKY_MMT,
-ALLSKY_HET,
-ALLSKY_CPAC,
-ALLSKY_LASILLA,
-ALLSKY_GTC,
-ALLSKY_KANATA,
-ALLSKY_OAO,
-ALLSKY_NHAO,
-ALLSKY_GAO,
-ALLSKY_AAT,
-ALLSKY_MSO,
-NUM_ALLSKY
-} AllSkyCamera;
+  ALLSKY_UH, 
+  ALLSKY_ASIVAV, 
+  ALLSKY_ASIVAR, 
+  ALLSKY_SUBARU, 
+  ALLSKY_MKVIS,
+  ALLSKY_PALOMAR,
+  ALLSKY_LICK,
+  ALLSKY_KPNO,
+  ALLSKY_MMT,
+  ALLSKY_HET,
+  ALLSKY_CPAC,
+  ALLSKY_LASILLA,
+  ALLSKY_GTC,
+  ALLSKY_KANATA,
+  ALLSKY_OAO,
+  ALLSKY_NHAO,
+  ALLSKY_GAO,
+  ALLSKY_AAT,
+  ALLSKY_MSO,
+  NUM_ALLSKY
+};
 
 
 #define ALLSKY_DEF_SHORT "All-Sky Camera"
@@ -1586,10 +1591,10 @@ static const AllSkypara allsky_param[]={
 #define HSKYMON_HTTP_ERROR_SSL -5
 
 // Plot Mode
-enum{ PLOT_EL, PLOT_AZ, PLOT_AD, PLOT_ADPAEL, PLOT_MOONSEP,  PLOT_HDSPA} PlotMode;
-enum{ PLOT_ALL_SINGLE, PLOT_ALL_SELECTED,PLOT_ALL_ALL} PlotAll;
-enum{ PLOT_OUTPUT_WINDOW, PLOT_OUTPUT_PDF, PLOT_OUTPUT_PRINT} PlotOutput;
-enum{ PLOT_CENTER_MIDNIGHT, PLOT_CENTER_CURRENT,PLOT_CENTER_MERIDIAN} PlotCenter;
+enum{ PLOT_EL, PLOT_AZ, PLOT_AD, PLOT_ADPAEL, PLOT_MOONSEP,  PLOT_HDSPA};
+enum{ PLOT_ALL_SINGLE, PLOT_ALL_SELECTED,PLOT_ALL_ALL};
+enum{ PLOT_OUTPUT_WINDOW, PLOT_OUTPUT_PDF, PLOT_OUTPUT_PRINT};
+enum{ PLOT_CENTER_MIDNIGHT, PLOT_CENTER_CURRENT,PLOT_CENTER_MERIDIAN};
 #define PLOT_INTERVAL 60*1000
 
 typedef struct _EPHpara EPHpara;
@@ -1892,6 +1897,7 @@ struct _typHOE{
 #ifdef USE_XMLRPC
   gint telstat_timer;
 #endif
+  gint seimeistat_timer;
 
   gint pm_i;
 
@@ -2385,6 +2391,10 @@ struct _typHOE{
   gdouble allsky_cloud_thresh;
   gboolean allsky_diff_zero;
 
+  gboolean proxy_flag;
+  gchar *proxy_host;
+  gint  proxy_port;
+
   gboolean noobj_flag;
   gboolean hide_flag;
 
@@ -2417,6 +2427,12 @@ struct _typHOE{
   gboolean telstat_error;
 #endif
 
+  gboolean seimei_flag;
+  glong seimei_id;
+  int seimei_socket;
+  gdouble seimei_az;
+  gdouble seimei_el;
+  
   FILE *fp_log;
   gchar *filename_log;
 
@@ -2498,22 +2514,6 @@ typedef struct{
 
 
 
-//// Global args.
-gboolean  flagProp;
-gboolean  flagChildDialog;
-gboolean  flagTree;
-gboolean  flagPlot;
-gboolean  flagFC;
-gboolean  flagADC;
-gboolean  flagPAM;
-int debug_flg;
-gboolean flag_getDSS;
-gboolean flag_getFCDB;
-
-pid_t fc_pid;
-pid_t fcdb_pid;
-pid_t stddb_pid;
-
 
 //// Functions' proto-type
 // main.c
@@ -2546,6 +2546,8 @@ gboolean check_allsky();
 #ifdef USE_XMLRPC
 gint update_telstat();
 #endif
+int create_seimei_socket();
+gint update_seimeistat();
 void clear_trdb();
 void init_obj();
 gboolean check_ttgs();
@@ -2625,6 +2627,8 @@ gpointer thread_get_fcdb();
 void allsky_debug_print (const gchar *format, ...) G_GNUC_PRINTF(1, 2);
 int month_from_string_short();
 
+int get_seimei_azel();
+
 // json_parse
 void fcdb_gemini_json_parse();
 void trdb_gemini_json_parse();
@@ -2647,6 +2651,7 @@ gboolean draw_skymon_cairo();
 #ifdef USE_XMLRPC
 gboolean draw_skymon_with_telstat_cairo();
 #endif
+gboolean draw_skymon_with_seimei_cairo();
 
 //remoteObjects.c
 int ro_init();

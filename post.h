@@ -25,4 +25,4 @@ enum{ POST_NULL,
       POST_SPEC,
       POST_IPOL,
       POST_ADD
-} POST_num;
+};
