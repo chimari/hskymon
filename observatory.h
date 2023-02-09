@@ -25,7 +25,7 @@ OBS_KISO,
 OBS_GAO,
 OBS_AAT,
 NUM_OBS
-} ObsPos;
+};
 
 
 typedef struct _OBSpara OBSpara;
