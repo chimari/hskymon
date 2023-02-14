@@ -526,7 +526,7 @@ xmlTextReaderPtr Init_VO_Parser(const char *filename,
   /* Reading file */
   if ((reader = xmlReaderForFile(filename, NULL, 0)) == NULL) {
     fprintf(stderr,"xmlReaderForFile failed\n");
-    exit(EXIT_READING);
+    //exit(EXIT_READING);
   }
 
   return(reader);
@@ -2399,25 +2399,25 @@ void fcdb_kepler_vo_parse(typHOE *hg, gboolean magextract) {
       columns[1] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Dec (J2000)") == 0) 
       columns[2] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"r Mag") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"R Mag") == 0) 
       columns[3] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"J Mag") == 0) 
       columns[4] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Kepler Mag") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"KEP Mag") == 0) 
       columns[5] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Teff (deg K)") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Teff") == 0) 
       columns[6] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Log G (cm/s/s)") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Log G") == 0) 
       columns[7] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Metallicity (solar=0.0)") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Metallicity") == 0) 
       columns[8] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"E(B-V)") == 0) 
       columns[9] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Radius (solar=1.0)") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Radius") == 0) 
       columns[10] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Total PM (arcsec/yr)") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"Total PM") == 0) 
       columns[11] = vfield_move->position;
-    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"g-r color") == 0) 
+    else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"G-R color") == 0) 
       columns[12] = vfield_move->position;
     else if(xmlStrcmp(vfield_move->name,(const xmlChar *)"2MASS ID") == 0) 
       columns[13] = vfield_move->position;

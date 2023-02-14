@@ -1636,7 +1636,7 @@ void move_focus_item(typHOE *hg, gint i_set){
     }
     gtk_tree_path_free(path);
 
-    gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
+    //gtk_notebook_set_current_page (GTK_NOTEBOOK(hg->obj_note),0);
   }
 }
 
@@ -2248,9 +2248,6 @@ static void  wwwdb_item (GtkWidget *widget, gpointer data)
       break;
 
     case WWWDB_SMOKA:
-      fcdb_type_old=hg->fcdb_type;
-      hg->fcdb_type=FCDB_TYPE_WWWDB_SMOKA;
-
       if(hg->fcdb_host) g_free(hg->fcdb_host);
       hg->fcdb_host=g_strdup(FCDB_HOST_SMOKA);
 
@@ -2717,13 +2714,13 @@ static void trdb_dbtab (GtkWidget *widget, gpointer data)
       if(hg->fcdb_file) g_free(hg->fcdb_file);
       hg->fcdb_file=g_strconcat(hg->temp_dir,
 				G_DIR_SEPARATOR_S,
-				FCDB_FILE_XML,NULL);
+				FCDB_FILE_JSON,NULL);
 
       hg->fcdb_d_ra0=ln_hms_to_deg(&hobject_prec.ra);
       hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
 
       fcdb_dl(hg);
-      fcdb_hst_vo_parse(hg);
+      fcdb_hst_json_parse(hg);
 
       hg->fcdb_type=FCDB_TYPE_HST;
       if(flagFC) gtk_frame_set_label(GTK_FRAME(hg->fcdb_frame),"HST archive");
@@ -2828,7 +2825,7 @@ static void trdb_dbtab (GtkWidget *widget, gpointer data)
 static void trdb_simbad (GtkWidget *widget, gpointer data)
 {
   GtkTreeIter iter;
-  gchar *tmp;
+  gchar *tmp, *sci_instrume;
 #ifndef USE_WIN32
   gchar *cmdline;
 #endif
@@ -2912,48 +2909,55 @@ static void trdb_simbad (GtkWidget *widget, gpointer data)
       fcdb_type_old=hg->fcdb_type;
       hg->fcdb_type=TRDB_TYPE_WWWDB_HST;
 
-      if(hg->fcdb_host) g_free(hg->fcdb_host);
-      hg->fcdb_host=g_strdup(FCDB_HOST_HST);
-
-      if(hg->fcdb_path) g_free(hg->fcdb_path);
-      hg->fcdb_path=g_strdup(FCDB_HST_PATH);
-
-      if(hg->fcdb_file) g_free(hg->fcdb_file);
-      hg->fcdb_file=g_strconcat(hg->temp_dir,
-				G_DIR_SEPARATOR_S,
-				FCDB_FILE_HTML,NULL);
-
       hg->fcdb_d_ra0=ln_hms_to_deg(&hobject_prec.ra);
       hg->fcdb_d_dec0=ln_dms_to_deg(&hobject_prec.dec);
-
-      fcdb_dl(hg);
-      hg->fcdb_type=fcdb_type_old;
-      str_replace(hg->fcdb_file,
-		  "href=\"/",
-		  "href=\"http://" FCDB_HOST_HST "/");
-      str_replace(hg->fcdb_file,
-		  "HREF=\"/",
-		  "HREF=\"http://" FCDB_HOST_HST "/");
-      str_replace(hg->fcdb_file,
-		  "src=\"/",
-		  "src=\"http://" FCDB_HOST_HST "/");
-      str_replace(hg->fcdb_file,
-		  "SRC=\"/",
-		  "SRC=\"http://" FCDB_HOST_HST "/");
-      str_replace(hg->fcdb_file,
-		  "action=\"/",
-		  "action=\"http://" FCDB_HOST_HST "/");
-      str_replace(hg->fcdb_file,
-		  "ACTION=\"/",
-		  "ACTION=\"http://" FCDB_HOST_HST "/");
-
-#ifdef USE_WIN32      
-      tmp=g_strdup(hg->fcdb_file);
-#elif defined(USE_OSX)
-      tmp=g_strconcat("open ", hg->fcdb_file, NULL);
-#else
-      tmp=g_strconcat("\"",hg->fcdb_file,"\"",NULL);
-#endif
+      
+      switch(hg->trdb_hst_mode){
+      case TRDB_HST_MODE_OTHER:
+	if(HST_inst[hg->trdb_hst_other].active){
+	  sci_instrume=g_strdup_printf("active_instruments=%s",
+				       HST_inst[hg->trdb_hst_other].prm);
+	}
+	else{
+	  sci_instrume=g_strdup_printf("legacy_instruments=%s",
+				       HST_inst[hg->trdb_hst_other].prm);
+	}
+	break;
+	
+      case TRDB_HST_MODE_SPEC:
+	if(HST_inst[hg->trdb_hst_spec].active){
+	  sci_instrume=g_strdup_printf("active_instruments=%s",
+				       HST_inst[hg->trdb_hst_spec].prm);
+	}
+	else{
+	  sci_instrume=g_strdup_printf("legacy_instruments=%s",
+				       HST_inst[hg->trdb_hst_spec].prm);
+	}
+	break;
+	
+      case TRDB_HST_MODE_IMAGE:
+	if(HST_inst[hg->trdb_hst_image].active){
+	  sci_instrume=g_strdup_printf("active_instruments=%s",
+				       HST_inst[hg->trdb_hst_image].prm);
+	}
+	else{
+	  sci_instrume=g_strdup_printf("legacy_instruments=%s",
+				       HST_inst[hg->trdb_hst_image].prm);
+	}
+	break;
+      }
+	
+      
+      tmp=g_strdup_printf(TRDB_WWWDB_HST_PATH,
+			  hg->fcdb_d_ra0,
+			  (hg->fcdb_d_dec0 > 0) ? "%2B" : "%2D",
+			  fabs(hg->fcdb_d_dec0),
+			  (gdouble)hg->trdb_arcmin,
+			  HST_mode[hg->fcdb_hst_mode].prm,
+			  sci_instrume,
+			  hg->trdb_hst_stdate,
+			  hg->trdb_hst_eddate);
+      g_free(sci_instrume);
       break;
 
     case TRDB_TYPE_ESO:

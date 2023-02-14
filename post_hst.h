@@ -13,12 +13,79 @@ struct _PARAMhstinst{
 #define NUM_HST_SPEC 8
 #define NUM_HST_OTHER 2
 
-// HST Obs mode
+
+typedef struct _HST_INST_Entry HST_INST_Entry;
+struct _HST_INST_Entry{
+  gchar *name;
+  gchar *prm;
+
+  gboolean all;
+  gboolean spec;
+  gboolean image;
+
+  gboolean active;
+};
+
+static const HST_INST_Entry HST_inst[]={
+  {"ACS",    "acs",     TRUE, TRUE,  TRUE,  TRUE},
+  {"COS",    "cos",     TRUE, TRUE,  TRUE,  TRUE},
+  {"FGS",    "fgs",     TRUE, FALSE, FALSE, TRUE},
+  {"STIS",   "stis",    TRUE, TRUE,  TRUE,  TRUE},
+  {"WFC3",   "wfc3",    TRUE, TRUE,  TRUE,  TRUE},
+  {"FOC",    "foc",     TRUE, TRUE,  TRUE,  FALSE},
+  {"FOS",    "fos",     TRUE, TRUE,  FALSE, FALSE},
+  {"GHRS",   "ghrs",    TRUE, TRUE,  FALSE, FALSE},
+  {"HSP",    "hsp",     TRUE, FALSE, FALSE, FALSE},
+  {"NICMOS", "nicmos",  TRUE, TRUE,  TRUE,  FALSE},
+  {"WFPC1",  "wfpc" ,   TRUE, FALSE, TRUE,  FALSE},
+  {"WFPC2",  "wfpc2",   TRUE, FALSE, TRUE,  FALSE}
+};
+
 enum
 {
-  TRDB_HST_MODE_IMAGE,
+  HST_INST_ACS,
+  HST_INST_COS,
+  HST_INST_FGS,
+  HST_INST_STIS,
+  HST_INST_WFC3,
+  HST_INST_FOC,
+  HST_INST_FOS,
+  HST_INST_GHRS,
+  HST_INST_HSP,
+  HST_INST_NICMOS,
+  HST_INST_WFPC1,
+  HST_INST_WFPC2,
+  NUM_HST_INST  
+};
+
+// HST Obs mode 
+typedef struct _HST_MODE_Entry HST_MODE_Entry;
+struct _HST_MODE_Entry{
+  gchar *name;
+  gchar *prm;
+};
+
+static const HST_MODE_Entry HST_mode[]={
+  {"All",             "all"},
+  {"Spectroscopy",    "spectrum"},
+  {"Imaging",         "image"}
+};
+
+enum
+{
+  HST_MODE_ALL,
+  HST_MODE_SPEC,
+  HST_MODE_IMAGE
+};
+
+#define NUM_HST_MODE 3
+
+// HST Obs mode for TRDB
+enum
+{
+  TRDB_HST_MODE_OTHER,
   TRDB_HST_MODE_SPEC,
-  TRDB_HST_MODE_OTHER
+  TRDB_HST_MODE_IMAGE
 };
 
 static const PARAMhstinst hst_image[NUM_HST_IMAGE] = {

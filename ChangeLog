@@ -1,3 +1,11 @@
+2023.02.14 ver4.4.1 - Bug fix for compling w/Ubuntu 22.04LTS.
+                    - Change accessing to databases
+	                 HST archive
+	                 Kepler archive
+	                 DSS via STSci
+	                 DSS via ESO arhive
+	            - Added TRDB acces delay.
+
 2021.06.14 ver4.3.4 - Changed the limit size of all sky images to 1200 pix.
 	            - Automatic rescale of X, Y, and d of all sky iamges over
 	              the limit size.

@@ -213,10 +213,8 @@ gboolean progress_timeout(gpointer data ){
       }
       else{
 	if(flag_getDSS){
-	  if((hg->fc_mode<FC_SEP2)||(hg->fc_mode>FC_SEP3)){
-	    tmp=g_strdup_printf("Waiting for HTTP response ...");
-	  }
-	  else{
+	  switch(hg->fc_mode){
+	  default:
 	    tmp=g_strdup_printf("Waiting for HTTPS response ...");
 	  }
 	}

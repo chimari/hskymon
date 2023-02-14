@@ -57,6 +57,7 @@ void set_allsky_param_from_preset();
 void RadioPresetAllSky();
 void SetObsPreset();
 void PresetObs();
+void PresetHST();
 void SetAllSkyObs();
 void set_obs_param_from_preset();
 void RadioPresetObs();
@@ -1382,6 +1383,55 @@ void PresetObs (GtkWidget *widget,  gpointer * gdata)
 }
 
 
+void PresetHST (GtkWidget *widget,  gpointer * gdata)
+{
+  typHOE *hg;
+  GtkTreeIter iter;
+  gint i;
+
+  hg=(typHOE *)gdata;
+
+  if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter)){
+    gint n;
+    GtkTreeModel *model;
+    
+    model=gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
+    gtk_tree_model_get (model, &iter, 1, &n, -1);
+
+    hg->fcdb_hst_mode=n;
+  }
+
+  switch(hg->fcdb_hst_mode){
+  case HST_MODE_ALL:
+    for(i=0;i<NUM_HST_INST;i++){
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_w_hst_inst[i]),
+				   HST_inst[i].all);
+      gtk_widget_set_sensitive(hg->fcdb_w_hst_inst[i],HST_inst[i].all);
+    }
+    break;
+    
+  case HST_MODE_SPEC:
+    for(i=0;i<NUM_HST_INST;i++){
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_w_hst_inst[i]),
+				   HST_inst[i].spec);
+      gtk_widget_set_sensitive(hg->fcdb_w_hst_inst[i],HST_inst[i].spec);
+    }
+    break;
+
+  case HST_MODE_IMAGE:
+    for(i=0;i<NUM_HST_INST;i++){
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_w_hst_inst[i]),
+				   HST_inst[i].image);
+      gtk_widget_set_sensitive(hg->fcdb_w_hst_inst[i],HST_inst[i].image);
+    }
+    break;
+
+  default:
+    break;
+  }
+}
+
+
 void SetObsPreset(typHOE *hg){
   struct ln_dms obs_longitude_dms;
   struct ln_dms obs_latitude_dms;
@@ -2053,7 +2103,7 @@ gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
 #endif
   gtk_box_pack_start(GTK_BOX(vbox),label,FALSE, FALSE, 0);
   
-  label = gtkut_label_new ("&#xA9; 2003-21 Akito Tajitsu");
+  label = gtkut_label_new (COPYRIGHT_LABEL);
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_CENTER);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -3794,6 +3844,39 @@ static void trdb_smoka (GtkWidget *widget, gpointer data)
 		     cc_get_entry,
 		     &hg->trdb_smoka_date);
 
+  label = gtk_label_new ("Access Delay");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtkut_table_attach(table, label, 0, 1, 6, 7,
+		     GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtkut_hbox_new(FALSE,0);
+  gtkut_table_attach(table, hbox, 1, 2, 6, 7,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->trdb_delay,
+					    0, 10000, 100, 100, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &hg->trdb_delay);
+
+  label = gtk_label_new (" msec");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+
+  
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Cancel","window-close");
 #else
@@ -3898,7 +3981,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
 		     table,FALSE, FALSE, 0);
 
-  rb[0]=gtk_radio_button_new_with_label(NULL, "Imaging");
+  rb[0]=gtk_radio_button_new_with_label(NULL, "Other");
   gtkut_table_attach(table, rb[0], 0, 1, 0, 1,
 		     GTK_FILL,GTK_SHRINK,0,0);
   my_signal_connect (rb[0], "toggled", cc_radio, &hg->trdb_hst_mode);
@@ -3908,7 +3991,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
 		     GTK_FILL,GTK_SHRINK,0,0);
   my_signal_connect (rb[1], "toggled", cc_radio, &hg->trdb_hst_mode);
 
-  rb[2]=gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]),"Other");
+  rb[2]=gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb[0]),"Imaging");
   gtkut_table_attach(table, rb[2], 0, 1, 2, 3,
 		     GTK_FILL,GTK_SHRINK,0,0);
   my_signal_connect (rb[2], "toggled", cc_radio, &hg->trdb_hst_mode);
@@ -3923,11 +4006,13 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
     
     store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
 
-    for(i_inst=0;i_inst<NUM_HST_IMAGE;i_inst++){
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, hst_image[i_inst].name,
-			 1, i_inst, -1);
-      if(hg->trdb_hst_image==i_inst) iter_set=iter;
+    for(i_inst=0;i_inst<NUM_HST_INST;i_inst++){
+      if((!HST_inst[i_inst].image)&&(!HST_inst[i_inst].spec)){
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, HST_inst[i_inst].name,
+			   1, i_inst, -1);
+	if(hg->trdb_hst_other==i_inst) iter_set=iter;
+      }
     }
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
@@ -3942,7 +4027,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
     gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
     gtk_widget_show(combo);
     my_signal_connect (combo,"changed",cc_get_combo_box,
-		       &hg->trdb_hst_image);
+		       &hg->trdb_hst_other);
   }
 
   {
@@ -3953,11 +4038,13 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
     
     store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
 
-    for(i_inst=0;i_inst<NUM_HST_SPEC;i_inst++){
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, hst_spec[i_inst].name,
-			 1, i_inst, -1);
-      if(hg->trdb_hst_spec==i_inst) iter_set=iter;
+    for(i_inst=0;i_inst<NUM_HST_INST;i_inst++){
+      if(HST_inst[i_inst].spec){
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, HST_inst[i_inst].name,
+			   1, i_inst, -1);
+	if(hg->trdb_hst_spec==i_inst) iter_set=iter;
+      }
     }
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
@@ -3983,11 +4070,13 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
     
     store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
 
-    for(i_inst=0;i_inst<NUM_HST_OTHER;i_inst++){
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, 0, hst_other[i_inst].name,
-			 1, i_inst, -1);
-      if(hg->trdb_hst_other==i_inst) iter_set=iter;
+    for(i_inst=0;i_inst<NUM_HST_INST;i_inst++){
+      if(HST_inst[i_inst].image){
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, HST_inst[i_inst].name,
+			   1, i_inst, -1);
+	if(hg->trdb_hst_image==i_inst) iter_set=iter;
+      }
     }
 
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
@@ -4002,7 +4091,7 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
     gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
     gtk_widget_show(combo);
     my_signal_connect (combo,"changed",cc_get_combo_box,
-		       &hg->trdb_hst_other);
+		       &hg->trdb_hst_image);
   }
 
   label = gtk_label_new ("Search Radius");
@@ -4037,12 +4126,13 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
 #endif
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
   
-  label = gtk_label_new ("Observation Date");
+
+  label = gtk_label_new ("Start Date");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
 #else
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
 #endif
   gtkut_table_attach(table, label, 0, 1, 4, 5,
 		     GTK_FILL,GTK_SHRINK,0,0);
@@ -4050,13 +4140,68 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
   entry = gtk_entry_new ();
   gtkut_table_attach(table, entry, 1, 2, 4, 5,
 		     GTK_FILL,GTK_SHRINK,0,0);
-  gtk_entry_set_text(GTK_ENTRY(entry), hg->trdb_hst_date);
+  gtk_entry_set_text(GTK_ENTRY(entry), hg->trdb_hst_stdate);
   gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
-  my_entry_set_width_chars(GTK_ENTRY(entry),25);
+  my_entry_set_width_chars(GTK_ENTRY(entry),15);
   my_signal_connect (entry,
 		     "changed",
 		     cc_get_entry,
-		     &hg->trdb_hst_date);
+		     &hg->trdb_hst_stdate);
+
+  label = gtk_label_new ("  End Date");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtkut_table_attach(table, label, 0, 1, 5, 6,
+		     GTK_FILL,GTK_SHRINK,0,0);
+
+  entry = gtk_entry_new ();
+  gtkut_table_attach(table, entry, 1, 2, 5, 6,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  gtk_entry_set_text(GTK_ENTRY(entry), hg->trdb_hst_eddate);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
+  my_entry_set_width_chars(GTK_ENTRY(entry),15);
+  my_signal_connect (entry,
+		     "changed",
+		     cc_get_entry,
+		     &hg->trdb_hst_eddate);
+
+
+  label = gtk_label_new ("Access Delay");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtkut_table_attach(table, label, 0, 1, 6, 7,
+		     GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtkut_hbox_new(FALSE,0);
+  gtkut_table_attach(table, hbox, 1, 2, 6, 7,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->trdb_delay,
+					    0, 10000, 100, 100, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &hg->trdb_delay);
+
+  label = gtk_label_new (" msec");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Cancel","window-close");
@@ -4074,11 +4219,11 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
 
   gtk_widget_show_all(dialog);
 
-  if(hg->trdb_hst_mode==TRDB_HST_MODE_IMAGE)
+  if(hg->trdb_hst_mode==TRDB_HST_MODE_OTHER)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb[0]),TRUE);
   if(hg->trdb_hst_mode==TRDB_HST_MODE_SPEC)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb[1]),TRUE);
-  if(hg->trdb_hst_mode==TRDB_HST_MODE_OTHER)
+  if(hg->trdb_hst_mode==TRDB_HST_MODE_IMAGE)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb[2]),TRUE);
 
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK){
@@ -4092,8 +4237,10 @@ static void trdb_hst (GtkWidget *widget, gpointer data)
     hg->trdb_hst_spec_used  =hg->trdb_hst_spec;
     hg->trdb_hst_other_used =hg->trdb_hst_other;
     hg->trdb_arcmin_used=hg->trdb_arcmin;
-    if(hg->trdb_hst_date_used) g_free(hg->trdb_hst_date_used);
-    hg->trdb_hst_date_used=g_strdup(hg->trdb_hst_date);
+    if(hg->trdb_hst_stdate_used) g_free(hg->trdb_hst_stdate_used);
+    hg->trdb_hst_stdate_used=g_strdup(hg->trdb_hst_stdate);
+    if(hg->trdb_hst_eddate_used) g_free(hg->trdb_hst_eddate_used);
+    hg->trdb_hst_eddate_used=g_strdup(hg->trdb_hst_eddate);
   }
   else{
     if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);
@@ -4475,6 +4622,39 @@ static void trdb_eso (GtkWidget *widget, gpointer data)
 		     cc_get_entry,
 		     &hg->trdb_eso_eddate);
 
+  label = gtk_label_new ("Access Delay");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtkut_table_attach(table, label, 0, 1, 9, 10,
+		     GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtkut_hbox_new(FALSE,0);
+  gtkut_table_attach(table, hbox, 1, 2, 9, 10,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->trdb_delay,
+					    0, 10000, 100, 100, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &hg->trdb_delay);
+
+  label = gtk_label_new (" msec");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+
+  
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Cancel","window-close");
 #else
@@ -4697,6 +4877,39 @@ static void trdb_gemini (GtkWidget *widget, gpointer data)
 		     "changed",
 		     cc_get_entry,
 		     &hg->trdb_gemini_date);
+
+  label = gtk_label_new ("Access Delay");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtkut_table_attach(table, label, 0, 1, 4, 5,
+		     GTK_FILL,GTK_SHRINK,0,0);
+
+  hbox = gtkut_hbox_new(FALSE,0);
+  gtkut_table_attach(table, hbox, 1, 2, 4, 5,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->trdb_delay,
+					    0, 10000, 100, 100, 0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
+  my_signal_connect (adj, "value_changed", cc_get_adj, &hg->trdb_delay);
+
+  label = gtk_label_new (" msec");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+
 
 #ifdef USE_GTK3
   button=gtkut_button_new_from_icon_name("Cancel","window-close");
@@ -6717,7 +6930,7 @@ void create_fcdb_para_dialog (typHOE *hg)
   table = gtkut_table_new(4, 3, FALSE, 10, 5, 5);
   gtk_container_add (GTK_CONTAINER (vbox), table);
 
-  label = gtk_label_new ("Search Area = Finding Chart Area");
+  label = gtk_label_new ("Search Area = Finding Chart Diameter");
 #ifdef USE_GTK3
   gtk_widget_set_halign (label, GTK_ALIGN_START);
   gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
@@ -6736,7 +6949,38 @@ void create_fcdb_para_dialog (typHOE *hg)
 		     GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
 
-  frame = gtkut_frame_new ("<b>Imaging</b>");
+
+  {
+    GtkListStore *store;
+    GtkTreeIter iter, iter_set;	  
+    GtkCellRenderer *renderer;
+    gint i_mode;
+      
+    store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+
+    for(i_mode=0;i_mode<NUM_HST_MODE;i_mode++){
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, HST_mode[i_mode].name,
+			 1, i_mode, -1);
+      if(hg->fcdb_hst_mode==i_mode) iter_set=iter;
+    }
+
+    combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    gtk_container_add (GTK_CONTAINER (vbox1), combo);
+    g_object_unref(store);
+    
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo),renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT(combo), renderer, "text",0,NULL);
+    	
+    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo),&iter_set);
+    gtk_widget_show(combo);
+    my_signal_connect (combo,"changed",
+		       PresetHST,
+		       (gpointer)hg);
+  }
+  
+  frame = gtkut_frame_new ("<b>Instrument</b>");
   gtk_container_add (GTK_CONTAINER (vbox1), frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
 
@@ -6744,68 +6988,19 @@ void create_fcdb_para_dialog (typHOE *hg)
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
 
-  for(i=0;i<NUM_HST_IMAGE;i++){
-    check = gtk_check_button_new_with_label(hst_image[i].name);
-    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
-    my_signal_connect (check, "toggled",
+  for(i=0;i<NUM_HST_INST;i++){
+    hg->fcdb_w_hst_inst[i]
+      = gtk_check_button_new_with_label(HST_inst[i].name);
+    gtk_box_pack_start(GTK_BOX(vbox), hg->fcdb_w_hst_inst[i],FALSE, FALSE, 0);
+    my_signal_connect (hg->fcdb_w_hst_inst[i], "toggled",
 		       cc_get_toggle,
-		       &tmp_hst_image[i]);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
-				 hg->fcdb_hst_image[i]);
+		       &hg->fcdb_hst_inst[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->fcdb_w_hst_inst[i]),
+				 hg->fcdb_hst_inst[i]);
   }
 
-  vbox1 = gtkut_vbox_new(FALSE,0);
-#ifdef USE_GTK3
-  gtk_widget_set_hexpand(vbox1,TRUE);
-#endif
-  gtkut_table_attach(table, vbox1, 1, 2, 1, 3,
-		     GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
-
-  frame = gtkut_frame_new ("<b>Spectroscopy</b>");
-  gtk_container_add (GTK_CONTAINER (vbox1), frame);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
-
-  vbox = gtkut_vbox_new(FALSE,0);
-  gtk_container_add (GTK_CONTAINER (frame), vbox);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
-
-  for(i=0;i<NUM_HST_SPEC;i++){
-    check = gtk_check_button_new_with_label(hst_spec[i].name);
-    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
-    my_signal_connect (check, "toggled",
-		       cc_get_toggle,
-		       &tmp_hst_spec[i]);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
-				 hg->fcdb_hst_spec[i]);
-  }
-
-  vbox1 = gtkut_vbox_new(FALSE,0);
-#ifdef USE_GTK3
-  gtk_widget_set_hexpand(vbox1,TRUE);
-#endif
-  gtkut_table_attach(table, vbox1, 2, 3, 1, 2,
-		     GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
-
-  frame = gtkut_frame_new ("<b>Other</b>");
-  gtk_container_add (GTK_CONTAINER (vbox1), frame);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
-
-  vbox = gtkut_vbox_new(FALSE,0);
-  gtk_container_add (GTK_CONTAINER (frame), vbox);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
-
-  for(i=0;i<NUM_HST_OTHER;i++){
-    check = gtk_check_button_new_with_label(hst_other[i].name);
-    gtk_box_pack_start(GTK_BOX(vbox), check,FALSE, FALSE, 0);
-    my_signal_connect (check, "toggled",
-		       cc_get_toggle,
-		       &tmp_hst_other[i]);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
-				 hg->fcdb_hst_other[i]);
-  }
-
+  
+  // ESO
   vbox1 = gtkut_vbox_new(FALSE,0);
 #ifdef USE_GTK3
   gtk_widget_set_hexpand(vbox1,TRUE);
@@ -7245,6 +7440,10 @@ void create_fcdb_para_dialog (typHOE *hg)
       for(i=0;i<NUM_SMOKA_NAYUTA;i++){
 	hg->fcdb_smoka_nayuta[i]  = FALSE;
       }
+      hg->fcdb_hst_mode=HST_MODE_ALL;
+      for(i=0;i<NUM_HST_INST;i++){
+	hg->fcdb_hst_inst[i]  = TRUE;
+      }
       for(i=0;i<NUM_HST_IMAGE;i++){
 	hg->fcdb_hst_image[i]  = TRUE;
       }
@@ -7436,10 +7635,14 @@ void WriteTRDB(typHOE *hg){
 
   // HST
   xmms_cfg_write_int(cfgfile, "HST", "Mode", hg->trdb_hst_mode_used);
-  if(hg->trdb_hst_date_used)
-    xmms_cfg_write_string(cfgfile, "HST", "Date", hg->trdb_hst_date_used);
+  if(hg->trdb_hst_stdate_used)
+    xmms_cfg_write_string(cfgfile, "HST", "StDate", hg->trdb_hst_stdate_used);
   else
-    xmms_cfg_write_string(cfgfile, "HST", "Date", hg->trdb_hst_date);
+    xmms_cfg_write_string(cfgfile, "HST", "StDate", hg->trdb_hst_stdate);
+  if(hg->trdb_hst_eddate_used)
+    xmms_cfg_write_string(cfgfile, "HST", "EdDate", hg->trdb_hst_eddate_used);
+  else
+    xmms_cfg_write_string(cfgfile, "HST", "EdDate", hg->trdb_hst_eddate);
   xmms_cfg_write_int(cfgfile, "HST", "Image", hg->trdb_hst_image_used);
   xmms_cfg_write_int(cfgfile, "HST", "Spec", hg->trdb_hst_spec_used);
   xmms_cfg_write_int(cfgfile, "HST", "Other", hg->trdb_hst_other_used);
@@ -7561,16 +7764,16 @@ gchar *trdb_csv_name (typHOE *hg, const gchar *ext){
 
   case TRDB_TYPE_HST:
     switch(hg->trdb_hst_mode_used){
-    case TRDB_HST_MODE_IMAGE:
-      iname=repl_nonalnum(hst_image[hg->trdb_hst_image_used].name,0x5F);
+    case TRDB_HST_MODE_OTHER:
+      iname=repl_nonalnum(hst_other[hg->trdb_hst_other_used].name,0x5F);
       fname=g_strconcat((hg->filehead) ? hg->filehead : "hskymon",
 			"_query_list_by_HST_",
 			iname,
-			"_Imag.",
+			"_Other.",
 			ext,
 			NULL);
       break;
-
+      
     case TRDB_HST_MODE_SPEC:
       iname=repl_nonalnum(hst_spec[hg->trdb_hst_spec_used].name,0x5F);
       fname=g_strconcat((hg->filehead) ? hg->filehead : "hskymon",
@@ -7581,15 +7784,16 @@ gchar *trdb_csv_name (typHOE *hg, const gchar *ext){
 			NULL);
       break;
 
-    case TRDB_HST_MODE_OTHER:
-      iname=repl_nonalnum(hst_other[hg->trdb_hst_other_used].name,0x5F);
+    case TRDB_HST_MODE_IMAGE:
+      iname=repl_nonalnum(hst_image[hg->trdb_hst_image_used].name,0x5F);
       fname=g_strconcat((hg->filehead) ? hg->filehead : "hskymon",
 			"_query_list_by_HST_",
 			iname,
-			"_Other.",
+			"_Imag.",
 			ext,
 			NULL);
       break;
+
     }
     break;
 
@@ -10436,11 +10640,12 @@ void param_init(typHOE *hg){
   hg->trdb_smoka_spec_used  = TRUE;
   hg->trdb_smoka_ipol  = TRUE;
   hg->trdb_smoka_ipol_used  = TRUE;
-  hg->trdb_hst_mode  = TRDB_HST_MODE_IMAGE;
-  hg->trdb_hst_date=g_strdup_printf("1990-01-01..%d-%02d-%02d",
-				    hg->skymon_year,
-				    hg->skymon_month,
-				    hg->skymon_day);
+  hg->trdb_hst_mode  = TRDB_HST_MODE_SPEC;
+  hg->trdb_hst_stdate=g_strdup("1990-01-01");
+  hg->trdb_hst_eddate=g_strdup_printf("%d-%02d-%02d",
+				      hg->skymon_year,
+				      hg->skymon_month,
+				      hg->skymon_day);
   hg->trdb_eso_mode  = TRDB_ESO_MODE_IMAGE;
   hg->trdb_eso_stdate=g_strdup("1980 01 01");
   hg->trdb_eso_eddate=g_strdup_printf("%4d %02d %02d",
@@ -10632,6 +10837,10 @@ void param_init(typHOE *hg){
   for(i=0;i<NUM_SMOKA_NAYUTA;i++){
     hg->fcdb_smoka_nayuta[i]  = FALSE;
   }
+  hg->fcdb_hst_mode=HST_MODE_ALL;
+  for(i=0;i<NUM_HST_INST;i++){
+    hg->fcdb_hst_inst[i]  = TRUE;
+  }
   for(i=0;i<NUM_HST_IMAGE;i++){
     hg->fcdb_hst_image[i]  = TRUE;
   }
@@ -10663,7 +10872,10 @@ void param_init(typHOE *hg){
     hg->fcdb_eso_sam[i]  = TRUE;
   }
   hg->fcdb_gemini_inst = GEMINI_INST_ANY;
-
+  hg->trdb_hst_other = HST_INST_FGS;
+  hg->trdb_hst_spec  = HST_INST_STIS;
+  hg->trdb_hst_image  = HST_INST_WFC3;
+    
   hg->adc_inst=ADC_INST_IMR;
   hg->adc_flip=FALSE;
   hg->adc_slit_width=ADC_SLIT_WIDTH;
@@ -12526,16 +12738,23 @@ void ReadTRDB(typHOE *hg)
       hg->trdb_hst_mode_used=0;
     hg->trdb_hst_mode=hg->trdb_hst_mode_used;
 
-    if(hg->trdb_hst_date_used) g_free(hg->trdb_hst_date_used);
-    if(xmms_cfg_read_string(cfgfile, "HST", "Date", &c_buf)) 
-      hg->trdb_hst_date_used =c_buf;
+    if(xmms_cfg_read_string(cfgfile, "HST", "StDate", &c_buf)) 
+      hg->trdb_hst_stdate_used =c_buf;
     else
-      hg->trdb_hst_date_used=g_strdup_printf("1990-01-01..%d-%02d-%02d",
-					     hg->skymon_year,
-					     hg->skymon_month,
-					     hg->skymon_day);
-    if(hg->trdb_hst_date) g_free(hg->trdb_hst_date);
-    hg->trdb_hst_date=g_strdup(hg->trdb_hst_date_used);
+      hg->trdb_hst_stdate_used=g_strdup("1990-01-01");
+    if(hg->trdb_hst_stdate) g_free(hg->trdb_hst_stdate);
+    hg->trdb_hst_stdate=g_strdup(hg->trdb_hst_stdate_used);
+    
+    if(hg->trdb_hst_eddate_used) g_free(hg->trdb_hst_eddate_used);
+    if(xmms_cfg_read_string(cfgfile, "HST", "EdDate", &c_buf)) 
+      hg->trdb_hst_eddate_used =c_buf;
+    else
+      hg->trdb_hst_eddate_used=g_strdup_printf("%d-%02d-%02d",
+					       hg->skymon_year,
+					       hg->skymon_month,
+					       hg->skymon_day);
+    if(hg->trdb_hst_eddate) g_free(hg->trdb_hst_eddate);
+    hg->trdb_hst_eddate=g_strdup(hg->trdb_hst_eddate_used);
 
     if(xmms_cfg_read_int  (cfgfile, "HST", "Image",  &i_buf))
       hg->trdb_hst_image_used=i_buf;

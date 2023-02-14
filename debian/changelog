@@ -1,3 +1,9 @@
+hskymon (4.4.1ubuntu) UNRELEASED; urgency=medium
+
+  * Change accessing to databases (HST) etc.
+
+ -- Akito Tajitsu <akito.tajitsu@nao.ac.jp>  Tue, 14 Feb 2023 18:36:08 +0900
+
 hskymon (4.3.4ubuntu) bionic; urgency=medium
 
   * Automatic rescale X, Y, and D of all sky images over the limit size.

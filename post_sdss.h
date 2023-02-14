@@ -11,7 +11,18 @@ static gchar *sdss_band[NUM_SDSS_BAND]=
   "u", "g", "r", "i", "z"
 };
 
+static gchar *sdss_band_min[NUM_SDSS_BAND]=
+{
+  "min_u", "min_g", "min_r", "min_i", "min_z"
+};
+
+static gchar *sdss_band_max[NUM_SDSS_BAND]=
+{
+  "max_u", "max_g", "max_r", "max_i", "max_z"
+};
+
 enum{ FCDB_SDSS_SEARCH_IMAG, FCDB_SDSS_SEARCH_SPEC};
+
 
 
 static const PARAMpost sdss_post[] = {
@@ -53,3 +64,36 @@ static const PARAMpost sdss_post[] = {
   {POST_CONST, "flagsOnList", "ignore"},
   {POST_CONST, "flagsOffList", "ignore"},
   {POST_NULL,  NULL, NULL}};
+/*
+static const PARAMpost sdss_post[] = {
+  {POST_CONST, "searchtool", "Rectangular"},  
+  {POST_CONST, "TaskName", "Skyserver.Search.Rectangular"},
+  {POST_CONST, "ReturnHtml", "false"},
+  {POST_CONST, "whichphotometry", "optical"},
+  {POST_CONST, "coordtype", "equatrial"},
+  {POST_INPUT, "min_ra", NULL},
+  {POST_INPUT, "max_ra", NULL},
+  {POST_INPUT, "min_dec", NULL},
+  {POST_INPUT, "max_dec", NULL},
+  {POST_INPUT, "min_u", NULL},
+  {POST_INPUT, "max_u", NULL},
+  {POST_INPUT, "min_g", NULL},
+  {POST_INPUT, "max_g", NULL},
+  {POST_INPUT, "min_r", NULL},
+  {POST_INPUT, "max_r", NULL},
+  {POST_INPUT, "min_i", NULL},
+  {POST_INPUT, "max_i", NULL},
+  {POST_INPUT, "min_z", NULL},
+  {POST_INPUT, "max_z", NULL},
+  {POST_CONST, "min_j", "-10"},
+  {POST_CONST, "max_j", "99"},
+  {POST_CONST, "min_h", "-10"},
+  {POST_CONST, "max_h", "99"},
+  {POST_CONST, "min_k", "-10"},
+  {POST_CONST, "max_k", "99"},
+  {POST_CONST, "format", "VOTable"},
+  {POST_NULL, "TableName", NULL},
+  {POST_CONST, "limit", "5000"},
+  {POST_NULL,  NULL, NULL}
+};
+*/

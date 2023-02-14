@@ -3383,6 +3383,7 @@ void fcdb_dl(typHOE *hg)
   gtk_window_set_modal(GTK_WINDOW(hg->pdialog),FALSE);
   if(timer!=-1) g_source_remove(timer);
 
+  
   flag_getFCDB=FALSE;
   if(GTK_IS_WIDGET(hg->pdialog)) gtk_widget_destroy(hg->pdialog);
 }
@@ -3822,6 +3823,8 @@ void trdb_run (typHOE *hg)
 #endif
   time_t start_time;
   double elapsed_sec, remaining_sec;
+  gboolean get_db_flag[MAX_OBJECT];
+  gint missed_db=0;
   
   if(hg->i_max<=0) return;
   if(flag_getFCDB) return;
@@ -3901,6 +3904,15 @@ void trdb_run (typHOE *hg)
   //				      (gpointer)hg);
 
   for(i_list=0;i_list<hg->i_max;i_list++){
+    switch(hg->fcdb_type){
+    case TRDB_TYPE_SMOKA:
+    case TRDB_TYPE_HST:
+    case TRDB_TYPE_ESO:
+    case TRDB_TYPE_GEMINI:
+      if(hg->trdb_delay>0) g_usleep(hg->trdb_delay*1000);
+      break;
+    } 
+    
     hg->fcdb_i=i_list;
 
     object.ra=ra_to_deg(hg->obj[hg->fcdb_i].ra);
@@ -3940,7 +3952,7 @@ void trdb_run (typHOE *hg)
       if(hg->fcdb_file) g_free(hg->fcdb_file);
       hg->fcdb_file=g_strconcat(hg->temp_dir,
 				G_DIR_SEPARATOR_S,
-				FCDB_FILE_XML,NULL);
+				FCDB_FILE_JSON,NULL);
       
       hg->fcdb_d_ra0=object_prec.ra;
       hg->fcdb_d_dec0=object_prec.dec;
@@ -4046,20 +4058,20 @@ void trdb_run (typHOE *hg)
       case TRDB_TYPE_SMOKA:
 	trdb_smoka_txt_parse(hg);
 	break;
-
+	
       case TRDB_TYPE_HST:
-	trdb_hst_vo_parse(hg);
+	trdb_hst_json_parse(hg);
 	break;
-
+	
       case TRDB_TYPE_ESO:
 	trdb_eso_vo_parse(hg);
 	break;
-
+	
       case TRDB_TYPE_GEMINI:
 	trdb_gemini_json_parse(hg);
 	break;
       }
-
+      
       elapsed_sec=difftime(time(NULL),start_time);
       remaining_sec=elapsed_sec/(double)(i_list+1)
 	*(double)(hg->i_max-(i_list+1));
@@ -4125,7 +4137,7 @@ void trdb_run (typHOE *hg)
 
   if((hg->skymon_mode==SKYMON_CUR) || (hg->skymon_mode==SKYMON_SET))
     draw_skymon_cairo(hg->skymon_dw,hg, TRUE);
-
+  
   flag_getFCDB=FALSE;
 
 }
@@ -4828,14 +4840,14 @@ void fcdb_item2 (typHOE *hg)
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,
 			      G_DIR_SEPARATOR_S,
-			      FCDB_FILE_XML,NULL);
+			      FCDB_FILE_JSON,NULL);
 
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
 
     fcdb_dl(hg);
 
-    fcdb_hst_vo_parse(hg);
+    fcdb_hst_json_parse(hg);
 
     break;
 

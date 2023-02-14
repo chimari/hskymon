@@ -1340,21 +1340,6 @@ int http_c_fc(typHOE *hg, gboolean proxy_ssl){
 
 
   switch(hg->fc_mode){
-  case FC_STSCI_DSS1R:
-  case FC_STSCI_DSS1B:
-  case FC_STSCI_DSS2R:
-  case FC_STSCI_DSS2B:
-  case FC_STSCI_DSS2IR:
-    tmp=g_strdup_printf(hg->dss_path,
-			hg->dss_src,
-			hobject_prec.ra.hours,hobject_prec.ra.minutes,
-			hobject_prec.ra.seconds,
-			(hobject_prec.dec.neg) ? "-" : "+", 
-			hobject_prec.dec.degrees, hobject_prec.dec.minutes,
-			hobject_prec.dec.seconds,
-			hg->dss_arcmin,hg->dss_arcmin);
-    break;
-
   case FC_ESO_DSS1R:
   case FC_ESO_DSS2R:
   case FC_ESO_DSS2B:
@@ -2227,7 +2212,8 @@ int http_c_fc_ssl(typHOE *hg){
       while(!feof(fp_read)){
 	if(fgets(cbuf,BUFFSIZE-1,fp_read)){
 	  cpp=cbuf;
-	  if(NULL != (cp = my_strcasestr(cpp, "<A HREF="))){
+	  //if(NULL != (cp = my_strcasestr(cpp, "<A HREF="))){
+	  if(NULL != (cp = strstr(cpp, "<A HREF="))){
 	    cpp=cp+strlen("<A HREF=");
 	    
 	    if(NULL != (cp2 = my_strcasestr(cp, ">"))){
@@ -2655,126 +2641,6 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket,
 
 
   switch(hg->fcdb_type){
-  case FCDB_TYPE_SDSS:
-    ip=0;
-    plen=0;
-
-    while(1){
-      if(sdss_post[ip].key==NULL) break;
-      switch(sdss_post[ip].flg){
-      case POST_NULL:
-	sprintf(send_mesg,
-		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n\r\n",
-		rand16,
-		sdss_post[ip].key);
-	break;
-
-      case POST_CONST:
-	sprintf(send_mesg,
-		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
-		rand16,
-		sdss_post[ip].key,
-		sdss_post[ip].prm);
-	break;
-	
-      case POST_INPUT:
-	if(strcmp(sdss_post[ip].key,"searchtool")==0){
-	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
-		  rand16,
-		  sdss_post[ip].key,
-		  (hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG) ? 
-		  "Imaging" : "Spectro");
-	}
-	else if(strcmp(sdss_post[ip].key,"TaskName")==0){
-	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
-		  rand16,
-		  sdss_post[ip].key,
-		  (hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG) ? 
-		  "Skyserver.Search.IQS" : "Skyserver.Search.SQS");
-	}
-	else if(strcmp(sdss_post[ip].key,"ra")==0){
-	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
-		  rand16,
-		  sdss_post[ip].key,
-		  hg->fcdb_d_ra0);
-	}
-	else if(strcmp(sdss_post[ip].key,"dec")==0){
-	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
-		  rand16,
-		  sdss_post[ip].key,
-		  hg->fcdb_d_dec0);
-	}
-	else if(strcmp(sdss_post[ip].key,"radius")==0){
-	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.1lf\r\n",
-		  rand16,
-		  sdss_post[ip].key,
-		  (hg->dss_arcmin < hg->fcdb_sdss_diam) ?
-		  ((gdouble)hg->dss_arcmin/2.0) :
-		  ((gdouble)hg->fcdb_sdss_diam/2.0));
-	}
-	else if(strcmp(sdss_post[ip].key,"magMin")==0){
-	  send_mesg[0]=0x00;
-	  for(i=0;i<NUM_SDSS_BAND;i++){
-	    if(hg->fcdb_sdss_fil[i]){
-	      sprintf(ins_mesg,
-		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMin\"\r\n\r\n%d\r\n",
-		      rand16,
-		      sdss_band[i],
-		      hg->fcdb_sdss_magmin[i]);
-	    }
-	    else{
-	      sprintf(ins_mesg,
-		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMin\"\r\n\r\n\r\n",
-		      rand16,
-		      sdss_band[i]);
-	    }
-	    strcat(send_mesg,ins_mesg);
-	  }
-	}
-	else if(strcmp(sdss_post[ip].key,"magMax")==0){
-	  send_mesg[0]=0x00;
-	  for(i=0;i<NUM_SDSS_BAND;i++){
-	    if(hg->fcdb_sdss_fil[i]){
-	      sprintf(ins_mesg,
-		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMax\"\r\n\r\n%d\r\n",
-		      rand16,
-		      sdss_band[i],
-		      hg->fcdb_sdss_magmax[i]);
-	    }
-	    else{
-	      sprintf(ins_mesg,
-		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMax\"\r\n\r\n\r\n",
-		      rand16,
-		      sdss_band[i]);
-	    }
-	    strcat(send_mesg,ins_mesg);
-	  }
-	}
-	break;
-      }	
-      plen+=strlen(send_mesg);
-      if(wflag){
-	write_to_server(command_socket, send_mesg);
-      }
-	  
-      ip++;
-    }
-    
-    sprintf(send_mesg,
-	    "------WebKitFormBoundary%s--\r\n\r\n",
-	    rand16);
-    plen+=strlen(send_mesg);
-    if(wflag){
-      write_to_server(command_socket, send_mesg);
-    }
-
-    break;
-
   case FCDB_TYPE_LAMOST:
     ip=0;
     plen=0;
@@ -3309,338 +3175,6 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket,
 
     plen+=strlen(send_mesg);
 
-    if(wflag){
-      write_to_server(command_socket, send_buf1);
-    }
-
-    if(send_buf1) g_free(send_buf1);
-    if(send_buf2) g_free(send_buf2);
-
-    break;
-
-
-  case FCDB_TYPE_KEPLER:
-    ip=0;
-    plen=0;
-
-    while(1){
-      if(kepler_post[ip].key==NULL) break;
-      send_flag=TRUE;
-
-      switch(kepler_post[ip].flg){
-      case POST_NULL:
-	sprintf(send_mesg,
-		"%s=&",
-		kepler_post[ip].key);
-	break;
-
-      case POST_CONST:
-	sprintf(send_mesg,
-		"%s=%s&",
-		kepler_post[ip].key,
-		kepler_post[ip].prm);
-	break;
-	
-      case POST_INPUT:
-	if(strcmp(kepler_post[ip].key,"ra")==0){
-	  sprintf(send_mesg,
-		  "%s=%.5lf&",
-		  kepler_post[ip].key,
-		  hg->fcdb_d_ra0);
-	}
-	else if(strcmp(kepler_post[ip].key,"dec")==0){
-	  sprintf(send_mesg,
-		  "%s=%.5lf&",
-		  kepler_post[ip].key,
-		  hg->fcdb_d_dec0);
-	}
-	else if(strcmp(kepler_post[ip].key,"radius")==0){
-	  sprintf(send_mesg,
-		  "%s=%.5lf&",
-		  kepler_post[ip].key,
-		  hg->dss_arcmin/2.0);
-	}
-	else if(strcmp(kepler_post[ip].key,"extra_column_value_1")==0){
-	  if(hg->fcdb_kepler_fil){
-	    sprintf(send_mesg,
-		    "%s=%%3C+%d&",
-		    kepler_post[ip].key,
-		    hg->fcdb_kepler_mag);
-	  }
-	  else{
-	    sprintf(send_mesg,
-		    "%s=&",
-		    kepler_post[ip].key);
-	  }
-	}
-	else if(strcmp(kepler_post[ip].key,"outputformat")==0){
-	  switch(hg->fcdb_type){
-	  case FCDB_TYPE_KEPLER:
-	    sprintf(send_mesg,
-		    "%s=VOTable&",
-		    kepler_post[ip].key);
-	    break;
-
-	  default:
-	    sprintf(send_mesg,
-		    "%s=HTML_Table&",
-		    kepler_post[ip].key);
-	    break;
-	  }
-	}
-
-	break;
-      }
-
-      if(send_flag){
-	plen+=strlen(send_mesg);
-	
-	if(send_buf1) g_free(send_buf1);
-	if(send_buf2) send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
-	else send_buf1=g_strdup(send_mesg);
-	if(send_buf2) g_free(send_buf2);
-	send_buf2=g_strdup(send_buf1);
-      }
-
-      ip++;
-    }
-
-    sprintf(send_mesg,"\r\n\r\n");
-    if(send_buf1) g_free(send_buf1);
-    send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
-    
-    plen+=strlen(send_mesg);
-    
-    if(wflag){
-      write_to_server(command_socket, send_buf1);
-    }
-
-    if(send_buf1) g_free(send_buf1);
-    if(send_buf2) g_free(send_buf2);
-
-    break;
-
-
-  case FCDB_TYPE_HST:
-  case FCDB_TYPE_WWWDB_HST:
-  case TRDB_TYPE_HST:
-  case TRDB_TYPE_WWWDB_HST:
-  case TRDB_TYPE_FCDB_HST:
-    ip=0;
-    plen=0;
-
-    while(1){
-      if(hst_post[ip].key==NULL) break;
-      send_flag=TRUE;
-
-      switch(hst_post[ip].flg){
-      case POST_NULL:
-	sprintf(send_mesg,
-		"%s=&",
-		hst_post[ip].key);
-	break;
-
-      case POST_CONST:
-	sprintf(send_mesg,
-		"%s=%s&",
-		hst_post[ip].key,
-		hst_post[ip].prm);
-	break;
-	
-      case POST_INPUT:
-	if(strcmp(hst_post[ip].key,"ra")==0){
-	  sprintf(send_mesg,
-		  "%s=%.5lf&",
-		  hst_post[ip].key,
-		  hg->fcdb_d_ra0);
-	}
-	else if(strcmp(hst_post[ip].key,"dec")==0){
-	  sprintf(send_mesg,
-		  "%s=%.5lf&",
-		  hst_post[ip].key,
-		  hg->fcdb_d_dec0);
-	}
-	else if(strcmp(hst_post[ip].key,"radius")==0){
-	  switch(hg->fcdb_type){
-	  case FCDB_TYPE_HST:
-	    sprintf(send_mesg,
-		    "%s=%.1lf&",
-		    hst_post[ip].key,
-		    hg->dss_arcmin/2.0);
-	    break;
-	    
-	  case FCDB_TYPE_WWWDB_HST:
-	    sprintf(send_mesg,
-		    "%s=2.0&",
-		    hst_post[ip].key);
-	    break;
-
-	  case TRDB_TYPE_HST:
-	    sprintf(send_mesg,
-		    "%s=%d&",
-		    hst_post[ip].key,
-		    hg->trdb_arcmin);
-	    break;
-
-	  case TRDB_TYPE_WWWDB_HST:
-	  case TRDB_TYPE_FCDB_HST:
-	    sprintf(send_mesg,
-		    "%s=%d&",
-		    hst_post[ip].key,
-		    hg->trdb_arcmin);
-	    break;
-	  }
-	}
-	else if(strcmp(hst_post[ip].key,"outputformat")==0){
-	  switch(hg->fcdb_type){
-	  case FCDB_TYPE_HST:
-	  case TRDB_TYPE_HST:
-	  case TRDB_TYPE_FCDB_HST:
-	    sprintf(send_mesg,
-		    "%s=VOTable&",
-		    hst_post[ip].key);
-	    break;
-
-	  case FCDB_TYPE_WWWDB_HST:
-	  case TRDB_TYPE_WWWDB_HST:
-	    sprintf(send_mesg,
-		    "%s=HTML_Table&",
-		    hst_post[ip].key);
-	    break;
-	  }
-	}
-
-	break;
-
-      case POST_INST1:
-	switch(hg->fcdb_type){
-	case FCDB_TYPE_HST:
-	case FCDB_TYPE_WWWDB_HST:
-	  send_mesg[0]=0x00;
-	  for(i=0;i<NUM_HST_IMAGE;i++){
-	    if(hg->fcdb_hst_image[i]) {
-	      sprintf(ins_mesg, "%s=%s&", hst_post[ip].key, hst_image[i].name);
-	      strcat(send_mesg,ins_mesg);
-	    }	
-	  }
-	  break;
-
-	case TRDB_TYPE_HST:
-	  if(hg->trdb_hst_mode==TRDB_HST_MODE_IMAGE){
-	    sprintf(send_mesg, "%s=%s&", hst_post[ip].key, 
-		    hst_image[hg->trdb_hst_image].name);
-	  }
-	  else{
-	    send_flag=FALSE;
-	  }
-	  break;
-
-	case TRDB_TYPE_WWWDB_HST:
-	case TRDB_TYPE_FCDB_HST:
-	  if(hg->trdb_hst_mode_used==TRDB_HST_MODE_IMAGE){
-	    sprintf(send_mesg, "%s=%s&", hst_post[ip].key, 
-		    hst_image[hg->trdb_hst_image_used].name);
-	  }
-	  else{
-	    send_flag=FALSE;
-	  }
-	  break;
-	}
-	break;
-
-      case POST_INST2:
-	switch(hg->fcdb_type){
-	case FCDB_TYPE_HST:
-	case FCDB_TYPE_WWWDB_HST:
-	  send_mesg[0]=0x00;
-	  for(i=0;i<NUM_HST_SPEC;i++){
-	    if(hg->fcdb_hst_spec[i]) {
-	      sprintf(ins_mesg, "%s=%s&", hst_post[ip].key, hst_spec[i].name);
-	      strcat(send_mesg,ins_mesg);
-	    }	
-	  }
-	  break;
-
-	case TRDB_TYPE_HST:
-	  if(hg->trdb_hst_mode==TRDB_HST_MODE_SPEC){
-	    sprintf(send_mesg, "%s=%s&", hst_post[ip].key, 
-		    hst_spec[hg->trdb_hst_spec].name);
-	  }
-	  else{
-	    send_flag=FALSE;
-	  }
-	  break;
-
-	case TRDB_TYPE_WWWDB_HST:
-	case TRDB_TYPE_FCDB_HST:
-	  if(hg->trdb_hst_mode_used==TRDB_HST_MODE_SPEC){
-	    sprintf(send_mesg, "%s=%s&", hst_post[ip].key, 
-		    hst_spec[hg->trdb_hst_spec_used].name);
-	  }
-	  else{
-	    send_flag=FALSE;
-	  }
-	  break;
-	}
-	break;
-
-      case POST_INST3:
-	switch(hg->fcdb_type){
-	case FCDB_TYPE_HST:
-	case FCDB_TYPE_WWWDB_HST:
-	  send_mesg[0]=0x00;
-	  for(i=0;i<NUM_HST_OTHER;i++){
-	    if(hg->fcdb_hst_other[i]) {
-	      sprintf(ins_mesg, "%s=%s&", hst_post[ip].key, hst_other[i].name);
-	      strcat(send_mesg,ins_mesg);
-	    }	
-	  }
-	  break;
-
-	case TRDB_TYPE_HST:
-	  if(hg->trdb_hst_mode==TRDB_HST_MODE_OTHER){
-	    sprintf(send_mesg, "%s=%s&", hst_post[ip].key, 
-		    hst_other[hg->trdb_hst_other].name);
-	  }
-	  else{
-	    send_flag=FALSE;
-	  }
-	  break;
-
-	case TRDB_TYPE_WWWDB_HST:
-	case TRDB_TYPE_FCDB_HST:
-	  if(hg->trdb_hst_mode_used==TRDB_HST_MODE_OTHER){
-	    sprintf(send_mesg, "%s=%s&", hst_post[ip].key, 
-		    hst_other[hg->trdb_hst_other_used].name);
-	  }
-	  else{
-	    send_flag=FALSE;
-	  }
-	  break;
-
-	}
-	break;
-      }
-
-      if(send_flag){
-	plen+=strlen(send_mesg);
-	
-	if(send_buf1) g_free(send_buf1);
-	if(send_buf2) send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
-	else send_buf1=g_strdup(send_mesg);
-	if(send_buf2) g_free(send_buf2);
-	send_buf2=g_strdup(send_buf1);
-      }
-
-      ip++;
-    }
-
-    sprintf(send_mesg,"\r\n\r\n");
-    if(send_buf1) g_free(send_buf1);
-    send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
-    
-    plen+=strlen(send_mesg);
-    
     if(wflag){
       write_to_server(command_socket, send_buf1);
     }
@@ -4325,12 +3859,465 @@ int post_body_ssl(typHOE *hg, gboolean wflag, SSL *ssl,
 		  gchar *rand16){
   char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
   char ins_mesg[BUF_LEN];
-  gint ip, plen, i;
+  gint ip, plen, i, i_inst;
   gchar *send_buf1=NULL, *send_buf2=NULL;
   gboolean init_flag=FALSE;
   gboolean send_flag=TRUE;
+  gchar* sci_instrume=NULL, *tmp_inst=NULL;
+  gdouble d_ra, d_dec;
 
   switch(hg->fcdb_type){
+  case FCDB_TYPE_SDSS:
+    ip=0;
+    plen=0;
+
+    while(1){
+      if(sdss_post[ip].key==NULL) break;
+      switch(sdss_post[ip].flg){
+      case POST_NULL:
+	sprintf(send_mesg,
+		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n\r\n",
+		rand16,
+		sdss_post[ip].key);
+	break;
+
+      case POST_CONST:
+	sprintf(send_mesg,
+		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		rand16,
+		sdss_post[ip].key,
+		sdss_post[ip].prm);
+	break;
+	
+      case POST_INPUT:
+	if(strcmp(sdss_post[ip].key,"searchtool")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  (hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG) ? 
+		  "Imaging" : "Spectro");
+	}
+	else if(strcmp(sdss_post[ip].key,"TaskName")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  (hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG) ? 
+		  "Skyserver.Search.IQS" : "Skyserver.Search.SQS");
+	}
+	else if(strcmp(sdss_post[ip].key,"ra")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  hg->fcdb_d_ra0);
+	}
+	else if(strcmp(sdss_post[ip].key,"dec")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  hg->fcdb_d_dec0);
+	}
+	else if(strcmp(sdss_post[ip].key,"radius")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.1lf\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  (hg->dss_arcmin < hg->fcdb_sdss_diam) ?
+		  ((gdouble)hg->dss_arcmin/2.0) :
+		  ((gdouble)hg->fcdb_sdss_diam/2.0));
+	}
+	else if(strcmp(sdss_post[ip].key,"magMin")==0){
+	  send_mesg[0]=0x00;
+	  for(i=0;i<NUM_SDSS_BAND;i++){
+	    if(hg->fcdb_sdss_fil[i]){
+	      sprintf(ins_mesg,
+		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMin\"\r\n\r\n%d\r\n",
+		      rand16,
+		      sdss_band[i],
+		      hg->fcdb_sdss_magmin[i]);
+	    }
+	    else{
+	      sprintf(ins_mesg,
+		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMin\"\r\n\r\n\r\n",
+		      rand16,
+		      sdss_band[i]);
+	    }
+	    strcat(send_mesg,ins_mesg);
+	  }
+	}
+	else if(strcmp(sdss_post[ip].key,"magMax")==0){
+	  send_mesg[0]=0x00;
+	  for(i=0;i<NUM_SDSS_BAND;i++){
+	    if(hg->fcdb_sdss_fil[i]){
+	      sprintf(ins_mesg,
+		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMax\"\r\n\r\n%d\r\n",
+		      rand16,
+		      sdss_band[i],
+		      hg->fcdb_sdss_magmax[i]);
+	    }
+	    else{
+	      sprintf(ins_mesg,
+		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMax\"\r\n\r\n\r\n",
+		      rand16,
+		      sdss_band[i]);
+	    }
+	    strcat(send_mesg,ins_mesg);
+	  }
+	}
+	break;
+      }	
+      plen+=strlen(send_mesg);
+      if(wflag){
+	write_to_SSLserver(ssl, send_mesg);
+      }
+	  
+      ip++;
+    }
+    
+    sprintf(send_mesg,
+	    "------WebKitFormBoundary%s--\r\n\r\n",
+	    rand16);
+    plen+=strlen(send_mesg);
+    if(wflag){
+      write_to_SSLserver(ssl, send_mesg);
+    }
+
+    break;
+
+    /*
+  case FCDB_TYPE_SDSS:
+    ip=0;
+    plen=0;
+
+    d_ra =hg->dss_arcmin/2.0/60.0;
+    d_dec=hg->dss_arcmin/2.0/60.0;
+
+    while(1){
+      if(sdss_post[ip].key==NULL) break;
+      switch(sdss_post[ip].flg){
+      case POST_NULL:
+	sprintf(send_mesg,
+		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n\r\n",
+		rand16,
+		sdss_post[ip].key);
+	break;
+
+      case POST_CONST:
+	sprintf(send_mesg,
+		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+		rand16,
+		sdss_post[ip].key,
+		sdss_post[ip].prm);
+	break;
+	
+      case POST_INPUT:
+	if(strcmp(sdss_post[ip].key,"min_ra")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  hg->fcdb_d_ra0-d_ra);
+	}
+	else if(strcmp(sdss_post[ip].key,"max_ra")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  hg->fcdb_d_ra0+d_ra);
+	}
+	else if(strcmp(sdss_post[ip].key,"min_dec")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  hg->fcdb_d_dec0-d_dec);
+	}
+	else if(strcmp(sdss_post[ip].key,"max_dec")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  hg->fcdb_d_dec0+d_dec);
+	}
+	else if(strcmp(sdss_post[ip].key,"radius")==0){
+	  sprintf(send_mesg,
+		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.1lf\r\n",
+		  rand16,
+		  sdss_post[ip].key,
+		  (hg->dss_arcmin < hg->fcdb_sdss_diam) ?
+		  ((gdouble)hg->dss_arcmin/2.0) :
+		  ((gdouble)hg->fcdb_sdss_diam/2.0));
+	}
+	else{
+	  for(i=0;i<NUM_SDSS_BAND;i++){
+	    if(strcmp(sdss_post[ip].key,sdss_band_min[i])==0){
+	      sprintf(send_mesg,
+		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%d\r\n",
+		      rand16,
+		      sdss_post[ip].key,
+		      (hg->fcdb_sdss_fil[i]) ? hg->fcdb_sdss_magmin[i] : -10);
+	      break;
+	    }
+	    else if(strcmp(sdss_post[ip].key,sdss_band_max[i])==0){
+	      sprintf(send_mesg,
+		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%d\r\n",
+		      rand16,
+		      sdss_post[ip].key,
+		      (hg->fcdb_sdss_fil[i]) ? hg->fcdb_sdss_magmax[i] : 99);
+	      break;
+	    }
+	  }
+	}
+      }	
+      plen+=strlen(send_mesg);
+      if(wflag){
+	write_to_SSLserver(ssl, send_buf1);
+      }
+	  
+      ip++;
+    }
+    
+    sprintf(send_mesg,
+	    "------WebKitFormBoundary%s--\r\n\r\n",
+	    rand16);
+    plen+=strlen(send_mesg);
+    if(wflag){
+      write_to_SSLserver(ssl, send_buf1);
+    }
+
+    break;
+    */
+
+  case TRDB_TYPE_HST:
+  case TRDB_TYPE_FCDB_HST:
+    ip=0;
+    plen=0;
+
+    switch(hg->trdb_hst_mode){
+    case TRDB_HST_MODE_OTHER:
+      sci_instrume=g_strdup_printf("{\"sci_obstype\":\"%s\"},{\"sci_instrume\":\"%s\"}",
+				   HST_mode[TRDB_HST_MODE_OTHER].prm,
+				   HST_inst[hg->trdb_hst_other].prm);
+      break;
+
+    case TRDB_HST_MODE_SPEC:
+      sci_instrume=g_strdup_printf("{\"sci_obstype\":\"%s\"},{\"sci_instrume\":\"%s\"}",
+				   HST_mode[TRDB_HST_MODE_SPEC].prm,
+				   HST_inst[hg->trdb_hst_spec].prm);
+      break;
+      
+    case TRDB_HST_MODE_IMAGE:
+      sci_instrume=g_strdup_printf("{\"sci_obstype\":\"%s\"},{\"sci_instrume\":\"%s\"}",
+				   HST_mode[TRDB_HST_MODE_IMAGE].prm,
+				   HST_inst[hg->trdb_hst_image].prm);
+      break;
+    }
+    
+    sprintf(send_mesg,"{\"target\":[\"%.5lf %.5lf\"],\"radius\":%.1lf,\"radius_units\":\"arcminutes\",\"conditions\":[%s,{\"sci_start_time\":\"%s 00:00:00..%s 23:59:59\"}],\"offset\":0,\"limit\":%d}",
+	    hg->fcdb_d_ra0,
+	    hg->fcdb_d_dec0,
+	    (gdouble)hg->trdb_arcmin,
+	    sci_instrume,
+	    hg->trdb_hst_stdate,
+	    hg->trdb_hst_eddate,
+	    MAX_FCDB);
+    g_free(sci_instrume);
+
+    if(send_flag){
+      plen+=strlen(send_mesg);
+	
+      if(send_buf1) g_free(send_buf1);
+      if(send_buf2) send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+      else send_buf1=g_strdup(send_mesg);
+      if(send_buf2) g_free(send_buf2);
+      send_buf2=g_strdup(send_buf1);
+    }
+
+    sprintf(send_mesg,"\r\n\r\n");
+    if(send_buf1) g_free(send_buf1);
+    send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+    
+    plen+=strlen(send_mesg);
+    
+    if(wflag){
+      write_to_SSLserver(ssl, send_buf1);
+    }
+
+    if(send_buf1) g_free(send_buf1);
+    if(send_buf2) g_free(send_buf2);
+
+    break;
+    
+  case FCDB_TYPE_HST:
+    //  case FCDB_TYPE_WWWDB_HST:
+    ip=0;
+    plen=0;
+
+    for(i_inst=0;i_inst<NUM_HST_INST;i_inst++){
+      if(hg->fcdb_hst_inst[i_inst]){
+	if(!sci_instrume){
+	  sci_instrume=g_strdup_printf(",{\"sci_instrume\":\"%s",
+				       HST_inst[i_inst].prm);
+	}
+	else{
+	  tmp_inst=g_strdup_printf("%s,%s",
+				   sci_instrume,
+				   HST_inst[i_inst].prm);
+	  g_free(sci_instrume);
+	  sci_instrume=g_strdup(tmp_inst);
+	  g_free(tmp_inst);
+	}
+      }
+    }
+    if(sci_instrume){
+      tmp_inst=g_strdup_printf("%s\"}]",
+			       sci_instrume);
+      g_free(sci_instrume);
+      sci_instrume=g_strdup(tmp_inst);
+      g_free(tmp_inst);
+    }
+    else{
+      sci_instrume=g_strdup("]");
+    }
+
+    sprintf(send_mesg,"{\"target\":[\"%.5lf %.5lf\"],\"radius\":%.1lf,\"radius_units\":\"arcminutes\",\"conditions\":[{\"sci_obs_type\":\"%s\"}%s,\"offset\":0,\"limit\":%d}",
+	    hg->fcdb_d_ra0,
+	    hg->fcdb_d_dec0,
+	    hg->dss_arcmin/2.0,
+	    HST_mode[hg->fcdb_hst_mode].prm,
+	    sci_instrume,
+	    MAX_FCDB);
+    g_free(sci_instrume);
+
+    if(send_flag){
+      plen+=strlen(send_mesg);
+	
+      if(send_buf1) g_free(send_buf1);
+      if(send_buf2) send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+      else send_buf1=g_strdup(send_mesg);
+      if(send_buf2) g_free(send_buf2);
+      send_buf2=g_strdup(send_buf1);
+    }
+
+    sprintf(send_mesg,"\r\n\r\n");
+    if(send_buf1) g_free(send_buf1);
+    send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+    
+    plen+=strlen(send_mesg);
+    
+    if(wflag){
+      write_to_SSLserver(ssl, send_buf1);
+    }
+
+    if(send_buf1) g_free(send_buf1);
+    if(send_buf2) g_free(send_buf2);
+
+    break;
+    
+  case FCDB_TYPE_KEPLER:
+    ip=0;
+    plen=0;
+
+    while(1){
+      if(kepler_post[ip].key==NULL) break;
+      send_flag=TRUE;
+
+      switch(kepler_post[ip].flg){
+      case POST_NULL:
+	sprintf(send_mesg,
+		"%s=&",
+		kepler_post[ip].key);
+	break;
+
+      case POST_CONST:
+	sprintf(send_mesg,
+		"%s=%s&",
+		kepler_post[ip].key,
+		kepler_post[ip].prm);
+	break;
+	
+      case POST_INPUT:
+	if(strcmp(kepler_post[ip].key,"ra")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  kepler_post[ip].key,
+		  hg->fcdb_d_ra0);
+	}
+	else if(strcmp(kepler_post[ip].key,"dec")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  kepler_post[ip].key,
+		  hg->fcdb_d_dec0);
+	}
+	else if(strcmp(kepler_post[ip].key,"radius")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  kepler_post[ip].key,
+		  hg->dss_arcmin/2.0);
+	}
+	else if(strcmp(kepler_post[ip].key,"extra_column_value_1")==0){
+	  if(hg->fcdb_kepler_fil){
+	    sprintf(send_mesg,
+		    "%s=%%3C+%d&",
+		    kepler_post[ip].key,
+		    hg->fcdb_kepler_mag);
+	  }
+	  else{
+	    sprintf(send_mesg,
+		    "%s=&",
+		    kepler_post[ip].key);
+	  }
+	}
+	else if(strcmp(kepler_post[ip].key,"outputformat")==0){
+	  switch(hg->fcdb_type){
+	  case FCDB_TYPE_KEPLER:
+	    sprintf(send_mesg,
+		    "%s=VOTable&",
+		    kepler_post[ip].key);
+	    break;
+
+	  default:
+	    sprintf(send_mesg,
+		    "%s=HTML_Table&",
+		    kepler_post[ip].key);
+	    break;
+	  }
+	}
+
+	break;
+      }
+
+      if(send_flag){
+	plen+=strlen(send_mesg);
+	
+	if(send_buf1) g_free(send_buf1);
+	if(send_buf2) send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+	else send_buf1=g_strdup(send_mesg);
+	if(send_buf2) g_free(send_buf2);
+	send_buf2=g_strdup(send_buf1);
+      }
+
+      ip++;
+    }
+
+    sprintf(send_mesg,"\r\n\r\n");
+    if(send_buf1) g_free(send_buf1);
+    send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+    
+    plen+=strlen(send_mesg);
+    
+    if(wflag){
+      write_to_SSLserver(ssl, send_buf1);
+    }
+
+    if(send_buf1) g_free(send_buf1);
+    if(send_buf2) g_free(send_buf2);
+
+    break;
+
   case FCDB_TYPE_SMOKA:
   case FCDB_TYPE_WWWDB_SMOKA:
   case TRDB_TYPE_SMOKA:
@@ -4876,7 +4863,23 @@ int http_c_fcdb(typHOE *hg, gboolean proxy_ssl){
   }
   write_to_server(command_socket, send_mesg);
 
-  sprintf(send_mesg, "Accept: application/xml\r\n");
+
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_HST:
+  case FCDB_TYPE_WWWDB_HST:
+  case TRDB_TYPE_HST:
+    //  case TRDB_TYPE_WWWDB_HST:
+  case TRDB_TYPE_FCDB_HST:
+  case FCDB_TYPE_KEPLER:
+    sprintf(send_mesg, "Accept: application/json\r\n");
+    write_to_server(command_socket, send_mesg);
+    sprintf(send_mesg, "Content-Disposition: inline\r\n");
+    break;
+
+  default:
+    sprintf(send_mesg, "Accept: application/xml\r\n");
+    break;
+  }
   write_to_server(command_socket, send_mesg);
 
   sprintf(send_mesg, "User-Agent: Mozilla/5.0\r\n");
@@ -4893,7 +4896,6 @@ int http_c_fcdb(typHOE *hg, gboolean proxy_ssl){
     write_to_server(command_socket, send_mesg);
 
     switch(hg->fcdb_type){
-    case FCDB_TYPE_SDSS:
     case FCDB_TYPE_LAMOST:
     case FCDB_TYPE_ESO:
     case FCDB_TYPE_WWWDB_ESO:
@@ -4908,14 +4910,9 @@ int http_c_fcdb(typHOE *hg, gboolean proxy_ssl){
     case TRDB_TYPE_SMOKA:
     case TRDB_TYPE_WWWDB_SMOKA:
     case TRDB_TYPE_FCDB_SMOKA:
-    case FCDB_TYPE_HST:
-    case FCDB_TYPE_WWWDB_HST:
-    case TRDB_TYPE_HST:
-    case TRDB_TYPE_WWWDB_HST:
-    case TRDB_TYPE_FCDB_HST:
-    case FCDB_TYPE_KEPLER:
       sprintf(send_mesg, "Content-Type: application/x-www-form-urlencoded\r\n");
       break;
+      
     }
     write_to_server(command_socket, send_mesg);
   }
@@ -5024,7 +5021,7 @@ int http_c_fcdb_ssl(typHOE *hg){
   }
 
   check_msg_from_parent(hg);
-  
+
   /* サーバに接続 */
   if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
     fprintf(stderr, "Failed to connect to %s .\n", hg->fcdb_host);
@@ -5066,8 +5063,6 @@ int http_c_fcdb_ssl(typHOE *hg){
   }
   write_to_SSLserver(ssl, send_mesg);
 
-  sprintf(send_mesg, "Accept: application/xml, application/json\r\n");
-  write_to_SSLserver(ssl, send_mesg);
 
   sprintf(send_mesg, "User-Agent: Mozilla/5.0\r\n");
   write_to_SSLserver(ssl, send_mesg);
@@ -5075,20 +5070,46 @@ int http_c_fcdb_ssl(typHOE *hg){
   sprintf(send_mesg, "Host: %s\r\n", hg->fcdb_host);
   write_to_SSLserver(ssl, send_mesg);
 
+  switch(hg->fcdb_type){
+  case FCDB_TYPE_HST:
+  case FCDB_TYPE_WWWDB_HST:
+  case TRDB_TYPE_HST:
+  case TRDB_TYPE_FCDB_HST:
+    //case FCDB_TYPE_KEPLER:
+    sprintf(send_mesg, "Accept: */*\r\n");
+    write_to_SSLserver(ssl, send_mesg);
+    break;
+
+  default:
+    sprintf(send_mesg, "Accept: application/xml, application/json\r\n");
+    write_to_SSLserver(ssl, send_mesg);   
+    break;
+  }
+  
   sprintf(send_mesg, "Connection: close\r\n");
   write_to_SSLserver(ssl, send_mesg);
 
+  
   if(hg->fcdb_post){
     sprintf(send_mesg, "Content-Length: %d\r\n", plen);
     write_to_SSLserver(ssl, send_mesg);
 
     switch(hg->fcdb_type){
+    case FCDB_TYPE_KEPLER:
     case FCDB_TYPE_SMOKA:
     case FCDB_TYPE_WWWDB_SMOKA:
     case TRDB_TYPE_SMOKA:
     case TRDB_TYPE_WWWDB_SMOKA:
     case TRDB_TYPE_FCDB_SMOKA:
       sprintf(send_mesg, "Content-Type: application/x-www-form-urlencoded\r\n");
+      break;
+
+    case FCDB_TYPE_HST:
+    case FCDB_TYPE_WWWDB_HST:
+    case TRDB_TYPE_HST:
+    case TRDB_TYPE_FCDB_HST:
+      // case FCDB_TYPE_KEPLER:
+      sprintf(send_mesg, "Content-Type: application/json\r\n");
       break;
     }
     write_to_SSLserver(ssl, send_mesg);
@@ -5170,11 +5191,10 @@ gpointer thread_get_dss(gpointer gdata){
     }
   }
   else{
-    if((hg->fc_mode<FC_SEP2)||(hg->fc_mode>FC_SEP3)){
-      http_c_fc(hg, FALSE);
-    }
-    else{
+    switch(hg->fc_mode){
+    default:
       http_c_fc_ssl(hg);
+      break;
     }
   }
 
@@ -5201,6 +5221,7 @@ gpointer thread_get_stddb(gpointer gdata){
  
 gpointer thread_get_fcdb(gpointer gdata){
   typHOE *hg=(typHOE *)gdata;
+  int ret;
 
   hg->psz=0;
   hg->pabort=FALSE;
@@ -5217,22 +5238,34 @@ gpointer thread_get_fcdb(gpointer gdata){
   case TRDB_TYPE_GEMINI:
   case TRDB_TYPE_FCDB_GEMINI:
   case ADDOBJ_TYPE_TRANSIENT:
+  case FCDB_TYPE_HST:
+  case FCDB_TYPE_WWWDB_HST:
+  case TRDB_TYPE_HST:
+    //  case TRDB_TYPE_WWWDB_HST:
+  case TRDB_TYPE_FCDB_HST:
+  case FCDB_TYPE_KEPLER:
+  case FCDB_TYPE_SDSS:
     if(hg->proxy_flag){
-      http_c_fcdb(hg, TRUE);
+      ret=http_c_fcdb(hg, TRUE);
     }
     else{
-      http_c_fcdb_ssl(hg);
+      ret=http_c_fcdb_ssl(hg);
     }
     break;
     
   default:
     if(hg->proxy_flag){
-      http_c_fcdb(hg, FALSE);
+      ret=http_c_fcdb(hg, FALSE);
     }
     else{
-      http_c_fcdb(hg, FALSE);
+      ret=http_c_fcdb(hg, FALSE);
     }
     break;
+  }
+
+  if(ret<0){
+    g_main_loop_quit(hg->ploop);
+    return(NULL);
   }
  
   if(hg->ploop) g_main_loop_quit(hg->ploop);

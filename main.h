@@ -77,6 +77,7 @@
 #define USER_CONFFILE ".hskymon"
 #endif
 
+#define COPYRIGHT_LABEL "&#xA9; 2003-22 Akito Tajitsu"
 
 #define AU_IN_KM 149597870.700
 
@@ -118,6 +119,7 @@
 #define FCDB_GEMINI_URL "https://archive.gemini.edu/searchform/cols=CTOWEQ/notengineering/NotFail/OBJECT/%s"
 #define TRDB_GEMINI_URL "https://archive.gemini.edu/searchform/sr=%d/cols=CTOWEQ/notengineering%sra=%.6lf/%s/science%sdec=%s%.6lf/NotFail/OBJECT"
 #define HASH_URL "http://202.189.117.101:8999/gpne/objectInfoPage.php?id=%d"
+#define TRDB_WWWDB_HST_PATH "htps://mast.stsci.edu/search/ui/#/hst/results?resolve=true&target=%lf%%20%s%lf&radius=%lf&radius_units=arcminutes&data_type=%s&observations=S&%s&obs_start_date_from=%s&obs_strt_date_to=%s&obs_start_date_from=%s&obs_strt_date_to=%s"
 
 #elif defined(USE_OSX)
 // in OSX    
@@ -152,6 +154,7 @@
 #define FCDB_GEMINI_URL "open https://archive.gemini.edu/searchform/cols=CTOWEQ/notengineering/NotFail/OBJECT/%s"
 #define TRDB_GEMINI_URL "open https://archive.gemini.edu/searchform/sr=%d/cols=CTOWEQ/notengineering%sra=%.6lf/%s/science%sdec=%s%.6lf/NotFail/OBJECT"
 #define HASH_URL "open http://202.189.117.101:8999/gpne/objectInfoPage.php?id=%d"
+#define TRDB_WWWDB_HST_PATH "open htps://mast.stsci.edu/search/ui/#/hst/results?resolve=true\\&target=%lf%%20%s%lf\\&radius=%lf\\&radius_units=arcminutes\\&data_type=%s\\&observations=S\\&%s\\&obs_start_date_from=%s\\&obs_strt_date_to=%s"
 
 #else
 // in UNIX    
@@ -185,6 +188,7 @@
 #define FCDB_GEMINI_URL "\"https://archive.gemini.edu/searchform/cols=CTOWEQ/notengineering/NotFail/OBJECT/%s\""
 #define TRDB_GEMINI_URL "\"https://archive.gemini.edu/searchform/sr=%d/cols=CTOWEQ/notengineering%sra=%.6lf/%s/science%sdec=%s%.6lf/NotFail/OBJECT\""
 #define HASH_URL "\"http://202.189.117.101:8999/gpne/objectInfoPage.php?id=%d\""
+#define TRDB_WWWDB_HST_PATH "\"htps://mast.stsci.edu/search/ui/#/hst/results?resolve=true&target=%lf%%20%s%lf&radius=%lf&radius_units=arcminutes&data_type=%s&observations=S&%s&obs_start_date_from=%s&obs_strt_date_to=%s\""
 #endif
 
 #ifdef USE_WIN32
@@ -244,7 +248,8 @@ enum
 #define FCDB_PS1_PATH  "/api/v0.1/panstarrs/%s/%s?ra=%lf&dec=%+lf&radius=%lf&nDetections.gte=%d%spagesize=5000&format=votable"
 
 #define FCDB_HOST_SDSS "skyserver.sdss.org"
-#define FCDB_SDSS_PATH "/dr16/en/tools/search/x_results.aspx"
+//#define FCDB_SDSS_PATH "/dr18/SearchTools/rect"
+#define FCDB_SDSS_PATH "/dr16/en/tools/search/IQS.aspx"
 
 #define FCDB_HOST_VIZIER_STRASBG "vizier.u-strasbg.fr"
 #define FCDB_HOST_VIZIER_NAOJ "vizier.nao.ac.jp"
@@ -279,13 +284,13 @@ enum
 #define FCDB_LAMOST_MED_PATH "/medcas/q"
 
 #define FCDB_HOST_KEPLER "archive.stsci.edu"
-#define FCDB_KEPLER_PATH "/kepler/kic10/search.php"
+#define FCDB_KEPLER_PATH "/kepler/data_search/search.php"
 
 #define FCDB_HOST_SMOKA "smoka.nao.ac.jp"
 #define FCDB_SMOKA_PATH "/fssearch"
 
-#define FCDB_HOST_HST "archive.stsci.edu"
-#define FCDB_HST_PATH "/hst/search.php"
+#define FCDB_HOST_HST "mast.stsci.edu"
+#define FCDB_HST_PATH "/search/hst/api/v0.1/search"
 
 #define FCDB_HOST_ESO "archive.eso.org"
 #define FCDB_ESO_PATH "/wdb/wdb/eso/eso_archive_main/query"
@@ -2200,6 +2205,9 @@ struct _typHOE{
   gboolean fcdb_smoka_mtm[NUM_SMOKA_MTM];
   gboolean fcdb_smoka_kanata[NUM_SMOKA_KANATA];
   gboolean fcdb_smoka_nayuta[NUM_SMOKA_NAYUTA];
+  gint     fcdb_hst_mode;
+  GtkWidget *fcdb_w_hst_inst[NUM_HST_INST];
+  gboolean fcdb_hst_inst[NUM_HST_INST];
   gboolean fcdb_hst_image[NUM_HST_IMAGE];
   gboolean fcdb_hst_spec[NUM_HST_SPEC];
   gboolean fcdb_hst_other[NUM_HST_OTHER];
@@ -2226,6 +2234,7 @@ struct _typHOE{
   gint trdb_used;
   gint trdb_arcmin;
   gint trdb_arcmin_used;
+  gint trdb_delay;
 
   gint trdb_smoka_inst;
   gint trdb_smoka_inst_used;
@@ -2242,8 +2251,10 @@ struct _typHOE{
 
   gint trdb_hst_mode;
   gint trdb_hst_mode_used;
-  gchar *trdb_hst_date;
-  gchar *trdb_hst_date_used;
+  gchar *trdb_hst_stdate;
+  gchar *trdb_hst_stdate_used;
+  gchar *trdb_hst_eddate;
+  gchar *trdb_hst_eddate_used;
   gint trdb_hst_image;
   gint trdb_hst_image_used;
   gint trdb_hst_spec;
@@ -2632,6 +2643,7 @@ int get_seimei_azel();
 // json_parse
 void fcdb_gemini_json_parse();
 void trdb_gemini_json_parse();
+void fcdb_hst_json_parse();
 
 //julian_day.c
 void my_get_local_date();
@@ -2710,6 +2722,8 @@ void addobj_vo_parse();
 void stddb_vo_parse();
 void addobj_transient_txt_parse();
 
-//jason_parse.c
-void fcdb_gemini_jason_parse();
-void trdb_gemini_jason_parse();
+//json_parse.c
+void fcdb_gemini_json_parse();
+void trdb_gemini_json_parse();
+void fcdb_hst_json_parse();
+void trdb_hst_json_parse();
