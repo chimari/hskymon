@@ -4,6 +4,7 @@
 //
 //                                       2003.10.23  A.Tajitsu
 
+
 #include"main.h"    // Main configuration header
 #include"version.h"
 #include"configfile.h"
@@ -7498,6 +7499,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 	  
 	case FCDB_LAMOST_DR7:
 	  tmp=g_strdup_printf("<b>%s DR7 low</b>", db_name[hg->fcdb_type]);
+<<<<<<< HEAD
 	  break;
 
 	case FCDB_LAMOST_DR7M:
@@ -7508,6 +7510,18 @@ void create_fcdb_para_dialog (typHOE *hg)
 	  tmp=g_strdup_printf("<b>%s DR8 low</b>", db_name[hg->fcdb_type]);
 	  break;
 
+=======
+	  break;
+
+	case FCDB_LAMOST_DR7M:
+	  tmp=g_strdup_printf("<b>%s DR7 med</b>", db_name[hg->fcdb_type]);
+	  break;
+	  
+	case FCDB_LAMOST_DR8:
+	  tmp=g_strdup_printf("<b>%s DR8 low</b>", db_name[hg->fcdb_type]);
+	  break;
+
+>>>>>>> ccaf9ff67d51e3241b7c241520e3fbf2629c9baa
 	case FCDB_LAMOST_DR8M:
 	  tmp=g_strdup_printf("<b>%s DR8 med</b>", db_name[hg->fcdb_type]);
 	  break;
@@ -13808,7 +13822,7 @@ int main(int argc, char* argv[]){
     printf_log(hg,"[Seimei] starting to fetch telescope status from %s",
 	       SEIMEI_STATUS_HOST);
     if(update_seimeistat((gpointer)hg)){
-      printf_log(hg,"[Seimei] connected to the server %s",
+      printf_log(hg,"[Seimei] connected to the server %s",		 
 		 SEIMEI_STATUS_HOST);
       draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
       hg->seimeistat_timer=g_timeout_add(TELSTAT_INTERVAL, 
