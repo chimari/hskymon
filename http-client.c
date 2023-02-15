@@ -2646,7 +2646,8 @@ int post_body(typHOE *hg, gboolean wflag, int command_socket,
     plen=0;
 
     switch(hg->fcdb_lamost_dr){
-    case FCDB_LAMOST_DR6M:
+    case FCDB_LAMOST_DR7M:
+    case FCDB_LAMOST_DR8M:
       while(1){
 	if(lamost_med_post[ip].key==NULL) break;
 	switch(lamost_med_post[ip].flg){

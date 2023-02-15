@@ -1060,13 +1060,21 @@ void create_fc_dialog(typHOE *hg)
       tmp=g_strdup_printf("<b>%s DR5</b>", db_name[hg->fcdb_type]);
       break;
 
-    case FCDB_LAMOST_DR6:
-      tmp=g_strdup_printf("<b>%s DR6 low</b>", db_name[hg->fcdb_type]);
+    case FCDB_LAMOST_DR7:
+      tmp=g_strdup_printf("<b>%s DR7 low</b>", db_name[hg->fcdb_type]);
       break;
 
-    case FCDB_LAMOST_DR6M:
-      tmp=g_strdup_printf("<b>%s DR6 med</b>", db_name[hg->fcdb_type]);
+    case FCDB_LAMOST_DR7M:
+      tmp=g_strdup_printf("<b>%s DR7 med</b>", db_name[hg->fcdb_type]);
       break;
+      
+    case FCDB_LAMOST_DR8:
+      tmp=g_strdup_printf("<b>%s DR8 low</b>", db_name[hg->fcdb_type]);
+      break;
+
+    case FCDB_LAMOST_DR8M:
+      tmp=g_strdup_printf("<b>%s DR8 med</b>", db_name[hg->fcdb_type]);
+      break;     
     }
     break;
 
@@ -4465,21 +4473,37 @@ void fcdb_item2 (typHOE *hg)
       hg->fcdb_host=g_strdup(FCDB_HOST_LAMOST_DR5);
       break;
 
-    case FCDB_LAMOST_DR6:
-    case FCDB_LAMOST_DR6M:
-      hg->fcdb_host=g_strdup(FCDB_HOST_LAMOST_DR6);
+    case FCDB_LAMOST_DR7:
+    case FCDB_LAMOST_DR7M:
+      hg->fcdb_host=g_strdup(FCDB_HOST_LAMOST_DR7);
+      break;
+      
+    case FCDB_LAMOST_DR8:
+    case FCDB_LAMOST_DR8M:
+      hg->fcdb_host=g_strdup(FCDB_HOST_LAMOST_DR8);
       break;
     }
 
     if(hg->fcdb_path) g_free(hg->fcdb_path);
     switch(hg->fcdb_lamost_dr){
     case FCDB_LAMOST_DR5:
-    case FCDB_LAMOST_DR6:
-      hg->fcdb_path=g_strdup(FCDB_LAMOST_PATH);
+      hg->fcdb_path=g_strdup(FCDB_LAMOST_DR5_PATH);
       break;
       
-    case FCDB_LAMOST_DR6M:
-      hg->fcdb_path=g_strdup(FCDB_LAMOST_MED_PATH);
+    case FCDB_LAMOST_DR7:
+      hg->fcdb_path=g_strdup(FCDB_LAMOST_DR7_PATH);
+      break;
+      
+    case FCDB_LAMOST_DR7M:
+      hg->fcdb_path=g_strdup(FCDB_LAMOST_DR7_MED_PATH);
+      break;
+      
+    case FCDB_LAMOST_DR8:
+      hg->fcdb_path=g_strdup(FCDB_LAMOST_DR8_PATH);
+      break;
+      
+    case FCDB_LAMOST_DR8M:
+      hg->fcdb_path=g_strdup(FCDB_LAMOST_DR8_MED_PATH);
       break;
     }
 

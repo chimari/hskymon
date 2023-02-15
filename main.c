@@ -6011,14 +6011,24 @@ void create_fcdb_para_dialog (typHOE *hg)
     if(hg->fcdb_lamost_dr==FCDB_LAMOST_DR5) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "DR6 (Low Resolution)",
-		       1, FCDB_LAMOST_DR6, -1);
-    if(hg->fcdb_lamost_dr==FCDB_LAMOST_DR6) iter_set=iter;
+    gtk_list_store_set(store, &iter, 0, "DR7 (Low Resolution)",
+		       1, FCDB_LAMOST_DR7, -1);
+    if(hg->fcdb_lamost_dr==FCDB_LAMOST_DR7) iter_set=iter;
 
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "DR6 (Medium Resolution)",
-		       1, FCDB_LAMOST_DR6M, -1);
-    if(hg->fcdb_lamost_dr==FCDB_LAMOST_DR6M) iter_set=iter;
+    gtk_list_store_set(store, &iter, 0, "DR7 (Medium Resolution)",
+		       1, FCDB_LAMOST_DR7M, -1);
+    if(hg->fcdb_lamost_dr==FCDB_LAMOST_DR7M) iter_set=iter;
+    
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "DR8 (Low Resolution)",
+		       1, FCDB_LAMOST_DR8, -1);
+    if(hg->fcdb_lamost_dr==FCDB_LAMOST_DR8) iter_set=iter;
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, "DR8 (Medium Resolution)",
+		       1, FCDB_LAMOST_DR8M, -1);
+    if(hg->fcdb_lamost_dr==FCDB_LAMOST_DR8M) iter_set=iter;
     
     combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 #ifdef USE_GTK3
@@ -7406,7 +7416,7 @@ void create_fcdb_para_dialog (typHOE *hg)
 	hg->fcdb_sdss_magmax[i] = 20;
       }
       hg->fcdb_sdss_diam = FCDB_ARCMIN_MAX;
-      hg->fcdb_lamost_dr = FCDB_LAMOST_DR5;
+      hg->fcdb_lamost_dr = FCDB_LAMOST_DR8;
       hg->fcdb_usno_fil = TRUE;
       hg->fcdb_usno_mag = 19;
       hg->fcdb_ucac_fil = TRUE;
@@ -7486,12 +7496,20 @@ void create_fcdb_para_dialog (typHOE *hg)
 	  tmp=g_strdup_printf("<b>%s DR5</b>", db_name[hg->fcdb_type]);
 	  break;
 	  
-	case FCDB_LAMOST_DR6:
-	  tmp=g_strdup_printf("<b>%s DR6 low</b>", db_name[hg->fcdb_type]);
+	case FCDB_LAMOST_DR7:
+	  tmp=g_strdup_printf("<b>%s DR7 low</b>", db_name[hg->fcdb_type]);
 	  break;
 
-	case FCDB_LAMOST_DR6M:
-	  tmp=g_strdup_printf("<b>%s DR6 med</b>", db_name[hg->fcdb_type]);
+	case FCDB_LAMOST_DR7M:
+	  tmp=g_strdup_printf("<b>%s DR7 med</b>", db_name[hg->fcdb_type]);
+	  break;
+	  
+	case FCDB_LAMOST_DR8:
+	  tmp=g_strdup_printf("<b>%s DR8 low</b>", db_name[hg->fcdb_type]);
+	  break;
+
+	case FCDB_LAMOST_DR8M:
+	  tmp=g_strdup_printf("<b>%s DR8 med</b>", db_name[hg->fcdb_type]);
 	  break;
 	}
 	break;
@@ -10803,7 +10821,7 @@ void param_init(typHOE *hg){
     hg->fcdb_sdss_magmax[i]=20;
   }
   hg->fcdb_sdss_diam=FCDB_ARCMIN_MAX;
-  hg->fcdb_lamost_dr=FCDB_LAMOST_DR5;
+  hg->fcdb_lamost_dr=FCDB_LAMOST_DR8;
   hg->fcdb_usno_fil=TRUE;
   hg->fcdb_usno_mag=19;
   hg->fcdb_ucac_fil=TRUE;
