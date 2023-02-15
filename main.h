@@ -110,8 +110,10 @@
 #define FCDB_NED_URL "http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES"
 #define FCDB_SDSS_URL "http://skyserver.sdss.org/dr14/en/tools/quicklook/summary.aspx?id=%s"
 #define FCDB_LAMOST_DR5_URL "http://dr5.lamost.org/spectrum/view?obsid=%d"
-#define FCDB_LAMOST_DR6_URL "http://dr6.lamost.org/spectrum/view?obsid=%d"
-#define FCDB_LAMOST_DR6M_URL "http://dr6.lamost.org/medspectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR7_URL "http://www.lamost.org/dr7/v2.0/spectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR7M_URL "http://www.lamost.org/dr/2.0/medspectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR8_URL "http://www.lamost.org/dr8/v2.0/spectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR8M_URL "http://www.lamost.org/dr8/2.0/medspectrum/view?obsid=%d"
 #define FCDB_SMOKA_URL "https://smoka.nao.ac.jp/info.jsp?frameid=%s&date_obs=%s&i=%d"
 #define FCDB_SMOKA_SHOT_URL "https://smoka.nao.ac.jp/fssearch?frameid=%s*&instruments=%s&obs_mod=all&data_typ=all&dispcol=default&diff=1000&action=Search&asciitable=table&obs_cat=all"
 #define FCDB_HST_URL "http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst&dataid=%s"
@@ -145,8 +147,10 @@
 #define FCDB_NED_URL "open http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s\\&extend=no\\&hconst=73\\&omegam=0.27\\&omegav=0.73\\&corr_z=1\\&out_csys=Equatorial\\&out_equinox=J2000.0\\&obj_sort=RA+or+Longitude\\&of=pre_text\\&zv_breaker=30000.0\\&list_limit=5\\&img_stamp=YES"
 #define FCDB_SDSS_URL "open http://skyserver.sdss.org/dr16/en/tools/quicklook/summary.aspx?id=%s"
 #define FCDB_LAMOST_DR5_URL "open http://dr5.lamost.org/spectrum/view?obsid=%d"
-#define FCDB_LAMOST_DR6_URL "open http://dr6.lamost.org/spectrum/view?obsid=%d"
-#define FCDB_LAMOST_DR6M_URL "open http://dr6.lamost.org/medspectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR7_URL "open http://www.lamost.org/dr7/v2.0/spectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR7M_URL "open http://www.lamost.org/dr7/2.0/medspectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR8_URL "open http://www.lamost.org/dr8/v2.0/spectrum/view?obsid=%d"
+#define FCDB_LAMOST_DR8M_URL "open http://www.lamost.org/dr8/2.0/medspectrum/view?obsid=%d"
 #define FCDB_SMOKA_URL "open https://smoka.nao.ac.jp/info.jsp?frameid=%s\\&date_obs=%s\\&i=%d"
 #define FCDB_SMOKA_SHOT_URL "open https://smoka.nao.ac.jp/fssearch?frameid=%s*\\&instruments=%s\\&obs_mod=all\\&data_typ=all\\&dispcol=default\\&diff=1000\\&action=Search\\&asciitable=table\\&obs_cat=all"
 #define FCDB_HST_URL "open http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst\\&dataid=%s"
@@ -179,8 +183,10 @@
 #define FCDB_NED_URL "\"http://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=%s&extend=no&hconst=73&omegam=0.27&omegav=0.73&corr_z=1&out_csys=Equatorial&out_equinox=J2000.0&obj_sort=RA+or+Longitude&of=pre_text&zv_breaker=30000.0&list_limit=5&img_stamp=YES\""
 #define FCDB_SDSS_URL "\"http://skyserver.sdss.org/dr16/en/tools/quicklook/summary.aspx?id=%s\""
 #define FCDB_LAMOST_DR5_URL "\"http://dr5.lamost.org/spectrum/view?obsid=%d\""
-#define FCDB_LAMOST_DR6_URL "\"http://dr6.lamost.org/spectrum/view?obsid=%d\""
-#define FCDB_LAMOST_DR6M_URL "\"http://dr6.lamost.org/medspectrum/view?obsid=%d\""
+#define FCDB_LAMOST_DR8_URL "\"http://www.lamost.org/dr8/v2.0/spectrum/view?obsid=%d\""
+#define FCDB_LAMOST_DR7M_URL "\"http://www.lamost.org/dr7/2.0/medspectrum/view?obsid=%d\""
+#define FCDB_LAMOST_DR7_URL "\"http://www.lamost.org/dr7/v2.0/spectrum/view?obsid=%d\""
+#define FCDB_LAMOST_DR8M_URL "\"http://www.lamost.org/dr8/2.0/medspectrum/view?obsid=%d\""
 #define FCDB_SMOKA_URL "\"https://smoka.nao.ac.jp/info.jsp?frameid=%s&date_obs=%s&i=%d\""
 #define FCDB_SMOKA_SHOT_URL "\"https://smoka.nao.ac.jp/fssearch?frameid=%s*&instruments=%s&obs_mod=all&data_typ=all&dispcol=default&diff=1000&action=Search&asciitable=table&obs_cat=all\""
 #define FCDB_HST_URL "\"http://archive.stsci.edu/cgi-bin/mastpreview?mission=hst&dataid=%s\""
@@ -279,9 +285,13 @@ enum
 #define FCDB_FIS_PATH_B "/viz-bin/votable?-source=II/298/fis&-c=%lf%%20%+lf&-c.u=deg&-c.bs=%dx%d&-c.geom=b&-out.max=5000&-out.form=VOTable"
 
 #define FCDB_HOST_LAMOST_DR5 "dr5.lamost.org"
-#define FCDB_HOST_LAMOST_DR6 "dr6.lamost.org"
-#define FCDB_LAMOST_PATH "/q"
-#define FCDB_LAMOST_MED_PATH "/medcas/q"
+#define FCDB_HOST_LAMOST_DR7 "www.lamost.org"
+#define FCDB_HOST_LAMOST_DR8 "www.lamost.org"
+#define FCDB_LAMOST_DR5_PATH "/q"
+#define FCDB_LAMOST_DR7_PATH "/dr7/v2.0/q"
+#define FCDB_LAMOST_DR7_MED_PATH "/dr7/v2.0/medcas/q"
+#define FCDB_LAMOST_DR8_PATH "/dr8/v2.0/q"
+#define FCDB_LAMOST_DR8_MED_PATH "/dr8/v2.0/medcas/q"
 
 #define FCDB_HOST_KEPLER "archive.stsci.edu"
 #define FCDB_KEPLER_PATH "/kepler/data_search/search.php"
@@ -1024,8 +1034,10 @@ static const gchar* db_name[]={
 enum
 {
   FCDB_LAMOST_DR5,
-  FCDB_LAMOST_DR6,
-  FCDB_LAMOST_DR6M,
+  FCDB_LAMOST_DR7,
+  FCDB_LAMOST_DR7M,
+  FCDB_LAMOST_DR8,
+  FCDB_LAMOST_DR8M,
   NUM_FCDB_LAMOST
 };
   

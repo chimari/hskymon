@@ -2553,7 +2553,6 @@ gboolean draw_skymon_with_seimei_cairo(GtkWidget *widget,
 }
 
 
-
 void my_cairo_arc_center(cairo_t *cr, gint w, gint h, gdouble r){
   cairo_arc(cr, 
 	    w / 2, h / 2, 

@@ -3059,7 +3059,8 @@ void fcdb_lamost_vo_parse(typHOE *hg) {
     }
     break;
 
-  case FCDB_LAMOST_DR6:
+  case FCDB_LAMOST_DR7:
+  case FCDB_LAMOST_DR8:
     for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
       if(xmlStrcmp(vfield_move->name,(const xmlChar *)"combined_designation") == 0) 
 	columns[0] = vfield_move->position;
@@ -3084,7 +3085,8 @@ void fcdb_lamost_vo_parse(typHOE *hg) {
     }
     break;
 
-  case FCDB_LAMOST_DR6M:
+  case FCDB_LAMOST_DR7M:
+  case FCDB_LAMOST_DR8M:
     for(vfield_move=votable.field;vfield_move!=NULL;vfield_move=vfield_move->next) {
       if(xmlStrcmp(vfield_move->name,(const xmlChar *)"med_combined_designation") == 0) 
 	columns[0] = vfield_move->position;
@@ -3189,11 +3191,17 @@ void fcdb_lamost_vo_parse(typHOE *hg) {
     fprintf(stderr,"memory problem\n");
 
   for(i_list=0;i_list<hg->fcdb_i_max;i_list++){
-    if(hg->fcdb_lamost_dr==FCDB_LAMOST_DR6M){
+    switch(hg->fcdb_lamost_dr){
+    case FCDB_LAMOST_DR7M:
+    case FCDB_LAMOST_DR8M:
       if(hg->fcdb[i_list].otype) g_free(hg->fcdb[i_list].otype);
       hg->fcdb[i_list].otype=NULL;
       if(hg->fcdb[i_list].sp) g_free(hg->fcdb[i_list].sp);
       hg->fcdb[i_list].sp=NULL;
+      break;
+
+    default:
+      break;
     }
     if(!hg->fcdb[i_list].otype) hg->fcdb[i_list].otype=g_strdup("---");
     if(!hg->fcdb[i_list].sp) hg->fcdb[i_list].sp=g_strdup("---");

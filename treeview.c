@@ -2485,13 +2485,23 @@ fcdb_simbad (GtkWidget *widget, gpointer data)
 			    hg->fcdb[hg->fcdb_tree_focus].ref);
 	break;
 
-      case FCDB_LAMOST_DR6:
-	tmp=g_strdup_printf(FCDB_LAMOST_DR6_URL,
+      case FCDB_LAMOST_DR7:
+	tmp=g_strdup_printf(FCDB_LAMOST_DR7_URL,
 			    hg->fcdb[hg->fcdb_tree_focus].ref);
 	break;
 
-      case FCDB_LAMOST_DR6M:
-	tmp=g_strdup_printf(FCDB_LAMOST_DR6M_URL,
+      case FCDB_LAMOST_DR7M:
+	tmp=g_strdup_printf(FCDB_LAMOST_DR7M_URL,
+			    hg->fcdb[hg->fcdb_tree_focus].ref);
+	break;
+	
+      case FCDB_LAMOST_DR8:
+	tmp=g_strdup_printf(FCDB_LAMOST_DR8_URL,
+			    hg->fcdb[hg->fcdb_tree_focus].ref);
+	break;
+
+      case FCDB_LAMOST_DR8M:
+	tmp=g_strdup_printf(FCDB_LAMOST_DR8M_URL,
 			    hg->fcdb[hg->fcdb_tree_focus].ref);
 	break;
       }
