@@ -708,6 +708,8 @@ enum{ FC_INST_NONE,
       FC_INST_SEP1,
       FC_INST_KOOLS,
       FC_INST_TRICCS,
+      FC_INST_GAOES,
+      FC_INST_SEIMEIRGB,
       FC_INST_NO_SELECT,
       NUM_FC_INST};
 
@@ -730,6 +732,8 @@ static const gchar* FC_instname[]={
   NULL,          //FC_INST_SEP1,	  
   "Seimei : KOOLS-IFU",//FC_INST_KOOLS,	  
   "Seimei : TriCCS",//FC_INST_TRICCS,
+  "Seimei : GAOES-RV",//FC_INST_GAOES,
+  "Seimei : RGB-Cam",//FC_INST_SEIMEIRGB,
   NULL};
 
 
@@ -755,7 +759,7 @@ enum{ ADC_INST_IMR,
 #define HDS_SLIT_LENGTH 10000
 #define HDS_SLIT_WIDTH 500
 #define HDS_PA_OFFSET (-58.4)
-//#define GAOES_PA_OFFSET (-90.0)
+#define GAOES_PA_OFFSET (-90.0)
 #define HDS_SIZE 3
 
 #define FMOS_SIZE 40
@@ -823,6 +827,13 @@ enum{ HSC_DITH_NO, HSC_DITH_5, HSC_DITH_N};
 #define TRICCS_SIZE 15
 #define TRICCS_X_ARCMIN 12.6
 #define TRICCS_Y_ARCMIN 7.5
+
+#define GAOES_SIZE 2
+#define GAOES_R_ARCSEC 50
+
+#define SEIMEIRGB_SIZE 8
+#define SEIMEIRGB_X_ARCMIN 5.5
+#define SEIMEIRGB_Y_ARCMIN 3.5
 
 
 // Object Type

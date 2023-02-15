@@ -3030,7 +3030,7 @@ gboolean draw_plot_cairo(GtkWidget *widget, typHOE *hg){
 	ppa[i]=padeg;
 	pad[i]=adsec;
 	// HDS PA w/o ImR
-	phpa[i]=hdspa_deg(phi*M_PI/180.,d0rad,ha1rad);
+	phpa[i]=hdspa_deg(hg, phi*M_PI/180.,d0rad,ha1rad);
 
 	ut=ut+d_ut;
 	JD_hst+=d_ut/24.;
@@ -4040,8 +4040,8 @@ void calcpa2_main(typHOE* hg){
       hg->obj[i_list].c_ad=adsec;
 
       // HDS PA w/o ImR
-      hg->obj[i_list].c_hpa=hdspa_deg(phi*M_PI/180.,d0rad,ha1rad);
-      hg->obj[i_list].c_vhpa=hdspa_deg(phi*M_PI/180.,d0rad,ha1rad_1)
+      hg->obj[i_list].c_hpa=hdspa_deg(hg, phi*M_PI/180.,d0rad,ha1rad);
+      hg->obj[i_list].c_vhpa=hdspa_deg(hg, phi*M_PI/180.,d0rad,ha1rad_1)
 	-hg->obj[i_list].c_hpa;
       hg->obj[i_list].c_vhpa=set_ul(-180.,hg->obj[i_list].c_vhpa,180.);
 
@@ -4551,8 +4551,8 @@ void calcpa2_skymon(typHOE* hg){
       hg->obj[i_list].s_ad=adsec;
 
       // HDS PA w/o ImR
-      hg->obj[i_list].s_hpa=hdspa_deg(phi*M_PI/180.,d0rad,ha1rad);
-      hg->obj[i_list].s_vhpa=hdspa_deg(phi*M_PI/180.,d0rad,ha1rad_1)
+      hg->obj[i_list].s_hpa=hdspa_deg(hg, phi*M_PI/180.,d0rad,ha1rad);
+      hg->obj[i_list].s_vhpa=hdspa_deg(hg, phi*M_PI/180.,d0rad,ha1rad_1)
 	-hg->obj[i_list].s_hpa;
       hg->obj[i_list].s_vhpa=set_ul(-180.,hg->obj[i_list].s_vhpa,180.);
     }
@@ -5559,13 +5559,21 @@ gdouble deg_sep(gdouble az1, gdouble alt1, gdouble az2, gdouble alt2){
 
 
 
-gdouble hdspa_deg(gdouble phi, gdouble dec, gdouble ha){
+gdouble hdspa_deg(typHOE *hg, gdouble phi, gdouble dec, gdouble ha){
   gdouble pdeg, zdeg;
 
   pdeg=atan2((tan(phi)*cos(dec)-sin(dec)*cos(ha)),sin(ha))*180./M_PI;
   zdeg=acos(sin(phi)*sin(dec)+cos(phi)*cos(dec)*cos(ha))*180./M_PI;
 
-  return(set_ul(-180., -(pdeg-zdeg)+HDS_PA_OFFSET, 180.));
+  switch(hg->fc_inst){
+  case FC_INST_GAOES:
+    return(set_ul(-180., -(pdeg-zdeg)+GAOES_PA_OFFSET, 180.));
+    break;
+    
+  default:
+    return(set_ul(-180., -(pdeg-zdeg)+HDS_PA_OFFSET, 180.));
+    break;
+  }
 }
 
 // See http://www.stjarnhimlen.se/comp/ppcomp.html#13

@@ -9,6 +9,7 @@
 	                 STSci (DSS)
 	                 ESO (DSS)
 	            - Added TRDB acces delay (for SMOKA from inside of NAOJ).
+	            - Added FC instruments of Seimei Telescope.
                     - AllSkyCamera access via http proxy (udeer testing).
                     - Status monitoring for the 3.8-m Seimei telescope.
 	                 (under testing).

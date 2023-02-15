@@ -102,6 +102,8 @@ void draw_fmos();
 void draw_pfs();
 void draw_kools();
 void draw_triccs();
+void draw_gaoes();
+void draw_seimeirgb();
 
 void draw_fc_label();
 
@@ -1567,6 +1569,7 @@ void translate_to_center(typHOE *hg,
 
   switch(hg->fc_inst){
   case FC_INST_HDSAUTO:
+  case FC_INST_GAOES:
     if(hg->skymon_mode==SKYMON_SET){
       gtk_adjustment_set_value(hg->fc_adj_dss_pa, 
 			       (gdouble)((int)hg->obj[hg->dss_i].s_hpa));
@@ -1936,6 +1939,14 @@ gboolean draw_fc_cairo(GtkWidget *widget,
     case FC_INST_TRICCS:
       draw_triccs(hg, cr, width, height, width_file, height_file, scale, r);
       break;
+
+    case FC_INST_GAOES:
+      draw_gaoes(hg, cr, width, height, width_file, height_file, scale, r);
+      break;
+
+    case FC_INST_SEIMEIRGB:
+      draw_seimeirgb(hg, cr, width, height, width_file, height_file, scale, r);
+      break;
     }
     
     cairo_restore(cr);
@@ -2032,6 +2043,13 @@ static void refresh_fc (GtkWidget *widget, gpointer data)
   typHOE *hg = (typHOE *)data;
 
   if(flagFC){
+    if(hg->skymon_mode==SKYMON_SET){
+      calcpa2_skymon(hg);
+    }
+    else{
+      calcpa2_main(hg);
+    }
+    
     hg->fc_output=FC_OUTPUT_WINDOW;
     draw_fc_cairo(hg->fc_dw, hg);
   }
@@ -2427,6 +2445,16 @@ static void cc_get_fc_inst (GtkWidget *widget,  gpointer * gdata)
   case FC_INST_TRICCS:
     gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
 			     (gdouble)(TRICCS_SIZE));
+    break;
+
+  case FC_INST_GAOES:
+    gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			     (gdouble)(GAOES_SIZE));
+    break;
+
+  case FC_INST_SEIMEIRGB:
+    gtk_adjustment_set_value(hg->fc_adj_dss_arcmin, 
+			     (gdouble)(SEIMEIRGB_SIZE));
     break;
 
   default:
@@ -6762,6 +6790,45 @@ void draw_triccs(typHOE *hg,
   
 }
 
+void draw_seimeirgb(typHOE *hg,
+		    cairo_t *cr,
+		    gint width, gint height,
+		    gint width_file, gint height_file,
+		    gdouble scale,
+		    gdouble r)
+{ // Drawing Inst (Seimei RGB-Cam)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_rectangle(cr,
+		  -((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*SEIMEIRGB_X_ARCMIN)/2.,
+		  -((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SEIMEIRGB_Y_ARCMIN)/2.,
+		  (gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip*SEIMEIRGB_X_ARCMIN,
+		  (gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SEIMEIRGB_Y_ARCMIN);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  tmp=g_strdup_printf("Seimei RGB-Cam FOV (%.1lfx%.1lfarcmin)",SEIMEIRGB_X_ARCMIN, SEIMEIRGB_Y_ARCMIN);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,-extents.width/2,
+		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SEIMEIRGB_Y_ARCMIN)/2.-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+  
+}
+
+
 void draw_focas(typHOE *hg,
 		cairo_t *cr,
 		gint width, gint height,
@@ -7517,6 +7584,43 @@ void draw_pfs(typHOE *hg,
   cairo_move_to(cr,
 		-extents.width/2,
 		-PFS_R_ARCMIN/2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
+  cairo_show_text(cr, tmp);
+  if(tmp) g_free(tmp);
+}
+
+
+void draw_gaoes(typHOE *hg,
+		cairo_t *cr,
+		gint width, gint height,
+		gint width_file, gint height_file,
+		gdouble scale,
+		gdouble r)
+{ // Drawing Inst (GAOES-RV)
+  cairo_text_extents_t extents;
+  gchar *tmp;
+
+  cairo_translate(cr,((gdouble)width_file*r)/2,((gdouble)height_file*r)/2);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 0.6);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 0.6);
+  cairo_set_line_width (cr, 3.0*scale);
+  
+  cairo_arc(cr,0,0,
+	    ((gdouble)width_file*r)/(gdouble)hg->dss_arcmin_ip/2.*GAOES_R_ARCSEC/60.,
+	    0,M_PI*2);
+  cairo_stroke(cr);
+  
+  if(hg->dss_invert) cairo_set_source_rgba(cr, 0.6, 0.0, 0.0, 1.0);
+  else cairo_set_source_rgba(cr, 1.0, 0.4, 0.4, 1.0);
+  cairo_select_font_face (cr, hg->fontfamily_all, CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
+  
+  tmp=g_strdup_printf("GAOES FOV (%d arcsec)",GAOES_R_ARCSEC);
+  cairo_text_extents (cr,tmp, &extents);
+  cairo_move_to(cr,
+		-extents.width/2,
+		-GAOES_R_ARCSEC/60./2.*((gdouble)width_file*r/(gdouble)hg->dss_arcmin_ip)-5*scale);
   cairo_show_text(cr, tmp);
   if(tmp) g_free(tmp);
 }
