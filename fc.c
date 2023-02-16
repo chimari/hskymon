@@ -6520,7 +6520,7 @@ void draw_ircs(typHOE *hg,
     
     cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
     
-    tmp=g_strdup_printf("Tip-Tilt Guide Star w/LGS (%darcmin)",IRCS_TTGS_ARCMIN/2);
+    tmp=g_strdup_printf("Tip-Tilt Guide Star w/LGS (%d arcmin)",IRCS_TTGS_ARCMIN/2);
     cairo_text_extents (cr,tmp, &extents);
     cairo_move_to(cr,
 		  -extents.width/2,
@@ -6544,7 +6544,7 @@ void draw_ircs(typHOE *hg,
 			  CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
   
-  tmp=g_strdup_printf("IRCS FOV (%dx%darcsec)",(gint)IRCS_X_ARCSEC, (gint)IRCS_Y_ARCSEC);
+  tmp=g_strdup_printf("IRCS FOV (%dx%d arcsec)",(gint)IRCS_X_ARCSEC, (gint)IRCS_Y_ARCSEC);
   cairo_text_extents (cr,tmp, &extents);
   cairo_move_to(cr,-extents.width/2,
 		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRCS_Y_ARCSEC/60.)/2.-5*scale);
@@ -6577,7 +6577,7 @@ void draw_ird(typHOE *hg,
     
     cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
     
-    tmp=g_strdup_printf("Tip-Tilt Guide Star w/LGS (%darcmin)",IRD_TTGS_ARCMIN/2);
+    tmp=g_strdup_printf("Tip-Tilt Guide Star w/LGS (%d arcmin)",IRD_TTGS_ARCMIN/2);
     cairo_text_extents (cr,tmp, &extents);
     cairo_move_to(cr,
 		  -extents.width/2,
@@ -6601,7 +6601,7 @@ void draw_ird(typHOE *hg,
 			  CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
   
-  tmp=g_strdup_printf("IRD FOV for FIM (%dx%darcsec)",(gint)IRD_X_ARCSEC, (gint)IRD_Y_ARCSEC);
+  tmp=g_strdup_printf("IRD FOV for FIM (%dx%d arcsec)",(gint)IRD_X_ARCSEC, (gint)IRD_Y_ARCSEC);
   cairo_text_extents (cr,tmp, &extents);
   cairo_move_to(cr,-extents.width/2,
 		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*IRD_Y_ARCSEC/60.)/2.-5*scale);
@@ -6639,7 +6639,7 @@ void draw_comics(typHOE *hg,
 			  CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
   
-  tmp=g_strdup_printf("COMICS FOV (%dx%darcsec)",(gint)COMICS_X_ARCSEC, (gint)COMICS_Y_ARCSEC);
+  tmp=g_strdup_printf("COMICS FOV (%dx%d arcsec)",(gint)COMICS_X_ARCSEC, (gint)COMICS_Y_ARCSEC);
   cairo_text_extents (cr,tmp, &extents);
   cairo_move_to(cr,-extents.width/2,
 		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*COMICS_Y_ARCSEC/60.)/2.-5*scale);
@@ -6742,7 +6742,7 @@ void draw_kools(typHOE *hg,
   if(tmp) g_free(tmp);
   */
  
-  tmp=g_strdup_printf("ZWO-Cam FOV (%dx%darcsec)",(gint)ZWOCAM_X_ARCSEC, (gint)ZWOCAM_Y_ARCSEC);
+  tmp=g_strdup_printf("ZWO-Cam FOV (%dx%d arcsec)",(gint)ZWOCAM_X_ARCSEC, (gint)ZWOCAM_Y_ARCSEC);
   cairo_text_extents (cr,tmp, &extents);
   cairo_move_to(cr,-extents.width/2,
 		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*ZWOCAM_Y_ARCSEC/60.)/2.-5*scale);
@@ -6856,7 +6856,7 @@ void draw_focas(typHOE *hg,
 			  CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
   
-  tmp=g_strdup_printf("FOCAS FOV (%darcmin)",FOCAS_R_ARCMIN);
+  tmp=g_strdup_printf("FOCAS FOV (%d arcmin)",FOCAS_R_ARCMIN);
   cairo_text_extents (cr,tmp, &extents);
   cairo_move_to(cr,
 		-extents.width/2,
@@ -6930,7 +6930,7 @@ void draw_moircs(typHOE *hg,
 			  CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
   
-  tmp=g_strdup_printf("MOIRCS FOV (%dx%darcmin)",(gint)MOIRCS_X_ARCMIN, (gint)MOIRCS_Y_ARCMIN);
+  tmp=g_strdup_printf("MOIRCS FOV (%dx%d arcmin)",(gint)MOIRCS_X_ARCMIN, (gint)MOIRCS_Y_ARCMIN);
   cairo_text_extents (cr,tmp, &extents);
   cairo_move_to(cr,-extents.width/2,
 		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*MOIRCS_Y_ARCMIN)/2.-5*scale);
@@ -7120,7 +7120,7 @@ void draw_spcam(typHOE *hg,
 			  CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
   
-  tmp=g_strdup_printf("Suprime-Cam FOV (%dx%darcmin)",SPCAM_X_ARCMIN, SPCAM_Y_ARCMIN);
+  tmp=g_strdup_printf("Suprime-Cam FOV (%dx%d arcmin)",SPCAM_X_ARCMIN, SPCAM_Y_ARCMIN);
   cairo_text_extents (cr,tmp, &extents);
   cairo_move_to(cr,-extents.width/2,
 		-((gdouble)height_file*r/(gdouble)hg->dss_arcmin_ip*SPCAM_Y_ARCMIN)/2.-5*scale);
@@ -7256,7 +7256,7 @@ void draw_hsc(typHOE *hg,
   cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
   
   if(!hg->dss_draw_slit){
-    tmp=g_strdup_printf("HSC FOV (%darcmin)",HSC_R_ARCMIN);
+    tmp=g_strdup_printf("HSC FOV (%d arcmin)",HSC_R_ARCMIN);
     cairo_text_extents (cr,tmp, &extents);
     cairo_move_to(cr,
 		  -extents.width/2,
@@ -7542,7 +7542,7 @@ void draw_fmos(typHOE *hg,
 			  CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
   
-  tmp=g_strdup_printf("FMOS FOV (%darcmin)",FMOS_R_ARCMIN);
+  tmp=g_strdup_printf("FMOS FOV (%d arcmin)",FMOS_R_ARCMIN);
   cairo_text_extents (cr,tmp, &extents);
   cairo_move_to(cr,
 		-extents.width/2,
@@ -7616,7 +7616,7 @@ void draw_gaoes(typHOE *hg,
 			  CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, (gdouble)hg->skymon_allsz*0.9*scale);
   
-  tmp=g_strdup_printf("GAOES FOV (%d arcsec)",GAOES_R_ARCSEC);
+  tmp=g_strdup_printf("GAOES-RV Guider FOV (%d arcsec)",GAOES_R_ARCSEC);
   cairo_text_extents (cr,tmp, &extents);
   cairo_move_to(cr,
 		-extents.width/2,
