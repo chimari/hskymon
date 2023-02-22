@@ -4982,7 +4982,7 @@ void create_fcdb_para_dialog (typHOE *hg)
     tmp_sdss_diam, tmp_lamost_dr, tmp_usno_mag, tmp_ucac_mag,
     tmp_gaia_mag, tmp_kepler_mag, 
     tmp_2mass_mag, tmp_2mass_diam,
-    tmp_wise_mag;
+    tmp_wise_mag,  tmp_hst_mode;
   gboolean tmp_ned_ref, tmp_gsc_fil, tmp_ps1_fil, tmp_usno_fil, tmp_ucac_fil,
     tmp_sdss_fil[NUM_SDSS_BAND], 
     tmp_gaia_fil, tmp_kepler_fil, tmp_2mass_fil, tmp_wise_fil,
@@ -4994,9 +4994,7 @@ void create_fcdb_para_dialog (typHOE *hg)
     tmp_smoka_mtm[NUM_SMOKA_MTM],
     tmp_smoka_kanata[NUM_SMOKA_KANATA],
     tmp_smoka_nayuta[NUM_SMOKA_NAYUTA],
-    tmp_hst_image[NUM_HST_IMAGE],
-    tmp_hst_spec[NUM_HST_SPEC],
-    tmp_hst_other[NUM_HST_OTHER],
+    tmp_hst_inst[NUM_HST_INST],
     tmp_eso_image[NUM_ESO_IMAGE],
     tmp_eso_spec[NUM_ESO_SPEC],
     tmp_eso_vlti[NUM_ESO_VLTI],
@@ -5074,14 +5072,9 @@ void create_fcdb_para_dialog (typHOE *hg)
   for(i=0;i<NUM_SMOKA_NAYUTA;i++){
     tmp_smoka_nayuta[i]=hg->fcdb_smoka_nayuta[i];
   }
-  for(i=0;i<NUM_HST_IMAGE;i++){
-    tmp_hst_image[i]=hg->fcdb_hst_image[i];
-  }
-  for(i=0;i<NUM_HST_SPEC;i++){
-    tmp_hst_spec[i]=hg->fcdb_hst_spec[i];
-  }
-  for(i=0;i<NUM_HST_OTHER;i++){
-    tmp_hst_other[i]=hg->fcdb_hst_other[i];
+  tmp_hst_mode=hg->fcdb_hst_mode;
+  for(i=0;i<NUM_HST_INST;i++){
+    tmp_hst_inst[i]=hg->fcdb_hst_inst[i];
   }
   for(i=0;i<NUM_ESO_IMAGE;i++){
     tmp_eso_image[i]=hg->fcdb_eso_image[i];
@@ -7359,14 +7352,9 @@ void create_fcdb_para_dialog (typHOE *hg)
       for(i=0;i<NUM_SMOKA_NAYUTA;i++){
 	hg->fcdb_smoka_nayuta[i]  = tmp_smoka_nayuta[i];
       }
-      for(i=0;i<NUM_HST_IMAGE;i++){
-	hg->fcdb_hst_image[i]  = tmp_hst_image[i];
-      }
-      for(i=0;i<NUM_HST_SPEC;i++){
-	hg->fcdb_hst_spec[i]  = tmp_hst_spec[i];
-      }
-      for(i=0;i<NUM_HST_OTHER;i++){
-	hg->fcdb_hst_other[i]  = tmp_hst_other[i];
+      hg->fcdb_hst_mode=tmp_hst_mode;
+      for(i=0;i<NUM_HST_INST;i++){
+	hg->fcdb_hst_inst[i]  = tmp_hst_inst[i];
       }
       for(i=0;i<NUM_ESO_IMAGE;i++){
 	hg->fcdb_eso_image[i]  = tmp_eso_image[i];
@@ -7453,15 +7441,6 @@ void create_fcdb_para_dialog (typHOE *hg)
       hg->fcdb_hst_mode=HST_MODE_ALL;
       for(i=0;i<NUM_HST_INST;i++){
 	hg->fcdb_hst_inst[i]  = TRUE;
-      }
-      for(i=0;i<NUM_HST_IMAGE;i++){
-	hg->fcdb_hst_image[i]  = TRUE;
-      }
-      for(i=0;i<NUM_HST_SPEC;i++){
-	hg->fcdb_hst_spec[i]  = TRUE;
-      }
-      for(i=0;i<NUM_HST_OTHER;i++){
-	hg->fcdb_hst_other[i]  = TRUE;
       }
       for(i=0;i<NUM_ESO_IMAGE;i++){
 	hg->fcdb_eso_image[i]  = TRUE;
@@ -7783,7 +7762,7 @@ gchar *trdb_csv_name (typHOE *hg, const gchar *ext){
   case TRDB_TYPE_HST:
     switch(hg->trdb_hst_mode_used){
     case TRDB_HST_MODE_OTHER:
-      iname=repl_nonalnum(hst_other[hg->trdb_hst_other_used].name,0x5F);
+      iname=repl_nonalnum(HST_inst[hg->trdb_hst_other_used].name,0x5F);
       fname=g_strconcat((hg->filehead) ? hg->filehead : "hskymon",
 			"_query_list_by_HST_",
 			iname,
@@ -7793,7 +7772,7 @@ gchar *trdb_csv_name (typHOE *hg, const gchar *ext){
       break;
       
     case TRDB_HST_MODE_SPEC:
-      iname=repl_nonalnum(hst_spec[hg->trdb_hst_spec_used].name,0x5F);
+      iname=repl_nonalnum(HST_inst[hg->trdb_hst_spec_used].name,0x5F);
       fname=g_strconcat((hg->filehead) ? hg->filehead : "hskymon",
 			"_query_list_by_HST_",
 			iname,
@@ -7803,7 +7782,7 @@ gchar *trdb_csv_name (typHOE *hg, const gchar *ext){
       break;
 
     case TRDB_HST_MODE_IMAGE:
-      iname=repl_nonalnum(hst_image[hg->trdb_hst_image_used].name,0x5F);
+      iname=repl_nonalnum(HST_inst[hg->trdb_hst_image_used].name,0x5F);
       fname=g_strconcat((hg->filehead) ? hg->filehead : "hskymon",
 			"_query_list_by_HST_",
 			iname,
@@ -9195,7 +9174,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtkut_table_attach(table1, hbox, 0, 1, 0, 1,
 		     GTK_FILL,GTK_SHRINK,0,0);
   
-  check = gtk_check_button_new_with_label("Use Proxy (still under testing)");
+  check = gtk_check_button_new_with_label("Use Proxy");
   gtk_box_pack_start(GTK_BOX(hbox), check, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->proxy_flag);
   my_signal_connect (check, "toggled",
@@ -10858,15 +10837,6 @@ void param_init(typHOE *hg){
   hg->fcdb_hst_mode=HST_MODE_ALL;
   for(i=0;i<NUM_HST_INST;i++){
     hg->fcdb_hst_inst[i]  = TRUE;
-  }
-  for(i=0;i<NUM_HST_IMAGE;i++){
-    hg->fcdb_hst_image[i]  = TRUE;
-  }
-  for(i=0;i<NUM_HST_SPEC;i++){
-    hg->fcdb_hst_spec[i]  = TRUE;
-  }
-  for(i=0;i<NUM_HST_OTHER;i++){
-    hg->fcdb_hst_other[i]  = TRUE;
   }
   for(i=0;i<NUM_ESO_IMAGE;i++){
     hg->fcdb_eso_image[i]  = TRUE;

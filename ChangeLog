@@ -1,3 +1,5 @@
+2023.02.22 ver4.5.0 - Proxy access for all HTTP/HTTPS connections.
+
 2023.02.14 ver4.4.1 - Bug fix for compling w/Ubuntu 22.04LTS (GCC10).
                     - Updated accessing to databases
 	                 HST archive

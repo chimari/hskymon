@@ -88,32 +88,6 @@ enum
   TRDB_HST_MODE_IMAGE
 };
 
-static const PARAMhstinst hst_image[NUM_HST_IMAGE] = {
-  {"STIS"},  
-  {"NICMOS"},  
-  {"WFPC2"},  
-  {"WFPC"},  
-  {"FOC"},  
-  {"ACS"},  
-  {"WFC3"},  
-  {"COS"}
-};
-
-static const PARAMhstinst hst_spec[NUM_HST_SPEC] = {
-  {"STIS"},  
-  {"NICMOS"},  
-  {"GHRS"},  
-  {"FOS"},  
-  {"FOC"},  
-  {"ACS"},  
-  {"WFC3"},  
-  {"COS"}
-};
-
-static const PARAMhstinst hst_other[NUM_HST_OTHER] = {
-  {"FGS"},  
-  {"HSP"}  
-};
 
 static const PARAMpost hst_post[] = { 
   {POST_CONST,   "action",        "Search"},

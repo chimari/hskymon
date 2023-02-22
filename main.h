@@ -2231,9 +2231,6 @@ struct _typHOE{
   gint     fcdb_hst_mode;
   GtkWidget *fcdb_w_hst_inst[NUM_HST_INST];
   gboolean fcdb_hst_inst[NUM_HST_INST];
-  gboolean fcdb_hst_image[NUM_HST_IMAGE];
-  gboolean fcdb_hst_spec[NUM_HST_SPEC];
-  gboolean fcdb_hst_other[NUM_HST_OTHER];
   gboolean fcdb_eso_image[NUM_ESO_IMAGE];
   gboolean fcdb_eso_spec[NUM_ESO_SPEC];
   gboolean fcdb_eso_vlti[NUM_ESO_VLTI];

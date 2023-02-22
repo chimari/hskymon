@@ -1,8 +1,9 @@
-hskymon (4.4.1ubuntu) UNRELEASED; urgency=medium
+hskymon (4.5.0ubuntu) bionic; urgency=medium
 
   * Change accessing to databases (HST) etc.
+  * Enabled proxy accesses for all HTTP/HTPS connections.
 
- -- Akito Tajitsu <akito.tajitsu@nao.ac.jp>  Tue, 14 Feb 2023 18:36:08 +0900
+ -- Akito Tajitsu <akito.tajitsu@nao.ac.jp>  Wed, 22 Feb 2023 11:55:21 +0900
 
 hskymon (4.3.4ubuntu) bionic; urgency=medium
 

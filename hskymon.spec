@@ -1,6 +1,6 @@
 Summary: Sky-Monitor for Subaru Telescope, NAOJ
 Name: hskymon
-Version: 4.4.1
+Version: 4.5.0
 Release: 1%{?_dist_release}
 License: GPL3
 Group: Applications/Engineering
@@ -9,7 +9,7 @@ URL: http://www.naoj.org/Observing/tools/hskymon/
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Vendor: Subaru Telescope, National Astoronomical Observatory of Japan
-Requires:	gtk2 
+Requires:	gtk3 
 Requires:	cairo
 Requires:       libxml2
 Requires:       openssl
@@ -35,7 +35,7 @@ changing positional parameters.
 %setup -q -n hskymon-%{version}
 
 %build
-./configure
+./configure --with-gtk3
 
 make
 

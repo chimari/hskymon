@@ -5469,20 +5469,20 @@ void make_trdb_label(typHOE *hg){
     case TRDB_HST_MODE_IMAGE:
       hg->trdb_label_text
 	=g_strdup_printf("HST archive List Query (Imaging : %s) [%d/%d hits]", 
-			 hst_image[hg->trdb_hst_image].name,
+			 HST_inst[hg->trdb_hst_image].name,
 			 hg->trdb_i_max, hg->i_max);
       break;
 
     case TRDB_HST_MODE_SPEC:
       hg->trdb_label_text
 	=g_strdup_printf("HST archive List Query (Spectroscopy : %s) [%d/%d hits]", 
-			 hst_spec[hg->trdb_hst_spec].name,
+			 HST_inst[hg->trdb_hst_spec].name,
 			 hg->trdb_i_max, hg->i_max);
       break;
     case TRDB_HST_MODE_OTHER:
       hg->trdb_label_text
 	=g_strdup_printf("HST archive List Query (Other : %s) [%d/%d hits]", 
-			 hst_other[hg->trdb_hst_other].name,
+			 HST_inst[hg->trdb_hst_other].name,
 			 hg->trdb_i_max, hg->i_max);
       break;
     }
