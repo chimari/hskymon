@@ -56,8 +56,6 @@ int http_c_fc_new();
 int http_c_fcdb_new();
 int http_c_std_new();
 
-int post_body();
-int post_body_ssl();
 int post_body_new();
 
 //gboolean check_allsky();
@@ -76,6 +74,7 @@ gint ssl_write();
 //int get_seimei_azel();
 int close_seimei_scoket();
 
+int Connect();
 
 #define BUF_LEN 65535             /* Buffer size */
 
@@ -3225,6 +3224,7 @@ int get_seimei_azel(typHOE *hg){
   char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
   char buf[BUF_LEN+1];
   gchar *cp, *cpp;
+  gchar *port;
   
   if(!hg->seimei_flag) return(-1);
 
@@ -3235,22 +3235,28 @@ int get_seimei_azel(typHOE *hg){
   memset(&hints, 0, sizeof(hints));
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_family = AF_INET;
+
+  port=g_strdup_printf("%d",hg->seimeistat_port);
   
-  if ((err = getaddrinfo(SEIMEI_STATUS_HOST, SEIMEI_STATUS_PORT, &hints, &res)) !=0){
-    fprintf(stderr, "Bad hostname [%s]\n", SEIMEI_STATUS_HOST);
+  if ((err = getaddrinfo(hg->seimeistat_host, port, &hints, &res)) !=0){
+    fprintf(stderr, "Bad hostname [%s]\n", hg->seimeistat_host);
+    g_free(port);
     return(HSKYMON_SEIMEI_ERROR_GETHOST);
   }
+  g_free(port);
+
+  
 
   /* ソケット生成 */
   if( (hg->seimei_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
       fprintf(stderr, "Failed to create a new socket.\n");
       freeaddrinfo(res);
       return(HSKYMON_SEIMEI_ERROR_SOCKET);
-    }
+  }
   
   /* サーバに接続 */
-  if( connect(hg->seimei_socket, res->ai_addr, res->ai_addrlen) != 0){
-    fprintf(stderr, "Failed to connect to %s .\n", SEIMEI_STATUS_HOST);
+  if( Connect(hg->seimei_socket, res->ai_addr, res->ai_addrlen, 3) != 0){
+    fprintf(stderr, "Failed to connect to %s .\n", hg->seimeistat_host);
     freeaddrinfo(res);
     return(HSKYMON_SEIMEI_ERROR_CONNECT);
   }
@@ -4950,3 +4956,167 @@ int post_body_new(typHOE *hg,
   return(plen);
 }
  
+
+#ifdef USE_WIN32
+int Connect(int socket, struct sockaddr * name, socklen_t namelen, struct timeval timeout)
+{
+  unsigned long mode;
+  fd_set readFd, writeFd, errFd;
+  int result;
+  int errono;
+  int sockNum;
+  
+  //接続前にいったん非同期に変更
+  mode = 1;
+  result= ioctlsocket(socket, FIONBIO, &mode);
+  if(NO_ERROR != result)
+    {
+      return -1;
+    }
+  
+  //接続
+  result= connect(socket, name, namelen);
+  if(result == -1)
+    {
+      errono = WSAGetLastError();
+      if(WSAEWOULDBLOCK == errono)
+        {
+	  //非同期接続成功だとここに入る。select()で完了を待つ。
+	  errno = 0;
+        }
+      else
+        {
+	  //接続失敗
+	  //同期型に戻す。
+	  mode = 0;
+	  ioctlsocket(socket, FIONBIO, &mode);
+	  return -1;
+        }
+    }
+  
+  //同期型に戻す。
+  mode = 0;
+  result= ioctlsocket(socket, FIONBIO, &mode);
+  if(0 < result)
+    {
+      //error
+      return -1;
+    }
+  
+  //セレクトで待つ
+  FD_ZERO(&readFd);
+  FD_ZERO(&writeFd);
+  FD_ZERO(&errFd);
+  FD_SET(socket, &readFd);
+  FD_SET(socket, &writeFd);
+  FD_SET(socket, &errFd);
+  sockNum = select(socket + 1, &readFd, &writeFd, &errFd, &timeout);
+  if(0 == sockNum)
+    {
+      //timeout
+      return -1;
+    }
+  else if(FD_ISSET(socket, &readFd) || FD_ISSET(socket, &writeFd) )
+    {
+      //読み書きできる状態
+    }
+  else
+    {
+      //error
+      return -1;
+    }
+
+  
+  return 0;
+}
+
+#else
+//タイムアウト付きコネクト(非同期コネクト)
+int Connect(int socket, struct sockaddr * name, socklen_t namelen, gint timeout_sec)
+{
+  struct timeval timeout;
+  int result, flags;
+  fd_set readFd, writeFd, errFd;
+  int sockNum;
+
+  timeout.tv_sec=timeout_sec;
+  timeout.tv_usec=0;
+  
+  //接続前に一度非同期に変更
+  flags = fcntl(socket, F_GETFL);
+  if(-1 == flags)
+    {
+      return -1;
+    }
+  result = fcntl(socket, F_SETFL, flags | O_NONBLOCK);
+  if(-1 == result)
+    {
+        return -1;
+    }
+  
+  //接続
+  result = connect(socket, name, namelen);
+  if(result == -1)
+    {
+      if(EINPROGRESS == errno)
+	{
+	  //非同期接続成功だとここに入る。select()で完了を待つ。
+	  errno = 0;
+        }
+      else
+        {
+	  //接続失敗 同期に戻す。
+	  fcntl(socket, F_SETFL, flags );
+	  return -1;
+        }
+    }
+  
+  //同期に戻す。
+  result = fcntl(socket, F_SETFL, flags );
+  if(-1 == result)
+    {
+      //error
+      return -1;
+    }
+  
+  //セレクトで待つ
+  FD_ZERO(&readFd);
+  FD_ZERO(&writeFd);
+  FD_ZERO(&errFd);
+  FD_SET(socket, &readFd);
+  FD_SET(socket, &writeFd);
+  FD_SET(socket, &errFd);
+  sockNum = select(socket + 1, &readFd, &writeFd, &errFd, &timeout);
+  if(0 == sockNum)
+    {
+      //timeout error
+      return -1;
+    }
+  else if(FD_ISSET(socket, &readFd) || FD_ISSET(socket, &writeFd) )
+    {
+      //読み書きできる状態
+    }
+  else
+    {
+      //error
+      return -1;
+    }
+
+    //ソケットエラー確認
+    int optval = 0;
+    socklen_t optlen = (socklen_t)sizeof(optval);
+    errno = 0;
+    result = getsockopt(socket, SOL_SOCKET, SO_ERROR, (void *)&optval, &optlen);
+    if(result < 0)
+    {
+        //error
+    }
+    else if(0 != optval)
+    {
+        //error
+    }
+
+    return 0;
+}
+
+#endif

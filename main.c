@@ -7938,6 +7938,8 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gchar *tmp_proxy_host;
   gboolean tmp_proxy_flag;
   gint tmp_proxy_port;
+  gchar *tmp_seimeistat_host;
+  gint tmp_seimeistat_port, tmp_seimeistat_timeout;
   gboolean tmp_show_def,tmp_show_elmax,tmp_show_secz,tmp_show_ha,tmp_show_ad,
     tmp_show_ang,tmp_show_hpa,tmp_show_moon,
     tmp_show_ra,tmp_show_dec,tmp_show_equinox,tmp_show_pam,tmp_show_note;
@@ -8013,6 +8015,9 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   tmp_proxy_host  =g_strdup(hg->proxy_host);
   tmp_proxy_flag  =hg->proxy_flag;
   tmp_proxy_port  =hg->proxy_port;
+  tmp_seimeistat_host  =g_strdup(hg->seimeistat_host);
+  tmp_seimeistat_port  =hg->seimeistat_port;
+  tmp_seimeistat_timeout  =hg->seimeistat_timeout;
   tmp_allsky_ssl   =hg->allsky_ssl;
   tmp_allsky_path  =g_strdup(hg->allsky_path);
   //tmp_allsky_date_path  =g_strdup(hg->allsky_date_path);
@@ -9229,7 +9234,87 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   my_signal_connect (adj, "value_changed",
 		     cc_get_adj,
 		     &tmp_proxy_port);
-   
+
+
+  frame = gtkut_frame_new ("<b>Seimei Telescope Status Sever</b>");
+  gtk_box_pack_start(GTK_BOX(note_vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+
+  table1 = gtkut_table_new(3, 1, FALSE, 5, 5, 5);
+  gtk_container_add (GTK_CONTAINER (frame), table1);
+
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtkut_table_attach(table1, hbox, 0, 1, 0, 1,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("Host");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  
+
+  entry = gtk_entry_new ();
+  gtk_box_pack_start(GTK_BOX(hbox), entry, FALSE, FALSE, 0);
+  gtk_entry_set_text(GTK_ENTRY(entry),
+		     hg->seimeistat_host);
+  gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
+  my_entry_set_width_chars(GTK_ENTRY(entry),40);
+  my_signal_connect (entry,
+		     "changed",
+		     cc_get_entry,
+		     &tmp_seimeistat_host);
+
+  label = gtk_label_new ("  Port");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->seimeistat_port,
+					    38000, 38019, 
+					    1.0,1.0,0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),5);
+  my_signal_connect (adj, "value_changed",
+		     cc_get_adj,
+		     &tmp_seimeistat_port);
+  
+
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtkut_table_attach(table1, hbox, 0, 1, 1, 2,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("Timeout[sec]");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->seimeistat_timeout,
+					    1, 30, 
+					    1.0,1.0,0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed",
+		     cc_get_adj,
+		     &tmp_seimeistat_timeout);
+  
+  
 
   label = gtk_label_new ("Proxy");
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
@@ -10167,6 +10252,11 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->proxy_host        =g_strdup(tmp_proxy_host);
     hg->proxy_flag        =tmp_proxy_flag;
     hg->proxy_port        =tmp_proxy_port;
+
+    if(hg->seimeistat_host) g_free(hg->seimeistat_host);
+    hg->seimeistat_host        =g_strdup(tmp_seimeistat_host);
+    hg->seimeistat_port        =tmp_seimeistat_port;
+    hg->seimeistat_timeout     =tmp_seimeistat_timeout;
     
     hg->show_def   = tmp_show_def;
     hg->show_elmax   = tmp_show_elmax;
@@ -10400,6 +10490,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   g_free(tmp_allsky_file);
   g_free(tmp_allsky_last_file00);
   g_free(tmp_proxy_host);
+  g_free(tmp_seimeistat_host);
   g_free(tmp_fontname);
   g_free(tmp_fontname_all);
 
@@ -10718,6 +10809,10 @@ void param_init(typHOE *hg){
   hg->telstat_flag=TRUE;
 
   hg->telstat_timer=-1;
+  hg->seimeistat_timer=-1;
+  hg->seimeistat_host=g_strdup(SEIMEI_STATUS_HOST);
+  hg->seimeistat_port=SEIMEI_STATUS_PORT;
+  hg->seimeistat_timeout=SEIMEI_DEFAULT_TIMEOUT;
   hg->stat_az=-90;
   hg->stat_az_cmd=-90;
   hg->stat_az_check=-90;
@@ -11032,7 +11127,7 @@ gboolean update_seimeistat (gpointer gdata){
 
   hg=(typHOE *)gdata;
 
-  if(get_seimei_azel(hg)==-1){
+  if(get_seimei_azel(hg)!=0){
     return(FALSE);
   }
   
@@ -11976,6 +12071,11 @@ void WriteConf(typHOE *hg){
   xmms_cfg_write_boolean(cfgfile, "Proxy", "Flag",hg->proxy_flag);
   xmms_cfg_write_int(cfgfile, "Proxy", "Port",hg->proxy_port);
 
+  if(hg->seimeistat_host) 
+    xmms_cfg_write_string(cfgfile, "SeimeiStat", "Host", hg->seimeistat_host);
+  xmms_cfg_write_int(cfgfile, "SeimeiStat", "Port",hg->seimeistat_port);
+  xmms_cfg_write_int(cfgfile, "SeimeiStat", "Timeout",hg->seimeistat_timeout);
+  
   // AD Calc.
   xmms_cfg_write_int(cfgfile, "ADC", "Wave1",(gint)hg->wave1);
   xmms_cfg_write_int(cfgfile, "ADC", "Wave0",(gint)hg->wave0);
@@ -12456,6 +12556,20 @@ void ReadConf(typHOE *hg)
     else
       hg->proxy_flag=FALSE;
 
+    // SeimeiStat
+    if(xmms_cfg_read_string(cfgfile, "SeimeiStat", "Host", &c_buf)) 
+      hg->seimeistat_host =c_buf;
+    else
+      hg->seimeistat_host=g_strdup(SEIMEI_STATUS_HOST);
+    if(xmms_cfg_read_int(cfgfile, "SeimeiStat", "Port", &i_buf)) 
+      hg->seimeistat_port =i_buf;
+    else
+      hg->seimeistat_port = SEIMEI_STATUS_PORT;
+    if(xmms_cfg_read_int(cfgfile, "SeimeiStat", "Timeout", &i_buf)) 
+      hg->seimeistat_timeout =i_buf;
+    else
+      hg->seimeistat_timeout = SEIMEI_DEFAULT_TIMEOUT;
+    
 #ifdef USE_XMLRPC
     //if(xmms_cfg_read_string(cfgfile, "RemoteObject", "nameserver", &c_buf)) 
     //  hg->ro_ns_host =c_buf;
@@ -13774,21 +13888,7 @@ int main(int argc, char* argv[]){
 #endif
 
   if(hg->seimei_flag){
-    create_seimei_socket(hg);
-    printf_log(hg,"[Seimei] starting to fetch telescope status from %s",
-	       SEIMEI_STATUS_HOST);
-    if(update_seimeistat((gpointer)hg)){
-      printf_log(hg,"[Seimei] connected to the server %s",		 
-		 SEIMEI_STATUS_HOST);
-      draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
-      hg->seimeistat_timer=g_timeout_add(TELSTAT_INTERVAL, 
-					 (GSourceFunc)update_seimeistat,
-					 (gpointer)hg);
-    }
-    else{
-      printf_log(hg,"[SeimeiStat] cannot connect to the server %s",
-		 SEIMEI_STATUS_HOST);
-    }
+    start_seimei_stat(hg);
   }
 
   // All Sky Checking TimeOut

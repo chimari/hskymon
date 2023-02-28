@@ -1926,6 +1926,9 @@ struct _typHOE{
   gint telstat_timer;
 #endif
   gint seimeistat_timer;
+  gchar *seimeistat_host;
+  gint seimeistat_port;
+  gint seimeistat_timeout;
 
   gint pm_i;
 
@@ -2457,6 +2460,7 @@ struct _typHOE{
   GtkWidget *skymon_button_telstat;
   gboolean telstat_error;
 #endif
+  GtkWidget *skymon_button_seimei;
 
   gboolean seimei_flag;
   glong seimei_id;
@@ -2684,6 +2688,7 @@ gboolean draw_skymon_cairo();
 gboolean draw_skymon_with_telstat_cairo();
 #endif
 gboolean draw_skymon_with_seimei_cairo();
+void start_seimei_stat();
 
 //remoteObjects.c
 int ro_init();

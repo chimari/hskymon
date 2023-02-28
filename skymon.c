@@ -92,6 +92,8 @@ gint skymon_back();
 static gint button_signal();
 void draw_stderr_graph();
 
+static void skymon_set_seimei();
+
 GdkPixbuf *pixbuf_tmp=NULL;
 GdkPixbuf *pixbuf_tmp2=NULL;
 
@@ -499,6 +501,25 @@ void create_skymon_dialog(typHOE *hg)
   gtk_widget_set_tooltip_text(hg->skymon_button_telstat,
 			      "Telescope Status");
 #endif
+
+#else  //USE_XMLRPC
+  if((hg->proxy_flag) && (strcmp(hg->proxy_host, SEIMEI_PROXY_HOST)==0)){
+    icon = gdk_pixbuf_new_from_resource ("/icons/subaru_icon.png", NULL);
+    hg->skymon_button_seimei=gtkut_toggle_button_new_from_pixbuf(NULL, icon);
+    g_object_unref(icon);
+    gtk_container_set_border_width (GTK_CONTAINER (hg->skymon_button_seimei), 0);
+    gtk_box_pack_start(GTK_BOX(hbox1),hg->skymon_button_seimei,FALSE,FALSE,0);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->skymon_button_seimei),
+				 hg->seimei_flag);
+    my_signal_connect(hg->skymon_button_seimei,"toggled",
+		      skymon_set_seimei, 
+		      (gpointer)hg);
+    
+#ifdef __GTK_TOOLTIP_H__
+    gtk_widget_set_tooltip_text(hg->skymon_button_seimei,
+				"Seimei Telescope Status");
+#endif
+  }
 
 #endif  //USE_XMLRPC
 
@@ -2159,6 +2180,11 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 #ifdef USE_XMLRPC
     if(pixbuf_skymonbg) g_object_unref(G_OBJECT(pixbuf_skymonbg));
     pixbuf_skymonbg=gdk_pixbuf_copy(pixbuf_skymon);
+#else
+    if(hg->seimei_flag){
+      if(pixbuf_skymonbg) g_object_unref(G_OBJECT(pixbuf_skymonbg));
+      pixbuf_skymonbg=gdk_pixbuf_copy(pixbuf_skymon);
+    }
 #endif
 #else
   {
@@ -4133,6 +4159,58 @@ static void skymon_set_telstat (GtkWidget *w,   gpointer gdata)
   }
 
   draw_skymon(hg->skymon_dw,hg,FALSE);
+}
+#else
+
+void start_seimei_stat(typHOE *hg){
+  create_seimei_socket(hg);
+  printf_log(hg,"[Seimei] starting to fetch telescope status from %s",
+	     SEIMEI_STATUS_HOST);
+  if(update_seimeistat((gpointer)hg)){
+    printf_log(hg,"[Seimei] connected to the server %s",		 
+	       SEIMEI_STATUS_HOST);
+    draw_skymon_cairo(hg->skymon_dw,hg, FALSE);
+    hg->seimeistat_timer=g_timeout_add(TELSTAT_INTERVAL, 
+				       (GSourceFunc)update_seimeistat,
+				       (gpointer)hg);
+  }
+  else{
+    printf_log(hg,"[SeimeiStat] cannot connect to the server %s",
+	       SEIMEI_STATUS_HOST);
+    
+    popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		  "dialog-error", 
+#else
+		  GTK_STOCK_DIALOG_ERROR, 
+#endif
+		  -1,
+		  "<b>Error</b>: Cannot connect to the Seimei Status Server.",
+		  NULL);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hg->skymon_button_seimei), FALSE);
+    hg->seimeistat_timer=-1;
+  }
+}
+
+static void skymon_set_seimei (GtkWidget *w,   gpointer gdata)
+{
+  typHOE *hg;
+
+  hg=(typHOE *)gdata;
+
+  hg->seimei_flag=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
+  
+  if(hg->seimei_flag){
+    if(hg->seimeistat_timer==-1){
+      start_seimei_stat(hg);
+    }
+  }
+  else{
+    if(hg->seimeistat_timer!=-1){
+      g_source_remove(hg->seimeistat_timer);
+      hg->seimeistat_timer=-1;
+    }
+  }   
 }
 #endif
 
