@@ -4083,6 +4083,43 @@ void calcpa2_main(typHOE* hg){
       }
 
       hg->obj[i_list].check_lock=FALSE;
+#else
+      if(hg->seimei_flag){
+	if( hg->obj[i_list].c_el<0 ){
+	  hg->obj[i_list].c_rt=-1;
+	}
+	else if( hg->obj[i_list].c_az>90 ){
+	  dAz1 = fabs(hg->seimei_az-180 -hg->pa_a0 -hg->obj[i_list].c_az);
+	  dAz2 = fabs(hg->seimei_az-180 -hg->pa_a0 -(hg->obj[i_list].c_az-360));
+	  dAz = (dAz1>dAz2) ? dAz2 : dAz1;
+	}
+	else if ( hg->obj[i_list].c_az<-90 ){
+	  dAz1 = fabs(hg->seimei_az-180 -hg->pa_a0 - hg->obj[i_list].c_az);
+	  dAz2 = fabs(hg->seimei_az-180 -hg->pa_a0 - (hg->obj[i_list].c_az+360));
+	  dAz = (dAz1>dAz2) ? dAz2 : dAz1;
+	}
+	else{
+	  dAz=fabs(hg->seimei_az-180 -hg->pa_a0 -hg->obj[i_list].c_az);
+	}
+	dEl=fabs(hg->seimei_el -hg->pa_a1 -hg->obj[i_list].c_el);
+	
+	if( (dAz/hg->vel_az) > (dEl/hg->vel_el) )
+	  hg->obj[i_list].c_rt=dAz/hg->vel_az;
+	else
+	  hg->obj[i_list].c_rt=dEl/hg->vel_el;
+
+	if(i_min_c_rt==-1){
+	  i_min_c_rt=i_list;
+	}
+	else if(hg->obj[i_list].c_rt < hg->obj[i_min_c_rt].c_rt){
+	  i_min_c_rt=i_list;
+	}
+      }
+      else{
+	hg->obj[i_list].c_rt=-1;
+      }
+
+      hg->obj[i_list].check_lock=FALSE;
 #endif      
     }
   }
@@ -4116,6 +4153,14 @@ void calcpa2_main(typHOE* hg){
 	if(hg->obj[i_min_c_rt].c_rt<2){
 	  hg->obj[i_min_c_rt].check_lock=TRUE;
 	}
+      }
+    }
+  }
+#else
+  if(hg->seimei_flag){
+    if(i_min_c_rt!=-1){
+      if(hg->obj[i_min_c_rt].c_rt<2){
+	hg->obj[i_min_c_rt].check_lock=TRUE;
       }
     }
   }

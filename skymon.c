@@ -2213,7 +2213,22 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
 		      0,0,0,0,
 		      width,
 		      height);
+#else
+    if(hg->seimei_flag){
+      if(pixmap_skymonbg) g_object_unref(G_OBJECT(pixmap_skymonbg));
+      pixmap_skymonbg = gdk_pixmap_new(gtk_widget_get_window(widget),
+				       width,
+				       height,
+				       -1);
+      gdk_draw_drawable(pixmap_skymonbg,
+			style->fg_gc[gtk_widget_get_state(widget)],
+			pixmap_skymonbk,
+			0,0,0,0,
+			width,
+			height);
+    }
 #endif
+    
   }
 
   g_object_unref(G_OBJECT(pixmap_skymonbk));
@@ -2226,7 +2241,9 @@ gboolean draw_skymon_cairo(GtkWidget *widget, typHOE *hg, gboolean force_flag){
     draw_skymon_pixmap(widget,hg);
   }
 #else
-  draw_skymon_pixmap(widget,hg);
+  if(!hg->seimei_flag){
+    draw_skymon_pixmap(widget,hg);
+  }
 #endif
 #endif
 
@@ -2472,6 +2489,7 @@ gboolean draw_skymon_with_seimei_cairo(GtkWidget *widget,
 
   if(hg->skymon_mode==SKYMON_CUR){
 #ifdef USE_GTK3
+    if(!GDK_IS_PIXBUF(pixbuf_skymonbg)) return(FALSE);
     surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
 					 width, height);
     

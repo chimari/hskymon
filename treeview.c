@@ -73,14 +73,12 @@ gchar *strip_spc();
 
 void swap_obj();
 
-#ifdef USE_XMLRPC
 #ifdef USE_GTK3
 GdkRGBA col_lock={1.0, 0.75, 0.75, 1.0};
 GdkRGBA col_sub= {0.8125, 1.0, 1.0, 1.0};
 #else
 GdkColor col_lock={0,0xFFFF,0xC000,0xC000};
 GdkColor col_sub={0,0xDDDD,0xFFFF,0xFFFF};
-#endif
 #endif
 
 static void cell_toggled_check();
@@ -281,7 +279,6 @@ void name_cell_data_func(GtkTreeViewColumn *col ,
 		 NULL);
   }
 
-#ifdef USE_XMLRPC
   if(hg->obj[i].check_lock)
     g_object_set(renderer,
 #ifdef USE_GTK3
@@ -306,7 +303,6 @@ void name_cell_data_func(GtkTreeViewColumn *col ,
 		 "background-gdk", NULL,
 #endif
 		 NULL);
-#endif
 }
 
 void trdb_name_cell_data_func(GtkTreeViewColumn *col , 

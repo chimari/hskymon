@@ -77,7 +77,9 @@
 #define USER_CONFFILE ".hskymon"
 #endif
 
-#define COPYRIGHT_LABEL "&#xA9; 2003-22 Akito Tajitsu"
+#define COPYRIGHT_LABEL "&#xA9; 2003-23 Akito Tajitsu"
+
+#define DEFAULT_IO_TIMEOUT 10
 
 #define AU_IN_KM 149597870.700
 

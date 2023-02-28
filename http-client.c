@@ -114,7 +114,7 @@ static gint fd_check_io(gint fd, GIOCondition cond)
 {
 	struct timeval timeout;
 	fd_set fds;
-	guint io_timeout=60;
+	guint io_timeout=DEFAULT_IO_TIMEOUT;
 
 	timeout.tv_sec  = io_timeout;
 	timeout.tv_usec = 0;
@@ -3308,7 +3308,7 @@ int get_seimei_azel(typHOE *hg){
   size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
   //fprintf(stderr,"--> %s", buf);
 
-  printf(" Seimei Az=%lf   El=%lf\n",hg->seimei_az, hg->seimei_el);
+  //printf(" Seimei Az=%lf   El=%lf\n",hg->seimei_az, hg->seimei_el);
   
   check_msg_from_parent(hg);
 
@@ -4958,13 +4958,17 @@ int post_body_new(typHOE *hg,
  
 
 #ifdef USE_WIN32
-int Connect(int socket, struct sockaddr * name, socklen_t namelen, struct timeval timeout)
+int Connect(int socket, struct sockaddr * name, socklen_t namelen, gint timeout_sec)
 {
   unsigned long mode;
   fd_set readFd, writeFd, errFd;
   int result;
   int errono;
   int sockNum;
+  struct timeval timeout;
+
+  timeout.tv_sec=timeout_sec;
+  timeout.tv_usec=0;
   
   //接続前にいったん非同期に変更
   mode = 1;
