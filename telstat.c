@@ -300,7 +300,7 @@ int get_rope(typHOE *hg, int mode){
 	    //printf("OPE[%d] is %s\n", i,hg->filename_rope[i]);
 	    if(i==len-1){
 	      if(hg->dirname_rope) g_free(hg->dirname_rope);
-	      hg->dirname_rope=g_dirname(hg->filename_rope[i]);
+	      hg->dirname_rope=g_path_get_dirname(hg->filename_rope[i]);
 	    }
 	  }
 	}
@@ -318,7 +318,7 @@ int get_rope(typHOE *hg, int mode){
 				 "s", &tmp_char);
 
 	  if(hg->dirname_rope) g_free(hg->dirname_rope);
-	  hg->dirname_rope=g_dirname(tmp_char);
+	  hg->dirname_rope=g_path_get_dirname(tmp_char);
 	  printf_log(hg, "[GetOpePaths] The current OPE dir in IntegGUI is \"%s\"", hg->dirname_rope);
 	  if(tmp_char) g_free(tmp_char);
 	  if(itemP) xmlrpc_DECREF(itemP);

@@ -13887,11 +13887,12 @@ int main(int argc, char* argv[]){
 		 hg->ro_ns_host);
     }
   }
-#endif
+#else
 
   if(hg->seimei_flag){
     start_seimei_stat(hg);
   }
+#endif
 
   // All Sky Checking TimeOut
   //   Leave it running
