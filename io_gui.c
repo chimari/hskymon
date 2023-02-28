@@ -4154,8 +4154,8 @@ void Export_TextSeimei(typHOE *hg){
     exit(1);
   }
 
-  text_form1=g_strdup("%s,%02d:%02d:%05.2lf,%s%02d:%02d:%4.1lf,%.0lf,%+.2lf,%+.2lf,%.1lf,%s");
-  text_form2=g_strdup("%s,%02d:%02d:%05.2lf,%s%02d:%02d:%4.1lf,%.0lf,%+.2lf,%+.2lf,%.1lf,target");
+  text_form1=g_strdup("%s,%02d:%02d:%05.2lf,%s%02d:%02d:%04.1lf,%.0lf,%+.2lf,%+.2lf,%.1lf,%s");
+  text_form2=g_strdup("%s,%02d:%02d:%05.2lf,%s%02d:%02d:%04.1lf,%.0lf,%+.2lf,%+.2lf,%.1lf,target");
 
   for(i_list=0;i_list<hg->i_max;i_list++){
     if(tmp_name) g_free(tmp_name);
