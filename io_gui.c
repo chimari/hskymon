@@ -864,16 +864,21 @@ void ReadList(typHOE *hg, gint ope_max){
 	  hg->obj[i_list].pm_dec=(gdouble)g_strtod(tmp_char,NULL)*1000.0;
 	}
       }
-      
-      if((tmp_char=(char *)strtok(NULL,"\r\n"))!=NULL){
-	if(seimei_flag){
-	  hg->obj[i_list].note=g_strconcat("mag=",
-					   tmp_char,
-					   NULL);
+
+      if(seimei_flag){
+	tmp_char=(char *)strtok(NULL,",");
+	is_ret=is_number(hg->skymon_main,tmp_char,i_list+1,"Magnitude");
+	
+	if(is_ret<0){
+	  break;
 	}
 	else{
-	  hg->obj[i_list].note=cut_spc(tmp_char);
+	  hg->obj[i_list].mag=(gdouble)g_strtod(tmp_char,NULL);
 	}
+      }
+      
+      if((tmp_char=(char *)strtok(NULL,"\r\n"))!=NULL){
+	hg->obj[i_list].note=cut_spc(tmp_char);
       }
       else{
 	hg->obj[i_list].note=NULL;
@@ -1043,16 +1048,21 @@ void MergeList(typHOE *hg, gint ope_max){
 	  }
 	}
 
-	if(hg->obj[i].note) g_free(hg->obj[i].note);
-	if((tmp_char=(char *)strtok(NULL,"\r\n"))!=NULL){
-	  if(seimei_flag){
-	    hg->obj[i].note=g_strconcat("mag=",
-					tmp_char,
-					NULL);
+	if(seimei_flag){
+	  tmp_char=(char *)strtok(NULL,",");
+	  is_ret=is_number(hg->skymon_main,tmp_char,i_list+1,"Magnitude");
+	  
+	  if(is_ret<0){
+	    break;
 	  }
 	  else{
-	    hg->obj[i].note=cut_spc(tmp_char);
+	    hg->obj[i_list].mag=(gdouble)g_strtod(tmp_char,NULL);
 	  }
+	}
+      
+	if(hg->obj[i].note) g_free(hg->obj[i].note);
+	if((tmp_char=(char *)strtok(NULL,"\r\n"))!=NULL){
+	  hg->obj[i].note=cut_spc(tmp_char);
 	}
 	else{
 	  hg->obj[i].note=NULL;
@@ -4167,6 +4177,9 @@ void Export_TextSeimei(typHOE *hg){
     ln_deg_to_dms(d_dec,&dms);
     
     mag=99.9;
+    if(hg->obj[i_list].mag<99){
+      mag=hg->obj[i_list].mag;
+    }
    
     if(hg->obj[i_list].note){
       if(tmp_note) g_free(tmp_note);

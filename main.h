@@ -1669,6 +1669,7 @@ struct _OBJpara{
 
   gint hash;
   gint i_nst;
+  gdouble mag;
 
   /*
   GtkWidget *w_az;

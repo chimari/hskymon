@@ -11296,6 +11296,8 @@ void init_obj(OBJpara *obj){
 
   obj->pam=-1;
   
+  obj->mag=99.9;
+  
   if(obj->trdb_str) g_free(obj->trdb_str);
   obj->trdb_str=NULL;
   obj->trdb_band_max=0;
