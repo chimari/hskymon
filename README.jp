@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 4.5.0    2023/02/23
+#                                  ver 4.5.1    2023/03/01
 #                               Copyright (C) 2003-23 Akito Tajitsu
 #                                        akito.tajitsu_at_nao.ac.jp
 #      Subaru Telescope, National Astronomical Observatory of Japan
@@ -23,7 +23,7 @@
 くは、CSVテキストのリスト、または非恒星天体用の軌道追尾ファイルを使用できます。
 
 最新版release(source および Win/Mac用バイナリ)はNAOJ公式ページ
-  http://www.naoj.org/Observing/tools/hskymon/
+  https://www.naoj.org/Observing/tools/hskymon/
 もしくは GitHub
   https://github.com/chimari/hskymon/
 からダウンロードできます。

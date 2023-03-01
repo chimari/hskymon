@@ -5,7 +5,7 @@
 .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
 .\" other parameters are allowed: see man(7), man(1)
 .IX Title "HSKYMON 1"
-.TH HSKYMON 1 "June 14, 2021" "4.3.4" "User Manuals"
+.TH HSKYMON 1 "March 1, 2023" "4.5.1" "User Manuals"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -52,6 +52,12 @@ Disconnect from Telstat Server (only compiled w/XMLRPC option).
 .TP
 .B \-s, \-\-server [server\-address]
 Set Gen2 Telstat Server (only compiled w/XMLRPC option).
+.TP
+.B \-ws, \-\-with-seimei
+Show Seimei Telescope Position (only inside of Seimei intranet).
+.TP
+.B \-d
+Show HTTP debug messages.
 
 .SH INPUT FILES
 .TP
@@ -100,7 +106,7 @@ Please put TSC files in an appropriate directory (maybe in the same
 directory where your OPE files locate) and load them from the menu.
 Files must follow the format described in
 .br
-  http://www.naoj.org/Observing/Telescope/Tracking/NonSidereal/ .
+  https://www.naoj.org/Observing/Telescope/Tracking/NonSidereal/ .
 .br
 You should use "Geocentric" coordinate in TSC files.
 They would be automatically converted into topocentric in the program.
@@ -129,6 +135,6 @@ From the main menu, HORIZONS files can be converted into the TSC format.
 .nf
 Akito Tajitsu	<akito.tajitsu@nao.ac.jp>
 .br
-  URL:   http://www.naoj.org/Observing/tools/hskymon
+  URL:   https://www.naoj.org/Observing/tools/hskymon
 .fi
 

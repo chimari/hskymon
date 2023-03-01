@@ -4227,6 +4227,8 @@ void start_seimei_stat(typHOE *hg){
       hg->seimeistat_timer=-1;
     }
   }
+  
+  draw_skymon(hg->skymon_dw,hg,FALSE);
 }
 
 static void skymon_set_seimei (GtkWidget *w,   gpointer gdata)
@@ -4249,6 +4251,7 @@ static void skymon_set_seimei (GtkWidget *w,   gpointer gdata)
       hg->seimeistat_timer=-1;
     }
   }   
+  draw_skymon(hg->skymon_dw,hg,FALSE);
 }
 #endif
 
