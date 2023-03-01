@@ -9168,7 +9168,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   // Network
   note_vbox = gtkut_vbox_new(FALSE,2);
   
-  frame = gtkut_frame_new ("<b>HTTP / HTTPS Connection</b>");
+  frame = gtkut_frame_new ("<b>http / https connection</b>");
   gtk_box_pack_start(GTK_BOX(note_vbox),
 		     frame,FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);

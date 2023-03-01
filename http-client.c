@@ -3312,13 +3312,17 @@ int get_seimei_azel(typHOE *hg){
   //fprintf(stderr,"--> %s", buf);
 
   // TEL.AZI
-  size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
   if((size = fd_gets(hg->seimei_socket,buf,BUF_LEN)) > (strlen("TEL.AZI=")+3)){
     if ( debug_flg ) fprintf(stderr,"--> %s", buf);
     cpp=buf;
     cp=strstr(cpp,"TEL.AZI=");
-    cp+=strlen("TEL.AZI=");
-    hg->seimei_az=atof(cp);
+    if(cp){
+      cp+=strlen("TEL.AZI=");
+      hg->seimei_az=atof(cp);
+    }
+    else{
+      return(HSKYMON_SEIMEI_ERROR_FDGET);
+    }
   }else{
     return(HSKYMON_SEIMEI_ERROR_FDGET);
   }
@@ -3343,8 +3347,13 @@ int get_seimei_azel(typHOE *hg){
     if ( debug_flg ) fprintf(stderr,"--> %s", buf);
     cpp=buf;
     cp=strstr(cpp,"TEL.ALT=");
-    cp+=strlen("TEL.ALT=");
-    hg->seimei_el=atof(cp);
+    if(cp){
+      cp+=strlen("TEL.ALT=");
+      hg->seimei_el=atof(cp);
+    }
+    else{
+      return(HSKYMON_SEIMEI_ERROR_FDGET);
+    }
   }
   else{
     return(HSKYMON_SEIMEI_ERROR_FDGET);
