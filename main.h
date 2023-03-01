@@ -79,6 +79,7 @@
 
 #define COPYRIGHT_LABEL "&#xA9; 2003-23 Akito Tajitsu"
 
+#define DEFAULT_HTTP_TIMEOUT 10
 #define DEFAULT_IO_TIMEOUT 10
 
 #define AU_IN_KM 149597870.700
@@ -2413,6 +2414,7 @@ struct _typHOE{
   gint allsky_data_status;
   gint allsky_http_status;
   gdouble allsky_ratio;
+  gint http_timeout;
 
 
   gboolean allsky_pixbuf_flag;
@@ -2666,6 +2668,7 @@ void allsky_debug_print (const gchar *format, ...) G_GNUC_PRINTF(1, 2);
 int month_from_string_short();
 
 int get_seimei_azel();
+int close_seimei_socket();
 
 // json_parse
 void fcdb_gemini_json_parse();

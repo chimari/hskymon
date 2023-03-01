@@ -1,5 +1,6 @@
 2023.02.28 ver4.5.1 - Added a new function to access to Seimei Telescope
 	              Status Server.
+	            - Added HTTP / HTTPS connection timeout.
 
 2023.02.22 ver4.5.0 - Proxy access for all HTTP/HTTPS connections.
 

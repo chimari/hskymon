@@ -330,7 +330,7 @@ int http_c_allsky_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
   
   /* サーバに接続 */
   if(SSL_flag){  // HTTPS
-    if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
+    if( Connect(command_socket, res->ai_addr, res->ai_addrlen, hg->http_timeout) == -1){
       fprintf(stderr, "Failed to connect to %s .\n", hg->allsky_host);
       if(hg->allsky_date) g_free(hg->allsky_date);
       hg->allsky_date=g_strdup("Error: Failed to create a new socket.");
@@ -338,7 +338,7 @@ int http_c_allsky_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
     }
   }
   else{  // HTTP
-    if( connect(command_socket, res->ai_addr, res->ai_addrlen) != 0){
+    if( Connect(command_socket, res->ai_addr, res->ai_addrlen, hg->http_timeout) != 0){
       fprintf(stderr, "Failed to connect to %s .\n", hg->allsky_host);
       if(hg->allsky_date) g_free(hg->allsky_date);
       hg->allsky_date=g_strdup("Error: Failed to connect.");
@@ -1251,7 +1251,7 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
   check_msg_from_parent(hg);
  
   /* サーバに接続 */
-  if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
+  if( Connect(command_socket, res->ai_addr, res->ai_addrlen, hg->http_timeout) == -1){
     fprintf(stderr, "Failed to connect to %s .\n", hg->dss_host);
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
@@ -1716,7 +1716,7 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 
     check_msg_from_parent(hg);
 
-    if( connect(command_socket, res->ai_addr, res->ai_addrlen) != 0){
+    if( Connect(command_socket, res->ai_addr, res->ai_addrlen, hg->http_timeout) != 0){
       fprintf(stderr, "Failed to connect to %s .\n", hg->dss_host);
       return(HSKYMON_HTTP_ERROR_CONNECT);
     }
@@ -2059,7 +2059,7 @@ int http_c_std_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
   check_msg_from_parent(hg);
 
   /* サーバに接続 */
-  if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
+  if( Connect(command_socket, res->ai_addr, res->ai_addrlen, hg->http_timeout) == -1){
     fprintf(stderr, "Failed to connect to %s .\n", hg->std_host);
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
@@ -2273,7 +2273,7 @@ int http_c_fcdb_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
   check_msg_from_parent(hg);
 
   /* サーバに接続 */
-  if( connect(command_socket, res->ai_addr, res->ai_addrlen) == -1){
+  if( Connect(command_socket, res->ai_addr, res->ai_addrlen, hg->http_timeout) == -1){
     fprintf(stderr, "Failed to connect to %s .\n", hg->fcdb_host);
     return(HSKYMON_HTTP_ERROR_CONNECT);
   }
@@ -3204,30 +3204,11 @@ gint ssl_write(SSL *ssl, const gchar *buf, gint len)
 
 
 int create_seimei_socket(typHOE *hg){
-
-  //hg->seimei_flag=TRUE;
-  
-  return 0;
-}
-
-
-
-int get_seimei_azel(typHOE *hg){
   struct addrinfo hints, *res;
-  struct in_addr addr;
   int err;
-  const char *cause=NULL;
-  gboolean chunked_flag=FALSE;
-
-  int size;
-  
-  char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
-  char buf[BUF_LEN+1];
-  gchar *cp, *cpp;
   gchar *port;
   
   if(!hg->seimei_flag) return(-1);
-
   
   allsky_debug_print("Child: http accessing to %s\n",hg->allsky_host);
    
@@ -3255,7 +3236,8 @@ int get_seimei_azel(typHOE *hg){
   }
   
   /* サーバに接続 */
-  if( Connect(hg->seimei_socket, res->ai_addr, res->ai_addrlen, 3) != 0){
+  if( Connect(hg->seimei_socket, res->ai_addr, res->ai_addrlen, hg->seimeistat_timeout) != 0){
+    //if( connect(hg->seimei_socket, res->ai_addr, res->ai_addrlen) != 0){
     fprintf(stderr, "Failed to connect to %s .\n", hg->seimeistat_host);
     freeaddrinfo(res);
     return(HSKYMON_SEIMEI_ERROR_CONNECT);
@@ -3264,6 +3246,59 @@ int get_seimei_azel(typHOE *hg){
   // AddrInfoの解放
   freeaddrinfo(res);
   
+  return 0;
+}
+
+
+
+int get_seimei_azel(typHOE *hg){
+  struct addrinfo hints, *res;
+  struct in_addr addr;
+  int err;
+  int size;
+  char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
+  char buf[BUF_LEN+1];
+  gchar *cp, *cpp;
+  gchar *port;
+  
+  if(!hg->seimei_flag) return(-1);
+  
+  allsky_debug_print("Child: http accessing to %s\n",hg->allsky_host);
+
+  /*
+  // ホストの情報 (IP アドレスなど) を取得
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_family = AF_INET;
+
+  port=g_strdup_printf("%d",hg->seimeistat_port);
+  
+  if ((err = getaddrinfo(hg->seimeistat_host, port, &hints, &res)) !=0){
+    fprintf(stderr, "Bad hostname [%s]\n", hg->seimeistat_host);
+    g_free(port);
+    return(HSKYMON_SEIMEI_ERROR_GETHOST);
+  }
+  g_free(port);
+
+  
+
+  // ソケット生成
+  if( (hg->seimei_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0){
+      fprintf(stderr, "Failed to create a new socket.\n");
+      freeaddrinfo(res);
+      return(HSKYMON_SEIMEI_ERROR_SOCKET);
+  }
+  
+  // サーバに接続
+  if( Connect(hg->seimei_socket, res->ai_addr, res->ai_addrlen, 3) != 0){
+    fprintf(stderr, "Failed to connect to %s .\n", hg->seimeistat_host);
+    freeaddrinfo(res);
+    return(HSKYMON_SEIMEI_ERROR_CONNECT);
+  }
+
+  // AddrInfoの解放
+  freeaddrinfo(res);
+  */
 
   allsky_debug_print("Child: getting status ...\n");
   
@@ -3273,18 +3308,24 @@ int get_seimei_azel(typHOE *hg){
 
   // OK
   size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  if(size<0) return(HSKYMON_SEIMEI_ERROR_FDGET);
   //fprintf(stderr,"--> %s", buf);
 
   // TEL.AZI
   size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
-  //fprintf(stderr,"--> %s", buf);
-  cpp=buf;
-  cp=strstr(cpp,"TEL.AZI=");
-  cp+=strlen("TEL.AZI=");
-  hg->seimei_az=atof(cp);
+  if((size = fd_gets(hg->seimei_socket,buf,BUF_LEN)) > (strlen("TEL.AZI=")+3)){
+    if ( debug_flg ) fprintf(stderr,"--> %s", buf);
+    cpp=buf;
+    cp=strstr(cpp,"TEL.AZI=");
+    cp+=strlen("TEL.AZI=");
+    hg->seimei_az=atof(cp);
+  }else{
+    return(HSKYMON_SEIMEI_ERROR_FDGET);
+  }
   
   // END
   size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  if(size<0) return(HSKYMON_SEIMEI_ERROR_FDGET);
   //fprintf(stderr,"--> %s", buf);
 
 
@@ -3294,25 +3335,31 @@ int get_seimei_azel(typHOE *hg){
 
   // OK
   size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  if(size<0) return(HSKYMON_SEIMEI_ERROR_FDGET);
   //fprintf(stderr,"--> %s", buf);
 
   // TEL.ALT
-  size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
-  //fprintf(stderr,"--> %s", buf);
-  cpp=buf;
-  cp=strstr(cpp,"TEL.ALT=");
-  cp+=strlen("TEL.ALT=");
-  hg->seimei_el=atof(cp);
+  if((size = fd_gets(hg->seimei_socket,buf,BUF_LEN)) > (strlen("TEL.ALT=")+3)){
+    if ( debug_flg ) fprintf(stderr,"--> %s", buf);
+    cpp=buf;
+    cp=strstr(cpp,"TEL.ALT=");
+    cp+=strlen("TEL.ALT=");
+    hg->seimei_el=atof(cp);
+  }
+  else{
+    return(HSKYMON_SEIMEI_ERROR_FDGET);
+  }
   
   // END
   size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  if(size<0) return(HSKYMON_SEIMEI_ERROR_FDGET);
   //fprintf(stderr,"--> %s", buf);
 
   //printf(" Seimei Az=%lf   El=%lf\n",hg->seimei_az, hg->seimei_el);
   
   check_msg_from_parent(hg);
 
-  close(hg->seimei_socket);
+  //close(hg->seimei_socket);
   hg->seimei_id++;
 
   allsky_debug_print("Child: done\n");

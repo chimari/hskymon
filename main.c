@@ -7939,7 +7939,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gboolean tmp_proxy_flag;
   gint tmp_proxy_port;
   gchar *tmp_seimeistat_host;
-  gint tmp_seimeistat_port, tmp_seimeistat_timeout;
+  gint tmp_seimeistat_port, tmp_seimeistat_timeout, tmp_http_timeout;
   gboolean tmp_show_def,tmp_show_elmax,tmp_show_secz,tmp_show_ha,tmp_show_ad,
     tmp_show_ang,tmp_show_hpa,tmp_show_moon,
     tmp_show_ra,tmp_show_dec,tmp_show_equinox,tmp_show_pam,tmp_show_note;
@@ -8018,6 +8018,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   tmp_seimeistat_host  =g_strdup(hg->seimeistat_host);
   tmp_seimeistat_port  =hg->seimeistat_port;
   tmp_seimeistat_timeout  =hg->seimeistat_timeout;
+  tmp_http_timeout  =hg->http_timeout;
   tmp_allsky_ssl   =hg->allsky_ssl;
   tmp_allsky_path  =g_strdup(hg->allsky_path);
   //tmp_allsky_date_path  =g_strdup(hg->allsky_date_path);
@@ -9164,9 +9165,42 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
   
-  // Proxy
+  // Network
   note_vbox = gtkut_vbox_new(FALSE,2);
   
+  frame = gtkut_frame_new ("<b>HTTP / HTTPS Connection</b>");
+  gtk_box_pack_start(GTK_BOX(note_vbox),
+		     frame,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+
+  table1 = gtkut_table_new(3, 1, FALSE, 5, 5, 5);
+  gtk_container_add (GTK_CONTAINER (frame), table1);
+
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtkut_table_attach(table1, hbox, 0, 1, 0, 1,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  
+  label = gtk_label_new ("Timeout[sec]");
+#ifdef USE_GTK3
+  gtk_widget_set_halign (label, GTK_ALIGN_END);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+#else
+  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+#endif
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  
+  adj = (GtkAdjustment *)gtk_adjustment_new(hg->http_timeout,
+					    1, 30, 
+					    1.0,1.0,0);
+  spinner =  gtk_spin_button_new (adj, 0, 0);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), spinner, FALSE, FALSE, 0);
+  my_entry_set_width_chars(GTK_ENTRY(&GTK_SPIN_BUTTON(spinner)->entry),2);
+  my_signal_connect (adj, "value_changed",
+		     cc_get_adj,
+		     &tmp_http_timeout);
+
+
   frame = gtkut_frame_new ("<b>Proxy for http access</b>");
   gtk_box_pack_start(GTK_BOX(note_vbox),
 		     frame,FALSE, FALSE, 0);
@@ -9315,8 +9349,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     &tmp_seimeistat_timeout);
   
   
-
-  label = gtk_label_new ("Proxy");
+  label = gtk_label_new ("Network");
   gtk_notebook_append_page (GTK_NOTEBOOK (all_note), note_vbox, label);
 
   
@@ -10257,6 +10290,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->seimeistat_host        =g_strdup(tmp_seimeistat_host);
     hg->seimeistat_port        =tmp_seimeistat_port;
     hg->seimeistat_timeout     =tmp_seimeistat_timeout;
+    hg->http_timeout     =tmp_http_timeout;
     
     hg->show_def   = tmp_show_def;
     hg->show_elmax   = tmp_show_elmax;
@@ -10813,6 +10847,7 @@ void param_init(typHOE *hg){
   hg->seimeistat_host=g_strdup(SEIMEI_STATUS_HOST);
   hg->seimeistat_port=SEIMEI_STATUS_PORT;
   hg->seimeistat_timeout=SEIMEI_DEFAULT_TIMEOUT;
+  hg->http_timeout=DEFAULT_HTTP_TIMEOUT;
   hg->stat_az=-90;
   hg->stat_az_cmd=-90;
   hg->stat_az_check=-90;
@@ -12014,6 +12049,9 @@ void WriteConf(typHOE *hg){
   if(hg->www_com) 
     xmms_cfg_write_string(cfgfile, "PC", "Browser", hg->www_com);
 
+  // HTTP
+  xmms_cfg_write_int(cfgfile, "HTTP", "Timeout",hg->http_timeout);
+
   // DSS 
   xmms_cfg_write_int(cfgfile, "DSS", "Mode",(gint)hg->fc_mode_def);
   xmms_cfg_write_int(cfgfile, "DSS", "ArcMin",(gint)hg->dss_arcmin);
@@ -12239,7 +12277,13 @@ void ReadConf(typHOE *hg)
       hg->www_com =c_buf;
     else
       hg->www_com=g_strdup(WWW_BROWSER);
-     
+
+    // HTTP
+    if(xmms_cfg_read_int(cfgfile, "HTTP", "Timeout", &i_buf)) 
+      hg->http_timeout =i_buf;
+    else
+      hg->http_timeout = DEFAULT_HTTP_TIMEOUT;
+    
     // DSS.
     if(xmms_cfg_read_int  (cfgfile, "DSS", "Mode",  &i_buf)){
       switch(i_buf){
