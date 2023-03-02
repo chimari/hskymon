@@ -2,9 +2,9 @@ Source: hskymon
 Section: x11
 Priority: optional
 Maintainer: Akito Tajitsu <tajitsu@naoj.org>
-Build-Depends: debhelper (>= 9), autotools-dev, libgtk2.0-dev (>= 2.10), libssl-dev, libxml2-dev
+Build-Depends: debhelper (>= 9), autotools-dev, libgtk-3-dev (>= 3.22), libssl-dev, libxml2-dev
 Standards-Version: 3.9.5
-Homepage: http://www.naoj.org/Observing/tools/hskymon
+Homepage: https://www.naoj.org/Observing/tools/hskymon
 Vcs-Git: https://github.com/chimari/hskymon.git
 #Vcs-Browser: https://github.com/chimari/hskymon.git;a=summary
 
@@ -12,7 +12,7 @@ Package: hskymon
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, openssl
 Description: SKy-Monitor for Subaru Telescope, NAOJ.
- hskymon is a GTK+2 based cross-platform application to monitor 
+ hskymon is a GTK+2 or 3 based cross-platform application to monitor 
  celecial objects, sky condition, and telescope in Subaru Telescope 
  Gen2 system. It can be used as a visibility checker, 
  a finding charts creator, and a guiding stars finder 
