@@ -9236,8 +9236,10 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
   entry = gtk_entry_new ();
   gtk_box_pack_start(GTK_BOX(hbox), entry, FALSE, FALSE, 0);
-  gtk_entry_set_text(GTK_ENTRY(entry),
-		     hg->proxy_host);
+  if(hg->proxy_host){
+    gtk_entry_set_text(GTK_ENTRY(entry),
+		       hg->proxy_host);
+  }
   gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(entry),40);
   my_signal_connect (entry,
@@ -9294,8 +9296,10 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 
   entry = gtk_entry_new ();
   gtk_box_pack_start(GTK_BOX(hbox), entry, FALSE, FALSE, 0);
-  gtk_entry_set_text(GTK_ENTRY(entry),
-		     hg->seimeistat_host);
+  if(hg->seimeistat_host){
+    gtk_entry_set_text(GTK_ENTRY(entry),
+		       hg->seimeistat_host);
+  }
   gtk_editable_set_editable(GTK_EDITABLE(entry),TRUE);
   my_entry_set_width_chars(GTK_ENTRY(entry),40);
   my_signal_connect (entry,
@@ -12336,7 +12340,7 @@ void ReadConf(typHOE *hg)
       case FC_SEP1:
       case FC_SEP2:
       case FC_SEP3:
-	hg->fc_mode_RGB[2]=FC_SKYVIEW_DSS2R;
+	hg->fc_mode_RGB[2]=FC_SKYVIEW_DSS2B;
 	break;
       default:
 	hg->fc_mode_RGB[2]=i_buf;
@@ -12509,6 +12513,7 @@ void ReadConf(typHOE *hg)
       hg->allsky_last_interval=i_buf;
     else
       hg->allsky_last_interval=SKYCHECK_INTERVAL;
+    
     
     // AD Calc.
     if(xmms_cfg_read_int  (cfgfile, "ADC", "Wave1",  &i_buf))
@@ -12753,8 +12758,33 @@ void ReadConf(typHOE *hg)
     xmms_cfg_free(cfgfile);
   }
   else{
+    // Size
+    hg->sz_skymon=SKYMON_WINSIZE;
+    hg->sz_plot=PLOT_WINSIZE;
+    hg->sz_fc=FC_WINSIZE;
+    hg->sz_adc=ADC_WINSIZE;
+
+    // PC
     hg->www_com=g_strdup(WWW_BROWSER);
 
+    // HTTP
+    hg->http_timeout = DEFAULT_HTTP_TIMEOUT;
+    
+    // DSS
+    hg->fc_mode_def=FC_SKYVIEW_DSS2R;
+    hg->dss_arcmin=DSS_ARCMIN;
+    
+    hg->fc_mode_RGB[0]=FC_SKYVIEW_DSS2IR;
+    hg->fc_mode_RGB[1]=FC_SKYVIEW_DSS2R;
+    hg->fc_mode_RGB[2]=FC_SKYVIEW_DSS2B;
+    hg->dss_scale_RGB[0]=FC_SCALE_LINEAR;
+    hg->dss_scale_RGB[1]=FC_SCALE_LINEAR;
+    hg->dss_scale_RGB[2]=FC_SCALE_LINEAR;
+    
+    hg->fcdb_simbad=FCDB_SIMBAD_STRASBG;
+    hg->fcdb_vizier=FCDB_VIZIER_NAOJ;
+
+    // Observatory
     hg->obs_preset_flag=TRUE;
     hg->obs_preset=OBS_SUBARU;
     set_obs_param_from_preset(hg, hg->obs_preset);
@@ -12815,6 +12845,14 @@ void ReadConf(typHOE *hg)
     hg->fontname=g_strdup(SKYMON_FONT);
     hg->fontname_all=g_strdup(SKYMON_FONT);
     get_font_family_size(hg);
+
+    hg->proxy_host=g_strdup(DEFAULT_PROXY_HOST);
+    hg->proxy_port=3128;
+    hg->proxy_flag=FALSE;
+
+    hg->seimeistat_host=g_strdup(SEIMEI_STATUS_HOST);
+    hg->seimeistat_port = SEIMEI_STATUS_PORT;
+    hg->seimeistat_timeout = SEIMEI_DEFAULT_TIMEOUT;
   }
 
 }
