@@ -8839,6 +8839,7 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   GtkAdjustment *adj;
   typHOE *hg;
   gboolean pm_flag=FALSE;
+  gboolean end_flag=FALSE;
 
   if(flagChildDialog){
     return;
@@ -9063,8 +9064,29 @@ void addobj_dialog (GtkWidget *widget, gpointer gdata)
   
   gtk_widget_show_all(dialog);
 
-  if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
-    add_item(hg, pm_flag);
+  end_flag=FALSE;
+  while(!end_flag){
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+      if((fabs(hg->addobj_ra<0.01))&&(fabs(hg->addobj_dec<0.01))){
+	popup_message(hg->skymon_main, 
+#ifdef USE_GTK3
+		      "dialog-error", 
+#else
+		      GTK_STOCK_DIALOG_ERROR, 
+#endif
+		      POPUP_TIMEOUT,
+		      "<b>Error</b>: Please input RA and Dec of the target.",
+		      NULL);
+	flag_getSTD=FALSE;
+      }
+      else{
+	add_item(hg, pm_flag);
+	end_flag=TRUE;
+      }
+    }
+    else{
+      end_flag=TRUE;
+    }
   }
 
   if(GTK_IS_WIDGET(dialog)) gtk_widget_destroy(dialog);

@@ -1,3 +1,5 @@
+2023.08.23 ver4.5.3 - Test for macOS recv() packet size.
+
 2023.08.22 ver4.5.2 - Bug fix on parameter initializtion for HTTP accesses.
 
 2023.03.01 ver4.5.1 - Added a new function to access to Seimei Telescope

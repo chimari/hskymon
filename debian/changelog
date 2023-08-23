@@ -1,3 +1,9 @@
+hskymon (4.5.3ubuntu) bionic; urgency=medium
+
+  * Test for macOS recv() packet size.
+
+ -- Akito Tajitsu <akito.tajitsu@nao.ac.jp>  Wed, 23 Aug 2023 17:29:55 +0900
+
 hskymon (4.5.2ubuntu) bionic; urgency=medium
 
   * Bug fix on HTTP access.

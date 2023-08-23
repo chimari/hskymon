@@ -9190,7 +9190,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
   
   adj = (GtkAdjustment *)gtk_adjustment_new(hg->http_timeout,
-					    1, 30, 
+					    MINIMUM_HTTP_TIMEOUT, 30, 
 					    1.0,1.0,0);
   spinner =  gtk_spin_button_new (adj, 0, 0);
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
@@ -12287,6 +12287,9 @@ void ReadConf(typHOE *hg)
       hg->http_timeout =i_buf;
     else
       hg->http_timeout = DEFAULT_HTTP_TIMEOUT;
+    if(hg->http_timeout < MINIMUM_HTTP_TIMEOUT){
+      hg->http_timeout = MINIMUM_HTTP_TIMEOUT;
+    }
     
     // DSS.
     if(xmms_cfg_read_int  (cfgfile, "DSS", "Mode",  &i_buf)){

@@ -76,7 +76,7 @@ int close_seimei_scoket();
 
 int Connect();
 
-#define BUF_LEN 65535             /* Buffer size */
+#define BUF_LEN 2048             /* Buffer size */
 
 void check_msg_from_parent(typHOE *hg){
   if(hg->pabort){
@@ -2496,9 +2496,18 @@ int http_c_fcdb_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
       }
     }
     do{ // data read
+      if(debug_flg){
+	fprintf(stderr,".");
+      }
       size = recv(command_socket,buf,BUF_LEN, 0);
       fwrite( &buf , size , 1 , fp_write ); 
+      if(debug_flg){
+	fprintf(stderr,"%co",0x08);
+      }
     }while(size>0);
+    if(debug_flg){
+      fprintf(stderr,"\n");
+    }
   }
       
   fclose(fp_write);
