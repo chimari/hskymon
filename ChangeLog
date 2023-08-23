@@ -1,3 +1,5 @@
+2023.08.23 ver4.5.4 - Test for macOS recv() packet size #2.
+
 2023.08.23 ver4.5.3 - Test for macOS recv() packet size.
 
 2023.08.22 ver4.5.2 - Bug fix on parameter initializtion for HTTP accesses.

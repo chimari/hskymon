@@ -76,7 +76,9 @@ int close_seimei_scoket();
 
 int Connect();
 
-#define BUF_LEN 2048             /* Buffer size */
+#define BUF_LEN 1024             /* Buffer size */
+
+#define TIMEOUT_SEC 1
 
 void check_msg_from_parent(typHOE *hg){
   if(hg->pabort){
@@ -471,8 +473,9 @@ int http_c_allsky_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
       }
     }
     do{ // data read
+      memset(buf, 0, sizeof(buf));
       size = SSL_read(ssl, buf, BUF_LEN);
-      fwrite( &buf , size , 1 , fp_write ); 
+      if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
     }while(size >0);
   }
   else{  // HTTP
@@ -492,8 +495,9 @@ int http_c_allsky_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
       // header lines
     }
     do { //data read
+      memset(buf, 0, sizeof(buf));
       size = recv(command_socket, buf, BUF_LEN, 0);
-      fwrite( &buf , size , 1 , fp_write ); 
+      if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
     }while(size>0);
   }
   
@@ -1568,8 +1572,9 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	}
       }
       do{ // data read
+	memset(buf, 0, sizeof(buf));
 	size = SSL_read(ssl, buf, BUF_LEN);
-	fwrite( &buf , size , 1 , fp_write ); 
+	if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
       }while(size >0);
     }
     else{  // HTTP
@@ -1587,8 +1592,9 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	}
       }
       do { // data read
+	memset(buf, 0, sizeof(buf));
 	size = recv(command_socket, buf, BUF_LEN, 0);
-	fwrite( &buf , size , 1 , fp_write ); 
+	if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
       }while(size>0);
     }
 
@@ -1865,8 +1871,9 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	  }
 	}
 	do{ // data read
+	  memset(buf, 0, sizeof(buf));
 	  size = SSL_read(ssl, buf, BUF_LEN);
-	  fwrite( &buf , size , 1 , fp_write ); 
+	  if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
 	}while(size >0);
       }
       else{  // HTTP
@@ -1884,8 +1891,9 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	  }
 	}
 	do { // data read
+	  memset(buf, 0, sizeof(buf));
 	  size = recv(command_socket, buf, BUF_LEN, 0);
-	  fwrite( &buf , size , 1 , fp_write ); 
+	  if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
 	}while(size>0);
       }
 	
@@ -1922,8 +1930,9 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	}
       }
       do{ // data read
+	memset(buf, 0, sizeof(buf));
 	size = SSL_read(ssl, buf, BUF_LEN);
-	fwrite( &buf , size , 1 , fp_write ); 
+	if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
       }while(size >0);
     }
     else{  // HTTP
@@ -1941,8 +1950,9 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	}
       }
       do { // data read
+	memset(buf, 0, sizeof(buf));
 	size = recv(command_socket, buf, BUF_LEN, 0);
-	fwrite( &buf , size , 1 , fp_write ); 
+	if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
       }while(size>0);
     }
     
@@ -2165,8 +2175,9 @@ int http_c_std_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
       }
     }
     do{ // data read
+      memset(buf, 0, sizeof(buf));
       size = SSL_read(ssl, buf, BUF_LEN);
-      fwrite( &buf , size , 1 , fp_write ); 
+      if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
     }while(size >0);
   }
   else{
@@ -2184,8 +2195,9 @@ int http_c_std_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
       }
     }
     do{  // data read
+      memset(buf, 0, sizeof(buf));
       size = recv(command_socket,buf,BUF_LEN, 0);  
-      fwrite( &buf , size , 1 , fp_write ); 
+      if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
     }while(size>0);
   }
 
@@ -2236,6 +2248,8 @@ int http_c_fcdb_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
   SSL *ssl;
   SSL_CTX *ctx;
 
+  struct timeval tv;
+  
   // Calculate Content-Length
   if(hg->fcdb_post){
     rand16=make_rand16();
@@ -2477,8 +2491,9 @@ int http_c_fcdb_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
       }
     }
     do{ // data read
+      memset(buf, 0, sizeof(buf));
       size = SSL_read(ssl, buf, BUF_LEN);
-      fwrite( &buf , size , 1 , fp_write ); 
+      if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
     }while(size >0);
   }
   else{  // HTTP
@@ -2495,12 +2510,33 @@ int http_c_fcdb_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	hg->psz=atol(cp);
       }
     }
+
+    tv.tv_sec = TIMEOUT_SEC;
+    tv.tv_usec = 0;
+    if(setsockopt(command_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv)) < 0) {
+      perror("setsockopt");
+    }
     do{ // data read
+      memset(buf, 0, sizeof(buf));
       if(debug_flg){
 	fprintf(stderr,".");
       }
       size = recv(command_socket,buf,BUF_LEN, 0);
-      fwrite( &buf , size , 1 , fp_write ); 
+      if(size > 0){
+	fwrite( &buf , size , 1 , fp_write );
+      }
+      else if (size < 0){
+	switch(errno){
+	case EINTR:
+	  break;
+	case EAGAIN:
+	  perror("Timeout");
+	  break;
+	default:
+	  perror("recv");
+	  break;
+	}
+      }
       if(debug_flg){
 	fprintf(stderr,"%co",0x08);
       }
