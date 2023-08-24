@@ -2416,6 +2416,7 @@ struct _typHOE{
   gint allsky_http_status;
   gdouble allsky_ratio;
   gint http_timeout;
+  gboolean http_nonblock;
 
 
   gboolean allsky_pixbuf_flag;

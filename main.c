@@ -7941,7 +7941,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   gchar *tmp_seimeistat_host;
   gint tmp_seimeistat_port, tmp_seimeistat_timeout, tmp_http_timeout;
   gboolean tmp_show_def,tmp_show_elmax,tmp_show_secz,tmp_show_ha,tmp_show_ad,
-    tmp_show_ang,tmp_show_hpa,tmp_show_moon,
+    tmp_show_ang,tmp_show_hpa,tmp_show_moon,tmp_http_nonblock,
     tmp_show_ra,tmp_show_dec,tmp_show_equinox,tmp_show_pam,tmp_show_note;
 #ifdef USE_XMLRPC
   gboolean tmp_show_rt;
@@ -8019,6 +8019,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   tmp_seimeistat_port  =hg->seimeistat_port;
   tmp_seimeistat_timeout  =hg->seimeistat_timeout;
   tmp_http_timeout  =hg->http_timeout;
+  tmp_http_nonblock  =hg->http_nonblock;
   tmp_allsky_ssl   =hg->allsky_ssl;
   tmp_allsky_path  =g_strdup(hg->allsky_path);
   //tmp_allsky_date_path  =g_strdup(hg->allsky_date_path);
@@ -9200,6 +9201,17 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     cc_get_adj,
 		     &tmp_http_timeout);
 
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtkut_table_attach(table1, hbox, 1, 2, 0, 1,
+		     GTK_FILL,GTK_SHRINK,0,0);
+  
+  check = gtk_check_button_new_with_label("NonBlocking mode");
+  gtk_box_pack_start(GTK_BOX(hbox), check, FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),hg->http_nonblock);
+  my_signal_connect (check, "toggled",
+		     cc_get_toggle,
+		     &tmp_http_nonblock);
+  
 
   frame = gtkut_frame_new ("<b>Proxy for http access</b>");
   gtk_box_pack_start(GTK_BOX(note_vbox),
@@ -10295,6 +10307,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
     hg->seimeistat_port        =tmp_seimeistat_port;
     hg->seimeistat_timeout     =tmp_seimeistat_timeout;
     hg->http_timeout     =tmp_http_timeout;
+    hg->http_nonblock     =tmp_http_nonblock;
     
     hg->show_def   = tmp_show_def;
     hg->show_elmax   = tmp_show_elmax;
@@ -10852,6 +10865,7 @@ void param_init(typHOE *hg){
   hg->seimeistat_port=SEIMEI_STATUS_PORT;
   hg->seimeistat_timeout=SEIMEI_DEFAULT_TIMEOUT;
   hg->http_timeout=DEFAULT_HTTP_TIMEOUT;
+  hg->http_nonblock=FALSE;
   hg->stat_az=-90;
   hg->stat_az_cmd=-90;
   hg->stat_az_check=-90;
@@ -12055,6 +12069,7 @@ void WriteConf(typHOE *hg){
 
   // HTTP
   xmms_cfg_write_int(cfgfile, "HTTP", "Timeout",hg->http_timeout);
+  xmms_cfg_write_boolean(cfgfile, "HTTP", "NonBlock",hg->http_nonblock);
 
   // DSS 
   xmms_cfg_write_int(cfgfile, "DSS", "Mode",(gint)hg->fc_mode_def);
@@ -12290,6 +12305,10 @@ void ReadConf(typHOE *hg)
     if(hg->http_timeout < MINIMUM_HTTP_TIMEOUT){
       hg->http_timeout = MINIMUM_HTTP_TIMEOUT;
     }
+    if(xmms_cfg_read_boolean(cfgfile, "HTTP", "NonBlock", &b_buf))
+      hg->http_nonblock =b_buf;
+    else
+      hg->http_nonblock =FALSE;
     
     // DSS.
     if(xmms_cfg_read_int  (cfgfile, "DSS", "Mode",  &i_buf)){
@@ -12772,6 +12791,7 @@ void ReadConf(typHOE *hg)
 
     // HTTP
     hg->http_timeout = DEFAULT_HTTP_TIMEOUT;
+    hg->http_nonblock = FALSE;
     
     // DSS
     hg->fc_mode_def=FC_SKYVIEW_DSS2R;
