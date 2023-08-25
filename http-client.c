@@ -83,30 +83,29 @@ void SSL_data_read();
 #define BUF_LEN 8192             /* Buffer size */
 
 
-void enable_hostname_validation(SSL *ssl, const char *hostname)
-{
-  X509_VERIFY_PARAM *param;
-  
-  param = SSL_get0_param(ssl);
-  
-  //X509_VERIFY_PARAM_set_hostflags(param, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
-  if (!X509_VERIFY_PARAM_set1_host(param, hostname, 0)) {
-    ERR_print_errors_fp(stderr);
-  }
-}
-
 void HTTP_data_read(int command_socket, FILE *fp_write,
 		    gboolean http_nonblock){
   char buf[BUF_LEN];
   int size;
+  int result, mode;
   
+#ifdef USE_WIN32
+  if(http_nonblock){
+    mode = 1;
+    result= ioctlsocket(command_socket, FIONBIO, &mode);
+  }
+#endif    
   do{ // data read
     memset(buf, 0, sizeof(buf));
     if(debug_flg){
       fprintf(stderr,".");
     }
+#ifdef USE_WIN32
+    size = recv(command_socket,buf,BUF_LEN-1,0);
+#else
     size = recv(command_socket,buf,BUF_LEN-1,
 		(http_nonblock)?(MSG_DONTWAIT):0);
+#endif    
     if(size > 0){
       fwrite( &buf , size , 1 , fp_write );
     }
@@ -136,11 +135,18 @@ void HTTP_data_read(int command_socket, FILE *fp_write,
 void SSL_data_read(int command_socket, SSL *ssl, SSL_CTX *ctx,
 		   FILE *fp_write, gboolean http_nonblock){
   char buf[BUF_LEN];
-  int err, size;
+  int err, size, result,  mode;
+  
     
   SSL_CTX_set_mode(ctx, SSL_MODE_AUTO_RETRY);
+  
   if(http_nonblock){
-    size = fcntl(command_socket, F_SETFL, O_NONBLOCK);
+#ifdef USE_WIN32  
+    mode = 1;
+    result= ioctlsocket(command_socket, FIONBIO, &mode);
+#else    
+    result = fcntl(command_socket, F_SETFL, O_NONBLOCK);
+#endif  
   }
   do{ // data read
     memset(buf, 0, sizeof(buf));

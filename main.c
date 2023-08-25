@@ -9201,6 +9201,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
 		     cc_get_adj,
 		     &tmp_http_timeout);
 
+#ifndef USE_WIN32  
   hbox = gtkut_hbox_new(FALSE,2);
   gtkut_table_attach(table1, hbox, 1, 2, 0, 1,
 		     GTK_FILL,GTK_SHRINK,0,0);
@@ -9211,7 +9212,7 @@ void show_properties (GtkWidget *widget, gpointer gdata)
   my_signal_connect (check, "toggled",
 		     cc_get_toggle,
 		     &tmp_http_nonblock);
-  
+#endif  
 
   frame = gtkut_frame_new ("<b>Proxy for http access</b>");
   gtk_box_pack_start(GTK_BOX(note_vbox),
