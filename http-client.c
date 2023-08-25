@@ -76,9 +76,103 @@ int close_seimei_scoket();
 
 int Connect();
 
-#define BUF_LEN 2048             /* Buffer size */
+void HTTP_data_read();
+void SSL_data_read();
 
-#define TIMEOUT_SEC 1
+
+#define BUF_LEN 8192             /* Buffer size */
+
+
+void enable_hostname_validation(SSL *ssl, const char *hostname)
+{
+  X509_VERIFY_PARAM *param;
+  
+  param = SSL_get0_param(ssl);
+  
+  //X509_VERIFY_PARAM_set_hostflags(param, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
+  if (!X509_VERIFY_PARAM_set1_host(param, hostname, 0)) {
+    ERR_print_errors_fp(stderr);
+  }
+}
+
+void HTTP_data_read(int command_socket, FILE *fp_write,
+		    gboolean http_nonblock){
+  char buf[BUF_LEN];
+  int size;
+  
+  do{ // data read
+    memset(buf, 0, sizeof(buf));
+    if(debug_flg){
+      fprintf(stderr,".");
+    }
+    size = recv(command_socket,buf,BUF_LEN-1,
+		(http_nonblock)?(MSG_DONTWAIT):0);
+    if(size > 0){
+      fwrite( &buf , size , 1 , fp_write );
+    }
+    else if (size < 0){
+      switch(errno){
+      case EINTR:
+	break;
+      case EAGAIN:
+	if(debug_flg) perror("Timeout");
+	usleep(1e5);
+	size=1;
+	break;
+      default:
+	if(debug_flg) perror("recv");
+	break;
+      }
+    }
+    if(debug_flg){
+      fprintf(stderr,"%co",0x08);
+    }
+  }while(size>0);
+  if(debug_flg){
+    fprintf(stderr,"\n");
+  }
+}
+
+void SSL_data_read(int command_socket, SSL *ssl, SSL_CTX *ctx,
+		   FILE *fp_write, gboolean http_nonblock){
+  char buf[BUF_LEN];
+  int err, size;
+    
+  SSL_CTX_set_mode(ctx, SSL_MODE_AUTO_RETRY);
+  if(http_nonblock){
+    size = fcntl(command_socket, F_SETFL, O_NONBLOCK);
+  }
+  do{ // data read
+    memset(buf, 0, sizeof(buf));
+    if(debug_flg){
+      fprintf(stderr,".");
+    }
+    size = SSL_read(ssl, buf, BUF_LEN-1);
+    if(size > 0){
+      fwrite( &buf , size , 1 , fp_write );
+    }
+    else if (size < 0){
+      err = SSL_get_error(ssl, size);
+      
+      switch(err){
+      case SSL_ERROR_ZERO_RETURN:
+	// eof
+	break;
+      case SSL_ERROR_WANT_READ:
+	if(debug_flg) perror("Timeout");
+	usleep(1e5);
+	size=1;
+	break;
+      }
+    }
+    if(debug_flg){
+      fprintf(stderr,"%co",0x08);
+    }
+  }while(size>0);
+  if(debug_flg){
+    fprintf(stderr,"\n");
+  }
+}
 
 void check_msg_from_parent(typHOE *hg){
   if(hg->pabort){
@@ -200,7 +294,7 @@ char *read_line(int socket, char *p){
 void read_response(int socket, char *p){
     do { 
       //read_line(socket, p);
-      fd_gets(socket,p,BUF_LEN);
+      fd_gets(socket,p,BUF_LEN-1);
       if ( debug_flg ){
 	fprintf(stderr, "<-- %s", p);fflush(stderr);
       }
@@ -359,6 +453,8 @@ int http_c_allsky_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
     ssl = SSL_new(ctx);
     err = SSL_set_fd(ssl, command_socket);
     
+    SSL_set_tlsext_host_name(ssl, hg->allsky_host);
+    
     while((ret=SSL_connect(ssl))!=1){
       err=SSL_get_error(ssl, ret);
       if( (err==SSL_ERROR_WANT_READ)||(err==SSL_ERROR_WANT_WRITE) ){
@@ -458,7 +554,7 @@ int http_c_allsky_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
   }
 
   if(SSL_flag){  // HTTPS
-    while((size = ssl_gets(ssl, buf,BUF_LEN)) > 2 ){
+    while((size = ssl_gets(ssl, buf,BUF_LEN-1)) > 2 ){
       // header lines
       if(debug_flg){
 	fprintf(stderr,"[SSL] --> Header: %s", buf);
@@ -472,14 +568,11 @@ int http_c_allsky_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	hg->allsky_date[strlen(hg->allsky_date)-2]='\0';
       }
     }
-    do{ // data read
-      memset(buf, 0, sizeof(buf));
-      size = SSL_read(ssl, buf, BUF_LEN);
-      if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
-    }while(size >0);
+    // data read
+    SSL_data_read(command_socket, ssl, ctx, fp_write, hg->http_nonblock);
   }
   else{  // HTTP
-    while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
+    while((size = fd_gets(command_socket,buf,BUF_LEN-1)) > 2 ){
       if(debug_flg){
 	fprintf(stderr,"--> Header: %s", buf);
       }
@@ -494,37 +587,8 @@ int http_c_allsky_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
       }
       // header lines
     }
-    do{ // data read
-      memset(buf, 0, sizeof(buf));
-      if(debug_flg){
-	fprintf(stderr,".");
-      }
-      size = recv(command_socket,buf,BUF_LEN,
-		  (hg->http_nonblock)?(MSG_DONTWAIT):0);
-      if(size > 0){
-	fwrite( &buf , size , 1 , fp_write );
-      }
-      else if (size < 0){
-	switch(errno){
-	case EINTR:
-	  break;
-	case EAGAIN:
-	  if(debug_flg) perror("Timeout");
-	  usleep(1e5);
-	  size=1;
-	  break;
-	default:
-	  if(debug_flg) perror("recv");
-	  break;
-	}
-      }
-      if(debug_flg){
-	fprintf(stderr,"%co",0x08);
-      }
-    }while(size>0);
-    if(debug_flg){
-      fprintf(stderr,"\n");
-    }
+    // data read
+    HTTP_data_read(command_socket, fp_write, hg->http_nonblock);
   }
   
   fclose(fp_write);
@@ -1296,6 +1360,8 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
     ssl = SSL_new(ctx);
     err = SSL_set_fd(ssl, command_socket);
     
+    SSL_set_tlsext_host_name(ssl, hg->dss_host);
+    
     while((ret=SSL_connect(ssl))!=1){
       err=SSL_get_error(ssl, ret);
       if( (err==SSL_ERROR_WANT_READ)||(err==SSL_ERROR_WANT_WRITE) ){
@@ -1584,7 +1650,7 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
     check_msg_from_parent(hg);
 
     if(SSL_flag){  // HTTPS
-      while((size = ssl_gets(ssl, buf, BUF_LEN)) > 2 ){
+      while((size = ssl_gets(ssl, buf, BUF_LEN-1)) > 2 ){
 	// header lines
 	if(debug_flg){
 	  fprintf(stderr,"[SSL] --> Header: %s", buf);
@@ -1597,14 +1663,11 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	  hg->psz=atol(cp);
 	}
       }
-      do{ // data read
-	memset(buf, 0, sizeof(buf));
-	size = SSL_read(ssl, buf, BUF_LEN);
-	if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
-      }while(size >0);
+      // data read
+      SSL_data_read(command_socket, ssl, ctx, fp_write, hg->http_nonblock);
     }
     else{  // HTTP
-      while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
+      while((size = fd_gets(command_socket,buf,BUF_LEN-1)) > 2 ){
 	// header lines
 	if(debug_flg){
 	  fprintf(stderr,"--> Header: %s", buf);
@@ -1617,37 +1680,8 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	  hg->psz=atol(cp);
 	}
       }
-      do{ // data read
-	memset(buf, 0, sizeof(buf));
-	if(debug_flg){
-	  fprintf(stderr,".");
-	}
-	size = recv(command_socket,buf,BUF_LEN,
-		    (hg->http_nonblock)?(MSG_DONTWAIT):0);
-	if(size > 0){
-	  fwrite( &buf , size , 1 , fp_write );
-	}
-	else if (size < 0){
-	  switch(errno){
-	  case EINTR:
-	    break;
-	  case EAGAIN:
-	    if(debug_flg) perror("Timeout");
-	    usleep(1e5);
-	    size=1;
-	    break;
-	  default:
-	    if(debug_flg) perror("recv");
-	    break;
-	  }
-	}
-	if(debug_flg){
-	  fprintf(stderr,"%co",0x08);
-	}
-      }while(size>0);
-      if(debug_flg){
-	fprintf(stderr,"\n");
-      }
+      // data read
+      HTTP_data_read(command_socket, fp_write, hg->http_nonblock);
     }
 
     fclose(fp_write);
@@ -1791,6 +1825,9 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
       ctx = SSL_CTX_new(SSLv23_client_method());
       ssl = SSL_new(ctx);
       err = SSL_set_fd(ssl, command_socket);
+      
+      SSL_set_tlsext_host_name(ssl, hg->dss_host);
+      
       while((ret=SSL_connect(ssl))!=1){
 	err=SSL_get_error(ssl, ret);
 	if( (err==SSL_ERROR_WANT_READ)||(err==SSL_ERROR_WANT_WRITE) ){
@@ -1909,7 +1946,7 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
       }
 
       if(SSL_flag){  // HTTPS
-	while((size = ssl_gets(ssl, buf,BUF_LEN)) > 2 ){
+	while((size = ssl_gets(ssl, buf,BUF_LEN-1)) > 2 ){
 	  // header lines
 	  if(debug_flg){
 	    fprintf(stderr,"[SSL] --> Header: %s", buf);
@@ -1922,14 +1959,11 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	    hg->psz=atol(cp);
 	  }
 	}
-	do{ // data read
-	  memset(buf, 0, sizeof(buf));
-	  size = SSL_read(ssl, buf, BUF_LEN);
-	  if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
-	}while(size >0);
+	// data read
+	SSL_data_read(command_socket, ssl, ctx, fp_write, hg->http_nonblock);
       }
       else{  // HTTP
-	while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
+	while((size = fd_gets(command_socket,buf,BUF_LEN-1)) > 2 ){
 	  // header lines
 	  if(debug_flg){
 	    fprintf(stderr,"--> Header: %s", buf);
@@ -1942,37 +1976,8 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	    hg->psz=atol(cp);
 	  }
 	}
-	do{ // data read
-	  memset(buf, 0, sizeof(buf));
-	  if(debug_flg){
-	    fprintf(stderr,".");
-	  }
-	  size = recv(command_socket,buf,BUF_LEN,
-		      (hg->http_nonblock)?(MSG_DONTWAIT):0);
-	  if(size > 0){
-	    fwrite( &buf , size , 1 , fp_write );
-	  }
-	  else if (size < 0){
-	    switch(errno){
-	    case EINTR:
-	      break;
-	    case EAGAIN:
-	      if(debug_flg) perror("Timeout");
-	      usleep(1e5);
-	      size=1;
-	      break;
-	    default:
-	      if(debug_flg) perror("recv");
-	      break;
-	    }
-	  }
-	  if(debug_flg){
-	    fprintf(stderr,"%co",0x08);
-	  }
-	}while(size>0);
-	if(debug_flg){
-	  fprintf(stderr,"\n");
-	}
+	// data read
+	HTTP_data_read(command_socket, fp_write, hg->http_nonblock);
       }
 	
       fclose(fp_write);
@@ -1994,7 +1999,7 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
     check_msg_from_parent(hg);
 
     if(SSL_flag){  // HTTP
-      while((size = ssl_gets(ssl, buf,BUF_LEN)) > 2 ){
+      while((size = ssl_gets(ssl, buf,BUF_LEN-1)) > 2 ){
 	// header lines
 	if(debug_flg){
 	  fprintf(stderr,"--> Header: %s", buf);
@@ -2007,14 +2012,11 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	  hg->psz=atol(cp);
 	}
       }
-      do{ // data read
-	memset(buf, 0, sizeof(buf));
-	size = SSL_read(ssl, buf, BUF_LEN);
-	if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
-      }while(size >0);
+      // data read
+      SSL_data_read(command_socket, ssl, ctx, fp_write, hg->http_nonblock);
     }
     else{  // HTTP
-      while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
+      while((size = fd_gets(command_socket,buf,BUF_LEN-1)) > 2 ){
 	// header lines
 	if(debug_flg){
 	  fprintf(stderr,"--> Header: %s", buf);
@@ -2027,37 +2029,8 @@ int http_c_fc_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	  hg->psz=atol(cp);
 	}
       }
-      do{ // data read
-	memset(buf, 0, sizeof(buf));
-	if(debug_flg){
-	  fprintf(stderr,".");
-	}
-	size = recv(command_socket,buf,BUF_LEN,
-		    (hg->http_nonblock)?(MSG_DONTWAIT):0);
-	if(size > 0){
-	    fwrite( &buf , size , 1 , fp_write );
-	}
-	else if (size < 0){
-	  switch(errno){
-	  case EINTR:
-	    break;
-	  case EAGAIN:
-	    if(debug_flg) perror("Timeout");
-	    usleep(1e5);
-	    size=1;
-	    break;
-	  default:
-	    if(debug_flg) perror("recv");
-	    break;
-	  }
-	}
-	if(debug_flg){
-	    fprintf(stderr,"%co",0x08);
-	}
-      }while(size>0);
-      if(debug_flg){
-	fprintf(stderr,"\n");
-      }
+      // data read
+      HTTP_data_read(command_socket, fp_write, hg->http_nonblock);
     }
     
     
@@ -2187,6 +2160,9 @@ int http_c_std_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
     ctx = SSL_CTX_new(SSLv23_client_method());
     ssl = SSL_new(ctx);
     err = SSL_set_fd(ssl, command_socket);
+    
+    SSL_set_tlsext_host_name(ssl, hg->std_host);
+    
     while((ret=SSL_connect(ssl))!=1){
       err=SSL_get_error(ssl, ret);
       if( (err==SSL_ERROR_WANT_READ)||(err==SSL_ERROR_WANT_WRITE) ){
@@ -2265,7 +2241,7 @@ int http_c_std_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
   }
 
   if(SSL_flag){
-    while((size = ssl_gets(ssl, buf, BUF_LEN)) > 2 ){
+    while((size = ssl_gets(ssl, buf, BUF_LEN-1)) > 2 ){
       // header lines
       if(debug_flg){
 	fprintf(stderr,"[SSL] --> Header: %s", buf);
@@ -2278,14 +2254,11 @@ int http_c_std_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	hg->psz=atol(cp);
       }
     }
-    do{ // data read
-      memset(buf, 0, sizeof(buf));
-      size = SSL_read(ssl, buf, BUF_LEN);
-      if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
-    }while(size >0);
+    // data read
+    SSL_data_read(command_socket, ssl, ctx, fp_write, hg->http_nonblock);
   }
   else{
-    while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
+    while((size = fd_gets(command_socket,buf,BUF_LEN-1)) > 2 ){
       // header lines
       if(debug_flg){
 	fprintf(stderr,"--> Header: %s", buf);
@@ -2298,37 +2271,8 @@ int http_c_std_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
       hg->psz=atol(cp);
       }
     }
-    do{ // data read
-      memset(buf, 0, sizeof(buf));
-      if(debug_flg){
-	fprintf(stderr,".");
-      }
-      size = recv(command_socket,buf,BUF_LEN,
-		  (hg->http_nonblock)?(MSG_DONTWAIT):0);
-      if(size > 0){
-	fwrite( &buf , size , 1 , fp_write );
-      }
-      else if (size < 0){
-	switch(errno){
-	case EINTR:
-	  break;
-	case EAGAIN:
-	  if(debug_flg) perror("Timeout");
-	  usleep(1e5);
-	  size=1;
-	  break;
-	default:
-	  if(debug_flg) perror("recv");
-	  break;
-	}
-      }
-      if(debug_flg){
-	fprintf(stderr,"%co",0x08);
-      }
-    }while(size>0);
-    if(debug_flg){
-      fprintf(stderr,"\n");
-    }
+    // data read
+    HTTP_data_read(command_socket, fp_write, hg->http_nonblock);
   }
   
   fclose(fp_write);
@@ -2379,6 +2323,7 @@ int http_c_fcdb_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
   SSL_CTX *ctx;
 
   struct timeval tv;
+
   
   // Calculate Content-Length
   if(hg->fcdb_post){
@@ -2431,6 +2376,9 @@ int http_c_fcdb_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
     ctx = SSL_CTX_new(SSLv23_client_method());
     ssl = SSL_new(ctx);
     err = SSL_set_fd(ssl, command_socket);
+
+    SSL_set_tlsext_host_name(ssl, hg->fcdb_host);
+    
     while((ret=SSL_connect(ssl))!=1){
       err=SSL_get_error(ssl, ret);
       if( (err==SSL_ERROR_WANT_READ)||(err==SSL_ERROR_WANT_WRITE) ){
@@ -2440,6 +2388,7 @@ int http_c_fcdb_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
       }
       g_warning("SSL_connect() failed with error %d, ret=%d (%s)\n",
 		err, ret, ERR_error_string(ERR_get_error(), NULL));
+      fprintf(stderr, "Failed to connect to %s\n", hg->fcdb_host);
       return(HSKYMON_HTTP_ERROR_SSL);
     }
     
@@ -2531,7 +2480,7 @@ int http_c_fcdb_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
     }
     break;
   }
-  
+
   sprintf(send_mesg, "Connection: close\r\n");
   if(SSL_flag){  // HTTPS
     write_to_SSLserver(ssl, send_mesg);
@@ -2607,7 +2556,7 @@ int http_c_fcdb_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 
   
   if(SSL_flag){  // HTTPS
-    while((size = ssl_gets(ssl, buf, BUF_LEN)) > 2 ){
+    while((size = ssl_gets(ssl, buf, BUF_LEN-1)) > 2 ){
       // header lines
       if(debug_flg){
 	fprintf(stderr,"[SSL] --> Header: %s", buf);
@@ -2620,14 +2569,11 @@ int http_c_fcdb_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	hg->psz=atol(cp);
       }
     }
-    do{ // data read
-      memset(buf, 0, sizeof(buf));
-      size = SSL_read(ssl, buf, BUF_LEN);
-      if(size > 0) fwrite( &buf , size , 1 , fp_write ); 
-    }while(size >0);
+    // data read
+    SSL_data_read(command_socket, ssl, ctx, fp_write, hg->http_nonblock);
   }
   else{  // HTTP
-    while((size = fd_gets(command_socket,buf,BUF_LEN)) > 2 ){
+    while((size = fd_gets(command_socket,buf,BUF_LEN-1)) > 2 ){
       // header lines
       if(debug_flg){
 	fprintf(stderr,"--> Header: %s", buf);
@@ -2640,43 +2586,8 @@ int http_c_fcdb_new(typHOE *hg, gboolean SSL_flag, gboolean proxy_ssl){
 	hg->psz=atol(cp);
       }
     }
-
-    tv.tv_sec = TIMEOUT_SEC;
-    tv.tv_usec = 0;
-    if(setsockopt(command_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv)) < 0) {
-      perror("setsockopt");
-    }
-    do{ // data read
-      memset(buf, 0, sizeof(buf));
-      if(debug_flg){
-	fprintf(stderr,".");
-      }
-      size = recv(command_socket,buf,BUF_LEN,
-		  (hg->http_nonblock)?(MSG_DONTWAIT):0);
-      if(size > 0){
-	fwrite( &buf , size , 1 , fp_write );
-      }
-      else if (size < 0){
-	switch(errno){
-	case EINTR:
-	  break;
-	case EAGAIN:
-	  if(debug_flg) perror("Timeout");
-	  usleep(1e5);
-	  size=1;
-	  break;
-	default:
-	  if(debug_flg) perror("recv");
-	  break;
-	}
-      }
-      if(debug_flg){
-	fprintf(stderr,"%co",0x08);
-      }
-    }while(size>0);
-    if(debug_flg){
-      fprintf(stderr,"\n");
-    }
+    // data read
+    HTTP_data_read(command_socket, fp_write, hg->http_nonblock);
   }
       
   fclose(fp_write);
@@ -2763,6 +2674,8 @@ gpointer thread_get_fcdb(gpointer gdata){
   
   switch(hg->fcdb_type){
   case (-1):    
+  case FCDB_TYPE_GSC:
+  case FCDB_TYPE_2MASS:
   case FCDB_TYPE_PS1:
   case FCDB_TYPE_SMOKA:
   case FCDB_TYPE_WWWDB_SMOKA:
@@ -3485,12 +3398,12 @@ int get_seimei_azel(typHOE *hg){
   write_to_server(hg->seimei_socket, send_mesg);
 
   // OK
-  size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  size = fd_gets(hg->seimei_socket,buf,BUF_LEN-1);
   if(size<0) return(HSKYMON_SEIMEI_ERROR_FDGET);
   //fprintf(stderr,"--> %s", buf);
 
   // TEL.AZI
-  if((size = fd_gets(hg->seimei_socket,buf,BUF_LEN)) > (strlen("TEL.AZI=")+3)){
+  if((size = fd_gets(hg->seimei_socket,buf,BUF_LEN-1)) > (strlen("TEL.AZI=")+3)){
     if ( debug_flg ) fprintf(stderr,"--> %s", buf);
     cpp=buf;
     cp=strstr(cpp,"TEL.AZI=");
@@ -3506,7 +3419,7 @@ int get_seimei_azel(typHOE *hg){
   }
   
   // END
-  size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  size = fd_gets(hg->seimei_socket,buf,BUF_LEN-1);
   if(size<0) return(HSKYMON_SEIMEI_ERROR_FDGET);
   //fprintf(stderr,"--> %s", buf);
 
@@ -3516,12 +3429,12 @@ int get_seimei_azel(typHOE *hg){
   write_to_server(hg->seimei_socket, send_mesg);
 
   // OK
-  size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  size = fd_gets(hg->seimei_socket,buf,BUF_LEN-1);
   if(size<0) return(HSKYMON_SEIMEI_ERROR_FDGET);
   //fprintf(stderr,"--> %s", buf);
 
   // TEL.ALT
-  if((size = fd_gets(hg->seimei_socket,buf,BUF_LEN)) > (strlen("TEL.ALT=")+3)){
+  if((size = fd_gets(hg->seimei_socket,buf,BUF_LEN-1)) > (strlen("TEL.ALT=")+3)){
     if ( debug_flg ) fprintf(stderr,"--> %s", buf);
     cpp=buf;
     cp=strstr(cpp,"TEL.ALT=");
@@ -3538,7 +3451,7 @@ int get_seimei_azel(typHOE *hg){
   }
   
   // END
-  size = fd_gets(hg->seimei_socket,buf,BUF_LEN);
+  size = fd_gets(hg->seimei_socket,buf,BUF_LEN-1);
   if(size<0) return(HSKYMON_SEIMEI_ERROR_FDGET);
   //fprintf(stderr,"--> %s", buf);
 
@@ -3562,6 +3475,7 @@ int close_seimei_socket(typHOE *hg){
   
   return 0;
 }
+
 
 
 int post_body_new(typHOE *hg,
@@ -4381,76 +4295,51 @@ int post_body_new(typHOE *hg,
 
     while(1){
       if(sdss_post[ip].key==NULL) break;
+
       switch(sdss_post[ip].flg){
       case POST_NULL:
 	sprintf(send_mesg,
-		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n\r\n",
-		rand16,
+		"%s=&",
 		sdss_post[ip].key);
 	break;
 
       case POST_CONST:
 	sprintf(send_mesg,
-		"------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
-		rand16,
+		"%s=%s&",
 		sdss_post[ip].key,
 		sdss_post[ip].prm);
 	break;
 	
       case POST_INPUT:
-	if(strcmp(sdss_post[ip].key,"searchtool")==0){
+	if(strcmp(sdss_post[ip].key,"ra")==0){
 	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
-		  rand16,
-		  sdss_post[ip].key,
-		  (hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG) ? 
-		  "Imaging" : "Spectro");
-	}
-	else if(strcmp(sdss_post[ip].key,"TaskName")==0){
-	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
-		  rand16,
-		  sdss_post[ip].key,
-		  (hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG) ? 
-		  "Skyserver.Search.IQS" : "Skyserver.Search.SQS");
-	}
-	else if(strcmp(sdss_post[ip].key,"ra")==0){
-	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
-		  rand16,
+		  "%s=%.5lf&",
 		  sdss_post[ip].key,
 		  hg->fcdb_d_ra0);
 	}
 	else if(strcmp(sdss_post[ip].key,"dec")==0){
 	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.5lf\r\n",
-		  rand16,
+		  "%s=%.5lf&",
 		  sdss_post[ip].key,
 		  hg->fcdb_d_dec0);
 	}
 	else if(strcmp(sdss_post[ip].key,"radius")==0){
 	  sprintf(send_mesg,
-		  "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%.1lf\r\n",
-		  rand16,
+		  "%s=%.5lf&",
 		  sdss_post[ip].key,
-		  (hg->dss_arcmin < hg->fcdb_sdss_diam) ?
-		  ((gdouble)hg->dss_arcmin/2.0) :
-		  ((gdouble)hg->fcdb_sdss_diam/2.0));
+		  hg->dss_arcmin/2.0);
 	}
 	else if(strcmp(sdss_post[ip].key,"magMin")==0){
-	  send_mesg[0]=0x00;
 	  for(i=0;i<NUM_SDSS_BAND;i++){
 	    if(hg->fcdb_sdss_fil[i]){
 	      sprintf(ins_mesg,
-		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMin\"\r\n\r\n%d\r\n",
-		      rand16,
+		      "%sMin=%d&",
 		      sdss_band[i],
 		      hg->fcdb_sdss_magmin[i]);
 	    }
 	    else{
 	      sprintf(ins_mesg,
-		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMin\"\r\n\r\n\r\n",
-		      rand16,
+		      "%sMin=&",
 		      sdss_band[i]);
 	    }
 	    strcat(send_mesg,ins_mesg);
@@ -4461,47 +4350,51 @@ int post_body_new(typHOE *hg,
 	  for(i=0;i<NUM_SDSS_BAND;i++){
 	    if(hg->fcdb_sdss_fil[i]){
 	      sprintf(ins_mesg,
-		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMax\"\r\n\r\n%d\r\n",
-		      rand16,
+		      "%sMax=%d&",
 		      sdss_band[i],
 		      hg->fcdb_sdss_magmax[i]);
 	    }
 	    else{
 	      sprintf(ins_mesg,
-		      "------WebKitFormBoundary%s\r\nContent-Disposition: form-data; name=\"%sMax\"\r\n\r\n\r\n",
-		      rand16,
+		      "%sMax=&",
 		      sdss_band[i]);
 	    }
 	    strcat(send_mesg,ins_mesg);
 	  }
 	}
 	break;
-      }	
-      plen+=strlen(send_mesg);
-      if(wflag){
-	if(SSL_flag){
-	  write_to_SSLserver(ssl, send_mesg);
-	}
-	else{
-	  write_to_server(command_socket, send_mesg);
-	}
       }
-	  
+
+      if(send_flag){
+	plen+=strlen(send_mesg);
+	
+	if(send_buf1) g_free(send_buf1);
+	if(send_buf2) send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+	else send_buf1=g_strdup(send_mesg);
+	if(send_buf2) g_free(send_buf2);
+	send_buf2=g_strdup(send_buf1);
+      }
+
       ip++;
     }
+
+    sprintf(send_mesg,"\r\n\r\n");
+    if(send_buf1) g_free(send_buf1);
+    send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
     
-    sprintf(send_mesg,
-	    "------WebKitFormBoundary%s--\r\n\r\n",
-	    rand16);
     plen+=strlen(send_mesg);
+    
     if(wflag){
       if(SSL_flag){
-	write_to_SSLserver(ssl, send_mesg);
+	write_to_SSLserver(ssl, send_buf1);
       }
       else{
-	write_to_server(command_socket, send_mesg);
+	write_to_server(command_socket, send_buf1);
       }
     }
+
+    if(send_buf1) g_free(send_buf1);
+    if(send_buf2) g_free(send_buf2);
 
     break;
 

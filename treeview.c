@@ -1571,14 +1571,14 @@ static void add_item (typHOE *hg, gboolean pm_flag)
   }
   if(hg->addobj_votype){
     if(hg->addobj_magsp)
-      mag_str=g_strdup_printf(", %s, %s",hg->addobj_votype,hg->addobj_magsp);
+      mag_str=g_strdup_printf("%s, %s",hg->addobj_votype,hg->addobj_magsp);
     else
-      mag_str=g_strdup_printf(", %s, mag=unknown",hg->addobj_votype);
+      mag_str=g_strdup_printf("%s, mag=unknown",hg->addobj_votype);
   }
   else{
       mag_str=g_strdup(" ");
   }
-  hg->obj[i].note=g_strdup_printf("(added via dialog)%s%s", mag_str, pm_str);
+  hg->obj[i].note=g_strdup_printf("%s%s", mag_str, pm_str);
   g_free(pm_str);
   g_free(mag_str);
 

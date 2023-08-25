@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 4.5.5    2023/08/24
+#                                  ver 4.5.6    2023/08/25
 #                               Copyright (C) 2003-23 Akito Tajitsu
 #                                        akito.tajitsu_at_nao.ac.jp
 #      Subaru Telescope, National Astronomical Observatory of Japan
@@ -52,6 +52,13 @@ Subaru Gen2と接続し、望遠鏡のステータスをとる場合(Gen2 summitネットワーク内
 
 macOS, Windowsのバイナリー配布版には必要なライブラリはすべて同梱されています
 ので、インストーラ以外は必要ありません。
+
+一部のネットワークセキュリテイソフト（ESET等）を使用している環境で、HTTP/HTTPS
+を使用したネットワーク経由のデータダウンロードがスタックしたり遅くなってりすることがあります。
+その場合は、セキュリティソフトのなかで
+  C:\Program Files\Subaru Telescope\hskymon\hskymon.exe  (Win)
+  /Applications/hskymon.app/Contents/MacOS/hskymon-bin   (mac)
+を監視から除外するように設定してください。
 
 
 ▼make

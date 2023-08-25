@@ -259,7 +259,11 @@ enum
 
 #define FCDB_HOST_SDSS "skyserver.sdss.org"
 //#define FCDB_SDSS_PATH "/dr18/SearchTools/rect"
-#define FCDB_SDSS_PATH "/dr16/en/tools/search/IQS.aspx"
+//#define FCDB_SDSS_PATH "/dr14/en/tools/search/IQS.aspx"
+//#define FCDB_SDSS_PATH "/dr14/en/tools/search/x_results.aspx"
+#define FCDB_SDSS_PATH "/dr16/SkyServerWS/ImagingQuery/Cone"
+#define FCDB_SDSS_PATH_SPEC "/dr16/SkyServerWS/SpectroQuery/Cone"
+
 
 #define FCDB_HOST_VIZIER_STRASBG "vizier.u-strasbg.fr"
 #define FCDB_HOST_VIZIER_NAOJ "vizier.nao.ac.jp"
@@ -379,7 +383,7 @@ enum
 #define FC_PATH_SDSS8 "/DR8/ImgCutout/getjpeg.aspx?ra=%lf&dec=%lf&scale=%f&opt=&width=%d&height=%d&opt=%s%s&query=%s%s"
 #define SDSS_SCALE 0.39612
 #define FC_HOST_SDSS13 "skyserver.sdss.org"
-#define FC_PATH_SDSS13 "/dr16/SkyServerWS/ImgCutout/getjpeg?TaskName=Skyserver.Chart.image&ra=%lf&dec=%lf&scale=%f&width=%d&height=%d&opt=%s%s&query=%s%s"
+#define FC_PATH_SDSS13 "/dr18/SkyServerWS/ImgCutout/getjpeg?ra=%lf&dec=%lf&scale=%f&width=%d&height=%d&opt=%s%s&query=%s%s"
 #define FC_HOST_PANCOL "ps1images.stsci.edu"
 #define FC_PATH_PANCOL "/cgi-bin/ps1cutouts?pos=%lf+%+lf&filter=color&filetypes=stack&auxiliary=data&size=%d&output_size=1024&verbose=0&autoscale=99.500000&catlist="
 #define FC_PATH_PANG "/cgi-bin/ps1cutouts?pos=%lf+%+lf&filter=g&filetypes=stack&auxiliary=data&size=%d&output_size=1024&verbose=0&autoscale=99.500000&catlist="
@@ -537,7 +541,7 @@ static const gchar* FC_name[]={
   "SkyView: RGB composite",    // FC_SKYVIEW_RGB,
   NULL,                        // FC_SEP3,
   "SDSS DR7 (color)",          // FC_SDSS,
-  "SDSS DR16 (color)",         // FC_SDSS13,
+  "SDSS DR18 (color)",         // FC_SDSS13,
   NULL,                        // FC_SEP4,
   "PanSTARRS-1 (color)",       // FC_PANCOL,
   "PanSTARRS-1 (g)",           // FC_PANG,
@@ -585,7 +589,7 @@ static const gchar* FC_markup[]={
   "SkyView: <span color=\"#FF7F7F\">R</span><span color=\"#7FFF7F\">G</span><span color=\"#7F7FFF\">B</span> composite",    // FC_SKYVIEW_RGB,
   NULL,                        // FC_SEP3,
   "SDSS DR7 (color)",          // FC_SDSS,
-  "SDSS DR16 (color)",         // FC_SDSS13,
+  "SDSS DR18 (color)",         // FC_SDSS13,
   NULL,                        // FC_SEP4,
   "PanSTARRS-1 (color)",       // FC_PANCOL,
   "PanSTARRS-1 (g)",           // FC_PANG,
@@ -633,7 +637,7 @@ static const gchar* FC_img[]={
   "RGB composite",             // FC_SKYVIEW_RGB,
   NULL,                        // FC_SEP3,
   "SDSS (DR7/color)",          // FC_SDSS,
-  "SDSS (DR16/color)",         // FC_SDSS13,
+  "SDSS (DR18/color)",         // FC_SDSS13,
   NULL,                        // FC_SEP4,
   "PanSTARRS-1 (color)",       // FC_PANCOL,
   "PanSTARRS-1 (g-band)",      // FC_PANG,

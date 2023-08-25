@@ -113,6 +113,7 @@ void draw_pa();
 
 void draw_gs_hskymon();
 
+gchar* get_sdss_fcdb_path();
 
 gboolean flagHSCDialog=FALSE;
 gboolean flag_trdb_kill=FALSE;
@@ -123,6 +124,151 @@ GdkPixbuf *pixbuf_fcbk=NULL;
 #else
 GdkPixmap *pixmap_fcbk=NULL;
 #endif
+
+#define BUF_LEN 4096
+
+gchar* get_sdss_fcdb_path(typHOE *hg){
+  char send_mesg[BUF_LEN];          /* サーバに送るメッセージ */
+  char ins_mesg[BUF_LEN];
+  gint ip, plen, i, i_inst;
+  gchar *ret, *send_buf1=NULL, *send_buf2=NULL;
+
+  ip=0;
+  plen=0;
+
+  while(1){
+    if(hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG){
+      if(sdss_post[ip].key==NULL) break;
+      
+      switch(sdss_post[ip].flg){
+      case POST_NULL:
+	sprintf(send_mesg,
+		"%s=&",
+		sdss_post[ip].key);
+	break;
+	
+      case POST_CONST:
+	sprintf(send_mesg,
+		"%s=%s&",
+		sdss_post[ip].key,
+		sdss_post[ip].prm);
+	break;
+	
+      case POST_INPUT:
+	if(strcmp(sdss_post[ip].key,"ra")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  sdss_post[ip].key,
+		  hg->fcdb_d_ra0);
+	}
+	else if(strcmp(sdss_post[ip].key,"dec")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  sdss_post[ip].key,
+		  hg->fcdb_d_dec0);
+	}
+	else if(strcmp(sdss_post[ip].key,"radius")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  sdss_post[ip].key,
+		  hg->dss_arcmin/2.0);
+	}
+	else if(strcmp(sdss_post[ip].key,"magMin")==0){
+	  for(i=0;i<NUM_SDSS_BAND;i++){
+	    if(hg->fcdb_sdss_fil[i]){
+	      sprintf(ins_mesg,
+		      "%sMin=%d&",
+		      sdss_band[i],
+		      hg->fcdb_sdss_magmin[i]);
+	    }
+	    else{
+	      sprintf(ins_mesg,
+		      "%sMin=&",
+		      sdss_band[i]);
+	    }
+	    strcat(send_mesg,ins_mesg);
+	  }
+	}
+	else if(strcmp(sdss_post[ip].key,"magMax")==0){
+	  send_mesg[0]=0x00;
+	  for(i=0;i<NUM_SDSS_BAND;i++){
+	    if(hg->fcdb_sdss_fil[i]){
+	      sprintf(ins_mesg,
+		      "%sMax=%d&",
+		      sdss_band[i],
+		      hg->fcdb_sdss_magmax[i]);
+	    }
+	    else{
+	      sprintf(ins_mesg,
+		      "%sMax=&",
+		      sdss_band[i]);
+	    }
+	  strcat(send_mesg,ins_mesg);
+	  }
+	}
+	break;
+      }
+    }
+    else{
+      if(sdss_spec_post[ip].key==NULL) break;
+      
+      switch(sdss_spec_post[ip].flg){
+      case POST_NULL:
+	sprintf(send_mesg,
+		"%s=&",
+		sdss_spec_post[ip].key);
+	break;
+	
+      case POST_CONST:
+	sprintf(send_mesg,
+		"%s=%s&",
+		sdss_spec_post[ip].key,
+		sdss_spec_post[ip].prm);
+	break;
+	
+      case POST_INPUT:
+	if(strcmp(sdss_spec_post[ip].key,"ra")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  sdss_spec_post[ip].key,
+		  hg->fcdb_d_ra0);
+	}
+	else if(strcmp(sdss_spec_post[ip].key,"dec")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  sdss_spec_post[ip].key,
+		  hg->fcdb_d_dec0);
+	}
+	else if(strcmp(sdss_spec_post[ip].key,"radius")==0){
+	  sprintf(send_mesg,
+		  "%s=%.5lf&",
+		  sdss_spec_post[ip].key,
+		  hg->dss_arcmin/2.0);
+	}
+	break;
+      }
+    }
+    
+    plen+=strlen(send_mesg);
+    
+    if(send_buf1) g_free(send_buf1);
+    if(send_buf2) send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+    else send_buf1=g_strdup(send_mesg);
+    if(send_buf2) g_free(send_buf2);
+    send_buf2=g_strdup(send_buf1);
+    
+    ip++;
+  }
+  
+  if(send_buf1) g_free(send_buf1);
+  send_buf1=g_strconcat(send_buf2,send_mesg,NULL);
+  
+  plen+=strlen(send_mesg);
+
+  if(send_buf2) g_free(send_buf2);
+
+  return(send_buf1);
+}
 
 
 void fc_item2 (typHOE *hg)
@@ -3360,7 +3506,7 @@ void fcdb_dl(typHOE *hg)
   my_signal_connect(hg->pdialog,"delete-event", delete_fcdb, (gpointer)hg);
    
   switch(hg->fcdb_type){
-  case FCDB_TYPE_SDSS:
+    //case FCDB_TYPE_SDSS:
   case FCDB_TYPE_LAMOST:
   case FCDB_TYPE_KEPLER:
   case FCDB_TYPE_SMOKA:
@@ -4181,7 +4327,7 @@ void trdb_run (typHOE *hg)
 void fcdb_item2 (typHOE *hg)
 {
   gdouble ra_0, dec_0, d_ra0, d_dec0;
-  gchar *mag_str, *otype_str, *url_param=NULL;
+  gchar *mag_str, *otype_str, *url_param=NULL, *path_str;
   struct lnh_equ_posn hobject;
   struct ln_equ_posn object;
   struct ln_equ_posn object_prec;
@@ -4475,12 +4621,16 @@ void fcdb_item2 (typHOE *hg)
     ln_equ_to_hequ (&object_prec, &hobject_prec);
     if(hg->fcdb_host) g_free(hg->fcdb_host);
     hg->fcdb_host=g_strdup(FCDB_HOST_SDSS);
-    if(hg->fcdb_path) g_free(hg->fcdb_path);
-    hg->fcdb_path=g_strdup(FCDB_SDSS_PATH);
-
 
     hg->fcdb_d_ra0=object_prec.ra;
     hg->fcdb_d_dec0=object_prec.dec;
+
+    path_str=get_sdss_fcdb_path(hg);
+    if(hg->fcdb_path) g_free(hg->fcdb_path);
+
+    hg->fcdb_path=g_strconcat((hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG)?(FCDB_SDSS_PATH):(FCDB_SDSS_PATH_SPEC),
+			      "?", path_str, NULL);
+    g_free(path_str);
 
     if(hg->fcdb_file) g_free(hg->fcdb_file);
     hg->fcdb_file=g_strconcat(hg->temp_dir,

@@ -3,7 +3,7 @@
 #                         Document file
 #
 #
-#                                  ver 4.5.5    2023/08/24
+#                                  ver 4.5.6    2023/08/25
 #                               Copyright (C) 2003-23 Akito Tajitsu
 #                                        akito.tajitsu_at_nao.ac.jp
 #      Subaru Telescope, National Astronomical Observatory of Japan
@@ -46,6 +46,13 @@ But, Windows/Mac version does not support this function.
 You need to install some libraries and developer's environment for them
 to make this program.
 (gtk+2-dev, xmlrpc-c3-dev, libcurl4-openssl-dev ... etc.)
+
+If you are using an internet security software (ESET etc.), you may
+have problems on HTTP/HTTPS accesses on hskymon (stacks, slowness...).
+In such cases, please try to add
+  C:\Program Files\Subaru Telescope\hskymon\hskymon.exe  (Win)
+  /Applications/hskymon.app/Contents/MacOS/hskymon-bin   (mac)
+to the exclusion list in your security software.
 
 
 *** Build from the source code
