@@ -1734,24 +1734,21 @@ void fcdb_sdss_vo_parse(typHOE *hg) {
     if(i_list==MAX_FCDB) break;
     
     if (vtabledata_move->colomn == columns[0]){
-      /*
-      if (strncmp((const char *)vtabledata_move->value, "SELECT TOP 5000", 
-		  strlen("SELECT TOP 5000")) != 0){
+      if(strlen(vtabledata_move->value)<64){
+	//if (strncmp((const char *)vtabledata_move->value, "\nSELECT TOP 5000", 
+	//	  strlen("\nSELECT TOP 5000")) != 0){
 	if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
 	hg->fcdb[i_list].name=g_strdup((const char*)vtabledata_move->value);
-      }
-      */
-      if(hg->fcdb[i_list].name) g_free(hg->fcdb[i_list].name);
-      hg->fcdb[i_list].name=g_strdup((const char*)vtabledata_move->value);
-      if(hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG){
-	i_list++;
-	i_all++;
-      }
-      else if(hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_SPEC){
-	if(strcmp(hg->fcdb[i_list].sp,"0")!=0){
+	if(hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_IMAG){
 	  i_list++;
+	  i_all++;
 	}
-	i_all++;
+	else if(hg->fcdb_sdss_search==FCDB_SDSS_SEARCH_SPEC){
+	  if(strcmp(hg->fcdb[i_list].sp,"0")!=0){
+	    i_list++;
+	  }
+	  i_all++;
+	}
       }
     }
     else if (vtabledata_move->colomn == columns[1]){
